@@ -2,7 +2,7 @@ import inspect
 from io import BytesIO
 from PIL import Image, UnidentifiedImageError
 
-import managers.coverFetchers as fetchers
+import managers.cover_fetchers as fetchers
 
 
 class CoverManager:

@@ -1,6 +1,6 @@
 import pytest
 
-from managers.coverFetchers.abstractFetcher import AbstractFetcher
+from managers.cover_fetchers.abstractFetcher import AbstractFetcher
 
 
 class TestAbstractFetcher:

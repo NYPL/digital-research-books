@@ -2,7 +2,7 @@ import pytest
 import requests
 from requests.exceptions import HTTPError
 
-from managers.coverFetchers import GoogleBooksFetcher
+from managers.cover_fetchers import GoogleBooksFetcher
 
 
 class TestGoogleBooksFetcher:

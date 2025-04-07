@@ -2,7 +2,7 @@ import pytest
 import requests
 from requests.exceptions import ReadTimeout
 
-from managers.coverFetchers import ContentCafeFetcher
+from managers.cover_fetchers import ContentCafeFetcher
 
 
 class TestContentCafeFetcher:

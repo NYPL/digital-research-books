@@ -2,7 +2,7 @@ import pytest
 import requests
 from requests.exceptions import HTTPError
 
-from managers.coverFetchers import OpenLibraryFetcher
+from managers.cover_fetchers import OpenLibraryFetcher
 from model import OpenLibraryCover
 
 

@@ -1,6 +1,6 @@
 import pytest
 
-from managers.coverFetchers.hathiFetcher import HathiPage
+from managers.cover_fetchers.hathiFetcher import HathiPage
 
 
 class TestHathiPage:

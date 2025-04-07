@@ -2,8 +2,8 @@ import pytest
 import requests
 from requests.exceptions import HTTPError
 
-from managers.coverFetchers import HathiFetcher
-from managers.coverFetchers.hathiFetcher import HathiCoverError
+from managers.cover_fetchers import HathiFetcher
+from managers.cover_fetchers.hathiFetcher import HathiCoverError
 
 
 class TestHathiFetcher:
@@ -57,7 +57,7 @@ class TestHathiFetcher:
         mockRequest = mocker.patch.object(HathiFetcher, 'makeHathiReq')
         mockRequest.return_value = mockResponse
 
-        mockPage = mocker.patch('managers.coverFetchers.hathiFetcher.HathiPage')
+        mockPage = mocker.patch('managers.cover_fetchers.hathiFetcher.HathiPage')
         mockPage.side_effect = mockPages
 
         mockSetCover = mocker.patch.object(HathiFetcher, 'setCoverPageURL')
@@ -105,7 +105,7 @@ class TestHathiFetcher:
         assert testFetcher.downloadCoverFile() == None
 
     def test_generateAuth(self, testFetcher, mocker):
-        mockAuth = mocker.patch('managers.coverFetchers.hathiFetcher.OAuth1')
+        mockAuth = mocker.patch('managers.cover_fetchers.hathiFetcher.OAuth1')
         mockAuth.return_value = 'testAuthObject'
 
         assert testFetcher.generateAuth() == 'testAuthObject'
