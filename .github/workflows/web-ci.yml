@@ -8,17 +8,6 @@ on:
       - "web/**"
 
 jobs:
-  # changelog must be edited for every PR
-  changelog:
-    name: Updates Changelog
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dangoslen/changelog-enforcer@v3
-        with:
-          changeLogPath: "web/CHANGELOG.md"
-          skipLabels: "no-changelog"
-
   lint:
     name: Lint
     runs-on: ubuntu-latest

@@ -58,12 +58,9 @@ docker-compose up
 
 4. Check that app is being served at http://localhost:3000
 
-### Deploying to Production
+### Deployment
 
-1. Create a new branch off `development` with the name `NO-REF_prepare-<VERSION>`, i.e. `NO-REF_prepare-1.2.3`. Replace any reference to "Pre-release" and the previous production version in the package.json and package-lock.json files with the current version number. Push the branch and create a Pull Request with the name `NOREF prepare <VERSION> release`, i.e. `NOREF prepare 1.2.3 release`. Merge these changes once the PR is approved.
-2. Create a Pull Request to `production` from `development` with the name `Release <VERSION> to production`, i.e. `Release 1.2.3 to production`. The description of the PR should be the new version's changelog to be used in the tag and release step of the .yaml file.
-3. Merge the PR after approval to trigger the [`build-production.yaml`](./.github/workflows/build-production.yaml) GitHub Action, which pushes a Docker image to ECR, updates the `production` ECS deployment, and creates a new release version on GitHub.
-4. Add the link to the PR to the release ticket in Jira and tag the appropriate member of QA, the project manager, and the product manager. Move the ticket to "In QA" and assign it to the appropriate member of QA. QA should be done on https://drb-qa.nypl.org/.
+- We have implemented continuous deployment and integration once changes are merged to main via Github Actions.
 
 ### Dependencies
 
