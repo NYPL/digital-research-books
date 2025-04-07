@@ -10,8 +10,19 @@ logger = create_log(__name__)
 
 
 class RecordClusterer:
+    """Clusters related bibliographic records and transforms them into FRBR model objects.
+    
+    This class handles the process of:
+    1. Finding related records through identifier and title matching
+    2. Clustering those records using machine learning
+    3. Creating Work/Edition/Item objects from the clusters
+    4. Managing database updates and search indexing
+    """
+    # Maximum number of "hops" to follow when matching records through identifiers
     MAX_MATCH_DISTANCE = 4
+    # Maximum number of records that can be in a cluster
     CLUSTER_SIZE_LIMIT = 10000
+    # Regex pattern for identifying valid identifier types (isbn, issn, etc.)
     IDENTIFIERS_TO_MATCH = r'\|(?:isbn|issn|oclc|lccn|owi)$'
 
     def __init__(self, db_manager: DBManager):
@@ -26,6 +37,8 @@ class RecordClusterer:
         self.constants = get_constants()
 
     def cluster_record(self, record) -> list[Record]:
+        """Main entry point for clustering a record with related records.
+        """
         try:
             work, stale_work_ids, records = self._get_clustered_work_and_records(record)
             self._commit_changes()
@@ -44,6 +57,14 @@ class RecordClusterer:
             raise e
 
     def _get_clustered_work_and_records(self, record: Record):
+        """Coordinates the clustering process for a single record.
+        
+        1. Finds all "matches" for the record by matching identifiers and partially comparing titles
+        2. Clusters the matched records using kMeans
+        3. Creates editions from the clusers
+        4. Creates a Work object from the editions
+        5. Updates record status in the database
+        """
         matched_record_ids = self._find_all_matching_records(record) + [record.id]
 
         clustered_editions, records = self._cluster_matched_records(matched_record_ids)
@@ -67,6 +88,16 @@ class RecordClusterer:
         self.db_manager.deleteRecordsByQuery(self.db_manager.session.query(Work).filter(Work.id.in_(list(work_ids))))
 
     def _cluster_matched_records(self, record_ids: list[str]):
+        """Groups matched records into clusters using KMeans clustering.
+        
+        Uses KMeansManager to:
+        1. Create feature vectors from record metadata
+        2. Run KMeans clustering
+        3. Group results by publication year
+
+        Each cluster represents a work, and each group of records for a given publication year in that cluster
+        is assumed to be an edition of that work.
+        """
         records = self.db_manager.session.query(Record).filter(Record.id.in_(record_ids)).all()
 
         kmean_manager = KMeansManager(records)
@@ -89,7 +120,22 @@ class RecordClusterer:
             )
         )
 
-    def _find_all_matching_records(self, record: Record):
+    def _find_all_matching_records(self, record: Record) -> list[str]:
+        """Finds all records that might be related to the input record.
+        
+        Uses an iterative process to find matches:
+        1. Start with record's identifiers
+        2. Find records matching one of the identifiers (records have multiple identifiers)
+        3. For each match, check title similarity
+        4. If similar, add their identifiers to check
+        5. Repeat up to MAX_MATCH_DISTANCE times
+        
+        Args:
+            record: Record to find matches for
+            
+        Returns:
+            list[str]: IDs of all matching records
+        """
         tokenized_record_title = self._tokenize_title(record.title)
         ids_to_check = {id for id in record.identifiers if re.search(self.IDENTIFIERS_TO_MATCH, id)}
 
@@ -116,7 +162,7 @@ class RecordClusterer:
                     continue
 
                 ids_to_check.update({id for id in matched_record_identifiers 
-                                     if re.search(self.IDENTIFIERS_TO_MATCH, id) and id not in checked_ids})
+                                    if re.search(self.IDENTIFIERS_TO_MATCH, id) and id not in checked_ids})
                 matched_record_ids.add(matched_record_id)
 
         if len(matched_record_ids) > self.CLUSTER_SIZE_LIMIT:
@@ -125,6 +171,18 @@ class RecordClusterer:
         return list(matched_record_ids)
 
     def _get_matched_records(self, identifiers: list[str], already_matched_record_ids: list[str]):
+        """Queries database for records matching the given identifiers to generate 
+        a candidate pool of potentially related records.
+        
+        Processes identifiers in batches to avoid database query size limits.
+        
+        Args:
+            identifiers: List of identifier strings to match
+            already_matched_record_ids: Record IDs to exclude from results
+            
+        Returns:
+            list[tuple]: List of (title, id, identifiers, has_part) tuples for matching records
+        """
         batch_size = 100
         matched_records = []
 
@@ -147,6 +205,16 @@ class RecordClusterer:
         return matched_records
 
     def _create_work_from_editions(self, editions: list, records: list[Record]):
+        """Creates a Work object from clustered editions.
+        
+        Uses SFRRecordManager to:
+        1. Build Work data structure from records
+        2. Save Work to database
+        3. Merge with any existing Works
+        
+        Returns:
+            tuple: (created Work, IDs of old works that were merged)
+        """
         record_manager = SFRRecordManager(self.db_manager.session, self.constants['iso639'])
 
         work_data = record_manager.buildWork(records, editions)
@@ -158,6 +226,7 @@ class RecordClusterer:
         return record_manager.work, stale_work_ids
 
     def _index_works_in_elastic_search(self, work: Work):
+        """Indexes a single work in Elasticsearch."""
         work_documents = []
 
         elastic_manager = SFRElasticRecordManager(work)
@@ -168,6 +237,15 @@ class RecordClusterer:
         self.elastic_search_manager.saveWorkRecords(work_documents)
 
     def _titles_overlap(self, tokenized_record_title: set, tokenized_matched_record_title: set):
+        """Determines if two titles are similar enough to be considered matching.
+        
+        Rules:
+        1. Single word titles must be subset/superset
+        2. Multi-word titles must share at least 2 words
+        
+        Returns:
+            bool: True if titles are similar enough
+        """
         if len(tokenized_record_title) == 1 and not tokenized_record_title <= tokenized_matched_record_title:
             return False
         elif len(tokenized_matched_record_title) == 1 and not tokenized_record_title >= tokenized_matched_record_title:
@@ -178,11 +256,27 @@ class RecordClusterer:
         return True
 
     def _tokenize_title(self, title: str):
+        """Converts a title string into a set of normalized "tokens" (words).
+        
+        1. Extracts words using regex
+        2. Converts to lowercase
+        3. Removes common stop words
+        
+        Returns:
+            set[str]: Set of normalized title words
+        """
         title_tokens = re.findall(r'(\w+)', title.lower())
 
         return set(title_tokens) - set(['a', 'an', 'the', 'of'])
 
     def _format_identifiers(self, identifiers: list[str]):
+        """Formats identifiers for PostgreSQL array overlap query.
+        
+        Handles escaping of special characters and creates proper array syntax.
+        
+        Returns:
+            str: PostgreSQL-compatible array string
+        """
         formatted_ids = []
 
         for id in identifiers:
