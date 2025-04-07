@@ -1,4 +1,4 @@
 from .content_cafe_fetcher import ContentCafeFetcher
-from .googleBooksFetcher import GoogleBooksFetcher
+from .google_books_fetcher import GoogleBooksFetcher
 from .hathiFetcher import HathiFetcher
 from .openLibraryFetcher import OpenLibraryFetcher
