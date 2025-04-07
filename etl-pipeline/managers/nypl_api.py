@@ -3,14 +3,12 @@ import os
 from requests_oauthlib import OAuth2Session
 
 
-class NyplAPIManager:
+class NYPLAPIManager:
     def __init__(self, client_id=None, client_secret=None):
-        super(NyplAPIManager, self).__init__()
+        super(NYPLAPIManager, self).__init__()
         self.client = None
-        self.client_id = client_id\
-            or os.environ.get('NYPL_API_CLIENT_ID', None)
-        self.client_secret = client_secret\
-            or os.environ.get('NYPL_API_CLIENT_SECRET', None)
+        self.client_id = client_id or os.environ.get('NYPL_API_CLIENT_ID', None)
+        self.client_secret = client_secret or os.environ.get('NYPL_API_CLIENT_SECRET', None)
         self.token_url = os.environ.get('NYPL_API_CLIENT_TOKEN_URL', None)
         self.api_root = 'https://platform.nypl.org/api/v0.1'
         self.token = None

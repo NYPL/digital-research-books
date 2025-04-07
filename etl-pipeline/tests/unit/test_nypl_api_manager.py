@@ -1,11 +1,11 @@
 from oauthlib.oauth2 import TokenExpiredError
 import pytest
 
-from managers import NyplAPIManager
+from managers import NYPLAPIManager
 from tests.helper import TestHelpers
 
 
-class TestNyplAPIManager:
+class TestNYPLAPIManager:
     @classmethod
     def setup_class(cls):
         TestHelpers.setEnvVars()
@@ -16,7 +16,7 @@ class TestNyplAPIManager:
 
     @pytest.fixture
     def test_instance(self):
-        return NyplAPIManager()
+        return NYPLAPIManager()
 
     def test_initializer(self, test_instance):
         assert test_instance.client_id == 'test_api_client'
@@ -54,7 +54,7 @@ class TestNyplAPIManager:
         mock_oauth_session.assert_called_once_with('test_api_client', token=None)
 
     def test_query_api(self, test_instance, mocker):
-        mock_client_create = mocker.patch.object(NyplAPIManager, 'create_client')
+        mock_client_create = mocker.patch.object(NYPLAPIManager, 'create_client')
 
         mock_resp = mocker.MagicMock()
         mock_resp.json.return_value = 'testAPIResponse'
@@ -79,14 +79,14 @@ class TestNyplAPIManager:
             mock_repeat_client.get.return_value = mock_resp
             test_instance.client = mock_repeat_client
 
-        mock_client_create = mocker.patch.object(NyplAPIManager, 'create_client')
+        mock_client_create = mocker.patch.object(NYPLAPIManager, 'create_client')
         mock_client_create.side_effect = reset_client
 
         mock_error_client = mocker.MagicMock()
         mock_error_client.get.side_effect = TokenExpiredError
         test_instance.client = mock_error_client
 
-        mock_token_generate = mocker.patch.object(NyplAPIManager, 'generate_access_token')
+        mock_token_generate = mocker.patch.object(NYPLAPIManager, 'generate_access_token')
 
         test_response = test_instance.query_api('test/path/request')
 
