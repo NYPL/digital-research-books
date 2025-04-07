@@ -72,6 +72,8 @@ const ReaderLayout: React.FC<{
   const isEmbed = MediaTypes.embed.includes(link.media_type);
   const isRead = MediaTypes.read.includes(link.media_type);
   const isLimitedAccess = link.flags.fulfill_limited_access;
+  // We do not want to proxy urls that point to files we store in S3
+  const useProxyUrl = !url.includes('drb-files');
 
   const [cookies] = useCookies([NYPL_SESSION_ID]);
   const nyplIdentityCookie = cookies[NYPL_SESSION_ID];
@@ -190,7 +192,7 @@ const ReaderLayout: React.FC<{
       {isRead && !isLoading && (
         <WebReader
           webpubManifestUrl={manifestUrl}
-          proxyUrl={!isLimitedAccess ? proxyUrl : undefined}
+          proxyUrl={useProxyUrl ? proxyUrl : undefined}
           pdfWorkerSrc={pdfWorkerSrc}
           headerLeft={<BackButton />}
           injectablesFixed={injectables}
