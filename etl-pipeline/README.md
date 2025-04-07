@@ -17,8 +17,8 @@ These records are organized into "clusters" - groups of editions that represent 
 The pipeline:
 
 1. Imports source records into a Dublin Core Data Warehouse (DCDW)
-2. Uses OCLC services to enhance and FRBRize the records
-3. Groups records into editions using machine learning (clustering)
+2. Uses OCLC services to embellish the records with additional metadata
+3. Groups records into editions and works using machine learning (clustering)
 4. Makes the data available through an API
 
 ## API Endpoints
@@ -80,6 +80,7 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
    - API service
 
 5. Verify the setup:
+
    - API Documentation: http://127.0.0.1:5050/apidocs/
    - Database: Use PGAdmin4 or your preferred PostgreSQL client:
      ```
@@ -93,27 +94,30 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
 6. Set up local python env:
 
 Create a virtual environment
+
 ```sh
 python -m venv venv
 ```
 
 Activate the virtual environment. You will need to do this for every terminal session.
+
 ```sh
 source venv/bin/activate
 ```
 
 Make sure `wheel` is upgraded to avoid installation errors later
+
 ```sh
 pip install --upgrade wheel
 ```
 
 Install requirements
+
 ```sh
 pip install -r requirements.txt
 ```
 
 You're now ready to run individual processes documented in the following section.
-
 
 ### Running Individual Processes
 
