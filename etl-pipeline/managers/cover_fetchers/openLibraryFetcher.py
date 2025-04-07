@@ -2,13 +2,13 @@ import requests
 from requests.exceptions import ReadTimeout, HTTPError
 
 from logger import create_log
-from managers.cover_fetchers.abstractFetcher import AbstractFetcher
+from managers.cover_fetchers.fetcher_abc import FetcherABC
 from model import OpenLibraryCover
 
 logger = create_log(__name__)
 
 
-class OpenLibraryFetcher(AbstractFetcher):
+class OpenLibraryFetcher(FetcherABC):
     ORDER = 2
     SOURCE = 'openlibrary'
     OL_COVER_URL = 'http://covers.openlibrary.org/b/id/{}-L.jpg'

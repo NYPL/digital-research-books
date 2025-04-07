@@ -4,12 +4,12 @@ import requests
 from requests.exceptions import ReadTimeout
 
 from logger import create_log
-from managers.cover_fetchers.abstractFetcher import AbstractFetcher
+from managers.cover_fetchers.fetcher_abc import FetcherABC
 
 logger = create_log(__name__)
 
 
-class ContentCafeFetcher(AbstractFetcher):
+class ContentCafeFetcher(FetcherABC):
     ORDER = 4
     SOURCE = 'contentcafe'
     NO_COVER_HASH = '7ba0a6a15b5c1d346719a6d079e850a3'

@@ -1,29 +1,29 @@
 import pytest
 
-from managers.cover_fetchers.abstractFetcher import AbstractFetcher
+from managers.cover_fetchers.fetcher_abc import FetcherABC
 
 
-class TestAbstractFetcher:
+class TestFetcherABC:
     @pytest.fixture
-    def testFetcher(self):
-        class MockAbstractFetcher(AbstractFetcher):
+    def test_fetcher(self):
+        class MockFetcherABC(FetcherABC):
             def __init__(self, *args):
                 super().__init__(*args)
 
-            def hasCover(self):
-                return super().hasCover()
+            def has_cover(self):
+                return super().has_cover()
 
-            def downloadCoverFile(self):
-                return super().downloadCoverFile()
+            def download_cover_file(self):
+                return super().download_cover_file()
 
-        return MockAbstractFetcher(['id1', 'id2'])
+        return MockFetcherABC(['id1', 'id2'])
 
-    def test_initializer(self, testFetcher):
-        assert testFetcher.identifiers == ['id1', 'id2']
-        assert testFetcher.coverID == None
+    def test_initializer(self, test_fetcher):
+        assert test_fetcher.identifiers == ['id1', 'id2']
+        assert test_fetcher.cover_id == None
 
-    def test_hasCover(self, testFetcher):
-        assert testFetcher.hasCover() == False
+    def test_has_cover(self, test_fetcher):
+        assert test_fetcher.has_cover() == False
 
-    def test_downloadCoverFile(self, testFetcher):
-        assert testFetcher.downloadCoverFile() == None
+    def test_download_cover_file(self, test_fetcher):
+        assert test_fetcher.download_cover_file() == None

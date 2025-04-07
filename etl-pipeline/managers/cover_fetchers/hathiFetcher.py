@@ -3,13 +3,13 @@ import requests
 from requests.exceptions import ReadTimeout, HTTPError
 from requests_oauthlib import OAuth1
 
-from managers.cover_fetchers.abstractFetcher import AbstractFetcher
+from managers.cover_fetchers.fetcher_abc import FetcherABC
 from logger import create_log
 
 logger = create_log(__name__)
 
 
-class HathiFetcher(AbstractFetcher):
+class HathiFetcher(FetcherABC):
     ORDER = 1
     SOURCE = 'hathi'
 
