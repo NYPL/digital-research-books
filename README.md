@@ -20,6 +20,6 @@ For detailed information about each component, please refer to their respective 
 ## Quick Links
 
 - Frontend Application: [https://digital-research-books-beta.nypl.org/](https://digital-research-books-beta.nypl.org/)
-- - QA Application: [https://drb-qa.nypl.org/](https://drb-qa.nypl.org/)
+- QA Application: [https://drb-qa.nypl.org/](https://drb-qa.nypl.org/)
 - API Documentation: [https://digital-research-books-api.nypl.org/apidocs/](https://digital-research-books-api.nypl.org/apidocs/)
 - QA API: [https://drb-api-qa.nypl.org](https://drb-api-qa.nypl.org)
