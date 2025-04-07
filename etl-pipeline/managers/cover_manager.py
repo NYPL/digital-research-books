@@ -29,14 +29,14 @@ class CoverManager:
         for fetcher in self.fetchers:
             fetcher = fetcher(self.identifiers, self.db_session)
             
-            if fetcher.hasCover() is True:
+            if fetcher.has_cover() is True:
                 self.fetcher = fetcher
                 return True
 
         return False
 
     def fetch_cover_file(self):
-        self.cover_content = self.fetcher.downloadCoverFile()
+        self.cover_content = self.fetcher.download_cover_file()
 
     def resize_cover_file(self):
         try:

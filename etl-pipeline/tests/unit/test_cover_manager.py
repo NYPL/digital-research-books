@@ -35,13 +35,13 @@ class TestCoverManager:
 
     def test_fetch_cover_success(self, test_manager, mocker):
         mock_fetcher = mocker.MagicMock()
-        mock_fetcher.hasCover.return_value = True
+        mock_fetcher.has_cover.return_value = True
         test_manager.fetchers = [mocker.MagicMock(return_value=mock_fetcher)]
 
         assert test_manager.fetch_cover() == True
 
         test_manager.fetchers[0].assert_called_once_with([(1, 'test')], test_manager.db_session)
-        mock_fetcher.hasCover.assert_called_once()
+        mock_fetcher.has_cover.assert_called_once()
 
     def test_fetch_cover_none(self, test_manager, mocker):
         mock_fetcher = mocker.MagicMock()
@@ -52,12 +52,12 @@ class TestCoverManager:
 
     def test_fetch_cover_file(self, test_manager, mocker):
         test_manager.fetcher = mocker.MagicMock()
-        test_manager.fetcher.downloadCoverFile.return_value = 'test_content'
+        test_manager.fetcher.download_cover_file.return_value = 'test_content'
 
         test_manager.fetch_cover_file()
 
         assert test_manager.cover_content == 'test_content'
-        test_manager.fetcher.downloadCoverFile.assert_called_once()
+        test_manager.fetcher.download_cover_file.assert_called_once()
 
     def test_resize_cover_tall(self, test_manager, mock_image_creator, mocker):
         mock_image = mocker.patch.object(Image, 'open')
