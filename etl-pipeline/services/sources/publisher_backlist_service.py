@@ -324,7 +324,7 @@ class PublisherBacklistService(SourceService):
         return f"&filterByFormula=AND(OR({is_same_date_time_filter}),{is_after_date_time_filter})),{ready_to_ingest_filter},{is_not_deleted_filter})"
 
     @staticmethod
-    def get_hathi_id(record) -> int | None:
+    def get_hathi_id(record) -> Optional[str]:
         hath_identifier = next((identifier for identifier in record.identifiers if identifier.endswith('hathi')), None)
 
         if hath_identifier is not None:
