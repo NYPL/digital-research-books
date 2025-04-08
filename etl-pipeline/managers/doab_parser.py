@@ -34,7 +34,7 @@ class DOABLinkManager:
         for parser_class in self.parsers:
             parser = parser_class(root_uri, root_media_type, self.record)
 
-            if parser.validateURI() is True:
+            if parser.validate_uri() is True:
                 return parser
 
     def parse_links(self):
@@ -53,7 +53,7 @@ class DOABLinkManager:
 
             self.links_processed.append(parser.uri)
 
-            for parser_link in parser.createLinks():
+            for parser_link in parser.create_links():
                 parser_uri, parser_flags, parser_type, manifest, epub_file = parser_link
 
                 if parser_flags:
