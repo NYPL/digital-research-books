@@ -7,111 +7,111 @@ from managers.parsers import FrontierParser
 
 class TestFrontierParser:
     @pytest.fixture
-    def testParser(self, mocker):
-        mockRecord = mocker.MagicMock(
+    def test_parser(self, mocker):
+        mock_record = mocker.MagicMock(
             title='testRecord',
             source='testSource',
             identifiers=['1|test', '2|other']
         )
-        return FrontierParser('www.frontiersin.org/research-topics/1/1', 'testType', mockRecord)
+        return FrontierParser('www.frontiersin.org/research-topics/1/1', 'testType', mock_record)
 
-    def test_initializer(self, testParser):
-        assert testParser.uriIdentifier == None
+    def test_initializer(self, test_parser):
+        assert test_parser.uri_identifier == None
 
-    def test_validateURI_true(self, testParser):
-        assert testParser.validateURI() is True
-        assert testParser.uriIdentifier == '1'
+    def test_validate_uri_true(self, test_parser):
+        assert test_parser.validate_uri() is True
+        assert test_parser.uri_identifier == '1'
 
-    def test_validateURI_false(self, testParser):
-        testParser.uri = 'otherURI'
-        assert testParser.validateURI() is False
+    def test_validate_uri_false(self, test_parser):
+        test_parser.uri = 'other_uri'
+        assert test_parser.validate_uri() is False
 
-    def test_createLinks(self, testParser, mocker):
-        parserMocks = mocker.patch.multiple(FrontierParser,
-            generateS3Root=mocker.DEFAULT,
-            generatePDFLinks=mocker.DEFAULT,
-            generateEpubLinks=mocker.DEFAULT
+    def test_create_links(self, test_parser, mocker):
+        parser_mocks = mocker.patch.multiple(FrontierParser,
+            generate_s3_root=mocker.DEFAULT,
+            generate_pdf_links=mocker.DEFAULT,
+            generate_epub_links=mocker.DEFAULT
         )
 
-        parserMocks['generateS3Root'].return_value = 'testRoot/'
-        parserMocks['generatePDFLinks'].return_value = ['pdf1', None]
-        parserMocks['generateEpubLinks'].return_value = ['epub1', 'epub2']
+        parser_mocks['generate_s3_root'].return_value = 'test_root/'
+        parser_mocks['generate_pdf_links'].return_value = ['pdf1', None]
+        parser_mocks['generate_epub_links'].return_value = ['epub1', 'epub2']
 
-        testLinks = testParser.createLinks()
+        test_links = test_parser.create_links()
 
-        assert testLinks == ['pdf1', 'epub1', 'epub2']
-        parserMocks['generateS3Root'].assert_called_once()
-        parserMocks['generatePDFLinks'].assert_called_once_with('testRoot/')
-        parserMocks['generateEpubLinks'].assert_called_once_with('testRoot/')
+        assert test_links == ['pdf1', 'epub1', 'epub2']
+        parser_mocks['generate_s3_root'].assert_called_once()
+        parser_mocks['generate_pdf_links'].assert_called_once_with('test_root/')
+        parser_mocks['generate_epub_links'].assert_called_once_with('test_root/')
 
-    def test_generateEpubLinks_success(self, testParser, mocker):
-        mockCheck = mocker.patch.object(FrontierParser, 'checkAvailability')
-        mockCheck.return_value = (200, {'content-disposition': 'filename=title.EPUB'})
+    def test_generate_epub_links_success(self, test_parser, mocker):
+        mock_check = mocker.patch.object(FrontierParser, 'check_availability')
+        mock_check.return_value = (200, {'content-disposition': 'filename=title.EPUB'})
 
-        testParser.uriIdentifier = 1
-        testLinks = testParser.generateEpubLinks('testRoot/')
+        test_parser.uri_identifier = 1
+        test_links = test_parser.generate_epub_links('test_root/')
 
-        assert testLinks == [
-            ('testRoot/epubs/frontier/1_title/manifest.json', {'reader': True}, 'application/webpub+json', None, None),
-            ('testRoot/epubs/frontier/1_title/META-INF/container.xml', {'reader': True}, 'application/epub+xml', None, None),
-            ('testRoot/epubs/frontier/1_title.epub', {'download': True}, 'application/epub+zip', None, ('epubs/frontier/1_title.epub', 'https://www.frontiersin.org/research-topics/1/epub'))
+        assert test_links == [
+            ('test_root/epubs/frontier/1_title/manifest.json', {'reader': True}, 'application/webpub+json', None, None),
+            ('test_root/epubs/frontier/1_title/META-INF/container.xml', {'reader': True}, 'application/epub+xml', None, None),
+            ('test_root/epubs/frontier/1_title.epub', {'download': True}, 'application/epub+zip', None, ('epubs/frontier/1_title.epub', 'https://www.frontiersin.org/research-topics/1/epub'))
         ]
-        mockCheck.assert_called_once_with('https://www.frontiersin.org/research-topics/1/epub')
+        mock_check.assert_called_once_with('https://www.frontiersin.org/research-topics/1/epub')
 
-    def test_generateEpubLinks_request_error(self, testParser, mocker):
-        mockCheck = mocker.patch.object(FrontierParser, 'checkAvailability')
-        mockCheck.return_value = (500, {})
+    def test_generate_epub_links_request_error(self, test_parser, mocker):
+        mock_check = mocker.patch.object(FrontierParser, 'check_availability')
+        mock_check.return_value = (500, {})
 
-        testParser.uriIdentifier = 1
-        testLinks = testParser.generateEpubLinks('testRoot/')
+        test_parser.uri_identifier = 1
+        test_links = test_parser.generate_epub_links('test_root/')
 
-        assert testLinks == [None]
+        assert test_links == [None]
 
-    def test_generateEpubLinks_header_error(self, testParser, mocker):
-        mockResp = mocker.MagicMock(status_code=200, headers={'other': 'value'})
-        mockHead = mocker.patch.object(requests, 'head')
-        mockHead.return_value = mockResp
+    def test_generate_epub_links_header_error(self, test_parser, mocker):
+        mock_resp = mocker.MagicMock(status_code=200, headers={'other': 'value'})
+        mock_head = mocker.patch.object(requests, 'head')
+        mock_head.return_value = mock_resp
 
-        testParser.uriIdentifier = 1
-        testLinks = testParser.generateEpubLinks('testRoot/')
+        test_parser.uri_identifier = 1
+        test_links = test_parser.generate_epub_links('test_root/')
 
-        assert testLinks == [None]
+        assert test_links == [None]
 
-    def test_generatePDFLinks(self, testParser, mocker):
-        mockGenerate = mocker.patch.object(FrontierParser, 'generateManifest')
-        mockGenerate.return_value = 'testManifestJSON'
+    def test_generate_pdf_links(self, test_parser, mocker):
+        mock_generate = mocker.patch.object(FrontierParser, 'generate_manifest')
+        mock_generate.return_value = 'test_manifest_json'
 
-        testParser.uriIdentifier = 1
-        testLinks = testParser.generatePDFLinks('testRoot/')
+        test_parser.uri_identifier = 1
+        test_links = test_parser.generate_pdf_links('test_root/')
 
-        assert testLinks == [
-            ('testRoot/manifests/frontier/1.json', {'reader': True}, 'application/webpub+json', ('manifests/frontier/1.json', 'testManifestJSON'), None),
+        assert test_links == [
+            ('test_root/manifests/frontier/1.json', {'reader': True}, 'application/webpub+json', ('manifests/frontier/1.json', 'test_manifest_json'), None),
             ('https://www.frontiersin.org/research-topics/1/pdf', {'download': True}, 'application/pdf', None, None)
         ]
 
-    def test_generateManifest(self, testParser, mocker):
-        mockAbstractManifest = mocker.patch('managers.parsers.ParserABC.ParserABC.generateManifest')
-        mockAbstractManifest.return_value = 'testManifest'
+    def test_generate_manifest(self, test_parser, mocker):
+        mock_abstract_manifest = mocker.patch('managers.parsers.parser_abc.ParserABC.generate_manifest')
+        mock_abstract_manifest.return_value = 'test_manifest'
 
-        assert testParser.generateManifest('sourceURI', 'manifestURI') == 'testManifest'
-        mockAbstractManifest.assert_called_once_with('sourceURI', 'manifestURI')
+        assert test_parser.generate_manifest('source_uri', 'manifest_uri') == 'test_manifest'
+        mock_abstract_manifest.assert_called_once_with('source_uri', 'manifest_uri')
 
-    def test_generateS3Root(self, testParser, mocker):
-        mockAbstractGenerate = mocker.patch('managers.parsers.ParserABC.ParserABC.generateS3Root')
-        mockAbstractGenerate.return_value = 'testRoot'
+    def test_generate_s3_root(self, test_parser, mocker):
+        mock_abstract_generate = mocker.patch('managers.parsers.parser_abc.ParserABC.generate_s3_root')
+        mock_abstract_generate.return_value = 'test_root'
 
-        assert testParser.generateS3Root() == 'testRoot'
-        mockAbstractGenerate.assert_called_once()
+        assert test_parser.generate_s3_root() == 'test_root'
+        mock_abstract_generate.assert_called_once()
 
-    def test_checkAvailability(self, mocker):
-        mockResp = mocker.MagicMock(status_code=200, headers='testHeaders')
-        mockHead = mocker.patch.object(requests, 'head')
-        mockHead.return_value = mockResp
+    def test_check_availability(self, mocker):
+        mock_resp = mocker.MagicMock(status_code=200, headers='test_headers')
+        mock_head = mocker.patch.object(requests, 'head')
+        mock_head.return_value = mock_resp
 
-        assert FrontierParser.checkAvailability('testURL') == (200, 'testHeaders')
+        assert FrontierParser.check_availability('test_url') == (200, 'test_headers')
 
-    def test_checkAvailability_timeout(self, mocker):
-        mockHead = mocker.patch.object(requests, 'head')
-        mockHead.side_effect = ReadTimeout
+    def test_check_availability_timeout(self, mocker):
+        mock_head = mocker.patch.object(requests, 'head')
+        mock_head.side_effect = ReadTimeout
 
-        assert FrontierParser.checkAvailability('testURL') == (0, None)
+        assert FrontierParser.check_availability('test_url') == (0, None)
