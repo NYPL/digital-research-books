@@ -1,5 +1,5 @@
 from .default_parser import DefaultParser
-from .degruyterParser import DeGruyterParser
+from .degruyter_parser import DeGruyterParser
 from .frontierParser import FrontierParser
 from .mdpiParser import MDPIParser
 from .openEditionParser import OpenEditionParser
