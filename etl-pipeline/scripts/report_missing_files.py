@@ -5,7 +5,7 @@ from multiprocessing import Pool, Value, Lock
 import sys
 
 from managers import DBManager, S3Manager
-from model import Part, Record
+from model import Record
 
 
 '''
@@ -22,25 +22,22 @@ def is_record_missing_files(record_parts: tuple) -> bool:
 
     parts, *_ = record_parts
 
-    for part in parts:
-        index, url, source, file_type, flags = part.split('|')
-        file_part = Part(index, url, source, file_type, flags)
-        
-        if json.loads(file_part.flags).get('cover') == True:
+    for part in Record.parse_parts(parts):
+        if json.loads(part.flags).get('cover') == True:
             continue
 
-        if file_part.file_bucket:
+        if part.file_bucket:
             try:
-                s3_manager.client.head_object(Bucket=file_part.file_bucket, Key = file_part.file_key)
+                s3_manager.client.head_object(Bucket=part.file_bucket, Key=part.file_key)
             except botocore.exceptions.ClientError:
-                print(f'Missing S3 file: {url}')
+                print(f'Missing S3 file: {part.url}')
                 return True
         else:
             try:
-                url_head_response = requests.head(url, headers={ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5)' })
+                url_head_response = requests.head(part.url, headers={ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5)' })
 
                 if not url_head_response.ok:
-                    print(f'Received {url_head_response.status_code} for url: {url}')
+                    print(f'Received {url_head_response.status_code} for url: {part.url}')
                     return True
             except Exception:
                 return True
