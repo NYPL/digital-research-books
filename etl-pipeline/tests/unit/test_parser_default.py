@@ -1,81 +1,91 @@
 import pytest
 
 from managers.parsers import DefaultParser
+from tests.helper import TestHelpers
+
 
 
 class TestDefaultParser:
+    @classmethod
+    def setup_class(cls):
+        TestHelpers.setEnvVars()
+
+    @classmethod
+    def teardown_class(cls):
+        TestHelpers.clearEnvVars()
+
     @pytest.fixture
-    def testParser(self, mocker):
-        mockRecord = mocker.MagicMock(
-            title='testRecord',
-            source='testSource',
+    def test_parser(self, mocker):
+        mock_record = mocker.MagicMock(
+            title='test_record',
+            source='test_source',
             identifiers=['1|test', '2|other']
         )
-        return DefaultParser('testURI', 'testType', mockRecord)
+        return DefaultParser('test_uri', 'test_type', mock_record)
 
-    def test_initializer(self, testParser):
-        assert testParser.source == 'testSource'
-        assert testParser.identifier == '1'
+    def test_initializer(self, test_parser):
+        assert test_parser.source == 'test_source'
+        assert test_parser.identifier == '1'
 
-    def test_validateURI(self, testParser, mocker):
-        mockAbstractValidate = mocker.patch('managers.parsers.ParserABC.ParserABC.validateURI')
-        mockAbstractValidate.return_value = True
+    def test_validate_uri(self, test_parser, mocker):
+        mock_abstract_validate = mocker.patch('managers.parsers.parser_abc.ParserABC.validate_uri')
+        mock_abstract_validate.return_value = True
 
-        assert testParser.validateURI() is True
-        mockAbstractValidate.assert_called_once()
+        assert test_parser.validate_uri() is True
+        mock_abstract_validate.assert_called_once()
 
-    def test_createLinks_pdf(self, testParser, mocker):
-        parserMocks = mocker.patch.multiple(DefaultParser,
-            generateS3Root=mocker.DEFAULT,
-            generateManifest=mocker.DEFAULT
+    def test_create_links_pdf(self, test_parser, mocker):
+        parser_mocks = mocker.patch.multiple(DefaultParser,
+            generate_s3_root=mocker.DEFAULT,
+            generate_manifest=mocker.DEFAULT
         )
 
-        parserMocks['generateS3Root'].return_value = 'testRoot/'
-        parserMocks['generateManifest'].return_value = 'testManifestJSON'
+        parser_mocks['generate_s3_root'].return_value = 'test_root/'
+        parser_mocks['generate_manifest'].return_value = 'test_manifest_json'
 
-        testParser.mediaType = 'application/pdf'
+        test_parser.media_type = 'application/pdf'
 
-        testLinks = testParser.createLinks()
+        test_links = test_parser.create_links()
 
-        assert testLinks == [
-            ('testRoot/manifests/testSource/1.json', {'reader': True}, 'application/webpub+json', ('manifests/testSource/1.json', 'testManifestJSON'), None),
-            ('http://testURI', {'reader': False, 'download': True}, 'application/pdf', None, None)
+        assert test_links == [
+            ('test_root/manifests/test_source/1.json', {'reader': True}, 'application/webpub+json', ('manifests/test_source/1.json', 'test_manifest_json'), None),
+            ('http://test_uri', {'reader': False, 'download': True}, 'application/pdf', None, None)
         ]
-        parserMocks['generateS3Root'].assert_called_once()
-        parserMocks['generateManifest'].assert_called_once_with('http://testURI', 'testRoot/manifests/testSource/1.json')
+        parser_mocks['generate_s3_root'].assert_called_once()
+        parser_mocks['generate_manifest'].assert_called_once_with('http://test_uri', 'test_root/manifests/test_source/1.json')
 
-    def test_createLinks_epub(self, testParser, mocker):
-        mockGenerate = mocker.patch.object(DefaultParser, 'generateS3Root')
-        mockGenerate.return_value = 'testRoot/'
+    def test_create_links_epub(self, test_parser, mocker):
+        mock_generate = mocker.patch.object(DefaultParser, 'generate_s3_root')
+        mock_generate.return_value = 'test_root/'
 
-        testParser.mediaType = 'application/epub+zip'
+        test_parser.media_type = 'application/epub+zip'
 
-        testLinks = testParser.createLinks()
+        test_links = test_parser.create_links()
 
-        assert testLinks == [
-            ('testRoot/epubs/testSource/1/manifest.json', {'reader': True}, 'application/webpub+json', None, None),
-            ('testRoot/epubs/testSource/1/META-INF/container.xml', {'reader': True}, 'application/epub+xml', None, None),
-            ('testRoot/epubs/testSource/1.epub', {'download': True}, 'application/epub+zip', None, ('epubs/testSource/1.epub', 'http://testURI'))
+        assert test_links == [
+            ('test_root/epubs/test_source/1/manifest.json', {'reader': True}, 'application/webpub+json', None, None),
+            ('test_root/epubs/test_source/1/META-INF/container.xml', {'reader': True}, 'application/epub+xml', None, None),
+            ('test_root/epubs/test_source/1.epub', {'download': True}, 'application/epub+zip', None, ('epubs/test_source/1.epub', 'http://test_uri'))
         ]
-        mockGenerate.assert_called_once()
+        mock_generate.assert_called_once()
 
-    def test_createLinks_other(self, testParser, mocker):
-        mockAbstractCreate = mocker.patch('managers.parsers.ParserABC.ParserABC.createLinks')
-        mockAbstractCreate.return_value = 'testLinks'
+    def test_create_links_other(self, test_parser, mocker):
+        mock_abstract_create = mocker.patch('managers.parsers.parser_abc.ParserABC.create_links')
+        mock_abstract_create.return_value = 'test_links'
 
-        assert testParser.createLinks() == 'testLinks'
-        mockAbstractCreate.assert_called_once()
+        assert test_parser.create_links() == 'test_links'
+        mock_abstract_create.assert_called_once()
 
-    def test_generateManifest(self, testParser, mocker):
-        mockAbstractManifest = mocker.patch('managers.parsers.ParserABC.ParserABC.generateManifest')
-        mockAbstractManifest.return_value = 'testManifest'
+    def test_generate_manifest(self, test_parser, mocker):
+        mock_abstract_manifest = mocker.patch('managers.parsers.parser_abc.ParserABC.generate_manifest')
+        mock_abstract_manifest.return_value = 'test_manifest'
 
-        assert testParser.generateManifest('sourceURI', 'manifestURI') == 'testManifest'
-        mockAbstractManifest.assert_called_once_with('sourceURI', 'manifestURI')
+        assert test_parser.generate_manifest('source_uri', 'manifest_uri') == 'test_manifest'
+        mock_abstract_manifest.assert_called_once_with('source_uri', 'manifest_uri')
 
-    def test_generateS3Root(self, testParser, mocker):
-        mockAbstractGenerate = mocker.patch('managers.parsers.ParserABC.ParserABC.generateS3Root')
-        mockAbstractGenerate.return_value = 'testRoot'
+    def test_generate_s3_root(self, test_parser, mocker):
+        mock_abstract_generate = mocker.patch('managers.parsers.parser_abc.ParserABC.generate_s3_root')
+        mock_abstract_generate.return_value = 'test_root'
 
-        assert testParser.generateS3Root() == 'testRoot'
-        mockAbstractGenerate.assert_called_once()
+        assert test_parser.generate_s3_root() == 'test_root'
+        mock_abstract_generate.assert_called_once()
