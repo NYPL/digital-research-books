@@ -1,5 +1,5 @@
 # An API interface to https://books.google.com/libraries/NYPL/,
-# per https://docs.google.com/document/d/1ugKUSkq4jAwmyWu3HubUIobQA1ag4VgRP1JjLeGUW20
+# per https://docs.google.com/document/d/1ayu_djokdss6oCNNYSXtWRyuX7KvtLZ70A99rXy4bR8
 # Additional notes - https://docs.google.com/document/d/1aZ5ODEzKP6qX1f4CCcGtlidRvr-Fu8HPA-AEhTwDTyk/edit?usp=sharing
 
 import pickle
