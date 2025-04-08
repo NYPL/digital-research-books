@@ -58,3 +58,4 @@ class ContentCafeFetcher(FetcherABC):
 
     def download_cover_file(self):
         return self.content
+    

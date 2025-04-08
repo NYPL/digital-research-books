@@ -111,3 +111,4 @@ class HathiPage:
 class HathiCoverError(Exception):
     def __init__(self, message):
         self.message = message
+        
