@@ -212,7 +212,7 @@ class PublisherBacklistService(SourceService):
                         index=2,
                         url=cover_url,
                         source=publisher_backlist_record.record.source,
-                        file_type="application/png",
+                        file_type="image/png",
                         flags=str(FileFlags(cover=True)),
                     )))
 
