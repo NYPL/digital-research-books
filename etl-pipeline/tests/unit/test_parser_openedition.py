@@ -6,153 +6,153 @@ from managers.parsers import OpenEditionParser
 
 class TestOpenEditionParser:
     @pytest.fixture
-    def testParser(self, mocker):
-        mockRecord = mocker.MagicMock(
+    def test_parser(self, mocker):
+        mock_record = mocker.MagicMock(
             title='testRecord',
             source='testSource',
             identifiers=['1|test', '2|other']
         )
-        return OpenEditionParser('books.openedition.org/p123/1', 'testType', mockRecord)
+        return OpenEditionParser('books.openedition.org/p123/1', 'testType', mock_record)
 
     @pytest.fixture
-    def testOEPage(self):
+    def test_oe_page(self):
         return open('./tests/fixtures/openeditions_book_14472.html', 'r').read()
 
-    def test_initializer(self, testParser):
-        assert testParser.uriIdentifier == None
-        assert testParser.publisher == None
+    def test_initializer(self, test_parser):
+        assert test_parser.uri_identifier == None
+        assert test_parser.publisher == None
 
-    def test_validateURI_true(self, testParser):
-        assert testParser.validateURI() is True
-        assert testParser.uriIdentifier == '1'
-        assert testParser.publisher == 'p123'
+    def test_validate_uri_true(self, test_parser):
+        assert test_parser.validate_uri() is True
+        assert test_parser.uri_identifier == '1'
+        assert test_parser.publisher == 'p123'
 
-    def test_validateURI_true_split(self, testParser):
-        testParser.uri = 'Leader text: books.openedition.org/p123/1'
+    def test_validate_uri_true_split(self, test_parser):
+        test_parser.uri = 'Leader text: books.openedition.org/p123/1'
 
-        assert testParser.validateURI() is True
-        assert testParser.uri == 'http://books.openedition.org/p123/1'
-        assert testParser.uriIdentifier == '1'
-        assert testParser.publisher == 'p123'
+        assert test_parser.validate_uri() is True
+        assert test_parser.uri == 'http://books.openedition.org/p123/1'
+        assert test_parser.uri_identifier == '1'
+        assert test_parser.publisher == 'p123'
 
-    def test_validateURI_false(self, testParser):
-        testParser.uri = 'otherURI'
-        assert testParser.validateURI() is False
+    def test_validate_uri_false(self, test_parser):
+        test_parser.uri = 'otherURI'
+        assert test_parser.validate_uri() is False
 
-    def test_createLinks_epub(self, testParser, mocker):
-        parserMocks = mocker.patch.multiple(OpenEditionParser,
-            loadEbookLinks=mocker.DEFAULT,
-            createEpubLink=mocker.DEFAULT
+    def test_create_links_epub(self, test_parser, mocker):
+        parser_mocks = mocker.patch.multiple(OpenEditionParser,
+            load_ebook_links=mocker.DEFAULT,
+            create_epub_link=mocker.DEFAULT
         )
-        parserMocks['loadEbookLinks'].return_value = [('epubURI', 'application/epub+xml', 'testFlags')]
-        parserMocks['createEpubLink'].return_value = ['epubXML', 'epubZIP']
+        parser_mocks['load_ebook_links'].return_value = [('epubURI', 'application/epub+xml', 'testFlags')]
+        parser_mocks['create_epub_link'].return_value = ['epubXML', 'epubZIP']
 
-        testLinks = testParser.createLinks()
+        test_links = test_parser.create_links()
 
-        assert testLinks == ['epubXML', 'epubZIP']
-        parserMocks['loadEbookLinks'].assert_called_once()
-        parserMocks['createEpubLink'].assert_called_once_with('epubURI', 'application/epub+xml', 'testFlags')
+        assert test_links == ['epubXML', 'epubZIP']
+        parser_mocks['load_ebook_links'].assert_called_once()
+        parser_mocks['create_epub_link'].assert_called_once_with('epubURI', 'application/epub+xml', 'testFlags')
 
-    def test_createLinks_pdf(self, testParser, mocker):
-        parserMocks = mocker.patch.multiple(OpenEditionParser,
-            loadEbookLinks=mocker.DEFAULT,
-            createPDFLink=mocker.DEFAULT
+    def test_create_links_pdf(self, test_parser, mocker):
+        parser_mocks = mocker.patch.multiple(OpenEditionParser,
+            load_ebook_links=mocker.DEFAULT,
+            create_pdf_link=mocker.DEFAULT
         )
-        parserMocks['loadEbookLinks'].return_value = [('pdfURI', 'application/webpub+json', 'testFlags')]
-        parserMocks['createPDFLink'].return_value = ['pdfJSON', 'pdfSource']
+        parser_mocks['load_ebook_links'].return_value = [('pdfURI', 'application/webpub+json', 'testFlags')]
+        parser_mocks['create_pdf_link'].return_value = ['pdfJSON', 'pdfSource']
 
-        testLinks = testParser.createLinks()
+        test_links = test_parser.create_links()
 
-        assert testLinks == ['pdfJSON', 'pdfSource']
-        parserMocks['loadEbookLinks'].assert_called_once()
-        parserMocks['createPDFLink'].assert_called_once_with('pdfURI', 'application/webpub+json', 'testFlags')
+        assert test_links == ['pdfJSON', 'pdfSource']
+        parser_mocks['load_ebook_links'].assert_called_once()
+        parser_mocks['create_pdf_link'].assert_called_once_with('pdfURI', 'application/webpub+json', 'testFlags')
 
-    def test_createLinks_other(self, testParser, mocker):
-        mockLoad = mocker.patch.object(OpenEditionParser, 'loadEbookLinks')
-        mockLoad.return_value = [('otherURI', 'testFlags', 'type/test')]
+    def test_create_links_other(self, test_parser, mocker):
+        mock_load = mocker.patch.object(OpenEditionParser, 'load_ebook_links')
+        mock_load.return_value = [('otherURI', 'testFlags', 'type/test')]
 
-        testLinks = testParser.createLinks()
+        test_links = test_parser.create_links()
 
-        assert testLinks == [('otherURI', 'type/test', 'testFlags', None, None)]
-        mockLoad.assert_called_once()
+        assert test_links == [('otherURI', 'type/test', 'testFlags', None, None)]
+        mock_load.assert_called_once()
 
-    def test_createEpubLink(self, testParser, mocker):
-        mockRoot = mocker.patch.object(OpenEditionParser, 'generateS3Root')
-        mockRoot.return_value = 'testRoot/'
+    def test_create_epub_link(self, test_parser, mocker):
+        mock_root = mocker.patch.object(OpenEditionParser, 'generate_s3_root')
+        mock_root.return_value = 'testRoot/'
 
-        testParser.publisher = 'pub'
-        testParser.uriIdentifier = 1
-        testLinks = testParser.createEpubLink('sourceURI', 'application/epub+xml', {'reader': True})
+        test_parser.publisher = 'pub'
+        test_parser.uri_identifier = 1
+        test_links = test_parser.create_epub_link('sourceURI', 'application/epub+xml', {'reader': True})
 
-        assert testLinks == [
+        assert test_links == [
             ('testRoot/epubs/doab/pub_1/manifest.json', {'reader': True}, 'application/webpub+json', None, None),
             ('testRoot/epubs/doab/pub_1/META-INF/container.xml', {'reader': True}, 'application/epub+xml', None, None),
             ('testRoot/epubs/doab/pub_1.epub', {'download': True}, 'application/epub+zip', None, ('epubs/doab/pub_1.epub', 'sourceURI'))
         ]
 
-        mockRoot.assert_called_once()
+        mock_root.assert_called_once()
 
-    def test_createPDFLink(self, testParser, mocker):
-        mockRoot = mocker.patch.object(OpenEditionParser, 'generateS3Root')
-        mockRoot.return_value = 'testRoot/'
+    def test_create_pdf_link(self, test_parser, mocker):
+        mock_root = mocker.patch.object(OpenEditionParser, 'generate_s3_root')
+        mock_root.return_value = 'testRoot/'
 
-        mockGenerate = mocker.patch.object(OpenEditionParser, 'generateManifest')
-        mockGenerate.return_value = 'testManifestJSON'
+        mock_generate = mocker.patch.object(OpenEditionParser, 'generate_manifest')
+        mock_generate.return_value = 'testManifestJSON'
 
-        testParser.publisher = 'pub'
-        testParser.uriIdentifier = 1
-        testLinks = testParser.createPDFLink('sourceURI', 'application/webpub+json', {'reader': True})
+        test_parser.publisher = 'pub'
+        test_parser.uri_identifier = 1
+        test_links = test_parser.create_pdf_link('sourceURI', 'application/webpub+json', {'reader': True})
 
-        assert testLinks == [
+        assert test_links == [
             ('testRoot/manifests/doab/pub_1.json', {'reader': True}, 'application/webpub+json', ('manifests/doab/pub_1.json', 'testManifestJSON'), None),
             ('sourceURI', {'download': True}, 'application/pdf', None, None)
         ]
 
-    def test_loadEbookLinks_success(self, testParser, testOEPage, mocker):
-        mockResp = mocker.MagicMock(status_code=200, text=testOEPage)
-        mockGet = mocker.patch.object(requests, 'get')
-        mockGet.return_value = mockResp
+    def test_load_ebook_links_success(self, test_parser, test_oe_page, mocker):
+        mock_resp = mocker.MagicMock(status_code=200, text=test_oe_page)
+        mock_get = mocker.patch.object(requests, 'get')
+        mock_get.return_value = mock_resp
 
-        mockParse = mocker.patch.object(OpenEditionParser, 'parseBookLink')
-        mockParse.side_effect = ['openAccess', None, 'pdf', 'epub']
+        mock_parse = mocker.patch.object(OpenEditionParser, 'parse_book_link')
+        mock_parse.side_effect = ['openAccess', None, 'pdf', 'epub']
 
-        testLinks = testParser.loadEbookLinks()
+        test_links = test_parser.load_ebook_links()
 
-        assert testLinks == ['openAccess', 'pdf', 'epub']
-        assert '14482' == mockParse.mock_calls[0].args[0].get('href')
-        assert '14482?format=reader' == mockParse.mock_calls[1].args[0].get('href')
-        assert 'http://books.openedition.org/cths/epub/14472' == mockParse.mock_calls[2].args[0].get('href')
-        assert 'http://books.openedition.org/cths/pdf/14472' == mockParse.mock_calls[3].args[0].get('href')
+        assert test_links == ['openAccess', 'pdf', 'epub']
+        assert '14482' == mock_parse.mock_calls[0].args[0].get('href')
+        assert '14482?format=reader' == mock_parse.mock_calls[1].args[0].get('href')
+        assert 'http://books.openedition.org/cths/epub/14472' == mock_parse.mock_calls[2].args[0].get('href')
+        assert 'http://books.openedition.org/cths/pdf/14472' == mock_parse.mock_calls[3].args[0].get('href')
 
-    def test_loadEbookLinks_error(self, testParser, testOEPage, mocker):
-        mockResp = mocker.MagicMock(status_code=500, text='errorPage')
-        mockGet = mocker.patch.object(requests, 'get')
-        mockGet.return_value = mockResp
+    def test_load_ebook_links_error(self, test_parser, test_oe_page, mocker):
+        mock_resp = mocker.MagicMock(status_code=500, text='errorPage')
+        mock_get = mocker.patch.object(requests, 'get')
+        mock_get.return_value = mock_resp
 
-        assert testParser.loadEbookLinks() == []
+        assert test_parser.load_ebook_links() == []
     
-    def test_parseBookLink(self, testParser, mocker):
-        mockLink = mocker.MagicMock()
-        mockLink.get.return_value = '12345'
+    def test_parse_book_link(self, test_parser, mocker):
+        mock_link = mocker.MagicMock()
+        mock_link.get.return_value = '12345'
 
-        testParser.publisher = 'test'
-        testLink = testParser.parseBookLink(mockLink)
+        test_parser.publisher = 'test'
+        test_link = test_parser.parse_book_link(mock_link)
 
-        assert testLink == (
+        assert test_link == (
             'http://books.openedition.org/test/12345', 'text/html', {}
         )
-        mockLink.get.assert_called_once_with('href')
+        mock_link.get.assert_called_once_with('href')
 
-    def test_generateManifest(self, testParser, mocker):
-        mockAbstractManifest = mocker.patch('managers.parsers.ParserABC.ParserABC.generateManifest')
-        mockAbstractManifest.return_value = 'testManifest'
+    def test_generate_manifest(self, test_parser, mocker):
+        mock_abstract_manifest = mocker.patch('managers.parsers.parser_abc.ParserABC.generate_manifest')
+        mock_abstract_manifest.return_value = 'testManifest'
 
-        assert testParser.generateManifest('sourceURI', 'manifestURI') == 'testManifest'
-        mockAbstractManifest.assert_called_once_with('sourceURI', 'manifestURI')
+        assert test_parser.generate_manifest('sourceURI', 'manifestURI') == 'testManifest'
+        mock_abstract_manifest.assert_called_once_with('sourceURI', 'manifestURI')
 
-    def test_generateS3Root(self, testParser, mocker):
-        mockAbstractGenerate = mocker.patch('managers.parsers.ParserABC.ParserABC.generateS3Root')
-        mockAbstractGenerate.return_value = 'testRoot'
+    def test_generate_s3_root(self, test_parser, mocker):
+        mock_abstract_generate = mocker.patch('managers.parsers.parser_abc.ParserABC.generate_s3_root')
+        mock_abstract_generate.return_value = 'testRoot'
 
-        assert testParser.generateS3Root() == 'testRoot'
-        mockAbstractGenerate.assert_called_once()
+        assert test_parser.generate_s3_root() == 'testRoot'
+        mock_abstract_generate.assert_called_once()
