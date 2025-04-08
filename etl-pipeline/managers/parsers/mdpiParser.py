@@ -1,9 +1,9 @@
 import re
 
-from managers.parsers.abstractParser import AbstractParser
+from managers.parsers.parser_abc import ParserABC
 
 
-class MDPIParser(AbstractParser):
+class MDPIParser(ParserABC):
     ORDER = 4
     REGEX = r'mdpi.com/books/pdfview/book/([0-9]+)$'
 

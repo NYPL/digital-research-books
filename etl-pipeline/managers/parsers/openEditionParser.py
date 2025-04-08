@@ -3,10 +3,10 @@ import re
 import requests
 from requests.exceptions import ReadTimeout
 
-from managers.parsers.abstractParser import AbstractParser
+from managers.parsers.parser_abc import ParserABC
 
 
-class OpenEditionParser(AbstractParser):
+class OpenEditionParser(ParserABC):
     ORDER = 2
     REGEX = r'books.openedition.org/([a-z0-9]+)/([0-9]+)$'
     FORMATS = [

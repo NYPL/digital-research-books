@@ -2,10 +2,10 @@ import re
 import requests
 from requests.exceptions import ReadTimeout
 
-from managers.parsers.abstractParser import AbstractParser
+from managers.parsers.parser_abc import ParserABC
 
 
-class FrontierParser(AbstractParser):
+class FrontierParser(ParserABC):
     ORDER = 3
     REGEX = r'(?:www|journal)\.frontiersin\.org\/research-topics\/([0-9]+)\/([a-zA-Z0-9\-]+)'
 

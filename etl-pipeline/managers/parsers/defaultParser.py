@@ -1,8 +1,8 @@
-from managers.parsers.abstractParser import AbstractParser
+from managers.parsers.parser_abc import ParserABC
 from managers.webpubManifest import WebpubManifest
 
 
-class DefaultParser(AbstractParser):
+class DefaultParser(ParserABC):
     ORDER = 7
 
     def __init__(self, uri, mediaType, record):

@@ -1,10 +1,10 @@
 import re
 import requests
 
-from managers.parsers.abstractParser import AbstractParser
+from managers.parsers.parser_abc import ParserABC
 
 
-class DeGruyterParser(AbstractParser):
+class DeGruyterParser(ParserABC):
     ORDER = 5
     REGEX = r'www\.degruyter\.com\/.+\/[0-9]+'
 

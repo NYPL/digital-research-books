@@ -5,3 +5,4 @@ from .mdpiParser import MDPIParser
 from .openEditionParser import OpenEditionParser
 from .springerParser import SpringerParser
 from .inTechOpenParser import InTechOpenParser
+from .parser_abc import ParserABC

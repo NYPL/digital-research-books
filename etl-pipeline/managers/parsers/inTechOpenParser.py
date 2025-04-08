@@ -1,8 +1,8 @@
-from managers.parsers.abstractParser import AbstractParser
+from managers.parsers.parser_abc import ParserABC
 from managers.webpubManifest import WebpubManifest
 import re
 
-class InTechOpenParser(AbstractParser):
+class InTechOpenParser(ParserABC):
     ORDER = 6
 
     def __init__(self, uri, mediaType, record):

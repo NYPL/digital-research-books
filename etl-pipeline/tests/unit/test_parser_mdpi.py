@@ -50,14 +50,14 @@ class TestMDPIParser:
         ]
 
     def test_generateManifest(self, testParser, mocker):
-        mockAbstractManifest = mocker.patch('managers.parsers.abstractParser.AbstractParser.generateManifest')
+        mockAbstractManifest = mocker.patch('managers.parsers.ParserABC.ParserABC.generateManifest')
         mockAbstractManifest.return_value = 'testManifest'
 
         assert testParser.generateManifest('sourceURI', 'manifestURI') == 'testManifest'
         mockAbstractManifest.assert_called_once_with('sourceURI', 'manifestURI')
 
     def test_generateS3Root(self, testParser, mocker):
-        mockAbstractGenerate = mocker.patch('managers.parsers.abstractParser.AbstractParser.generateS3Root')
+        mockAbstractGenerate = mocker.patch('managers.parsers.ParserABC.ParserABC.generateS3Root')
         mockAbstractGenerate.return_value = 'testRoot'
 
         assert testParser.generateS3Root() == 'testRoot'

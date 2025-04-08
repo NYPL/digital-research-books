@@ -1,10 +1,10 @@
 import pytest
 
-from managers.parsers.abstractParser import AbstractParser
+from managers.parsers.parser_abc import ParserABC
 from tests.helper import TestHelpers
 
 
-class TestAbstractParser:
+class TestParserABC:
     @classmethod
     def setup_class(cls):
         TestHelpers.setEnvVars()
@@ -14,54 +14,54 @@ class TestAbstractParser:
         TestHelpers.clearEnvVars()
 
     @pytest.fixture
-    def testParser(self, mocker):
-        class TestParser(AbstractParser):
-            def __init__(self, uri, mediaType, record):
-                super().__init__(uri, mediaType, record)
+    def test_parser(self, mocker):
+        class TestParser(ParserABC):
+            def __init__(self, uri, media_type, record):
+                super().__init__(uri, media_type, record)
 
-            def validateURI(self):
-                return super().validateURI()
+            def validate_uri(self):
+                return super().validate_uri()
             
-            def createLinks(self):
-                return super().createLinks()
+            def create_links(self):
+                return super().create_links()
 
-            def generateManifest(self, sourceURI, manifestURI):
-                return super().generateManifest(sourceURI, manifestURI)
+            def generate_manifest(self, source_uri, manifest_uri):
+                return super().generate_manifest(source_uri, manifest_uri)
 
-            def generateS3Root(self):
-                return super().generateS3Root()
+            def generate_s3_root(self):
+                return super().generate_s3_root()
         
-        return TestParser('testURI', 'testType', mocker.MagicMock(title='testRecord'))
+        return TestParser('test_uri', 'testType', mocker.MagicMock(title='testRecord'))
 
-    def test_uriSetter(self, testParser):
-        assert testParser.uri == 'http://testURI'
+    def test_uri_setter(self, test_parser):
+        assert test_parser.uri == 'http://test_uri'
 
-        testParser.uri = 'https://newURI'
+        test_parser.uri = 'https://new_uri'
 
-        assert testParser.uri == 'https://newURI'
+        assert test_parser.uri == 'https://new_uri'
 
-    def test_validateURI(self, testParser):
-        assert testParser.validateURI() is True
+    def test_validate_uri(self, test_parser):
+        assert test_parser.validate_uri() is True
 
-    def test_createLinks(self, testParser):
-        assert testParser.createLinks() == [('http://testURI', None ,'testType', None, None)]
+    def test_create_links(self, test_parser):
+        assert test_parser.create_links() == [('http://test_uri', None ,'testType', None, None)]
 
-    def test_generateManifest(self, testParser, mocker):
-        mockManifest = mocker.MagicMock(links=[])
-        mockManifest.toJson.return_value = 'jsonManifest'
+    def test_generate_manifest(self, test_parser, mocker):
+        mock_manifest = mocker.MagicMock(links=[])
+        mock_manifest.toJson.return_value = 'json_manifest'
 
-        mockManifestManager = mocker.patch('managers.parsers.abstractParser.WebpubManifest')
-        mockManifestManager.return_value = mockManifest
+        mock_manifest_manager = mocker.patch('managers.parsers.parser_abc.WebpubManifest')
+        mock_manifest_manager.return_value = mock_manifest
 
-        testManifest = testParser.generateManifest('sourceURI', 'manifestURI')
+        test_manifest = test_parser.generate_manifest('source_uri', 'manifest_uri')
 
-        assert testManifest == 'jsonManifest'
-        assert mockManifest.links == [{'rel': 'self', 'href': 'manifestURI', 'type': 'application/webpub+json'}]
-        mockManifestManager.assert_called_once_with('sourceURI', 'application/pdf')
-        mockManifest.addMetadata.assert_called_once_with(testParser.record)
-        mockManifest.addChapter.assert_called_once_with('sourceURI', 'testRecord')
-        mockManifest.toJson.assert_called_once()
+        assert test_manifest == 'json_manifest'
+        assert mock_manifest.links == [{'rel': 'self', 'href': 'manifest_uri', 'type': 'application/webpub+json'}]
+        mock_manifest_manager.assert_called_once_with('source_uri', 'application/pdf')
+        mock_manifest.addMetadata.assert_called_once_with(test_parser.record)
+        mock_manifest.addChapter.assert_called_once_with('source_uri', 'testRecord')
+        mock_manifest.toJson.assert_called_once()
 
-    def test_generateS3Root(self, testParser):
-        assert testParser.generateS3Root() == 'https://test_aws_bucket.s3.amazonaws.com/'
+    def test_generate_s3_root(self, test_parser):
+        assert test_parser.generate_s3_root() == 'https://test_aws_bucket.s3.amazonaws.com/'
 

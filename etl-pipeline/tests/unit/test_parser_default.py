@@ -18,7 +18,7 @@ class TestDefaultParser:
         assert testParser.identifier == '1'
 
     def test_validateURI(self, testParser, mocker):
-        mockAbstractValidate = mocker.patch('managers.parsers.abstractParser.AbstractParser.validateURI')
+        mockAbstractValidate = mocker.patch('managers.parsers.ParserABC.ParserABC.validateURI')
         mockAbstractValidate.return_value = True
 
         assert testParser.validateURI() is True
@@ -60,21 +60,21 @@ class TestDefaultParser:
         mockGenerate.assert_called_once()
 
     def test_createLinks_other(self, testParser, mocker):
-        mockAbstractCreate = mocker.patch('managers.parsers.abstractParser.AbstractParser.createLinks')
+        mockAbstractCreate = mocker.patch('managers.parsers.ParserABC.ParserABC.createLinks')
         mockAbstractCreate.return_value = 'testLinks'
 
         assert testParser.createLinks() == 'testLinks'
         mockAbstractCreate.assert_called_once()
 
     def test_generateManifest(self, testParser, mocker):
-        mockAbstractManifest = mocker.patch('managers.parsers.abstractParser.AbstractParser.generateManifest')
+        mockAbstractManifest = mocker.patch('managers.parsers.ParserABC.ParserABC.generateManifest')
         mockAbstractManifest.return_value = 'testManifest'
 
         assert testParser.generateManifest('sourceURI', 'manifestURI') == 'testManifest'
         mockAbstractManifest.assert_called_once_with('sourceURI', 'manifestURI')
 
     def test_generateS3Root(self, testParser, mocker):
-        mockAbstractGenerate = mocker.patch('managers.parsers.abstractParser.AbstractParser.generateS3Root')
+        mockAbstractGenerate = mocker.patch('managers.parsers.ParserABC.ParserABC.generateS3Root')
         mockAbstractGenerate.return_value = 'testRoot'
 
         assert testParser.generateS3Root() == 'testRoot'

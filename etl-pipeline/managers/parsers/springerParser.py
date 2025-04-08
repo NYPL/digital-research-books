@@ -3,10 +3,10 @@ import re
 import requests
 from requests.exceptions import ReadTimeout
 
-from managers.parsers.abstractParser import AbstractParser
+from managers.parsers.parser_abc import ParserABC
 
 
-class SpringerParser(AbstractParser):
+class SpringerParser(ParserABC):
     ORDER = 1
     REGEX = r'link.springer.com\/book\/(10\.[0-9]+)(?:\/|\%2F)([0-9\-]+)'
     REDIRECT_REGEX = r'((?:https?:\/\/)?link\.springer\.com\/.+)$'
