@@ -3,7 +3,7 @@ import requests
 from requests import ConnectionError
 
 from managers import DOABLinkManager
-from managers.doabParser import LinkError
+from managers.doab_parser import LinkError
 
 
 class TestDOABLinkManager:

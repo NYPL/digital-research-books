@@ -1,6 +1,6 @@
 from .cover_manager import CoverManager
 from .db import DBManager
-from .doabParser import DOABLinkManager
+from .doab_parser import DOABLinkManager
 from .kMeans import KMeansManager
 from .oclc_auth import OCLCAuthManager
 from .oclc_catalog import OCLCCatalogManager
