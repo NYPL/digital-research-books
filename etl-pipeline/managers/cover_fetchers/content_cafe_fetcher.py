@@ -4,12 +4,12 @@ import requests
 from requests.exceptions import ReadTimeout
 
 from logger import create_log
-from managers.coverFetchers.abstractFetcher import AbstractFetcher
+from managers.cover_fetchers.fetcher_abc import FetcherABC
 
 logger = create_log(__name__)
 
 
-class ContentCafeFetcher(AbstractFetcher):
+class ContentCafeFetcher(FetcherABC):
     ORDER = 4
     SOURCE = 'contentcafe'
     NO_COVER_HASH = '7ba0a6a15b5c1d346719a6d079e850a3'
@@ -18,43 +18,44 @@ class ContentCafeFetcher(AbstractFetcher):
     def __init__(self, *args):
         super().__init__(*args)
 
-        self.apiUser = os.environ['CONTENT_CAFE_USER']
-        self.apiPswd = os.environ['CONTENT_CAFE_PSWD']
+        self.api_user = os.environ['CONTENT_CAFE_USER']
+        self.api_pswd = os.environ['CONTENT_CAFE_PSWD']
 
         self.uri = None
         self.content = None
-        self.mediaType = None
+        self.media_type = None
 
-    def hasCover(self):
+    def has_cover(self):
         for value, source in self.identifiers:
             if source != 'isbn': continue
 
-            if self.fetchVolumeCover(value):
+            if self.fetch_volume_cover(value):
                 self.coverID = value
                 return True
 
         return False
 
-    def fetchVolumeCover(self, isbn):
+    def fetch_volume_cover(self, isbn):
         logger.info(f'Fetching contentcafe cover for {isbn}')
 
-        jacketURL = self.CONTENT_CAFE_URL.format(self.apiUser, self.apiPswd, isbn)
+        jacket_url = self.CONTENT_CAFE_URL.format(self.api_user, self.api_pswd, isbn)
 
         try:
-            ccResponse = requests.get(jacketURL, timeout=5, stream=True)
+            response = requests.get(jacket_url, timeout=5, stream=True)
         except ReadTimeout:
             return False
 
-        if ccResponse.status_code == 200:
-            imageStartChunk = ccResponse.raw.read(1024)
-            if self.isNoCoverImage(imageStartChunk) is False:
-                self.content = imageStartChunk + ccResponse.raw.data
+        if response.status_code == 200:
+            image_start_chunk = response.raw.read(1024)
+            if self.is_no_cover_image(image_start_chunk) is False:
+                self.content = image_start_chunk + response.raw.data
                 return True
 
         return False
 
-    def isNoCoverImage(self, rawBytes):
+    def is_no_cover_image(self, rawBytes):
         return hashlib.md5(rawBytes).hexdigest() == self.NO_COVER_HASH
 
-    def downloadCoverFile(self):
+    def download_cover_file(self):
         return self.content
+    

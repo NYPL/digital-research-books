@@ -1,16 +1,16 @@
 from abc import ABC, abstractmethod 
 
 
-class AbstractFetcher(ABC):
+class FetcherABC(ABC):
     @abstractmethod
     def __init__(self, *args):
         self.identifiers = args[0]
-        self.coverID = None
+        self.cover_id = None
 
     @abstractmethod
-    def hasCover(self):
+    def has_cover(self):
         return False
 
     @abstractmethod
-    def downloadCoverFile(self):
+    def download_cover_file(self):
         return None
