@@ -4,7 +4,7 @@ from .doab_parser import DOABLinkManager
 from .kMeans import KMeansManager
 from .oclc_auth import OCLCAuthManager
 from .oclc_catalog import OCLCCatalogManager
-from .nyplApi import NyplApiManager
+from .nypl_api import NYPLAPIManager
 from .webpubManifest import WebpubManifest
 from .rabbitmq import RabbitMQManager
 from .redis import RedisManager
