@@ -216,7 +216,11 @@ class PublisherBacklistService(SourceService):
                         flags=str(FileFlags(cover=True)),
                     )))
 
-                self.s3_manager.store_pdf_manifest(publisher_backlist_record.record, self.file_bucket, flags=FileFlags(reader=True, nypl_login=record_permissions['requires_login']), path='publisher_backlist')
+                self.s3_manager.store_pdf_manifest(
+                    publisher_backlist_record.record, self.file_bucket,
+                    flags=FileFlags(reader=True, nypl_login=record_permissions['requires_login']),
+                    path='publisher_backlist',
+                )
                 mapped_records.append(publisher_backlist_record)
             except Exception:
                 logger.exception(
