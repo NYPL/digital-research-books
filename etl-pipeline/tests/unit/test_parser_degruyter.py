@@ -6,144 +6,144 @@ from managers.parsers import DeGruyterParser
 
 class TestDeGruyterParser:
     @pytest.fixture
-    def testParser(self, mocker):
-        mockRecord = mocker.MagicMock(
-            title='testRecord',
-            source='testSource',
+    def test_parser(self, mocker):
+        mock_record = mocker.MagicMock(
+            title='test_record',
+            source='test_source',
             identifiers=['1|test', '2|other']
         )
-        return DeGruyterParser('www.degruyter.com/book/1', 'testType', mockRecord)
+        return DeGruyterParser('www.degruyter.com/book/1', 'test_type', mock_record)
 
-    def test_initializer(self, testParser):
-        assert testParser.uriIdentifier == None
+    def test_initializer(self, test_parser):
+        assert test_parser.uri_identifier == None
 
-    def test_validateURI_true(self, testParser):
-        assert testParser.validateURI() is True
+    def test_validate_uri_true(self, test_parser):
+        assert test_parser.validate_uri() is True
 
-    def test_validateURI_false(self, testParser):
-        testParser.uri = 'otherURI'
-        assert testParser.validateURI() is False
+    def test_validate_uri_false(self, test_parser):
+        test_parser.uri = 'other_uri'
+        assert test_parser.validate_uri() is False
 
-    def test_createLinks_isbn_match(self, testParser, mocker):
+    def test_create_links_isbn_match(self, test_parser, mocker):
         parserMocks = mocker.patch.multiple(DeGruyterParser,
-            generateS3Root=mocker.DEFAULT,
-            generatePDFLinks=mocker.DEFAULT,
-            generateEpubLinks=mocker.DEFAULT
+            generate_s3_root=mocker.DEFAULT,
+            generate_pdf_links=mocker.DEFAULT,
+            generate_epub_links=mocker.DEFAULT
         )
 
-        parserMocks['generateS3Root'].return_value = 'testRoot/'
-        parserMocks['generatePDFLinks'].return_value = ['pdf1', None]
-        parserMocks['generateEpubLinks'].return_value = ['epub1', 'epub2']
+        parserMocks['generate_s3_root'].return_value = 'test_root/'
+        parserMocks['generate_pdf_links'].return_value = ['pdf1', None]
+        parserMocks['generate_epub_links'].return_value = ['epub1', 'epub2']
 
-        testParser.uri = 'degruyter.com/document/doi/10.000/9781234567890/html'
+        test_parser.uri = 'degruyter.com/document/doi/10.000/9781234567890/html'
 
-        testLinks = testParser.createLinks()
+        test_links = test_parser.create_links()
 
-        assert testLinks == ['pdf1', 'epub1', 'epub2']
-        parserMocks['generateS3Root'].assert_called_once()
-        parserMocks['generatePDFLinks'].assert_called_once_with(
-            'testRoot/', 'https://www.degruyter.com/document/doi/10.000/9781234567890/pdf'
+        assert test_links == ['pdf1', 'epub1', 'epub2']
+        parserMocks['generate_s3_root'].assert_called_once()
+        parserMocks['generate_pdf_links'].assert_called_once_with(
+            'test_root/', 'https://www.degruyter.com/document/doi/10.000/9781234567890/pdf'
         )
-        parserMocks['generateEpubLinks'].assert_called_once_with(
-            'testRoot/', 'https://www.degruyter.com/document/doi/10.000/9781234567890/epub'
+        parserMocks['generate_epub_links'].assert_called_once_with(
+            'test_root/', 'https://www.degruyter.com/document/doi/10.000/9781234567890/epub'
         )
 
-    def test_createLinks_title_match(self, testParser, mocker):
+    def test_create_links_title_match(self, test_parser, mocker):
         parserMocks = mocker.patch.multiple(DeGruyterParser,
-            generateS3Root=mocker.DEFAULT,
-            generatePDFLinks=mocker.DEFAULT,
-            generateEpubLinks=mocker.DEFAULT
+            generate_s3_root=mocker.DEFAULT,
+            generate_pdf_links=mocker.DEFAULT,
+            generate_epub_links=mocker.DEFAULT
         )
 
-        parserMocks['generateS3Root'].return_value = 'testRoot/'
-        parserMocks['generatePDFLinks'].return_value = ['pdf1', None]
-        parserMocks['generateEpubLinks'].return_value = ['epub1', 'epub2']
+        parserMocks['generate_s3_root'].return_value = 'test_root/'
+        parserMocks['generate_pdf_links'].return_value = ['pdf1', None]
+        parserMocks['generate_epub_links'].return_value = ['epub1', 'epub2']
 
-        testParser.uri = 'degruyter.com/title/1'
+        test_parser.uri = 'degruyter.com/title/1'
 
-        testLinks = testParser.createLinks()
+        test_links = test_parser.create_links()
 
-        assert testLinks == ['pdf1', 'epub1', 'epub2']
-        parserMocks['generateS3Root'].assert_called_once()
-        parserMocks['generatePDFLinks'].assert_called_once_with(
-            'testRoot/', 'https://www.degruyter.com/downloadpdf/title/1'
+        assert test_links == ['pdf1', 'epub1', 'epub2']
+        parserMocks['generate_s3_root'].assert_called_once()
+        parserMocks['generate_pdf_links'].assert_called_once_with(
+            'test_root/', 'https://www.degruyter.com/downloadpdf/title/1'
         )
-        parserMocks['generateEpubLinks'].assert_called_once_with(
-            'testRoot/', 'https://www.degruyter.com/downloadepub/title/1'
+        parserMocks['generate_epub_links'].assert_called_once_with(
+            'test_root/', 'https://www.degruyter.com/downloadepub/title/1'
         )
 
-    def test_createLinks_no_match(self, testParser, mocker):
-        mockGenerate = mocker.patch.object(DeGruyterParser, 'generateS3Root')
-        mockGenerate.return_value = 'testRoot/'
+    def test_create_links_no_match(self, test_parser, mocker):
+        mock_generate = mocker.patch.object(DeGruyterParser, 'generate_s3_root')
+        mock_generate.return_value = 'test_root/'
 
-        mockAbstractCreate = mocker.patch('managers.parsers.abstractParser.AbstractParser.createLinks')
-        mockAbstractCreate.return_value = ['testLink']
+        mock_abstract_create = mocker.patch('managers.parsers.parser_abc.ParserABC.create_links')
+        mock_abstract_create.return_value = ['test_link']
 
-        testLinks = testParser.createLinks()
+        test_links = test_parser.create_links()
 
-        assert testLinks == ['testLink']
-        mockGenerate.assert_called_once()
-        mockAbstractCreate.assert_called_once()
+        assert test_links == ['test_link']
+        mock_generate.assert_called_once()
+        mock_abstract_create.assert_called_once()
 
-    def test_generateEpubLinks_success(self, testParser, mocker):
-        mockHead = mocker.patch.object(DeGruyterParser, 'makeHeadQuery')
-        mockHead.return_value = (200, 'mockHeader')
+    def test_generate_epub_links_success(self, test_parser, mocker):
+        mock_head = mocker.patch.object(DeGruyterParser, 'make_head_query')
+        mock_head.return_value = (200, 'mock_header')
 
-        testParser.uriIdentifier = 1
-        testLinks = testParser.generateEpubLinks('testRoot/', 'epubSourceURI')
+        test_parser.uri_identifier = 1
+        test_links = test_parser.generate_epub_links('test_root/', 'epub_source_uri')
 
-        assert testLinks == [
-            ('testRoot/epubs/degruyter/1/manifest.json', {'reader': True}, 'application/webpub+json', None, None),
-            ('testRoot/epubs/degruyter/1/META-INF/container.xml', {'reader': True}, 'application/epub+xml', None, None),
-            ('testRoot/epubs/degruyter/1.epub', {'download': True}, 'application/epub+zip', None, ('epubs/degruyter/1.epub', 'epubSourceURI'))
+        assert test_links == [
+            ('test_root/epubs/degruyter/1/manifest.json', {'reader': True}, 'application/webpub+json', None, None),
+            ('test_root/epubs/degruyter/1/META-INF/container.xml', {'reader': True}, 'application/epub+xml', None, None),
+            ('test_root/epubs/degruyter/1.epub', {'download': True}, 'application/epub+zip', None, ('epubs/degruyter/1.epub', 'epub_source_uri'))
         ]
-        mockHead.assert_called_once_with('epubSourceURI')
+        mock_head.assert_called_once_with('epub_source_uri')
 
-    def test_generateEpubLinks_error(self, testParser, mocker):
-        mockHead = mocker.patch.object(DeGruyterParser, 'makeHeadQuery')
-        mockHead.return_value = (500, 'mockHeader')
+    def test_generate_epub_links_error(self, test_parser, mocker):
+        mock_head = mocker.patch.object(DeGruyterParser, 'make_head_query')
+        mock_head.return_value = (500, 'mock_header')
 
-        testParser.uriIdentifier = 1
-        testLinks = testParser.generateEpubLinks('testRoot/', 'epubSourceURI')
+        test_parser.uri_identifier = 1
+        test_links = test_parser.generate_epub_links('test_root/', 'epub_source_uri')
 
-        assert testLinks == [None]
-        mockHead.assert_called_once_with('epubSourceURI')
+        assert test_links == [None]
+        mock_head.assert_called_once_with('epub_source_uri')
 
-    def test_generatePDFLinks(self, testParser, mocker):
-        mockGenerate = mocker.patch.object(DeGruyterParser, 'generateManifest')
-        mockGenerate.return_value = 'testManifestJSON'
+    def test_generate_pdf_links(self, test_parser, mocker):
+        mock_generate = mocker.patch.object(DeGruyterParser, 'generate_manifest')
+        mock_generate.return_value = 'test_manifest_json'
 
-        testParser.uriIdentifier = 1
-        testLinks = testParser.generatePDFLinks('testRoot/', 'pdfSourceURI')
+        test_parser.uri_identifier = 1
+        test_links = test_parser.generate_pdf_links('test_root/', 'pdf_source_uri')
 
-        assert testLinks == [
-            ('testRoot/manifests/degruyter/1.json', {'reader': True}, 'application/webpub+json', ('manifests/degruyter/1.json', 'testManifestJSON'), None),
-            ('pdfSourceURI', {'download': True}, 'application/pdf', None, None)
+        assert test_links == [
+            ('test_root/manifests/degruyter/1.json', {'reader': True}, 'application/webpub+json', ('manifests/degruyter/1.json', 'test_manifest_json'), None),
+            ('pdf_source_uri', {'download': True}, 'application/pdf', None, None)
         ]
 
-    def test_generateManifest(self, testParser, mocker):
-        mockAbstractManifest = mocker.patch('managers.parsers.abstractParser.AbstractParser.generateManifest')
-        mockAbstractManifest.return_value = 'testManifest'
+    def test_generate_manifest(self, test_parser, mocker):
+        mock_abstract_manifest = mocker.patch('managers.parsers.parser_abc.ParserABC.generate_manifest')
+        mock_abstract_manifest.return_value = 'test_manifest'
 
-        assert testParser.generateManifest('sourceURI', 'manifestURI') == 'testManifest'
-        mockAbstractManifest.assert_called_once_with('sourceURI', 'manifestURI')
+        assert test_parser.generate_manifest('source_uri', 'manifest_uri') == 'test_manifest'
+        mock_abstract_manifest.assert_called_once_with('source_uri', 'manifest_uri')
 
-    def test_generateS3Root(self, testParser, mocker):
-        mockAbstractGenerate = mocker.patch('managers.parsers.abstractParser.AbstractParser.generateS3Root')
-        mockAbstractGenerate.return_value = 'testRoot'
+    def test_generate_s3_root(self, test_parser, mocker):
+        mock_abstract_generate = mocker.patch('managers.parsers.parser_abc.ParserABC.generate_s3_root')
+        mock_abstract_generate.return_value = 'test_root'
 
-        assert testParser.generateS3Root() == 'testRoot'
-        mockAbstractGenerate.assert_called_once()
+        assert test_parser.generate_s3_root() == 'test_root'
+        mock_abstract_generate.assert_called_once()
 
-    def test_makeHeadQuery(self, mocker):
-        mockResponse = mocker.MagicMock()
-        mockResponse.status_code = 200
-        mockResponse.headers = 'testHeaders'
+    def test_make_head_query(self, mocker):
+        mock_response = mocker.MagicMock()
+        mock_response.status_code = 200
+        mock_response.headers = 'test_headers'
 
-        mockHead = mocker.patch.object(requests, 'head')
-        mockHead.return_value = mockResponse
+        mock_head = mocker.patch.object(requests, 'head')
+        mock_head.return_value = mock_response
 
-        assert DeGruyterParser.makeHeadQuery('testURI') == (200, 'testHeaders')
-        mockHead.assert_called_once_with(
-            'testURI', timeout=15, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5)'}
+        assert DeGruyterParser.make_head_query('test_uri') == (200, 'test_headers')
+        mock_head.assert_called_once_with(
+            'test_uri', timeout=15, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5)'}
         )
