@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date, timezone
 from sqlalchemy import Integer
-from sqlalchemy.orm import contains_eager, joinedload, sessionmaker
+from sqlalchemy.orm import joinedload, sessionmaker
 from sqlalchemy.sql import column, func, select, text, values
 from uuid import uuid4
 
