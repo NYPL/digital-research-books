@@ -12,16 +12,14 @@ from urllib.parse import urlparse
 
 from .base import Base, Core
 
-
+@dataclass
 class Part:
-
-    def __init__(self, index: Optional[int], url: str, source: str, file_type: str, flags: str, source_url: Optional[str]=None):
-        self.index = index
-        self.url = url
-        self.source = source
-        self.file_type = file_type
-        self.flags = flags
-        self.source_url = source_url
+    index: Optional[int]
+    url: str
+    source: str
+    file_type: str
+    flags: str
+    source_url: Optional[str] = None
     
     @property
     def file_bucket(self) -> Optional[str]:
