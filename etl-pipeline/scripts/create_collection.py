@@ -10,7 +10,7 @@ def main():
 
     '''Creating Schomburg Collection'''
 
-    dbManager = DBManager(
+    db_manager = DBManager(
         user= os.environ.get('POSTGRES_USER', None),
         pswd= os.environ.get('POSTGRES_PSWD', None),
         host= os.environ.get('POSTGRES_HOST', None),
@@ -18,16 +18,16 @@ def main():
         db= os.environ.get('POSTGRES_NAME', None)
     )
 
-    dbManager.generate_engine()
+    db_manager.generate_engine()
 
-    dbManager.create_session()
+    db_manager.create_session()
 
     edition_ids_array = []
 
-    for record in dbManager.session.query(Record) \
+    for record in db_manager.session.query(Record) \
         .filter(Record.source == 'SCH Collection/Hathi files') \
         .filter(Record.cluster_status == True):
-            for item in dbManager.session.query(Item) \
+            for item in db_manager.session.query(Item) \
                 .filter(Item.record_id == record.id):
                     edition_ids_array.append(item.edition_id)
 
@@ -46,7 +46,7 @@ def main():
     except requests.exceptions.RequestException:
         raise Exception
 
-    dbManager.close_connection()
+    db_manager.close_connection()
 
 if __name__ == "__main__":
     main()
