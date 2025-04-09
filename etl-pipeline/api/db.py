@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date, timezone
 from sqlalchemy import Integer
-from sqlalchemy.orm import joinedload, sessionmaker
+from sqlalchemy.orm import contains_eager, joinedload, sessionmaker
 from sqlalchemy.sql import column, func, select, text, values
 from uuid import uuid4
 
@@ -190,14 +190,17 @@ class DBClient():
     def fetchCollections(self, sort=None, page=1, perPage=10):
         offset = (page - 1) * perPage
 
-        # The `sort` param is either `title` or `creator`, optionally with a sort direction
-        # of `asc` or `desc` appended with a colon.  However, we can't just pass a plain
-        # string to sqlalchemy, as the `title` field is ambiguous across different entities.
-        # So instead, turn the sort field into a proper sort-clause on the Collection table.
-        sort_field, *suffix = sort.split(":")
-        sort_clause = getattr(Collection, sort_field)
-        if suffix and suffix[0] == "desc":
-            sort_clause = sort_clause.desc()
+        if sort:
+            # The `sort` param is either `title` or `creator`, optionally with a sort direction
+            # of `asc` or `desc` appended with a colon.  However, we can't just pass a plain
+            # string to sqlalchemy, as the `title` field is ambiguous across different entities.
+            # So instead, turn the sort field into a proper sort-clause on the Collection table.
+            sort_field, *suffix = sort.split(":")
+            sort_clause = getattr(Collection, sort_field)
+            if suffix and suffix[0] == "desc":
+                sort_clause = sort_clause.desc()
+        else:
+            sort_clause = Collection.title
 
         return (
             self._query_collections()
