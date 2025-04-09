@@ -68,6 +68,7 @@ const ReaderLayout: React.FC<{
   const edition = link.work.editions[0];
   const [manifestUrl, setManifestUrl] = useState(url);
   const [isLoading, setIsLoading] = useState(true);
+  const [proxyResource, setProxyResource] = useState(false);
 
   const isEmbed = MediaTypes.embed.includes(link.media_type);
   const isRead = MediaTypes.read.includes(link.media_type);
@@ -85,9 +86,11 @@ const ReaderLayout: React.FC<{
    */
   const getProxiedResource = (proxyUrl?: string) => async (href: string) => {
     // Generate the resource URL using the proxy if the URI is not stored in S3
-    const url: string = proxyUrl && !href.includes('drb-files')
+    setProxyResource(proxyUrl && !href.includes('drb-files'));
+    const url: string = proxyResource
       ? `${proxyUrl}${encodeURIComponent(href)}`
       : href;
+    console.log(url);
     const response = await fetch(url, { mode: "cors" });
     const array = new Uint8Array(await response.arrayBuffer());
 
@@ -190,7 +193,7 @@ const ReaderLayout: React.FC<{
       {isRead && !isLoading && (
         <WebReader
           webpubManifestUrl={manifestUrl}
-          proxyUrl={!isLimitedAccess ? proxyUrl : undefined}
+          proxyUrl={proxyResource ? proxyUrl : undefined}
           pdfWorkerSrc={pdfWorkerSrc}
           headerLeft={<BackButton />}
           injectablesFixed={injectables}
