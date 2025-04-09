@@ -4,19 +4,18 @@ on:
   pull_request:
     types: [opened, synchronize]
     paths:
-      - "etl-pipeline/api/**"
-      - "etl-pipeline/managers/**"
-      - "etl-pipeline/mappings/**"
-      - "etl-pipeline/model/**"
-      - "etl-pipeline/processes/**"
-      - "etl-pipeline/services/**"
-      - "etl-pipeline/tests/**"
-      - "etl-pipeline/utils/**"
-      - "etl-pipeline/dev-requirements.txt"
-      - "etl-pipeline/requirements.txt"
-      - "etl-pipeline/main.py"
-      - "etl-pipeline/Makefile"
-      - "etl-pipeline/config/**"  # Added config directory to trigger paths
+        - "etl-pipeline/api/**"
+        - "etl-pipeline/managers/**"
+        - "etl-pipeline/mappings/**"
+        - "etl-pipeline/model/**"
+        - "etl-pipeline/processes/**"
+        - "etl-pipeline/services/**"
+        - "etl-pipeline/tests/**"
+        - "etl-pipeline/utils/**"
+        - "etl-pipeline/dev-requirements.txt"
+        - "etl-pipeline/requirements.txt"
+        - "etl-pipeline/main.py"
+        - "etl-pipeline/Makefile"
 
 permissions:
   contents: read
@@ -27,7 +26,8 @@ env:
   PRIMARY_AWS_ACCOUNTID: "491147561046"
   SECONDARY_AWS_ACCOUNTID: "946183545209"
   IMAGE_TAG: nypl-nginx-test
-  ENVIRONMENT: qa  # This will be used by your tests
+  ENVIRONMENT: qa
+  PYTHONUNBUFFERED: 1  # Only new env variable
   NYPL_BIB_USER: ${{ secrets.NYPL_BIB_USER }}
   NYPL_BIB_PASSWORD: ${{ secrets.NYPL_BIB_PASSWORD }}
   OCLC_WSKEY: ${{ secrets.OCLC_WSKEY }}
@@ -41,18 +41,11 @@ env:
 jobs:
   run-tests:
     runs-on: self-hosted
+    timeout-minutes: 5  # Only new addition
     environment: qa
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Ensures all files are fetched
-
-      - name: Verify config file exists
-        working-directory: ./etl-pipeline
-        run: |
-          ls -la config/qa.yaml
-          cat config/qa.yaml  # Optional: verify content (remove if sensitive)
 
       - name: Configure primary AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -110,17 +103,21 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Set up Python environment
-        working-directory: ./etl-pipeline
         run: |
           python3 -m pip install --upgrade pip wheel
           pip install setuptools==58.2.0
-          pip install pytest-rerunfailures
-          pip install --prefer-binary -r requirements.txt -r dev-requirements.txt
+          pip install pytest-rerunfailures pytest-timeout  # Only new package
+          pip install --prefer-binary -r etl-pipeline/requirements.txt -r etl-pipeline/dev-requirements.txt
+
+      - name: Clear Redis before tests
+        run: |
+          python3 -c "from etl-pipeline.managers.redis import RedisManager; RedisManager().flush_all()"
 
       - name: Run QA functional tests
-        working-directory: ./etl-pipeline
         run: |
-          python3 -m pytest tests/functional \
+          cd etl-pipeline
+          python3 -m pytest tests/functional/ \
+            --timeout=300 \  # Only new flag
             --junitxml=test-results.xml \
             --reruns=3 \
             --reruns-delay=5
