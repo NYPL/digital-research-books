@@ -106,8 +106,8 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip wheel
           pip install setuptools==58.2.0
-          pip install pytest-rerunfailures  # Required for retry functionality
-          pip install --prefer-binary -r requirements.txt -r dev-requirements.txt
+          pip install pytest-rerunfailures
+          pip install --prefer-binary -r etl-pipeline/requirements.txt -r etl-pipeline/dev-requirements.txt
 
       - name: Run QA functional tests
         run: |
