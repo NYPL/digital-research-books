@@ -111,7 +111,7 @@ jobs:
 
       - name: Run QA functional tests
         run: |
-          python3 -m pytest tests/functional/processes/frbr/test_frbr_process.py \
+          python3 -m pytest etl-pipeline/tests/functional/processes/frbr/test_frbr_process.py \
             --env=qa \
             --junitxml=test-results.xml \
             --reruns=3 \
