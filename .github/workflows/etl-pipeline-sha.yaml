@@ -4,18 +4,19 @@ on:
   pull_request:
     types: [opened, synchronize]
     paths:
-        - "etl-pipeline/api/**"
-        - "etl-pipeline/managers/**"
-        - "etl-pipeline/mappings/**"
-        - "etl-pipeline/model/**"
-        - "etl-pipeline/processes/**"
-        - "etl-pipeline/services/**"
-        - "etl-pipeline/tests/**"
-        - "etl-pipeline/utils/**"
-        - "etl-pipeline/dev-requirements.txt"
-        - "etl-pipeline/requirements.txt"
-        - "etl-pipeline/main.py"
-        - "etl-pipeline/Makefile"
+      - "etl-pipeline/api/**"
+      - "etl-pipeline/managers/**"
+      - "etl-pipeline/mappings/**"
+      - "etl-pipeline/model/**"
+      - "etl-pipeline/processes/**"
+      - "etl-pipeline/services/**"
+      - "etl-pipeline/tests/**"
+      - "etl-pipeline/utils/**"
+      - "etl-pipeline/dev-requirements.txt"
+      - "etl-pipeline/requirements.txt"
+      - "etl-pipeline/main.py"
+      - "etl-pipeline/Makefile"
+      - "etl-pipeline/config/**"  # Added config directory to trigger paths
 
 permissions:
   contents: read
@@ -26,7 +27,7 @@ env:
   PRIMARY_AWS_ACCOUNTID: "491147561046"
   SECONDARY_AWS_ACCOUNTID: "946183545209"
   IMAGE_TAG: nypl-nginx-test
-  ENVIRONMENT: qa
+  ENVIRONMENT: qa  # This will be used by your tests
   NYPL_BIB_USER: ${{ secrets.NYPL_BIB_USER }}
   NYPL_BIB_PASSWORD: ${{ secrets.NYPL_BIB_PASSWORD }}
   OCLC_WSKEY: ${{ secrets.OCLC_WSKEY }}
@@ -44,6 +45,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Ensures all files are fetched
+
+      - name: Verify config file exists
+        working-directory: ./etl-pipeline
+        run: |
+          ls -la config/qa.yaml
+          cat config/qa.yaml  # Optional: verify content (remove if sensitive)
 
       - name: Configure primary AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -73,10 +82,8 @@ jobs:
             --query "Parameter.Value" \
             --output text)
           
-          # Mask the key in logs and set as output
           echo "::add-mask::$GITHUB_API_KEY"
           echo "GITHUB_API_KEY=${GITHUB_API_KEY}" >> $GITHUB_ENV
-          echo "Key retrieved successfully"
 
       - name: Install Python 3.9 and build tools
         run: |
@@ -103,16 +110,17 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Set up Python environment
+        working-directory: ./etl-pipeline
         run: |
           python3 -m pip install --upgrade pip wheel
           pip install setuptools==58.2.0
           pip install pytest-rerunfailures
-          pip install --prefer-binary -r etl-pipeline/requirements.txt -r etl-pipeline/dev-requirements.txt
+          pip install --prefer-binary -r requirements.txt -r dev-requirements.txt
 
       - name: Run QA functional tests
+        working-directory: ./etl-pipeline
         run: |
-          python3 -m pytest etl-pipeline/tests/functional/processes/frbr/test_frbr_process.py \
-            --env=qa \
+          python3 -m pytest tests/functional/processes/frbr/test_frbr_process.py \
             --junitxml=test-results.xml \
             --reruns=3 \
             --reruns-delay=5
