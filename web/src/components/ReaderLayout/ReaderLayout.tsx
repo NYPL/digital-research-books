@@ -72,8 +72,6 @@ const ReaderLayout: React.FC<{
   const isEmbed = MediaTypes.embed.includes(link.media_type);
   const isRead = MediaTypes.read.includes(link.media_type);
   const isLimitedAccess = link.flags.fulfill_limited_access;
-  // We do not want to proxy urls that point to files we store in S3
-  const useProxyUrl = !url.includes('drb-files');
 
   const [cookies] = useCookies([NYPL_SESSION_ID]);
   const nyplIdentityCookie = cookies[NYPL_SESSION_ID];
@@ -86,8 +84,8 @@ const ReaderLayout: React.FC<{
    * It will eventually be passed to the web reader instead of passing a proxy url directly.
    */
   const getProxiedResource = (proxyUrl?: string) => async (href: string) => {
-    // Generate the resource URL using the proxy
-    const url: string = proxyUrl
+    // Generate the resource URL using the proxy if the URI is not stored in S3
+    const url: string = proxyUrl && !href.includes('drb-files')
       ? `${proxyUrl}${encodeURIComponent(href)}`
       : href;
     const response = await fetch(url, { mode: "cors" });
@@ -192,7 +190,7 @@ const ReaderLayout: React.FC<{
       {isRead && !isLoading && (
         <WebReader
           webpubManifestUrl={manifestUrl}
-          proxyUrl={useProxyUrl ? proxyUrl : undefined}
+          proxyUrl={!isLimitedAccess ? proxyUrl : undefined}
           pdfWorkerSrc={pdfWorkerSrc}
           headerLeft={<BackButton />}
           injectablesFixed={injectables}
