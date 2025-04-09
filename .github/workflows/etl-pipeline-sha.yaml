@@ -28,7 +28,7 @@ env:
   SECONDARY_AWS_ACCOUNTID: "946183545209"
   IMAGE_TAG: nypl-nginx-test
   ENVIRONMENT: qa
-  REDIS_TIMEOUT: 10  # Added Redis timeout setting
+  REDIS_TIMEOUT: 10
   NYPL_BIB_USER: ${{ secrets.NYPL_BIB_USER }}
   NYPL_BIB_PASSWORD: ${{ secrets.NYPL_BIB_PASSWORD }}
   OCLC_WSKEY: ${{ secrets.OCLC_WSKEY }}
@@ -115,7 +115,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip wheel
           pip install setuptools==58.2.0
-          pip install pytest-rerunfailures
+          pip install pytest-rerunfailures tenacity
           pip install --prefer-binary -r requirements.txt -r dev-requirements.txt
 
       - name: Verify Redis connection
@@ -123,11 +123,7 @@ jobs:
         run: |
           python3 -c "
           import redis
-          from tenacity import retry, stop_after_attempt, wait_exponential
-          
-          @retry(stop=stop_after_attempt(3), 
-                 wait=wait_exponential(multiplier=1, min=4, max=10))
-          def test_redis():
+          try:
               r = redis.Redis(
                   host='${{ secrets.REDIS_HOST }}',
                   socket_timeout=${{ env.REDIS_TIMEOUT }},
@@ -135,12 +131,15 @@ jobs:
               )
               if not r.ping():
                   raise Exception('Redis ping failed')
-              return True
-          
-          if not test_redis():
-              print('::error::Redis connection failed')
+              print('Redis connection successful')
+          except Exception as e:
+              print(f'::error::Redis connection failed: {str(e)}')
+              print('Troubleshooting steps:')
+              print('1. Verify Redis server is running')
+              print('2. Check host/port configuration')
+              print('3. Check network connectivity')
+              print('4. Verify firewall rules')
               exit(1)
-          print('Redis connection successful')
           "
 
       - name: Run QA functional tests
