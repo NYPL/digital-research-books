@@ -90,7 +90,6 @@ const ReaderLayout: React.FC<{
     const url: string = proxyResource
       ? `${proxyUrl}${encodeURIComponent(href)}`
       : href;
-    console.log(url);
     const response = await fetch(url, { mode: "cors" });
     const array = new Uint8Array(await response.arrayBuffer());
 
