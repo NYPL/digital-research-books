@@ -1,4 +1,5 @@
 from datetime import datetime
+import io
 import os
 import boto3
 import requests
@@ -11,6 +12,7 @@ from sqlalchemy.orm import joinedload
 from digital_assets import get_stored_file_url
 from logger import create_log
 from mappings.publisher_backlist import PublisherBacklistMapping
+from managers.pdf_cover_generator import PDFCoverGenerator
 from managers import S3Manager
 from services.ssm_service import SSMService
 from services.google_drive_service import GoogleDriveService
@@ -179,18 +181,21 @@ class PublisherBacklistService(SourceService):
             try:
                 record_metadata = record.get('fields')
                 record_permissions = self.parse_permissions(record_metadata.get('Access type in DRB (from Access types)')[0])
-                
+
                 publisher_backlist_record = PublisherBacklistMapping(record_metadata)
                 publisher_backlist_record.applyMapping()
-                
+                hathi_id = PublisherBacklistService.get_hathi_id(publisher_backlist_record.record)
+                if not hathi_id:
+                    continue
+
                 try:
-                    file_url = self.download_file_from_location(record_metadata, record_permissions, publisher_backlist_record.record)
+                    file_url = self.download_file_from_location(hathi_id, record_metadata, record_permissions, publisher_backlist_record.record)
                     if not file_url:
                         continue
                 except Exception:
                     logger.exception(f'Failed to download file for {record}')
                     continue
-                
+
                 publisher_backlist_record.record.has_part.append(str(Part(
                     index=1,
                     url=file_url,
@@ -198,7 +203,24 @@ class PublisherBacklistService(SourceService):
                     file_type='application/pdf',
                     flags=str(FileFlags(download=record_permissions['is_downloadable'], nypl_login=record_permissions['requires_login']))
                 )))
-                self.s3_manager.store_pdf_manifest(publisher_backlist_record.record, self.file_bucket, flags=FileFlags(reader=True, nypl_login=record_permissions['requires_login']), path='publisher_backlist')
+                try:
+                    cover_url = self.extract_cover_url(hathi_id)
+                except Exception:
+                    logger.exception("Failed to generate cover")
+                else:
+                    publisher_backlist_record.record.has_part.append(str(Part(
+                        index=2,
+                        url=cover_url,
+                        source=publisher_backlist_record.record.source,
+                        file_type="image/png",
+                        flags=str(FileFlags(cover=True)),
+                    )))
+
+                self.s3_manager.store_pdf_manifest(
+                    publisher_backlist_record.record, self.file_bucket,
+                    flags=FileFlags(reader=True, nypl_login=record_permissions['requires_login']),
+                    path='publisher_backlist',
+                )
                 mapped_records.append(publisher_backlist_record)
             except Exception:
                 logger.exception(
@@ -206,56 +228,70 @@ class PublisherBacklistService(SourceService):
                 )
 
         return mapped_records
-    
-    def download_file_from_location(self, record_metadata: dict, record_permissions: dict, record: Record) -> str:
+
+    def extract_cover_url(self, hathi_id: str) -> str:
+        bucket = self.file_bucket
+        cover_key = f"covers/publisher_backlist/hathi_{hathi_id}.png"
+        try:
+            self.s3_manager.client.head_object(Bucket=bucket, Key=cover_key)
+        except Exception:
+            logger.info("Cover not found, generating one instead")
+        else:
+            return get_stored_file_url(bucket, cover_key)
+
+        pdf_url = get_stored_file_url(bucket, f"titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf")
+        cover_generator = PDFCoverGenerator.from_url(pdf_url)
+        with io.BytesIO() as stream:
+            logger.info("Extracting cover")
+            cover_generator.extract_cover_content(stream)
+            logger.info("Uploading cover")
+            self.s3_manager.client.upload_fileobj(stream, bucket, cover_key)
+
+        return get_stored_file_url(bucket, cover_key)
+
+    def download_file_from_location(self, hathi_id: str, record_metadata: dict, record_permissions: dict, record: Record) -> str:
         file_location = record_metadata.get('DRB_File Location')
-        destination_file_bucket = os.environ.get("FILE_BUCKET", "drb-files-local")
-
+        destination_file_bucket = self.file_bucket
         if not file_location:
-            hath_identifier = next((identifier for identifier in record.identifiers if identifier.endswith('hathi')), None)
+            destination_pdf_url = get_stored_file_url(
+                storage_name=destination_file_bucket,
+                file_path=f'titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf',
+            )
 
-            if hath_identifier is not None:
-                hathi_id = hath_identifier.split('|')[0]
+            try:
+                self.s3_manager.client.head_object(Bucket=destination_file_bucket, Key=f'titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf')
+                logger.info(f'PDF already exists at key: titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf')
+                return destination_pdf_url
+            except Exception:
+                logger.exception(f'PDF does not exist at key: titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf')
 
+            try:
+                pdf_bucket = os.environ["PDF_BUCKET"]
+                self.s3_manager.client.head_object(Bucket=pdf_bucket, Key=f'tagged_pdfs/{hathi_id}.pdf')
+            except Exception:
+                logger.exception('PDF object does not exist')
+                raise Exception
 
-                try:
-                    self.s3_manager.client.head_object(Bucket=destination_file_bucket, Key=f'titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf')
-                    logger.exception(f'PDF already exists at key: titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf')
-                    return None
-                except Exception:
-                    logger.exception(f'PDF does not exist at key: titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf')
+            source_bucket_key = {'Bucket': pdf_bucket, 'Key': f'tagged_pdfs/{hathi_id}.pdf'}
+            try:
+                extra_args = {
+                    'ACL': 'public-read'
+                }
+                self.s3_manager.client.copy(
+                    source_bucket_key,
+                    destination_file_bucket,
+                    f'titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf',
+                    extra_args
+                )
+            except Exception:
+                logger.exception("Error during copy response")
 
-                try:
-                    pdf_bucket = os.environ["PDF_BUCKET"]
-                    self.s3_manager.client.head_object(Bucket=pdf_bucket, Key=f'tagged_pdfs/{hathi_id}.pdf')
-                except Exception:
-                    logger.exception('PDF object does not exist')
-                    raise Exception
-                
-                source_bucket_key = {'Bucket': pdf_bucket, 'Key': f'tagged_pdfs/{hathi_id}.pdf'}
-                try:
-                    extra_args = {
-                        'ACL': 'public-read'
-                    }
-                    self.s3_manager.client.copy(
-                        source_bucket_key,
-                        destination_file_bucket,
-                        f'titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf',
-                        extra_args
-                    )
-                except Exception:
-                    logger.exception("Error during copy response")
+            return destination_pdf_url
 
-                manifest_url = get_stored_file_url(storage_name=destination_file_bucket, file_path=f'titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf')
-                return manifest_url
-                
-            raise Exception(f'Unable to get file for {record}')
-
-        
         file_id = f'{self.drive_service.id_from_url(file_location)}'
         file_name = self.drive_service.get_file_metadata(file_id).get('name')
         file = self.drive_service.get_drive_file(file_id)
-        
+
         if not file:
             raise Exception(f'Unable to get file for: {record}')
 
@@ -264,7 +300,7 @@ class PublisherBacklistService(SourceService):
         self.s3_manager.put_object(file.getvalue(), file_path, bucket)
 
         return get_stored_file_url(storage_name=bucket, file_path=file_path)
-        
+
     def build_filter_by_formula_parameter(self, deleted=None, start_timestamp: Optional[datetime]=None) -> str:
         if deleted:
             delete_filter = urllib.parse.quote("{DRB_Deleted} = TRUE()")
@@ -286,6 +322,15 @@ class PublisherBacklistService(SourceService):
         )
 
         return f"&filterByFormula=AND(OR({is_same_date_time_filter}),{is_after_date_time_filter})),{ready_to_ingest_filter},{is_not_deleted_filter})"
+
+    @staticmethod
+    def get_hathi_id(record) -> Optional[str]:
+        hath_identifier = next((identifier for identifier in record.identifiers if identifier.endswith('hathi')), None)
+
+        if hath_identifier is not None:
+            return hath_identifier.split('|')[0]
+
+        return None
 
     def get_publisher_backlist_records(
         self,
