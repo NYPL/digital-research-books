@@ -44,12 +44,6 @@ class RecordClusterer:
 
     def cluster_record(self, record) -> list[Record]:
         """Clusters a single record and updates the database and Elasticsearch.
-        
-        Args:
-            record (Record): The record to cluster.
-        
-        Returns:
-            list[Record]: A list of records that were clustered.
         """
         try:
             work, stale_work_ids, records = self._get_clustered_work_and_records(record)
@@ -138,7 +132,7 @@ class RecordClusterer:
             .update({"cluster_status": cluster_status, "frbr_status": "complete"})
         )
 
-    def _find_all_matching_records(self, record: Record):
+    def _find_all_matching_records(self, record: Record) -> list[str]:
         """Finds all records that might be related to the input record.
         
         Uses an iterative process to find matches:
@@ -147,12 +141,6 @@ class RecordClusterer:
         3. For each match, check title similarity
         4. If similar, add their identifiers to check
         5. Repeat up to MAX_MATCH_DISTANCE times
-        
-        Args:
-            record: Record to find matches for
-            
-        Returns:
-            list[str]: IDs of all matching records
         """
         tokenized_record_title = self._tokenize_title(record.title)
         ids_to_check = {
@@ -217,10 +205,6 @@ class RecordClusterer:
         
         Processes identifiers in batches to avoid database query size limits.
         
-        Args:
-            identifiers: List of identifier strings to match
-            already_matched_record_ids: Record IDs to exclude from results
-            
         Returns:
             list[tuple]: List of (title, id, identifiers, has_part) tuples for matching records
         """
@@ -247,16 +231,13 @@ class RecordClusterer:
 
         return matched_records
 
-    def _create_work_from_editions(self, editions: list, records: list[Record]):
+    def _create_work_from_editions(self, editions: list, records: list[Record]) -> tuple[Work, set[str]]:
         """Creates a Work object from clustered editions.
         
         Uses SFRRecordManager to:
         1. Build Work data structure from records
         2. Save Work to database
         3. Merge with any existing Works
-        
-        Returns:
-            tuple: (created Work, IDs of old works that were merged)
         """
         record_manager = SFRRecordManager(
             self.db_manager.session, self.constants["iso639"]
@@ -307,15 +288,12 @@ class RecordClusterer:
 
         return True
 
-    def _tokenize_title(self, title: str):
+    def _tokenize_title(self, title: str) -> set[str]:
         """Converts a title string into a set of normalized "tokens" (words).
         
         1. Extracts words using regex
         2. Converts to lowercase
         3. Removes common stop words
-        
-        Returns:
-            set[str]: Set of normalized title words
         """
         title_tokens = re.findall(r"(\w+)", title.lower())
 
@@ -323,11 +301,7 @@ class RecordClusterer:
 
     def _format_identifiers(self, identifiers: list[str]):
         """Formats identifiers for PostgreSQL array overlap query.
-        
         Handles escaping of special characters and creates proper array syntax.
-        
-        Returns:
-            str: PostgreSQL-compatible array string
         """
         formatted_ids = []
 
