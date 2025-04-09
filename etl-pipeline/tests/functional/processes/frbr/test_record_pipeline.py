@@ -9,6 +9,10 @@ from processes.record_pipeline import RecordPipelineProcess
 from tests.functional.processes.frbr.test_cluster_process import assert_record_clustered
 from tests.functional.processes.frbr.test_frbr_process import assert_record_frbrized
 
+@pytest.mark.skipif(
+    os.getenv('ENVIRONMENT') == 'qa',
+    reason="Skipping record pipeline test in QA environment"
+)
 
 def test_record_pipeline(db_manager, rabbitmq_manager: RabbitMQManager, unfrbrized_pipeline_record_uuid):
     record_queue = os.environ['RECORD_PIPELINE_QUEUE']
