@@ -98,7 +98,7 @@ class RecordClusterer:
 
     def _update_elastic_search(self, work_to_index: Work, works_to_delete: set):
         self.elastic_search_manager.delete_work_records(works_to_delete)
-        self._index_works_in_elastic_search(work_to_index)
+        self._index_work_in_elastic_search(work_to_index)
 
     def _delete_stale_works(self, work_ids: set[str]):
         self.db_manager.delete_records_by_query(
@@ -270,8 +270,7 @@ class RecordClusterer:
 
         return record_manager.work, stale_work_ids
 
-    def _index_works_in_elastic_search(self, work: Work):
-        """Indexes a single work in Elasticsearch."""
+    def _index_work_in_elastic_search(self, work: Work):
         work_documents = []
 
         elastic_manager = SFRElasticRecordManager(work)
