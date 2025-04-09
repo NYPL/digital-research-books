@@ -3,6 +3,7 @@
 import json
 import os
 from time import sleep
+import pytest
 
 from managers import RabbitMQManager
 from processes.record_pipeline import RecordPipelineProcess
