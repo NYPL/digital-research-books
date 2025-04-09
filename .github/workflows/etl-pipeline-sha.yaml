@@ -120,7 +120,7 @@ jobs:
       - name: Run QA functional tests
         working-directory: ./etl-pipeline
         run: |
-          python3 -m pytest tests/functional/processes/frbr/test_frbr_process.py \
+          python3 -m pytest tests/functional/processes/frbr/test_cluster_process.py \
             --junitxml=test-results.xml \
             --reruns=3 \
             --reruns-delay=5
