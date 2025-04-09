@@ -113,18 +113,35 @@ jobs:
       - name: Clean test environment
         working-directory: ./etl-pipeline
         run: |
-          # Clear Redis using the correct method name
-          python3 -c "from managers.redis import RedisManager; RedisManager().clear_cache()"
+          # Initialize and clear Redis properly
+          python3 -c "
+          from managers.redis import RedisManager
+          redis = RedisManager()
+          try:
+              redis.create_client()
+              if hasattr(redis, 'client') and redis.client:
+                  redis.clear_cache()
+                  print('Redis cache cleared successfully')
+              else:
+                  print('Redis client not available')
+          except Exception as e:
+              print(f'Redis cleanup failed: {str(e)}')
+          "
           
           # Reset database state
-          python3 -c """
+          python3 -c "
           from managers.db import DBManager
           db = DBManager()
-          # Only truncate if DB connection works
-          if db.session:
-              db.session.execute('TRUNCATE TABLE records, items, editions, works CASCADE')
-              db.session.commit()
-          """
+          try:
+              if db.session:
+                  db.session.execute('TRUNCATE TABLE records, items, editions, works CASCADE')
+                  db.session.commit()
+                  print('Database tables truncated successfully')
+              else:
+                  print('Database session not available')
+          except Exception as e:
+              print(f'Database cleanup failed: {str(e)}')
+          "
 
       - name: Run tests with isolation
         working-directory: ./etl-pipeline
@@ -135,6 +152,13 @@ jobs:
             --reruns=3 \
             --reruns-delay=5 \
             -v
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: etl-pipeline/test-results.xml
 
       - name: Cleanup GitHub API Key
         run: |
