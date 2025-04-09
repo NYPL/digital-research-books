@@ -118,34 +118,10 @@ jobs:
           pip install pytest-rerunfailures tenacity
           pip install --prefer-binary -r requirements.txt -r dev-requirements.txt
 
-      - name: Verify Redis connection
-        working-directory: ./etl-pipeline
-        run: |
-          python3 -c "
-          import redis
-          try:
-              r = redis.Redis(
-                  host='${{ secrets.REDIS_HOST }}',
-                  socket_timeout=${{ env.REDIS_TIMEOUT }},
-                  socket_connect_timeout=${{ env.REDIS_TIMEOUT }}
-              )
-              if not r.ping():
-                  raise Exception('Redis ping failed')
-              print('Redis connection successful')
-          except Exception as e:
-              print(f'::error::Redis connection failed: {str(e)}')
-              print('Troubleshooting steps:')
-              print('1. Verify Redis server is running')
-              print('2. Check host/port configuration')
-              print('3. Check network connectivity')
-              print('4. Verify firewall rules')
-              exit(1)
-          "
-
       - name: Run QA functional tests
         working-directory: ./etl-pipeline
         run: |
-          python3 -m pytest tests/functional/processes/frbr/test_record_pipeline.py \
+          python3 -m pytest tests/functional \
             --junitxml=test-results.xml \
             --reruns=3 \
             --reruns-delay=5
