@@ -84,8 +84,8 @@ const ReaderLayout: React.FC<{
    * It will eventually be passed to the web reader instead of passing a proxy url directly.
    */
   const getProxiedResource = (proxyUrl?: string) => async (href: string) => {
-    // Generate the resource URL using the proxy
-    const url: string = proxyUrl
+    // Generate the resource URL using the proxy if the URI is not stored in S3
+    const url: string = proxyUrl && !href.includes('drb-files')
       ? `${proxyUrl}${encodeURIComponent(href)}`
       : href;
     const response = await fetch(url, { mode: "cors" });
