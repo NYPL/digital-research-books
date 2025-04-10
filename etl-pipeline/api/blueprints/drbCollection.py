@@ -409,7 +409,7 @@ def get_collections():
             uuid = collection.uuid
             path = '/collection/{}'.format(uuid)
 
-            group = constructOPDSFeed(collection, db_client, perPage=5, path=path, build_publications=False)
+            group = constructOPDSFeed(collection, db_client, perPage=5, path=path)
 
             opds_feed.addGroup(group)
 
@@ -441,7 +441,7 @@ def constructSortMethod(sort):
 
 
 def constructOPDSFeed(
-    collection, dbClient, sort=None, page=1, perPage=10, path=None, build_publications: bool=True
+    collection, dbClient, sort=None, page=1, perPage=10, path=None
 ):
     uuid = collection.uuid
 
@@ -461,32 +461,31 @@ def constructOPDSFeed(
         'rel': 'self', 'href': path, 'type': 'application/opds+json'
     })
 
-    if build_publications:
-        if collection.type == "static":
-            _addStaticPubsToFeed(opdsFeed, collection, path, page, perPage, sort)
-        elif collection.type == "automatic":
-            esClient = ElasticClient(current_app.config["REDIS_CLIENT"])
-            _addAutomaticPubsToFeed(opdsFeed, dbClient, esClient, collection.id, path, page, perPage)
-        else:
-            raise ValueError(f"Encountered collection with unhandleable type {collection.type}")
+    if collection.type == "static":
+        _addStaticPubsToFeed(opdsFeed, collection, path, page, perPage, sort)
+    elif collection.type == "automatic":
+        esClient = ElasticClient(current_app.config["REDIS_CLIENT"])
+        _addAutomaticPubsToFeed(opdsFeed, dbClient, esClient, collection.id, path, page, perPage)
     else:
-        opdsFeed.metadata.addField('numberOfItems', len(collection.editions))
+        raise ValueError(f"Encountered collection with unhandleable type {collection.type}")
 
     return opdsFeed
 
 
 def _addStaticPubsToFeed(opdsFeed, collection, path, page, perPage, sort):
-    opdsPubs = _buildPublications(collection.editions)
+    start = (page - 1) * perPage
+    end = start + perPage
+
+    opdsPubs = _buildPublications(collection.editions[start:end])
+    
     if sort:
         sorter, reversed_ = constructSortMethod(sort)
         opdsPubs.sort(key=sorter, reverse=reversed_)
 
-    start = (page - 1) * perPage
-    end = start + perPage
-    opdsFeed.addPublications(opdsPubs[start:end])
+    opdsFeed.addPublications(opdsPubs)
 
     OPDSUtils.addPagingOptions(
-        opdsFeed, path, len(opdsPubs), page=page, perPage=perPage
+        opdsFeed, path, len(collection.editions), page=page, perPage=perPage
     )
 
 

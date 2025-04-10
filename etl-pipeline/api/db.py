@@ -187,31 +187,18 @@ class DBClient():
 
         return (baseQuery.count(), baseQuery.offset(offset).limit(size).all())
 
-    def fetchSingleCollection(self, uuid, page=1, per_page=10):
-        offset = (page - 1) * per_page
-        editions = (
-            self.session.query(Edition)
-                .join(
-                    COLLECTION_EDITIONS,
-                    Edition.id == COLLECTION_EDITIONS.c.edition_id,
-                )
-                .join(Collection, COLLECTION_EDITIONS.c.collection_id == Collection.id)
+    def fetchSingleCollection(self, uuid):
+        return (
+            self.session.query(Collection)
                 .options(
-                    joinedload(Edition.work),
-                    joinedload(Edition.links),
-                    joinedload(Edition.identifiers),
-                    joinedload(Edition.items),
-                    joinedload(Edition.items, Item.links),
-                    joinedload(Edition.items, Item.rights),
+                    joinedload(Collection.editions),
+                    joinedload(Collection.editions, Edition.links),
+                    joinedload(Collection.editions, Edition.items),
+                    joinedload(Collection.editions, Edition.items, Item.links),
+                    joinedload(Collection.editions, Edition.items, Item.rights),
                 )
-                .filter(Collection.uuid == uuid)
-                .limit(page)
-                .offset(offset)
-                .all()
+                .filter(Collection.uuid == uuid).one()
         )
-        collection = self.session.query(Collection).filter(Collection.uuid == uuid).one()
-        collection.editions = editions
-        return collection
 
     def fetchCollections(self, sort=None, page=1, perPage=10):
         offset = (page - 1) * perPage
@@ -232,14 +219,12 @@ class DBClient():
             self.session.query(Collection)
                 .options(
                     joinedload(Collection.editions),
-                    joinedload(Collection.editions, Edition.work),
                     joinedload(Collection.editions, Edition.links),
-                    joinedload(Collection.editions, Edition.identifiers),
                     joinedload(Collection.editions, Edition.items),
                     joinedload(Collection.editions, Edition.items, Item.links),
                     joinedload(Collection.editions, Edition.items, Item.rights),
                 )
-                .order_by(sort_clause)
+                .order_by(text(sort))
                 .offset(offset)
                 .limit(perPage)
                 .all()
