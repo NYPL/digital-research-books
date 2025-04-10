@@ -6,6 +6,7 @@ import pypdf
 import requests
 import requests.exceptions
 
+from digital_assets import cover_images
 from logger import create_log
 
 logger = create_log(__name__)
@@ -30,7 +31,8 @@ class PDFCoverGenerator:
 
     def extract_cover_content(self, outstream: io.BytesIO) -> None:
         image = self._extract_cover_image()
-        image.save(outstream, format="PNG")
+        cover = cover_images.resize_image_for_cover(image)
+        cover.save(outstream, format="PNG")
         # Move the stream pointer back to the front now that we're done writing
         outstream.seek(0)
 
