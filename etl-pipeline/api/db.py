@@ -185,36 +185,43 @@ class DBClient():
         return (baseQuery.count(), baseQuery.offset(offset).limit(size).all())
 
     def fetchSingleCollection(self, uuid):
-        return (
-            self.session.query(Collection)
-                .options(
-                    joinedload(Collection.editions),
-                    joinedload(Collection.editions, Edition.links),
-                    joinedload(Collection.editions, Edition.items),
-                    joinedload(Collection.editions, Edition.items, Item.links),
-                    joinedload(Collection.editions, Edition.items, Item.rights),
-                )
-                .filter(Collection.uuid == uuid).one()
-        )
+        return self._query_collections().filter(Collection.uuid == uuid).one()
 
     def fetchCollections(self, sort=None, page=1, perPage=10):
         offset = (page - 1) * perPage
 
-        sort = sort.replace(':', ' ') if sort else 'title'
+        if sort:
+            # The `sort` param is either `title` or `creator`, optionally with a sort direction
+            # of `asc` or `desc` appended with a colon.  However, we can't just pass a plain
+            # string to sqlalchemy, as the `title` field is ambiguous across different entities.
+            # So instead, turn the sort field into a proper sort-clause on the Collection table.
+            sort_field, *suffix = sort.split(":")
+            sort_clause = getattr(Collection, sort_field)
+            if suffix and suffix[0] == "desc":
+                sort_clause = sort_clause.desc()
+        else:
+            sort_clause = Collection.title
 
+        return (
+            self._query_collections()
+                .order_by(sort_clause)
+                .offset(offset)
+                .limit(perPage)
+                .all()
+        )
+
+    def _query_collections(self):
         return (
             self.session.query(Collection)
                 .options(
                     joinedload(Collection.editions),
+                    joinedload(Collection.editions, Edition.work),
                     joinedload(Collection.editions, Edition.links),
+                    joinedload(Collection.editions, Edition.identifiers),
                     joinedload(Collection.editions, Edition.items),
                     joinedload(Collection.editions, Edition.items, Item.links),
                     joinedload(Collection.editions, Edition.items, Item.rights),
                 )
-                .order_by(text(sort))
-                .offset(offset)
-                .limit(perPage)
-                .all()
         )
 
     def fetchAutomaticCollection(self, collection_id: int):
