@@ -284,7 +284,7 @@ def get_collection(uuid):
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('perPage', 10))
 
-        collection = db_client.fetchSingleCollection(uuid, page=page, per_page=per_page)
+        collection = db_client.fetchSingleCollection(uuid)
 
         if not collection:
             return APIUtils.formatResponseObject(404, response_type, { 'message:' f'No collection found with id {uuid}' })

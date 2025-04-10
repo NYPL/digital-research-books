@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta, date, timezone
 from sqlalchemy import Integer
-from sqlalchemy.orm import contains_eager, joinedload, sessionmaker
-from sqlalchemy.sql import column, func, select, text, values, True_
+from sqlalchemy.orm import joinedload, sessionmaker
+from sqlalchemy.sql import column, func, select, text, values
 from uuid import uuid4
 
-from model import COLLECTION_EDITIONS, Work, Edition, Link, Item, Record, Collection, User, AutomaticCollection
+from model import Work, Edition, Link, Item, Record, Collection, User, AutomaticCollection
 from .utils import APIUtils
 from logger import create_log
 
