@@ -53,9 +53,9 @@ def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:
 def setup_env(pytestconfig, request):
     environment = os.environ.get('ENVIRONMENT') or pytestconfig.getoption('--env') or 'local'
 
-    running_unit_tests = any('unit' in item.keywords for item in request.session.items)
+    running_functional_integration_tests = any('functional' in item.keywords or 'integration' in item.keywords for item in request.session.items)
 
-    if not running_unit_tests and environment in ['local', 'local-qa', 'qa']:
+    if running_functional_integration_tests and environment in ['local', 'local-qa', 'qa']:
         load_env_file(environment, file_string=f'config/{environment}.yaml')
 
 
