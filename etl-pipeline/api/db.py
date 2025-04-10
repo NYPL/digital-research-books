@@ -204,17 +204,18 @@ class DBClient():
 
         return (
             self._query_collections()
-            .order_by(sort_clause)
-            .offset(offset)
-            .limit(perPage)
-            .all()
+                .order_by(sort_clause)
+                .offset(offset)
+                .limit(perPage)
+                .all()
         )
 
     def _query_collections(self):
         return (
             self.session.query(Collection)
                 .options(
-                    joinedload(Collection.editions).joinedload(Edition.work),
+                    joinedload(Collection.editions),
+                    joinedload(Collection.editions, Edition.work),
                     joinedload(Collection.editions, Edition.links),
                     joinedload(Collection.editions, Edition.identifiers),
                     joinedload(Collection.editions, Edition.items),
