@@ -68,7 +68,7 @@ const ReaderLayout: React.FC<{
   const edition = link.work.editions[0];
   const [manifestUrl, setManifestUrl] = useState(url);
   const [isLoading, setIsLoading] = useState(true);
-  const [useProxyUrl, setUseProxyUrl] = useState(false);
+  const [useProxyUrl, setUseProxyUrl] = useState(true);
 
   const isEmbed = MediaTypes.embed.includes(link.media_type);
   const isRead = MediaTypes.read.includes(link.media_type);
