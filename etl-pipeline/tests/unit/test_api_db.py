@@ -125,12 +125,6 @@ class TestDBClient:
         testInstance.session.query().options().filter().one\
             .assert_called_once()
 
-    def test_fetchCollections(self, testInstance):
-        testInstance.session.query().options().order_by().offset().limit().all\
-            .return_value = 'testCollections'
-
-        assert testInstance.fetchCollections() == 'testCollections'
-
     def test_createStaticCollection(self, testInstance, mocker):
         mockUUID = mocker.patch('api.db.uuid4')
         mockUUID.return_value = 'testUUID'

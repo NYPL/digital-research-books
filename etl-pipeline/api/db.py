@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta, date, timezone
 from sqlalchemy import Integer
-from sqlalchemy.orm import joinedload, sessionmaker
-from sqlalchemy.sql import column, func, select, text, values
+from sqlalchemy.orm import contains_eager, joinedload, sessionmaker
+from sqlalchemy.sql import column, func, select, text, values, True_
 from uuid import uuid4
 
-from model import Work, Edition, Link, Item, Record, Collection, User, AutomaticCollection
+from model import COLLECTION_EDITIONS, Work, Edition, Link, Item, Record, Collection, User, AutomaticCollection
 from .utils import APIUtils
+from logger import create_log
+
+logger = create_log(__name__)
 
 
 class DBClient():
@@ -184,8 +187,31 @@ class DBClient():
 
         return (baseQuery.count(), baseQuery.offset(offset).limit(size).all())
 
-    def fetchSingleCollection(self, uuid):
-        return self._query_collections().filter(Collection.uuid == uuid).one()
+    def fetchSingleCollection(self, uuid, page=1, per_page=10):
+        offset = (page - 1) * per_page
+        editions = (
+            self.session.query(Edition)
+                .join(
+                    COLLECTION_EDITIONS,
+                    Edition.id == COLLECTION_EDITIONS.c.edition_id,
+                )
+                .join(Collection, COLLECTION_EDITIONS.c.collection_id == Collection.id)
+                .options(
+                    joinedload(Edition.work),
+                    joinedload(Edition.links),
+                    joinedload(Edition.identifiers),
+                    joinedload(Edition.items),
+                    joinedload(Edition.items, Item.links),
+                    joinedload(Edition.items, Item.rights),
+                )
+                .filter(Collection.uuid == uuid)
+                .limit(page)
+                .offset(offset)
+                .all()
+        )
+        collection = self.session.query(Collection).filter(Collection.uuid == uuid).one()
+        collection.editions = editions
+        return collection
 
     def fetchCollections(self, sort=None, page=1, perPage=10):
         offset = (page - 1) * perPage
@@ -203,15 +229,6 @@ class DBClient():
             sort_clause = Collection.title
 
         return (
-            self._query_collections()
-                .order_by(sort_clause)
-                .offset(offset)
-                .limit(perPage)
-                .all()
-        )
-
-    def _query_collections(self):
-        return (
             self.session.query(Collection)
                 .options(
                     joinedload(Collection.editions),
@@ -222,6 +239,10 @@ class DBClient():
                     joinedload(Collection.editions, Edition.items, Item.links),
                     joinedload(Collection.editions, Edition.items, Item.rights),
                 )
+                .order_by(sort_clause)
+                .offset(offset)
+                .limit(perPage)
+                .all()
         )
 
     def fetchAutomaticCollection(self, collection_id: int):
