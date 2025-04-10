@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 
 from enum import Enum
 import json
@@ -12,7 +12,6 @@ from urllib.parse import urlparse
 
 from .base import Base, Core
 
-
 @dataclass
 class Part:
     index: Optional[int]
@@ -20,7 +19,8 @@ class Part:
     source: str
     file_type: str
     flags: str
-
+    source_url: Optional[str] = None
+    
     @property
     def file_bucket(self) -> Optional[str]:
         parsed_url = urlparse(self.url)
@@ -50,13 +50,18 @@ class Part:
         return parsed_url.path[1:]
     
     def __str__(self):
-        return '|'.join([
+        fields = [
             str(self.index) if self.index is not None else '', 
             self.url, 
             self.source, 
             self.file_type, 
             self.flags
-        ])
+        ]
+
+        if self.source_url is not None:
+            fields.append(self.source_url)
+
+        return '|'.join(fields)
 
 
 class FRBRStatus(Enum):
@@ -111,7 +116,7 @@ class Record(Base, Core):
     table_of_contents = Column(Unicode) # dc:tableOfContents, Non-Repeating
     extent = Column(Unicode) # dc:extent, Non-Repeating
     abstract = Column(Unicode) # dc:abstract, Non-Repeating
-    has_part = Column(ARRAY(Unicode, dimensions=1)) # dc:hasPart, Repeating, Format "itemNo|uri|source|type|flags"
+    has_part = Column(ARRAY(Unicode, dimensions=1)) # dc:hasPart, Repeating, Format "itemNo|uri|source|type|flags" or "itemNo|uri|source|type|flags|sourceUri" if the file was stored
     coverage = Column(ARRAY(Unicode, dimensions=1)) # dc:coverage, non-Repeating, Format "locationCode|locationName|itemNo"
 
     __tableargs__ = (Index('ix_record_identifiers', identifiers, postgresql_using="gin"))
@@ -137,19 +142,30 @@ class Record(Base, Core):
         for attr in dir(self):
             yield attr, getattr(self, attr)
 
-    @property
-    def parts(self) -> list[Part]:
+    @staticmethod
+    def parse_parts(has_part: str) -> list[Part]:
         parts = []
 
-        if not self.has_part:
+        if not has_part:
             return parts
 
-        for part in self.has_part:
-            index, file_url, source, file_type, flags = part.split('|')
+        for part in has_part:
+            fields = part.split('|')
 
-            parts.append(Part(None if index is None or index == '' else int(index), file_url, source, file_type, flags))
+            if len(fields) not in (5, 6):
+                continue
+
+            index = None if fields[0] is None or fields[0] == '' else int(fields[0])
+            file_url, source, file_type, flags = fields[1:5]
+            source_url = fields[5] if len(fields) == 6 else None
+
+            parts.append(Part(index, file_url, source, file_type, flags, source_url))
 
         return parts
+
+    @property
+    def parts(self) -> list[Part]:
+        return self.parse_parts(self.has_part)
 
     @hybrid_property
     def has_version(self):
