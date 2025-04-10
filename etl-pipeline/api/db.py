@@ -6,9 +6,6 @@ from uuid import uuid4
 
 from model import Work, Edition, Link, Item, Record, Collection, User, AutomaticCollection
 from .utils import APIUtils
-from logger import create_log
-
-logger = create_log(__name__)
 
 
 class DBClient():
