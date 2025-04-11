@@ -772,10 +772,10 @@ class TestCollectionBlueprint:
 
             mockConstruct.assert_has_calls([
                 mocker.call(
-                    collection1, mock_db, perPage=5, path='/collection/uuid1', build_publications=False
+                    collection1, mock_db, perPage=5, path='/collection/uuid1'
                 ),
                 mocker.call(
-                    collection2, mock_db, perPage=5, path='/collection/uuid2', build_publications=False
+                    collection2, mock_db, perPage=5, path='/collection/uuid2'
                 )
             ])
 

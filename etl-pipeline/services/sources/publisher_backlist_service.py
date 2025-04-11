@@ -245,7 +245,10 @@ class PublisherBacklistService(SourceService):
             logger.info("Extracting cover")
             cover_generator.extract_cover_content(stream)
             logger.info("Uploading cover")
-            self.s3_manager.client.upload_fileobj(stream, bucket, cover_key)
+            self.s3_manager.client.upload_fileobj(
+                Fileobj=stream, Bucket=bucket, Key=cover_key,
+                ExtraArgs={"ACL": "public-read"},
+            )
 
         return get_stored_file_url(bucket, cover_key)
 
