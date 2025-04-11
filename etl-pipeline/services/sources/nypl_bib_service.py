@@ -27,7 +27,7 @@ class NYPLBibService(SourceService):
         self.bib_db_connection.generate_engine()
 
         self.nypl_api_manager = NYPLAPIManager()
-        self.nypl_api_manager.generateAccessToken()
+        self.nypl_api_manager.generate_access_token()
 
         self.location_codes = self.load_location_codes()
         self.cce_api = os.environ['BARDO_CCE_API']
