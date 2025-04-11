@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 from digital_assets import get_stored_file_url
 from logger import create_log
 from managers import S3Manager
-from model import Record
+from model import Record, Part
 
 logger = create_log(__name__)
 
@@ -19,24 +19,26 @@ class RecordFileSaver:
 
     def save_record_files(self, record: Record):
         self.storage_manager.store_pdf_manifest(record=record, bucket_name=self.file_bucket)
+        files_to_store = (part for part in record.parts if part.source_url and part.file_bucket and part.file_key)
 
-        # TODO: look at has_part and save files
+        for file_to_store in files_to_store:
+            self.store_file(part=file_to_store)
 
-    def store_file(self, file_url: str, file_path: str):
+    def store_file(self, part: Part):
         try:
-            file_contents = self.get_file_contents(file_url)
-            self.storage_manager.put_object(file_contents, file_path, self.file_bucket)
+            file_contents = self.get_file_contents(part.source_url)
+            self.storage_manager.put_object(file_contents, part.file_key, part.file_bucket)
             del file_contents
 
-            if '.epub' in file_path:
-                file_root = '.'.join(file_path.split('.')[:-1])
+            if '.epub' in part.file_key:
+                file_root = '.'.join(part.file_key.split('.')[:-1])
 
                 web_pub_manifest = self.generate_webpub(file_root)
                 self.storage_manager.put_object(web_pub_manifest, f'{file_root}/manifest.json', self.file_bucket)
 
-            logger.info(f'Stored file {file_path} from {file_url}')
+            logger.info(f'Stored file {part.file_key} from {part.source_url}')
         except Exception as e:
-            logger.exception(f'Failed to store file {file_path} from {file_url}')
+            logger.exception(f'Failed to store file {part.file_key} from {part.source_url}')
             raise e
 
     def get_file_contents(self, file_url: str):
