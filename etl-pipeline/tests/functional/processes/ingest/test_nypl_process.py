@@ -10,4 +10,4 @@ def test_nypl_process():
     record_pipeline_process.runProcess(max_attempts=1)
 
     records = assert_ingested_records(source_name='nypl', expected_number_of_records=number_of_records_ingested)
-    records = assert_uploaded_manifests(records)
+    assert_uploaded_manifests(records)
