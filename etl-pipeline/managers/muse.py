@@ -115,11 +115,14 @@ class MUSEManager:
         skip_cover = ''
 
         for card in chapter_table.find_all(class_='card_text'):
-            title_item = card.find('li', class_='title')
+            title_item = card.find('li', class_='title') or card.find('div', class_='title')
+
             pdf_item = card.find(alt='Download PDF')
 
-            if not title_item.span.a:
-                pdf_manifest.addSection(title_item.span.string, '')
+            title_inner_content = title_item.span or title_item.h3
+
+            if not title_inner_content.a:
+                pdf_manifest.addSection(title_inner_content.string, '')
                 continue
 
             if card.parent.get('style') != 'margin-left:30px;':
@@ -131,7 +134,7 @@ class MUSEManager:
                     '{}{}{}'.format(
                         self.MUSE_ROOT, pdf_item.parent.get('href'), skip_cover
                     ),
-                    title_item.span.a.string,
+                    title_inner_content.a.string,
                 )
             #skipCover is updated with a query parameter to skip the intersitital cover page in every future chapter
             query_param = '?start=2'
