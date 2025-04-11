@@ -15,8 +15,8 @@ class RecordIngestor:
         self.source = source
         self.source_service = source_service
 
-        self.records_queue = os.environ.get('RECORD_PIPELINE_QUEUE')
-        self.records_route = os.environ.get('RECORD_PIPELINE_ROUTING_KEY')
+        self.records_queue = os.environ['RECORD_PIPELINE_QUEUE']
+        self.records_route = os.environ['RECORD_PIPELINE_ROUTING_KEY']
         
         self.queue_mananger = RabbitMQManager()
         self.queue_mananger.create_connection()
