@@ -64,8 +64,8 @@ class RecordPipelineProcess:
             self.db_manager.create_session()
 
             self.record_file_saver.save_record_files(record)
-            self._save_record(record)
-            frbrized_record = self.record_frbrizer.frbrize_record(record)
+            saved_record = self._save_record(record)
+            frbrized_record = self.record_frbrizer.frbrize_record(saved_record)
             clustered_records = self.record_clusterer.cluster_record(frbrized_record)
             self.link_fulfiller.fulfill_records_links(clustered_records)
                 
@@ -82,7 +82,7 @@ class RecordPipelineProcess:
 
         return Record(**message)
     
-    def _save_record(self, record: Record):
+    def _save_record(self, record: Record) -> Record:
         existing_record = (
             self.db_manager.session.query(Record)
                 .filter(Record.source_id == record.source_id)
@@ -91,12 +91,15 @@ class RecordPipelineProcess:
         )
 
         if existing_record:
-            existing_record = self._update_record(record, existing_record)
+            record = self._update_record(record, existing_record)
         else:
             self.db_manager.session.add(record)
 
         self.db_manager.session.commit()
-        logger.info(f'Saved record: {record}')
+        self.db_manager.session.refresh(record)
+
+        logger.info(f'{"Updated" if existing_record else "Created"} record: {record}')
+        return record
     
     def _update_record(self, record: Record, existing_record: Record) -> Record:
         for attribute, value in record:
