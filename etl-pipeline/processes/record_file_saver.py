@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 from digital_assets import get_stored_file_url
 from logger import create_log
 from managers import S3Manager
-
+from model import Record
 
 logger = create_log(__name__)
 
@@ -16,6 +16,11 @@ class RecordFileSaver:
     def __init__(self, storage_manager: S3Manager):
         self.storage_manager = storage_manager
         self.file_bucket = os.environ.get('FILE_BUCKET')
+
+    def save_record_files(self, record: Record):
+        self.storage_manager.store_pdf_manifest(record=record, bucket_name=self.file_bucket)
+
+        # TODO: look at has_part and save files
 
     def store_file(self, file_url: str, file_path: str):
         try:
