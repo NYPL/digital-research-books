@@ -1,7 +1,9 @@
 import pytest
 
 from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 
+from model import Record
 from managers import SFRRecordManager
 
 
@@ -12,11 +14,9 @@ class TestSFRRecordManager:
         return SFRRecordManager(mocker.MagicMock(), {'2b': {'ger': 'deu'}})
 
     @pytest.fixture
-    def testDCDWRecord(self, mocker):
-        mockUUID = mocker.MagicMock()
-        mockUUID.hex = 'testUUID'
-        return mocker.MagicMock(
-            uuid=mockUUID,
+    def testDCDWRecord(self):
+        return Record(
+            uuid=uuid4(),
             title='Test Title',
             alternative=['Test Alt 1', 'Test Alt 2'],
             medium='testing',
@@ -38,7 +38,7 @@ class TestSFRRecordManager:
             has_part=[
                 '|url1|test|test|{"cover": true}',
                 '1|url2|test|test|{"test": "flag"}',
-                '2|url3|test|test|'
+                '2|url3|test|test|{"test": "test"}'
             ],
             coverage=['tst|Test Location|1']
         )
@@ -213,7 +213,7 @@ class TestSFRRecordManager:
         assert list(testWork['medium'].elements()) == ['testing']
         assert list(testWork['series_data'].elements()) == ['test ser|1|series']
         assert list(testEdition['volume_data'].elements()) == ['test vol|1|volume']
-        assert list(testEdition['edition_data'].elements()) == ['testVersion']
+        assert list(testEdition['edition_data'].elements()) == ['testVersion|None']
         assert list(testWork['authors']) == ['Test Author']
         assert list(testEdition['publishers']) == ['Test Publisher']
         assert list(testEdition['publication_place'].elements()) == ['Test Publication Place']
@@ -228,7 +228,7 @@ class TestSFRRecordManager:
         assert list(testEdition['extent'].elements()) == ['Test Extent']
         assert testWork['measurements'] == set(['true|government_doc'])
         assert testEdition['measurements'] == set(['test|other'])
-        assert testEdition['dcdw_uuids'] == ['testUUID']
+        assert testEdition['dcdw_uuids'] == [testDCDWRecord.uuid.hex]
         mockItemBuild.assert_called_once_with(testEdition, testDCDWRecord, set(['Contrib 2|||provider']))
         mockNormalizeDates.assert_called_once_with(['Date 1', 'Date 2'])
 
@@ -241,7 +241,7 @@ class TestSFRRecordManager:
         assert len(testEditionData['items']) == 3
         assert testEditionData['items'][2] is None
         assert testEditionData['items'][0]['links'][0] == 'url2|test|{"test": "flag"}'
-        assert testEditionData['items'][1]['links'][0] == 'url3|test|'
+        assert testEditionData['items'][1]['links'][0] == 'url3|test|{"test": "test"}'
         assert testEditionData['items'][0]['content_type'] == 'ebook'
         assert testEditionData['items'][0]['publisher_project_source'] == 'TestPubProjSource'
         assert testEditionData['items'][1]['source'] == 'test'

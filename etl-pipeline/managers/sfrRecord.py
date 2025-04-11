@@ -266,20 +266,18 @@ class SFRRecordManager:
         startPos = len(editionData['items']) - 1
         editionData['items'].extend([None] * number_of_parts)
 
-        for item in rec.has_part:
-            no, uri, source, linkType, flags = tuple(item.split('|'))
-
+        for item in rec.parts:
             try:
-                linkFlags = json.loads(flags)
+                linkFlags = json.loads(item.flags)
                 linkFlags = linkFlags if isinstance(linkFlags, dict) else {}
             except json.decoder.JSONDecodeError:
                 linkFlags = {}
 
-            if linkFlags.get('cover', False) is True or 'covers' in uri:
-                editionData['links'].append('{}|{}|{}'.format(uri, linkType, flags))
+            if linkFlags.get('cover', False) is True or 'covers' in item.url:
+                editionData['links'].append('{}|{}|{}'.format(item.url, item.file_type, item.flags))
                 continue
 
-            itemPos = startPos + int(no)
+            itemPos = startPos + int(item.index)
             if editionData['items'][itemPos] is None:
                 editionData['items'][itemPos] = {
                     'links': [],
@@ -290,7 +288,7 @@ class SFRRecordManager:
                 **editionData['items'][itemPos],
                 **{
                     'record_id': rec.id,
-                    'source': source,
+                    'source': item.source,
                     'publisher_project_source': rec.publisher_project_source,
                     'content_type': 'ebook',
                     'modified': rec.date_submitted,
@@ -298,7 +296,7 @@ class SFRRecordManager:
                 }
             }
 
-            editionData['items'][itemPos]['links'].append('{}|{}|{}'.format(uri, linkType, flags))
+            editionData['items'][itemPos]['links'].append('{}|{}|{}'.format(item.url, item.file_type, item.flags))
 
             editionData['items'][itemPos]['identifiers'].update([
                 i for i in list(filter(lambda x: re.search(r'\|(?!isbn|issn|oclc|lccn|owi|ddc|lcc|nypl).*$', x), rec.identifiers))
@@ -309,7 +307,7 @@ class SFRRecordManager:
             if rec.coverage and len(rec.coverage) > 0:
                 for location in rec.coverage:
                     locationCode, locationName, itemNo = tuple(location.split('|'))
-                    if itemNo == no:
+                    if itemNo == str(item.index):
                         editionData['items'][itemPos]['physical_location'] = {
                             'code': locationCode,
                             'name': locationName

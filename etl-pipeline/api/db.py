@@ -185,7 +185,17 @@ class DBClient():
         return (baseQuery.count(), baseQuery.offset(offset).limit(size).all())
 
     def fetchSingleCollection(self, uuid):
-        return self._query_collections().filter(Collection.uuid == uuid).one()
+        return (
+            self.session.query(Collection)
+                .options(
+                    joinedload(Collection.editions),
+                    joinedload(Collection.editions, Edition.links),
+                    joinedload(Collection.editions, Edition.items),
+                    joinedload(Collection.editions, Edition.items, Item.links),
+                    joinedload(Collection.editions, Edition.items, Item.rights),
+                )
+                .filter(Collection.uuid == uuid).one()
+        )
 
     def fetchCollections(self, sort=None, page=1, perPage=10):
         offset = (page - 1) * perPage
@@ -203,25 +213,18 @@ class DBClient():
             sort_clause = Collection.title
 
         return (
-            self._query_collections()
-                .order_by(sort_clause)
-                .offset(offset)
-                .limit(perPage)
-                .all()
-        )
-
-    def _query_collections(self):
-        return (
             self.session.query(Collection)
                 .options(
                     joinedload(Collection.editions),
-                    joinedload(Collection.editions, Edition.work),
                     joinedload(Collection.editions, Edition.links),
-                    joinedload(Collection.editions, Edition.identifiers),
                     joinedload(Collection.editions, Edition.items),
                     joinedload(Collection.editions, Edition.items, Item.links),
                     joinedload(Collection.editions, Edition.items, Item.rights),
                 )
+                .order_by(text(sort))
+                .offset(offset)
+                .limit(perPage)
+                .all()
         )
 
     def fetchAutomaticCollection(self, collection_id: int):
