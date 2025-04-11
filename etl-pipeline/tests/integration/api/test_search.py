@@ -16,6 +16,7 @@ from .utils import assert_response_status
 def test_search(endpoint, expected_status, test_title):
     url = os.getenv('DRB_API_URL') + endpoint.format(keyword=quote(test_title))
     response = requests.get(url)
+    print (response)
 
     assert response.status_code is not None
     assert_response_status(url, response, expected_status)
