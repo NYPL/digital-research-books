@@ -15,7 +15,7 @@ class RecordFileSaver:
 
     def __init__(self, storage_manager: S3Manager):
         self.storage_manager = storage_manager
-        self.file_bucket = os.environ.get('FILE_BUCKET')
+        self.file_bucket = os.environ['FILE_BUCKET']
 
     def save_record_files(self, record: Record):
         self.storage_manager.store_pdf_manifest(record=record, bucket_name=self.file_bucket)

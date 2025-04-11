@@ -19,8 +19,8 @@ class RecordPipelineProcess:
     def __init__(self, *args):
         self.db_manager = DBManager()
 
-        self.record_queue = os.environ.get('RECORD_PIPELINE_QUEUE')
-        self.record_route = os.environ.get('RECORD_PIPELINE_ROUTING_KEY')
+        self.record_queue = os.environ['RECORD_PIPELINE_QUEUE']
+        self.record_route = os.environ['RECORD_PIPELINE_ROUTING_KEY']
 
         self.queue_manager = RabbitMQManager()
         self.queue_manager.create_connection()
