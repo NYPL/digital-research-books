@@ -5,7 +5,7 @@ import {
   PLACEHOLDER_COVER_LINK,
 } from "~/src/constants/editioncard";
 import { MediaTypes } from "~/src/constants/mediaTypes";
-import { Opds2Feed, OpdsLink } from "~/src/types/OpdsModel";
+import { Opds2Feed, OpdsLink, OpdsPublication } from "~/src/types/OpdsModel";
 
 type ReadOnlineTypes = "readable" | "embedable";
 
@@ -18,6 +18,13 @@ export default class CollectionUtils {
     if (!collection.publications || collection.publications.length === 0)
       return PLACEHOLDER_COVER_LINK;
     const coverLink = collection.publications[0].images.find((link) => {
+      return MediaTypes.display.includes(link.type);
+    });
+    return coverLink ? formatUrl(coverLink.href) : PLACEHOLDER_COVER_LINK;
+  }
+
+  static getItemCover(collectionItem: OpdsPublication): string {
+    const coverLink = collectionItem.images.find((link) => {
       return MediaTypes.display.includes(link.type);
     });
     return coverLink ? formatUrl(coverLink.href) : PLACEHOLDER_COVER_LINK;
