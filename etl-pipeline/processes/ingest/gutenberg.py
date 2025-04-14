@@ -9,6 +9,7 @@ from managers import DBManager, RabbitMQManager
 from model import get_file_message, FileFlags, Part, Source
 from logger import create_log
 from ..record_buffer import RecordBuffer
+from ..record_ingestor import RecordIngestor
 from services import GutenbergService
 from .. import utils
 
@@ -34,6 +35,9 @@ class GutenbergProcess():
         self.file_bucket = os.environ['FILE_BUCKET']
 
         self.gutenberg_service = GutenbergService()
+        self.record_ingestor = RecordIngestor(
+            source_service=self.gutenburg_service, source=Source.GUTENBERG.VALUE,
+        )
 
     def runProcess(self) -> int:
         records = self.gutenberg_service.get_records(
@@ -108,7 +112,7 @@ class GutenbergProcess():
             return
 
         for cover_data in yaml_file.get('covers', []):
-            if cover_data.get('cover_type') == 'generated': 
+            if cover_data.get('cover_type') == 'generated':
                 continue
 
             mime_type, _ = mimetypes.guess_type(cover_data.get('image_path'))
