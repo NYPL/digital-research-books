@@ -225,4 +225,4 @@ Boolean flags used in the API:
 - `download`: Book is downloadable
 - `catalog`: Book is requestable but not readable online
 - `nypl_login`: Requestable by NYPL patrons
-- `limited_access`: Limited Access book for NYPL patrons
+- `fulfill_limited_access`: Limited Access book for NYPL patrons

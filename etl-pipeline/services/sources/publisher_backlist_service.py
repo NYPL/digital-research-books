@@ -184,9 +184,11 @@ class PublisherBacklistService(SourceService):
 
                 publisher_backlist_record = PublisherBacklistMapping(record_metadata)
                 publisher_backlist_record.applyMapping()
-                hathi_id = PublisherBacklistService.get_hathi_id(publisher_backlist_record.record)
-                if not hathi_id:
+
+                if publisher_backlist_record.record.source != 'UofMichigan Backlist':
                     continue
+                
+                hathi_id = PublisherBacklistService.get_hathi_id(publisher_backlist_record.record)
 
                 try:
                     file_url = self.download_file_from_location(hathi_id, record_metadata, record_permissions, publisher_backlist_record.record)
@@ -201,24 +203,26 @@ class PublisherBacklistService(SourceService):
                     url=file_url,
                     source=publisher_backlist_record.record.source,
                     file_type='application/pdf',
-                    flags=str(FileFlags(download=record_permissions['is_downloadable'], nypl_login=record_permissions['requires_login']))
+                    flags=str(FileFlags(download=record_permissions['is_downloadable'], nypl_login=record_permissions['requires_login'], fulfill_limited_access=record_permissions['requires_login']))
                 )))
+
                 try:
-                    cover_url = self.extract_cover_url(hathi_id)
+                    if hathi_id:
+                        cover_url = self.extract_cover_url(hathi_id)
+
+                        publisher_backlist_record.record.has_part.append(str(Part(
+                            index=2,
+                            url=cover_url,
+                            source=publisher_backlist_record.record.source,
+                            file_type="image/png",
+                            flags=str(FileFlags(cover=True)),
+                        )))
                 except Exception:
                     logger.exception("Failed to generate cover")
-                else:
-                    publisher_backlist_record.record.has_part.append(str(Part(
-                        index=2,
-                        url=cover_url,
-                        source=publisher_backlist_record.record.source,
-                        file_type="image/png",
-                        flags=str(FileFlags(cover=True)),
-                    )))
 
                 self.s3_manager.store_pdf_manifest(
                     publisher_backlist_record.record, self.file_bucket,
-                    flags=FileFlags(reader=True, nypl_login=record_permissions['requires_login']),
+                    flags=FileFlags(reader=True, nypl_login=record_permissions['requires_login'], fulfill_limited_access=record_permissions['requires_login']),
                     path='publisher_backlist',
                 )
                 mapped_records.append(publisher_backlist_record)
@@ -300,7 +304,8 @@ class PublisherBacklistService(SourceService):
 
         bucket = self.file_bucket if not record_permissions['requires_login'] else self.limited_file_bucket
         file_path = f'{self.title_prefix}/{record_metadata[SOURCE_FIELD][0]}/{file_name}'
-        self.s3_manager.put_object(file.getvalue(), file_path, bucket)
+        file_permissions = None if bucket == self.limited_file_bucket else 'public-read'
+        self.s3_manager.put_object(file.getvalue(), file_path, bucket, bucket_permissions=file_permissions)
 
         return get_stored_file_url(storage_name=bucket, file_path=file_path)
 

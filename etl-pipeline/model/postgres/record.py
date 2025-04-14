@@ -76,7 +76,7 @@ class FileFlags:
     embed: bool = False
     download: bool = False
     cover: bool = False
-    limited_access: bool = False
+    fulfill_limited_access: bool = False
     nypl_login: bool = False
 
     def __str__(self):

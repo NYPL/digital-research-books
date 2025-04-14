@@ -1,3 +1,4 @@
+import json
 import os
 
 from logger import create_log
@@ -30,19 +31,19 @@ class RedriveRecordsProcess:
             if self.params.process_type != 'complete':
                 query_filters.append(Record.cluster_status == False)
             
-            source_ids = (
-                self.db_manager.session.query(Record.source_id)
+            records = (
+                self.db_manager.session.query(Record)
                     .filter(*query_filters)
                     .yield_per(1000)
             )
 
             redrive_count = 0
 
-            for count, (source_id, *_) in enumerate(source_ids, start=1):
+            for count, record in enumerate(records, start=1):
                 self.rabbitmq_manager.send_message_to_queue(
                     queue_name=self.records_queue, 
                     routing_key=self.records_route, 
-                    message={ 'source': self.params.source, 'sourceId': source_id }
+                    message=json.dumps(record.to_dict(), default=str)
                 )
 
                 redrive_count = count
