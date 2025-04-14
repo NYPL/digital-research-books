@@ -23,6 +23,13 @@ export default class CollectionUtils {
     return coverLink ? formatUrl(coverLink.href) : PLACEHOLDER_COVER_LINK;
   }
 
+  static getItemCover(collectionItem: OpdsPublication): string {
+    const coverLink = collectionItem.images.find((link) => {
+      return MediaTypes.display.includes(link.type);
+    });
+    return coverLink ? formatUrl(coverLink.href) : PLACEHOLDER_COVER_LINK;
+  }
+
   // TODO: replace with collection_id property that will be added on backend response
   static getId(links: OpdsLink[]): string {
     if (!links || links.length === 0) return "";

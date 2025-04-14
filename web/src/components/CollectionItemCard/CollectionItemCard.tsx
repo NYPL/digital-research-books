@@ -29,7 +29,7 @@ export const CollectionItemCard: React.FC<{
   return (
     <Card
       imageProps={{
-        src: CollectionUtils.getCover(collectionItem),
+        src: CollectionUtils.getItemCover(collectionItem),
         fallbackSrc: PLACEHOLDER_COVER_LINK,
         size: "xsmall",
         aspectRatio: "original",
