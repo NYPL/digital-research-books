@@ -37,4 +37,3 @@ jobs:
       - name: Force ECS Update
         run: |
           aws ecs update-service --cluster sfr-pipeline-qa-tf --service sfr-pipeline-qa-tf --force-new-deployment
-          aws ecs wait services-stable --cluster sfr-pipeline-qa-tf --services sfr-pipeline-qa-tf
