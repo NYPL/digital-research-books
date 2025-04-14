@@ -184,9 +184,6 @@ class PublisherBacklistService(SourceService):
 
                 publisher_backlist_record = PublisherBacklistMapping(record_metadata)
                 publisher_backlist_record.applyMapping()
-
-                if publisher_backlist_record.record.source != 'UofMichigan Backlist':
-                    continue
                 
                 hathi_id = PublisherBacklistService.get_hathi_id(publisher_backlist_record.record)
 
