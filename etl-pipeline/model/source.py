@@ -9,3 +9,4 @@ class Source(Enum):
     MET = 'met'
     MUSE = 'muse'
     NYPL = 'nypl'
+    HATHI = 'hathitrust'
