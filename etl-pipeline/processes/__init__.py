@@ -22,7 +22,7 @@ from .ingest.publisher_backlist import PublisherBacklistProcess
 from .ingest.clacso import CLACSOProcess
 from .record_ingestor import RecordIngestor
 from .link_fulfiller import LinkFulfiller
-from .record_frbrizer import RecordFRBRizer
+from .record_embellisher import RecordEmbellisher
 from .record_file_saver import RecordFileSaver
 from .record_clusterer import RecordClusterer
 from .record_pipeline import RecordPipelineProcess

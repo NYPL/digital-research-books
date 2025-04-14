@@ -2,7 +2,7 @@ import json
 import os
 from time import sleep
 
-from .record_frbrizer import RecordFRBRizer
+from .record_embellisher import RecordEmbellisher
 from .record_clusterer import RecordClusterer
 from .link_fulfiller import LinkFulfiller
 
@@ -25,7 +25,7 @@ class RecordPipelineProcess:
         self.rabbitmq_manager.create_connection()
         self.rabbitmq_manager.create_or_connect_queue(self.record_queue, self.record_route)
 
-        self.record_frbrizer = RecordFRBRizer(db_manager=self.db_manager)
+        self.record_embellisher = RecordEmbellisher(db_manager=self.db_manager)
         self.record_clusterer = RecordClusterer(db_manager=self.db_manager)
         self.link_fulfiller = LinkFulfiller(db_manager=self.db_manager)
 
@@ -65,8 +65,8 @@ class RecordPipelineProcess:
                     .first()
             )
 
-            frbrized_record = self.record_frbrizer.frbrize_record(record)
-            clustered_records = self.record_clusterer.cluster_record(frbrized_record)
+            embellished_record = self.record_embellisher.embellish_record(record)
+            clustered_records = self.record_clusterer.cluster_record(embellished_record)
             self.link_fulfiller.fulfill_records_links(clustered_records)
                 
             self.rabbitmq_manager.acknowledge_message_processed(message_props.delivery_tag)
