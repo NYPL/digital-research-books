@@ -12,7 +12,15 @@ from .record_buffer import RecordBuffer
 logger = create_log(__name__)
 
 
-class RecordFRBRizer:
+class RecordEmbellisher:
+    """Enriches bibliographic records with related works and editions from the OCLC catalog.
+    
+    This class handles the process of:
+    1. Finding records based on identifiers (ISBN, ISSN, OCLC numbers, etc.)
+    2. Retrieving work and edition data from OCLC
+    3. Creating connections between records
+    4. Managing database updates
+    """
 
     def __init__(self, db_manager: DBManager):
         self.db_manager = db_manager
@@ -24,36 +32,41 @@ class RecordFRBRizer:
 
         self.record_buffer = RecordBuffer(db_manager=self.db_manager)
 
-    def frbrize_record(self, record: Record) -> Record:
+    def embellish_record(self, record: Record) -> Record:
         self._add_works_for_record(record=record)
 
         self.record_buffer.flush()
 
+        # TODO: change this to embellish_status
         record.frbr_status = 'complete'
 
         self.db_manager.session.add(record)
         self.db_manager.session.commit()
 
-        logger.info(f'FRBRized record: {record}')
+        logger.info(f'Embellished record: {record}')
 
         return record
 
     def _add_works_for_record(self, record: Record):
+        """Find works related to this record based on identifiers or metadata."""
         author = record.authors[0].split('|')[0] if record.authors else None
         title = record.title
 
+        # Try identifier-based matching first
         for id, id_type in self._get_queryable_identifiers(record.identifiers):
             if self.redis_manager.check_or_set_key('classify', id, id_type):
                 continue
 
             search_query = self.oclc_catalog_manager.generate_search_query(identifier=id, identifier_type=id_type)
             self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
-
+        
+        # Fall back to author/title search if no results
         if self.record_buffer.ingest_count == 0 and len(self.record_buffer.records) == 0 and author and title:
             search_query = self.oclc_catalog_manager.generate_search_query(author=author, title=title)
             self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
 
     def _add_works(self, oclc_bibs: list):
+        """Process a list of OCLC bibliographic records."""
         for oclc_bib in oclc_bibs:
             owi_number, related_oclc_numbers = self._add_work(oclc_bib) 
             
