@@ -5,7 +5,7 @@ import {
   PLACEHOLDER_COVER_LINK,
 } from "~/src/constants/editioncard";
 import { MediaTypes } from "~/src/constants/mediaTypes";
-import { Opds2Feed, OpdsLink } from "~/src/types/OpdsModel";
+import { Opds2Feed, OpdsLink, OpdsPublication } from "~/src/types/OpdsModel";
 
 type ReadOnlineTypes = "readable" | "embedable";
 
