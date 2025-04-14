@@ -25,4 +25,4 @@ from .link_fulfiller import LinkFulfiller
 from .record_frbrizer import RecordFRBRizer
 from .record_file_saver import RecordFileSaver
 from .record_clusterer import RecordClusterer
-from .record_pipeline import RecordPipelineProcess
+from .record_pipeline.record_pipeline import RecordPipelineProcess

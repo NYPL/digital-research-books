@@ -1,13 +1,11 @@
 from datetime import datetime
 import io
 import os
-import boto3
 import requests
 import urllib.parse
 from enum import Enum
-from typing import Optional
-from model import Record, Work, Edition, Item
-from sqlalchemy.orm import joinedload
+from typing import Generator, Optional
+from model import Record
 
 from digital_assets import get_stored_file_url
 from logger import create_log
@@ -52,130 +50,17 @@ class PublisherBacklistService(SourceService):
         self.ssm_service = SSMService()
         self.airtable_auth_token = self.ssm_service.get_parameter(
             "airtable/pub-backlist/api-key"
-        )
-
-    def delete_records(self):
-        records = self.get_publisher_backlist_records(deleted=True)
-
-        self.db_manager.create_session()
-
-        for record in records:
-            record_metadata = record.get("fields")
-
-            if not record_metadata:
-                continue
-
-            record = (
-                self.db_manager.session.query(Record)
-                .filter(Record.source_id == record_metadata["DRB_Record ID"])
-                .first()
-            )
-
-            if not record:
-                continue
-
-            try:
-                self.delete_record_digital_assets(record)
-                self.delete_record_data(record)
-            except:
-                logger.exception(f"Failed to delete record: {record.id}")
-
-        self.db_manager.close_connection()
-
-    def delete_record_digital_assets(self, record: Record):
-        for part in record.has_part:
-            _, link, *_ = part.split("|")
-            url = urllib.parse.urlparse(link)
-            bucket_name = url.hostname.split(".")[0]
-            file_path = url.path.lstrip("/")
-
-            self.s3_manager.client.delete_object(Bucket=bucket_name, Key=file_path)
-
-    def delete_record_data(self, record: Record):
-        items = (
-            self.db_manager.session.query(Item)
-            .filter(Item.record_id == record.id)
-            .all()
-        )
-        edition_ids = set([item.edition_id for item in items])
-
-        self.db_manager.session.delete(record)
-
-        for item in items:
-            self.db_manager.session.delete(item)
-
-        self.db_manager.session.commit()
-
-        deleted_edition_ids = {}
-        deleted_work_ids = set()
-        work_ids = set()
-        work_ids_to_uuids = {}
-
-        for edition_id in edition_ids:
-            edition = (
-                self.db_manager.session.query(Edition)
-                .options(joinedload(Edition.items))
-                .filter(Edition.id == edition_id)
-                .first()
-            )
-
-            if edition and not edition.items:
-                self.db_manager.session.delete(edition)
-
-                work_ids.add(edition.work_id)
-                deleted_edition_ids[edition_id] = edition.work_id
-
-        self.db_manager.session.commit()
-
-        for work_id in work_ids:
-            work = (
-                self.db_manager.session.query(Work)
-                .options(joinedload(Work.editions))
-                .filter(Work.id == work_id)
-                .first()
-            )
-            work_ids_to_uuids[work.id] = work.uuid
-
-            if work and not work.editions:
-                self.db_manager.session.delete(work)
-
-                self.es_manager.client.delete(
-                    index=os.environ["ELASTICSEARCH_INDEX"], id=work.uuid
-                )
-
-                deleted_work_ids.add(work_id)
-
-        self.db_manager.session.commit()
-
-        for edition_id, work_id in deleted_edition_ids.items():
-            if work_id not in deleted_work_ids:
-                work_uuid = work_ids_to_uuids[work_id]
-                work_document = self.es_manager.client.get(
-                    index=os.environ["ELASTICSEARCH_INDEX"], id=work_uuid
-                )
-                editions = work_document["_source"].get("editions", [])
-
-                updated_editions = [
-                    edition for edition in editions if edition.get("id") != edition_id
-                ]
-                work_document["_source"]["editions"] = updated_editions
-
-                self.es_manager.client.index(
-                    index=os.environ["ELASTICSEARCH_INDEX"],
-                    id=work_uuid,
-                    body=work_document["_source"],
-                )
+        )     
 
     def get_records(
         self,
         start_timestamp: datetime = None,
         offset: Optional[int] = None,
         limit: Optional[int] = None,
-    ) -> list[PublisherBacklistMapping]:
+    ) -> Generator[Record, None, None]:
         records = self.get_publisher_backlist_records(
             deleted=False, start_timestamp=start_timestamp, offset=offset, limit=limit
         )
-        mapped_records = []
 
         for record in records:
             try:
@@ -222,13 +107,10 @@ class PublisherBacklistService(SourceService):
                     flags=FileFlags(reader=True, nypl_login=record_permissions['requires_login'], fulfill_limited_access=record_permissions['requires_login']),
                     path='publisher_backlist',
                 )
-                mapped_records.append(publisher_backlist_record)
+                
+                yield publisher_backlist_record.record
             except Exception:
-                logger.exception(
-                    f"Failed to process Publisher Backlist record: {record_metadata}"
-                )
-
-        return mapped_records
+                logger.exception(f"Failed to process Publisher Backlist record: {record_metadata}")
 
     def extract_cover_url(self, hathi_id: str) -> str:
         bucket = self.file_bucket
