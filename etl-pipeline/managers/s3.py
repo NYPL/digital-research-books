@@ -87,13 +87,13 @@ class S3Manager:
             object_type = mimetypes.guess_type(key)[0] or 'binary/octet-stream'
 
             return self.client.put_object(
-                ACL=bucket_permissions,
                 Body=object,
                 Bucket=bucket,
                 Key=key,
                 ContentMD5=object_md5,
                 ContentType=object_type,
-                Metadata={ 'md5Checksum': object_md5 }
+                Metadata={ 'md5Checksum': object_md5 },
+                **({ 'ACL': bucket_permissions } if bucket_permissions is not None else {})
             )
         except ClientError as e:
             raise S3Error(f'Unable to store file {key} in s3: {e}')

@@ -332,7 +332,7 @@ def limited_access_record_uuid(db_manager):
                 url='https://example.com/book.epub',
                 source=TEST_SOURCE,
                 file_type='application/epub+zip',
-                flags=str(FileFlags(reader=True, nypl_login=True))
+                flags=str(FileFlags(reader=True, nypl_login=True, fulfill_limited_access=True))
             )),
         ],
     }

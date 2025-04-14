@@ -43,7 +43,7 @@ def test_fulfill_links(db_manager, s3_manager, limited_access_record_uuid):
         url=get_stored_file_url(storage_name=os.environ['FILE_BUCKET'], file_path=manifest_key),
         source=record.source,
         file_type='application/webpub+json',
-        flags=str(FileFlags(reader=True, limited_access=True))
+        flags=str(FileFlags(reader=True, nypl_login=True, fulfill_limited_access=True))
     )))
 
     link_fulfiller = LinkFulfiller(db_manager)
