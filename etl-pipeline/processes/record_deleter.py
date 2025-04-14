@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import joinedload
+from sqlalchemy.orm import joinedload
 
 from logger import create_log
 from model import Edition, Item, Record, Work
@@ -17,19 +17,16 @@ class RecordDeleter:
 
     def delete_record(self, record: Record):
         self._delete_record_digital_assets(record)
-        self._delete_record(record)
+        self._update_frbr_model(record)
+
+        self.db_manager.session.delete(record)
+        self.db_manager.session.commit()
 
         logger.info(f'Deleted {record}')
 
-    def _delete_record(self, record: Record):
-        items = (
-            self.db_manager.session.query(Item)
-            .filter(Item.record_id == record.id)
-            .all()
-        )
-        edition_ids = set([item.edition_id for item in items])
-
-        self.db_manager.session.delete(record)
+    def _update_frbr_model(self, record: Record):
+        items = self.db_manager.session.query(Item).filter(Item.record_id == record.id).all()
+        edition_ids = { item.edition_id for item in items }
 
         for item in items:
             self.db_manager.session.delete(item)
@@ -44,9 +41,9 @@ class RecordDeleter:
         for edition_id in edition_ids:
             edition = (
                 self.db_manager.session.query(Edition)
-                .options(joinedload(Edition.items))
-                .filter(Edition.id == edition_id)
-                .first()
+                    .options(joinedload(Edition.items))
+                    .filter(Edition.id == edition_id)
+                    .first()
             )
 
             if edition and not edition.items:
@@ -60,18 +57,15 @@ class RecordDeleter:
         for work_id in work_ids:
             work = (
                 self.db_manager.session.query(Work)
-                .options(joinedload(Work.editions))
-                .filter(Work.id == work_id)
-                .first()
+                    .options(joinedload(Work.editions))
+                    .filter(Work.id == work_id)
+                    .first()
             )
             work_ids_to_uuids[work.id] = work.uuid
 
             if work and not work.editions:
                 self.db_manager.session.delete(work)
-
-                self.es_manager.client.delete(
-                    index=os.environ["ELASTICSEARCH_INDEX"], id=work.uuid
-                )
+                self.es_manager.client.delete(index=os.environ["ELASTICSEARCH_INDEX"], id=work.uuid)
 
                 deleted_work_ids.add(work_id)
 
@@ -80,14 +74,10 @@ class RecordDeleter:
         for edition_id, work_id in deleted_edition_ids.items():
             if work_id not in deleted_work_ids:
                 work_uuid = work_ids_to_uuids[work_id]
-                work_document = self.es_manager.client.get(
-                    index=os.environ["ELASTICSEARCH_INDEX"], id=work_uuid
-                )
+                work_document = self.es_manager.client.get(index=os.environ["ELASTICSEARCH_INDEX"], id=work_uuid)
                 editions = work_document["_source"].get("editions", [])
 
-                updated_editions = [
-                    edition for edition in editions if edition.get("id") != edition_id
-                ]
+                updated_editions = [edition for edition in editions if edition.get("id") != edition_id]
                 work_document["_source"]["editions"] = updated_editions
 
                 self.es_manager.client.index(
