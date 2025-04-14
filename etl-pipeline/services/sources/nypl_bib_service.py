@@ -10,6 +10,7 @@ from managers.nypl_api import NYPLAPIManager
 from mappings.nypl import NYPLMapping
 from .source_service import SourceService
 from sqlalchemy import text
+from model import Record
 
 
 logger = create_log(__name__)
@@ -39,7 +40,7 @@ class NYPLBibService(SourceService):
         start_timestamp: datetime=None,
         offset: int=0,
         limit: Optional[int]=None
-    ) -> Generator[NYPLMapping, None, None]:
+    ) -> Generator[Record, None, None]:
         nypl_bib_query = 'SELECT * FROM bib WHERE publish_year <= 1965'
 
         if start_timestamp:
@@ -62,7 +63,7 @@ class NYPLBibService(SourceService):
                 nypl_bib_record = self.parse_nypl_bib(bib_result_mapping)
 
                 if nypl_bib_record:
-                    yield nypl_bib_record
+                    yield nypl_bib_record.record
 
     def parse_nypl_bib(self, bib) -> Optional[NYPLMapping]:
         try:
@@ -82,7 +83,7 @@ class NYPLBibService(SourceService):
     def fetch_bib_items(self, bib):
         bib_endpoint = 'bibs/{}/{}/items'.format(bib['nypl_source'], bib['id'])
 
-        return self.nypl_api_manager.queryApi(bib_endpoint).get('data', [])
+        return self.nypl_api_manager.query_api(bib_endpoint).get('data', [])
 
     def load_location_codes(self):
         return requests.get(os.environ['NYPL_LOCATIONS_BY_CODE']).json()
@@ -103,7 +104,7 @@ class NYPLBibService(SourceService):
             if not copyright_status: 
                 return False
 
-        bib_status = self.nypl_api_manager.queryApi('bibs/{}/{}/is-research'.format(bib['nypl_source'], bib['id']))
+        bib_status = self.nypl_api_manager.query_api('bibs/{}/{}/is-research'.format(bib['nypl_source'], bib['id']))
 
         return bib_status.get('isResearch', False) is True
 
