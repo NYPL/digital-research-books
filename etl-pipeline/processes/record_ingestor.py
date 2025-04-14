@@ -13,7 +13,7 @@ logger = create_log(__name__)
 
 class RecordIngestor:
 
-    def __init__(self, source_service: SourceService, source: str):
+    def __init__(self, source: str):
         self.source = source
 
         self.records_queue = os.environ['RECORD_PIPELINE_QUEUE']
