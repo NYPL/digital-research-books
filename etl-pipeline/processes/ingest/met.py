@@ -10,7 +10,16 @@ class METProcess():
     def __init__(self, *args):
         self.met_service = METService()
         self.params = utils.parse_process_args(*args)
-        self.record_ingestor = RecordIngestor(source_service=self.met_service, source=Source.MET.value)
+        self.record_ingestor = RecordIngestor(source=Source.MET.value)
 
     def runProcess(self) -> int:
-        return self.record_ingestor.ingest(params=self.params)
+        start_timestamp = utils.get_start_datetime(
+            process_type=params.process_type, ingest_period=params.ingest_period,
+        ),
+        return self.record_ingestor.ingest(
+            self.met_service.get_records(
+                start_timestamp=start_timestamp,
+                offset=params.offset,
+                limit=params.limit,
+            ),
+        )
