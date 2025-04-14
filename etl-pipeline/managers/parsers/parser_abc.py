@@ -5,13 +5,13 @@ import re
 from managers.webpubManifest import WebpubManifest
 
 
-class AbstractParser(ABC):
+class ParserABC(ABC):
     TIMEOUT = 15
 
     @abstractmethod
-    def __init__(self, uri, mediaType, record):
+    def __init__(self, uri, media_type, record):
         self.uri = uri
-        self.mediaType = mediaType
+        self.media_type = media_type
         self.record = record
 
     @property
@@ -26,35 +26,35 @@ class AbstractParser(ABC):
             self._uri = value
 
     @abstractmethod
-    def validateURI(self):
+    def validate_uri(self):
         return True
 
     @abstractmethod
-    def createLinks(self):
-        return [(self.uri, None, self.mediaType, None, None)]
+    def create_links(self):
+        return [(self.uri, None, self.media_type, None, None)]
 
     @abstractmethod
-    def generateManifest(self, sourceURI, manifestURI):
-        manifest = WebpubManifest(sourceURI, 'application/pdf')
+    def generate_manifest(self, source_uri, manifest_uri):
+        manifest = WebpubManifest(source_uri, 'application/pdf')
 
         manifest.addMetadata(self.record)
 
-        manifest.addChapter(sourceURI, self.record.title)
+        manifest.addChapter(source_uri, self.record.title)
 
         manifest.links.append({
             'rel': 'self',
-            'href': manifestURI,
+            'href': manifest_uri,
             'type': 'application/webpub+json'
         })
 
         return manifest.toJson()
 
     @abstractmethod
-    def generateS3Root(self):
-        s3_bucket = os.environ['FILE_BUCKET']
-        s3_endpoint = os.environ.get('S3_ENDPOINT_URL', None)
+    def generate_s3_root(self):
+        bucket = os.environ['FILE_BUCKET']
+        endpoint = os.environ.get('S3_ENDPOINT_URL', None)
 
-        if s3_endpoint:
-            return f'{s3_endpoint}/{s3_bucket}/'
+        if endpoint:
+            return f'{endpoint}/{bucket}/'
 
-        return 'https://{}.s3.amazonaws.com/'.format(s3_bucket)
+        return 'https://{}.s3.amazonaws.com/'.format(bucket)

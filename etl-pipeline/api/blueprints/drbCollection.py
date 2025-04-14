@@ -288,7 +288,7 @@ def get_collection(uuid):
 
         if not collection:
             return APIUtils.formatResponseObject(404, response_type, { 'message:' f'No collection found with id {uuid}' })
-        
+
         opds_feed = constructOPDSFeed(collection, db_client, sort=sort, page=page, perPage=per_page)
 
         db_client.closeSession()
@@ -413,13 +413,12 @@ def get_collections():
 
             opds_feed.addGroup(group)
 
-        db_client.closeSession()
-        logger.info('Closed db session when querying collections')
-
         return APIUtils.formatOPDS2Object(200, opds_feed)
     except Exception:
         logger.exception('Unable to get collections')
         return APIUtils.formatResponseObject(500, response_type, { 'message': 'Unable to get collections' })
+    finally:
+        db_client.closeSession()
 
 
 def constructSortMethod(sort):
@@ -474,17 +473,19 @@ def constructOPDSFeed(
 
 
 def _addStaticPubsToFeed(opdsFeed, collection, path, page, perPage, sort):
-    opdsPubs = _buildPublications(collection.editions)
+    start = (page - 1) * perPage
+    end = start + perPage
+
+    opdsPubs = _buildPublications(collection.editions[start:end])
+    
     if sort:
         sorter, reversed_ = constructSortMethod(sort)
         opdsPubs.sort(key=sorter, reverse=reversed_)
 
-    start = (page - 1) * perPage
-    end = start + perPage
-    opdsFeed.addPublications(opdsPubs[start:end])
+    opdsFeed.addPublications(opdsPubs)
 
     OPDSUtils.addPagingOptions(
-        opdsFeed, path, len(opdsPubs), page=page, perPage=perPage
+        opdsFeed, path, len(collection.editions), page=page, perPage=perPage
     )
 
 

@@ -3,7 +3,7 @@ import requests
 from requests import ConnectionError
 
 from managers import DOABLinkManager
-from managers.doabParser import LinkError
+from managers.doab_parser import LinkError
 
 
 class TestDOABLinkManager:
@@ -31,7 +31,7 @@ class TestDOABLinkManager:
         parser_instances = []
         for i in range(3):
             mock_instance = mocker.MagicMock()
-            mock_instance.validateURI.return_value = True if i == 1 else False
+            mock_instance.validate_uri.return_value = True if i == 1 else False
 
             mock_parser = mocker.MagicMock()
             mock_parser.return_value = mock_instance
@@ -50,7 +50,7 @@ class TestDOABLinkManager:
         test_manager.record.has_part = test_has_parts
 
         mock_parser = mocker.MagicMock(uri='testSourceURI')
-        mock_parser.createLinks.return_value = [
+        mock_parser.create_links.return_value = [
             ('parseURI1', {'other': True}, 'test_type1', 'testManifest', None),
             ('parseURI2', {'other': False}, 'test_type2', None, 'testEPub')
         ]

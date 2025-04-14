@@ -2,7 +2,8 @@ import inspect
 from io import BytesIO
 from PIL import Image, UnidentifiedImageError
 
-import managers.coverFetchers as fetchers
+import digital_assets.cover_images as cover_images
+import managers.cover_fetchers as fetchers
 
 
 class CoverManager:
@@ -28,15 +29,15 @@ class CoverManager:
     def fetch_cover(self):
         for fetcher in self.fetchers:
             fetcher = fetcher(self.identifiers, self.db_session)
-            
-            if fetcher.hasCover() is True:
+
+            if fetcher.has_cover() is True:
                 self.fetcher = fetcher
                 return True
 
         return False
 
     def fetch_cover_file(self):
-        self.cover_content = self.fetcher.downloadCoverFile()
+        self.cover_content = self.fetcher.download_cover_file()
 
     def resize_cover_file(self):
         try:
@@ -45,19 +46,7 @@ class CoverManager:
             self.cover_content = None
             return None
 
-        original_ratio = original.width / original.height
-
-        resize_height = 400
-        resize_width = 300
-
-        if 400 * original_ratio > 300 and original_ratio > 1:
-            resize_height = int(round(300 / original_ratio))
-        elif 400 * original_ratio > 300:
-            resize_height = int(round(300 * original_ratio))
-        else:
-            resize_width = int(round(400 * original_ratio))
-
-        resized = original.resize((resize_width, resize_height))
+        resized = cover_images.resize_image_for_cover(original)
 
         resized_content = BytesIO()
         resized.save(resized_content, format=original.format)

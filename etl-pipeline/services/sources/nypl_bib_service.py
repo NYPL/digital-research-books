@@ -6,7 +6,7 @@ from typing import Generator, Optional
 from constants.get_constants import get_constants
 from logger import create_log
 from managers.db import DBManager
-from managers.nyplApi import NyplApiManager
+from managers.nypl_api import NYPLAPIManager
 from mappings.nypl import NYPLMapping
 from .source_service import SourceService
 from sqlalchemy import text
@@ -26,7 +26,7 @@ class NYPLBibService(SourceService):
         )
         self.bib_db_connection.generate_engine()
 
-        self.nypl_api_manager = NyplApiManager()
+        self.nypl_api_manager = NYPLAPIManager()
         self.nypl_api_manager.generateAccessToken()
 
         self.location_codes = self.load_location_codes()
