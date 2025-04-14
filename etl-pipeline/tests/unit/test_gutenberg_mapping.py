@@ -15,7 +15,7 @@ class TestGutenbergMapping:
 
             def applyMapping(self):
                 pass
-        
+
         return TestGutenberg()
 
     @pytest.fixture
@@ -55,9 +55,3 @@ class TestGutenbergMapping:
         assert testMapping.record.subjects == ['lcsh|1|test', 'fast|2|other']
         assert testMapping.record.contributors == ['Contributor|1234|n9876|Tester']
         assert testMapping.record.authors == ['Author1 (1950-2020)|||true', 'Author2|||false']
-        assert testMapping.record.has_part == [
-            '1|https://gutenberg.org/ebooks/1.epub.images|gutenberg|application/epub+zip|{"reader": false, "download": true, "catalog": false}',
-            '1|https://gutenberg.org/ebooks/1.epub.images|gutenberg|application/epub+zip|{"reader": true, "download": false, "catalog": false}',
-            '2|https://gutenberg.org/ebooks/1.epub.noimages|gutenberg|application/epub+zip|{"reader": false, "download": true, "catalog": false}',
-            '2|https://gutenberg.org/ebooks/1.epub.noimages|gutenberg|application/epub+zip|{"reader": true, "download": false, "catalog": false}'
-        ]

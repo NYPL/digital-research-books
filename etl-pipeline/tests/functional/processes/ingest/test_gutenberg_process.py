@@ -1,4 +1,4 @@
-from processes import GutenbergProcess
+from processes import RecordPipelineProcess, GutenbergProcess
 from .assert_ingested_records import assert_ingested_records
 from .assert_uploaded_manifests import assert_uploaded_manifests
 
@@ -8,6 +8,8 @@ def test_gutenberg_process():
 
     number_of_records_ingested = gutenberg_process.runProcess()
 
-    records = assert_ingested_records(source_name='gutenberg', expected_number_of_records=number_of_records_ingested)
+    record_pipeline_process = RecordPipelineProcess()
+    record_pipeline_process.runProcess(max_attempts=1)
 
+    records = assert_ingested_records(source_name='gutenberg', expected_number_of_records=number_of_records_ingested)
     assert_uploaded_manifests(records)

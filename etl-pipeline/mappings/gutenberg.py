@@ -8,7 +8,7 @@ class GutenbergMapping(XMLMapping):
         super(GutenbergMapping, self).__init__(source, namespace, constants)
         self.mapping = self.createMapping()
         self.yaml_file = yaml_file
-    
+
     def createMapping(self):
         return {
             'title': ('//dcterms:title/text()', '{0}'),
@@ -66,7 +66,7 @@ class GutenbergMapping(XMLMapping):
             self.record.subjects[i] = '{}|{}|{}'.format(
                 authority, *subjComponents[1:]
             )
-        
+
         # Parse contributors to set proper roles
         for i, contributor in enumerate(self.record.contributors):
             contribComponents = contributor.split('|')
@@ -82,24 +82,3 @@ class GutenbergMapping(XMLMapping):
             if '(-)' not in name: continue
 
             self.record.authors[i] = '|'.join([name.replace(' (-)', '')] + authorComponents)
-
-        # Add Read Online links
-        self.record.has_part = []
-        for i, extension in enumerate(['.images', '.noimages']):
-            epubDownloadLink = '{}|{}|{}|{}|{}'.format(
-                i + 1,
-                'https://gutenberg.org/ebooks/{}.epub{}'.format(gutenbergID, extension),
-                'gutenberg',
-                'application/epub+zip',
-                json.dumps({'reader': False, 'download': True, 'catalog': False})
-            )
-
-            epubReadLink = '{}|{}|{}|{}|{}'.format(
-                i + 1,
-                'https://gutenberg.org/ebooks/{}.epub{}'.format(gutenbergID, extension),
-                'gutenberg',
-                'application/epub+zip',
-                json.dumps({'reader': True, 'download': False, 'catalog': False})
-            )
-
-            self.record.has_part.extend([epubDownloadLink, epubReadLink])
