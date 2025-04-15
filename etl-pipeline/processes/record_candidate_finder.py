@@ -12,16 +12,6 @@ logger = create_log(__name__)
 
 
 class CandidateRecordFinder:
-    """Identifies candidate records that might be related to an input record.
-    
-    This class implements a multi-step approach to find potential matches:
-    1. Uses identifiers (ISBN, ISSN, OCLC, etc.) to find initial candidates
-    2. Filters candidates by title similarity
-    3. Follows identifier links iteratively to find related records
-    
-    The output is a set of candidate records that will be further processed
-    by clustering algorithms for entity resolution.
-    """
     
     # Maximum number of "hops" to follow when matching records through identifiers
     MAX_MATCH_DISTANCE = 4
