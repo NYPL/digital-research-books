@@ -79,7 +79,7 @@ class TestOCLCClassifyProcess:
             mocked_method.assert_called_once()
 
     def test_classify_records_not_full(self, test_instance, mocker):
-        mock_frbrize_record = mocker.patch.object(ClassifyProcess, 'frbrize_record')
+        mock_embellish_record = mocker.patch.object(ClassifyProcess, 'embellish_record')
         mock_query = mocker.MagicMock()
 
         test_instance.db_manager.session.query().filter.return_value = mock_query
@@ -92,7 +92,7 @@ class TestOCLCClassifyProcess:
 
         test_instance.classify_records()
 
-        mock_frbrize_record.assert_has_calls([mocker.call(record) for record in mock_records])
+        mock_embellish_record.assert_has_calls([mocker.call(record) for record in mock_records])
 
     def test_classify_records_custom_range(self, test_instance, mocker):
         mock_embellish_record = mocker.patch.object(ClassifyProcess, 'embellish_record')
