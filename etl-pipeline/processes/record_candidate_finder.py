@@ -11,15 +11,22 @@ from logger import create_log
 logger = create_log(__name__)
 
 
-class RecordBlocker:
-    """Performs blocking on Records to find a candidate pool of potentially
-    related records.
+class CandidateRecordFinder:
+    """Identifies candidate records that might be related to an input record.
+    
+    This class implements a multi-step approach to find potential matches:
+    1. Uses identifiers (ISBN, ISSN, OCLC, etc.) to find initial candidates
+    2. Filters candidates by title similarity
+    3. Follows identifier links iteratively to find related records
+    
+    The output is a set of candidate records that will be further processed
+    by clustering algorithms for entity resolution.
     """
     
     # Maximum number of "hops" to follow when matching records through identifiers
     MAX_MATCH_DISTANCE = 4
-    # Maximum number of records that can be in a block
-    BLOCK_SIZE_LIMIT = 10000
+    # Maximum number of records that can be in a candidate pool
+    CANDIDATE_POOL_LIMIT = 10000
     # Regular expression to identify identifiers that should be matched
     IDENTIFIERS_TO_MATCH = r"\|(?:isbn|issn|oclc|lccn|owi)$"
     
@@ -28,20 +35,19 @@ class RecordBlocker:
     
     def find_candidate_records(self, record: Record) -> List[Record]:
         """Find records that might be related to the input record.
-        
         Raises:
-            Exception: If the number of related records exceeds BLOCK_SIZE_LIMIT
+            Exception: If the number of candidate records exceeds CANDIDATE_POOL_LIMIT
         """
-        matched_record_ids = self._find_all_matching_record_ids(record)
+        candidate_record_ids = self._find_candidate_record_ids(record)
         
         # Include the original record's ID if it exists in the database
         if record.id:
-            matched_record_ids.append(record.id)
+            candidate_record_ids.append(record.id)
         
         # Query the actual Record objects
-        return self._get_records_by_ids(matched_record_ids)
+        return self._get_records_by_ids(candidate_record_ids)
     
-    def _find_all_matching_record_ids(self, record: Record) -> List[str]:
+    def _find_candidate_record_ids(self, record: Record) -> List[str]:
         """Finds all record IDs that might be related to the input record.
 
         Uses an iterative process to find potential matches:
@@ -52,19 +58,19 @@ class RecordBlocker:
         5. Repeat up to MAX_MATCH_DISTANCE times
         
         Raises:
-            Exception: If the number of matched records exceeds BLOCK_SIZE_LIMIT
+            Exception: If the number of candidates exceeds CANDIDATE_POOL_LIMIT
         """
         tokenized_record_title = self._tokenize_title(record.title)
         ids_to_check = {
             id for id in record.identifiers if re.search(self.IDENTIFIERS_TO_MATCH, id)
         }
 
-        matched_record_ids = set()
+        candidate_record_ids = set()
         checked_ids = set()
 
         for match_distance in range(0, self.MAX_MATCH_DISTANCE):
-            matched_records = self._get_matched_records(
-                list(ids_to_check), matched_record_ids.copy()
+            matched_records = self._get_records_matching_identifiers(
+                list(ids_to_check), candidate_record_ids.copy()
             )
 
             if not matched_records:
@@ -100,25 +106,18 @@ class RecordBlocker:
                         and id not in checked_ids
                     }
                 )
-                matched_record_ids.add(matched_record_id)
+                candidate_record_ids.add(matched_record_id)
 
-        if len(matched_record_ids) > self.BLOCK_SIZE_LIMIT:
+        if len(candidate_record_ids) > self.CANDIDATE_POOL_LIMIT:
             raise Exception(
-                f"Records matched is greater than {self.BLOCK_SIZE_LIMIT}"
+                f"Candidate pool size {len(candidate_record_ids)} exceeds limit of {self.CANDIDATE_POOL_LIMIT}"
             )
 
-        return list(matched_record_ids)
+        return list(candidate_record_ids)
     
-    def _get_matched_records(
+    def _get_records_matching_identifiers(
         self, identifiers: List[str], already_matched_record_ids: List[str]
     ) -> List[Tuple]:
-        """Queries database for records matching the given identifiers.
-        
-        Processes identifiers in batches to avoid database query size limits.
-        
-        Returns:
-            List of (title, id, identifiers, has_part) tuples for matching records
-        """
         batch_size = 100
         matched_records = []
 
@@ -193,12 +192,6 @@ class RecordBlocker:
     @staticmethod
     def _format_identifiers(identifiers: List[str]) -> str:
         """Formats identifiers for PostgreSQL array overlap query.
-        
-        Handles escaping of special characters and creates proper array syntax.
-        
-        Args:
-            identifiers: List of identifiers to format
-            
         Returns:
             Formatted string for Postgres array overlap query
         """
