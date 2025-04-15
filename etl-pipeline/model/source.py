@@ -8,3 +8,5 @@ class Source(Enum):
     LOC = 'loc'
     MET = 'met'
     MUSE = 'muse'
+    NYPL = 'nypl'
+    HATHI = 'hathitrust'

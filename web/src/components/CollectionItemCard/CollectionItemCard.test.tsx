@@ -25,7 +25,7 @@ describe("Collection Item Card", () => {
   });
   test("Shows cover", () => {
     expect(screen.getByAltText("").closest("img").src).toEqual(
-      "https://test-sfr-covers.s3.amazonaws.com/default/defaultCover.png"
+      "https://drb-files-qa.s3.amazonaws.com/covers/default/defaultCover.png"
     );
   });
   test("shows license", () => {

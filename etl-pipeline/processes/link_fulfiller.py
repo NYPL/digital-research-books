@@ -21,10 +21,8 @@ class LinkFulfiller:
 
     def fulfill_records_links(self, records: list[Record]):
         for record in records:
-            for part in record.parts:
-                if json.loads(part.flags).get('limited_access'):
-                    self._fulfill_manifest(record)
-                    logger.info(f'Fulfilled manifest links for record: {record}')
+            if any(json.loads(part.flags).get('fulfill_limited_access') for part in record.parts):
+                self._fulfill_manifest(record)
 
     def _fulfill_manifest(self, record: Record):
         manifest_part = next(filter(lambda part: part.file_type == 'application/webpub+json', record.parts), None)
@@ -46,8 +44,8 @@ class LinkFulfiller:
             Bucket=manifest_part.file_bucket, 
             Key=manifest_part.file_key, 
             Body=json.dumps(fulfilled_manifest, ensure_ascii=False), 
-            ACL= 'public-read', 
-            ContentType = 'application/json'
+            ACL='public-read', 
+            ContentType='application/json'
         )
 
     def _update_manifest_links(self, manifest_json: dict):
