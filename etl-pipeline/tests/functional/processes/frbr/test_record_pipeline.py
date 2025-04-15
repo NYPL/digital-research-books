@@ -25,7 +25,7 @@ def test_record_pipeline(db_manager, rabbitmq_manager: RabbitMQManager, unfrbriz
         message=json.dumps(record.to_dict(), default=str)
     )
 
-    sleep(1)
+    sleep(2)
 
     record_pipeline.runProcess(max_attempts=1)
     db_manager.session.refresh(record)
