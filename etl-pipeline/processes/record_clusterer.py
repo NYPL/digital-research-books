@@ -10,7 +10,7 @@ from managers import (
 )
 from constants.get_constants import get_constants
 from model import Record, Work
-from .record_blocking import RecordBlocker
+from .record_candidate_finder import CandidateRecordFinder
 
 
 logger = create_log(__name__)
@@ -20,7 +20,7 @@ class RecordClusterer:
     """Clusters related bibliographic records and transforms them into FRBR model objects.
     
     This class handles the process of:
-    1. Finding related records through identifier and title matching (blocking)
+    1. Identifying a candidate pool of related records
     2. Clustering those records using machine learning
     3. Creating Work/Edition/Item objects from the clusters
     4. Managing database updates and search indexing
@@ -28,7 +28,7 @@ class RecordClusterer:
 
     def __init__(self, db_manager: DBManager):
         self.db_manager = db_manager
-        self.blocker = RecordBlocker(db_manager=db_manager)
+        self.candidate_finder = CandidateRecordFinder(db_manager=db_manager)
 
         self.elastic_search_manager = ElasticsearchManager()
 
@@ -61,21 +61,19 @@ class RecordClusterer:
             raise e
 
     def _get_clustered_work_and_records(self, record: Record):
-        """Coordinates the clustering process for a single record.
-        """
-        # Blocking - Find candidate related records
-        records = self.blocker.find_candidate_records(record)
+        # Identify a candidate pool of related records
+        records = self.candidate_finder.find_candidate_records(record)
         record_ids = [r.id for r in records]
         
-        # Step 2: Clustering - Group records into edition clusters
+        # Group records into edition clusters
         clustered_editions = self._cluster_records(records)
         
-        # Step 3: Build FRBR model - Create Work/Edition/Item objects
+        # Build FRBR model - Create Work/Edition/Item objects
         work, stale_work_ids = self._create_work_from_editions(
             clustered_editions, records
         )
         
-        # Step 4: Update record status
+        # Update record status
         self._update_cluster_status(record_ids)
 
         return work, stale_work_ids, records
