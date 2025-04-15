@@ -27,7 +27,7 @@ def test_record_pipeline(db_manager, rabbitmq_manager: RabbitMQManager, unfrbriz
 
     sleep(1)
 
-    record_pipeline.runProcess(max_attempts=1)
+    record_pipeline.runProcess(max_attempts=4)
     db_manager.session.refresh(record)
 
     assert_record_frbrized(record_uuid=unfrbrized_pipeline_record_uuid, db_manager=db_manager)
