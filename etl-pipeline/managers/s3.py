@@ -9,6 +9,8 @@ from zipfile import ZipFile
 from managers import WebpubManifest
 from digital_assets import get_stored_file_url
 from model import Record, Part, FileFlags
+from managers import DOABLinkManager
+from model import Source
 
 from logger import create_log
 
@@ -27,27 +29,56 @@ class S3Manager:
         )
 
     def store_pdf_manifest(self, record: Record, bucket_name, flags=FileFlags(reader=True), path: str=None):
-        record_id = record.source_id.split('|')[0]
-        pdf_part = next(filter(lambda part: part.file_type == 'application/pdf', record.parts), None)
+        
+        if record.source == 'doab':
+            link_manager = DOABLinkManager(record)
 
-        if pdf_part is not None:
-            if path:
-                manifest_path = f'manifests/{path}/{record.source}/{record_id}.json'
-            else:
-                manifest_path = f'manifests/{record.source}/{record_id}.json'
-                
-            manifest_url = get_stored_file_url(storage_name=bucket_name, file_path=manifest_path)
-            manifest_json = self.generate_manifest(record=record, source_url=pdf_part.url, manifest_url=manifest_url)
+            link_manager.parse_links()
+            
+            for manifest in link_manager.manifests:
+                manifest_path, manifest_json = manifest
+                self.create_manifest_in_s3(manifest_path=manifest_path, manifest_json=manifest_json, bucket=bucket_name)
 
-            self.create_manifest_in_s3(manifest_path=manifest_path, manifest_json=manifest_json, bucket=bucket_name)
+                record.has_part.insert(0, str(Part(
+                    index=pdf_part.index,
+                    url=manifest_path,
+                    source=record.source,
+                    file_type='application/webpub+json',
+                    flags=str(flags)
+                )))
 
-            record.has_part.insert(0, str(Part(
-                index=pdf_part.index,
-                url=manifest_url,
-                source=record.source,
-                file_type='application/webpub+json',
-                flags=str(flags)
-            )))
+            for epub_link in link_manager.epub_links:
+                epub_path, epub_uri = epub_link
+                record.has_part.append(str(Part(
+                    index=1,
+                    url=epub_path,
+                    source=Source.LOC.value,
+                    file_type='application/epub+zip',
+                    flags=str(FileFlags(download=True)),
+                    source_url=epub_uri
+                )))
+        else:
+            record_id = record.source_id.split('|')[0]
+            pdf_part = next(filter(lambda part: part.file_type == 'application/pdf', record.parts), None)
+
+            if pdf_part is not None:
+                if path:
+                    manifest_path = f'manifests/{path}/{record.source}/{record_id}.json'
+                else:
+                    manifest_path = f'manifests/{record.source}/{record_id}.json'
+                    
+                manifest_url = get_stored_file_url(storage_name=bucket_name, file_path=manifest_path)
+                manifest_json = self.generate_manifest(record=record, source_url=pdf_part.url, manifest_url=manifest_url)
+
+                self.create_manifest_in_s3(manifest_path=manifest_path, manifest_json=manifest_json, bucket=bucket_name)
+
+                record.has_part.insert(0, str(Part(
+                    index=pdf_part.index,
+                    url=manifest_url,
+                    source=record.source,
+                    file_type='application/webpub+json',
+                    flags=str(flags)
+                )))
 
     def create_manifest_in_s3(self, manifest_path: str, manifest_json, bucket: str):
         self.put_object(manifest_json.encode('utf-8'), manifest_path, bucket)

@@ -22,24 +22,36 @@ class RecordIngestor:
         self.queue_mananger.create_connection()
         self.queue_mananger.create_or_connect_queue(self.records_queue, self.records_route)
 
-    def ingest(self, params: utils.ProcessParams) -> int:
+    def ingest(self, params: utils.ProcessParams, source_identifier: str = None) -> int:
         ingest_count = 0
 
         try:
-            records = self.source_service.get_records(
-                start_timestamp=utils.get_start_datetime(process_type=params.process_type, ingest_period=params.ingest_period),
-                offset=params.offset,
-                limit=params.limit
-            )
-
-            for record in records:
+            if params.record_id is not None:
+                record = self.source_service.get_single_record(
+                    record_id=params.record_id,
+                    source_identifier=source_identifier
+                )
                 self.queue_mananger.send_message_to_queue(
-                    queue_name=self.records_queue,
-                    routing_key=self.records_route,
-                    message=json.dumps(record.to_dict(), default=str)
+                        queue_name=self.records_queue,
+                        routing_key=self.records_route,
+                        message=json.dumps(record.to_dict(), default=str)
+                )
+                ingest_count += 1
+            else:
+                records = self.source_service.get_records(
+                    start_timestamp=utils.get_start_datetime(process_type=params.process_type, ingest_period=params.ingest_period),
+                    offset=params.offset,
+                    limit=params.limit
                 )
 
-                ingest_count += 1
+                for record in records:
+                    self.queue_mananger.send_message_to_queue(
+                        queue_name=self.records_queue,
+                        routing_key=self.records_route,
+                        message=json.dumps(record.to_dict(), default=str)
+                    )
+
+                    ingest_count += 1
         except Exception:
             logger.exception(f'Failed to ingest {self.source} records')
         finally:
