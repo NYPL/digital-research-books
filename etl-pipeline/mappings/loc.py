@@ -1,9 +1,10 @@
+import os
 from typing import Optional
 from uuid import uuid4
 
 from model import FileFlags, FRBRStatus, Part, Record, Source
 from .rights import get_rights_string
-
+from digital_assets import get_stored_file_url
 
 # LOC response model: https://www.loc.gov/apis/json-and-yaml/responses/item-and-resource/    
 def map_loc_record(source_record: dict) -> Optional[Record]:
@@ -17,6 +18,7 @@ def map_loc_record(source_record: dict) -> Optional[Record]:
 
     item_details = source_record.get('item', {})
     lccn = source_record.get('number_lccn')[0]
+    source_id = f'{lccn}|lccn'
 
     return Record(
         uuid=uuid4(),
@@ -25,7 +27,7 @@ def map_loc_record(source_record: dict) -> Optional[Record]:
         source=Source.LOC.value,
         title=source_record.get('title'),
         alternative=source_record.get('other_title'),
-        source_id=f'{lccn}|lccn',
+        source_id=source_id,
         medium=_get_medium(source_record),
         authors=[f'{author}|||true' for author in source_record.get('contributor', [])] if source_record.get('contributor') else None,
         dates=[f"{source_record.get('date')}|publication_date"] if source_record.get('date') else None,
@@ -42,7 +44,7 @@ def map_loc_record(source_record: dict) -> Optional[Record]:
         abstract=source_record.get('description')[0] if source_record.get('description') else None,
         is_part_of=[f'{part_of}|collection' for part_of in source_record.get('partof')] if source_record.get('partof') else None,
         spatial=item_details.get('location')[0] if item_details.get('location') else None,
-        has_part=_get_has_part(first_file_resource)
+        has_part=_get_has_part(first_file_resource, source_id)
     )
 
 
@@ -77,7 +79,7 @@ def _parse_publishers(created_published_list: Optional[list[str]]) -> Optional[l
     return publishers if publishers else None
 
 
-def _get_has_part(first_file_resource: dict) -> list[str]:
+def _get_has_part(first_file_resource: dict, source_id: str) -> list[str]:
     has_part = []
 
     if 'pdf' in first_file_resource.keys():
@@ -90,12 +92,17 @@ def _get_has_part(first_file_resource: dict) -> list[str]:
         )))
 
     if 'epub_file' in first_file_resource.keys():
+        record_id = source_id.split('|')[0]
+        epub_location = f'epubs/loc/{record_id}.epub'
+        epub_url = get_stored_file_url(storage_name=os.environ['FILE_BUCKET'], file_path=epub_location)
+
         has_part.append(str(Part(
             index=1,
-            url=first_file_resource['epub_file'],
+            url=epub_url,
             source=Source.LOC.value,
             file_type='application/epub+zip',
-            flags=str(FileFlags(download=True))
+            flags=str(FileFlags(download=True)),
+            source_url=first_file_resource['epub_file']
         )))
 
     return has_part
