@@ -16,7 +16,7 @@ class CandidateRecordFinder:
     # Maximum number of "hops" to follow when matching records through identifiers
     MAX_MATCH_DISTANCE = 4
     # Maximum number of records that can be in a candidate pool
-    CANDIDATE_POOL_LIMIT = 10000
+    MAX_NUMBER_OF_CANDIDATE_RECORDS = 10000
     # Regular expression to identify identifiers that should be matched
     IDENTIFIERS_TO_MATCH = r"\|(?:isbn|issn|oclc|lccn|owi)$"
     
@@ -26,15 +26,13 @@ class CandidateRecordFinder:
     def find_candidate_records(self, record: Record) -> List[Record]:
         """Find records that might be related to the input record.
         Raises:
-            Exception: If the number of candidate records exceeds CANDIDATE_POOL_LIMIT
+            Exception: If the number of candidate records exceeds MAX_NUMBER_OF_CANDIDATE_RECORDS
         """
         candidate_record_ids = self._find_candidate_record_ids(record)
         
-        # Include the original record's ID if it exists in the database
         if record.id:
             candidate_record_ids.append(record.id)
         
-        # Query the actual Record objects
         return self._get_records_by_ids(candidate_record_ids)
     
     def _find_candidate_record_ids(self, record: Record) -> List[str]:
@@ -48,7 +46,7 @@ class CandidateRecordFinder:
         5. Repeat up to MAX_MATCH_DISTANCE times
         
         Raises:
-            Exception: If the number of candidates exceeds CANDIDATE_POOL_LIMIT
+            Exception: If the number of candidates exceeds MAX_NUMBER_OF_CANDIDATE_RECORDS
         """
         tokenized_record_title = self._tokenize_title(record.title)
         ids_to_check = {
@@ -98,9 +96,9 @@ class CandidateRecordFinder:
                 )
                 candidate_record_ids.add(matched_record_id)
 
-        if len(candidate_record_ids) > self.CANDIDATE_POOL_LIMIT:
+        if len(candidate_record_ids) > self.MAX_NUMBER_OF_CANDIDATE_RECORDS:
             raise Exception(
-                f"Candidate pool size {len(candidate_record_ids)} exceeds limit of {self.CANDIDATE_POOL_LIMIT}"
+                f"Candidate pool size {len(candidate_record_ids)} exceeds limit of {self.MAX_NUMBER_OF_CANDIDATE_RECORDS}"
             )
 
         return list(candidate_record_ids)
