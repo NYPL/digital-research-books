@@ -79,7 +79,7 @@ class TestOCLCClassifyProcess:
             mocked_method.assert_called_once()
 
     def test_classify_records_not_full(self, test_instance, mocker):
-        mock_frbrize_record = mocker.patch.object(ClassifyProcess, 'frbrize_record')
+        mock_embellish_record = mocker.patch.object(ClassifyProcess, 'embellish_record')
         mock_query = mocker.MagicMock()
 
         test_instance.db_manager.session.query().filter.return_value = mock_query
@@ -92,10 +92,10 @@ class TestOCLCClassifyProcess:
 
         test_instance.classify_records()
 
-        mock_frbrize_record.assert_has_calls([mocker.call(record) for record in mock_records])
+        mock_embellish_record.assert_has_calls([mocker.call(record) for record in mock_records])
 
     def test_classify_records_custom_range(self, test_instance, mocker):
-        mock_frbrize = mocker.patch.object(ClassifyProcess, 'frbrize_record')
+        mock_embellish_record = mocker.patch.object(ClassifyProcess, 'embellish_record')
         mock_query = mocker.MagicMock()
 
         test_instance.db_manager.session.query().filter.return_value = mock_query
@@ -108,10 +108,10 @@ class TestOCLCClassifyProcess:
 
         test_instance.classify_records(start_datetime=datetime.now())
 
-        mock_frbrize.assert_has_calls([mocker.call(record) for record in mock_records])
+        mock_embellish_record.assert_has_calls([mocker.call(record) for record in mock_records])
 
     def test_classify_records_full(self, test_instance, mocker):
-        mock_frbrize_record = mocker.patch.object(ClassifyProcess, 'frbrize_record')
+        mock_embellish_record = mocker.patch.object(ClassifyProcess, 'embellish_record')
         mock_query = mocker.MagicMock()
 
         test_instance.db_manager.session.query().filter.return_value = mock_query
@@ -123,10 +123,10 @@ class TestOCLCClassifyProcess:
 
         test_instance.classify_records()
 
-        mock_frbrize_record.assert_has_calls([mocker.call(record) for record in mock_records[:50]])
+        mock_embellish_record.assert_has_calls([mocker.call(record) for record in mock_records[:50]])
 
     def test_classify_records_full_batch(self, test_instance, mocker):
-        mock_frbrize_record = mocker.patch.object(ClassifyProcess, 'frbrize_record')
+        mock_embellish_record = mocker.patch.object(ClassifyProcess, 'embellish_record')
         mock_query = mocker.MagicMock()
 
         test_instance.db_manager.session.query().filter.return_value = mock_query
@@ -139,9 +139,9 @@ class TestOCLCClassifyProcess:
         test_instance.ingest_limit = 100
         test_instance.classify_records()
 
-        mock_frbrize_record.assert_has_calls([mocker.call(record) for record in mock_records])
+        mock_embellish_record.assert_has_calls([mocker.call(record) for record in mock_records])
 
-    def test_frbrize_record_success_valid_author(self, test_instance, test_record, mocker):
+    def test_embellish_record_success_valid_author(self, test_instance, test_record, mocker):
         mock_identifiers = mocker.patch.object(ClassifyProcess, '_get_queryable_identifiers')
         mock_identifiers.return_value = ['1|test']
 
@@ -149,13 +149,13 @@ class TestOCLCClassifyProcess:
 
         mock_classify_record = mocker.patch.object(ClassifyProcess, 'classify_record_by_metadata')
 
-        test_instance.frbrize_record(test_record)
+        test_instance.embellish_record(test_record)
 
         mock_identifiers.assert_called_once_with(test_record.identifiers)
         test_instance.redis_manager.check_or_set_key.assert_called_once_with('classify', '1', 'test')
         mock_classify_record.assert_called_once_with('1', 'test', 'Author, Test', 'Test Record')
 
-    def test_frbrize_record_success_author_missing(self, test_instance, test_record, mocker):
+    def test_embellish_record_success_author_missing(self, test_instance, test_record, mocker):
         mock_identifiers = mocker.patch.object(ClassifyProcess, '_get_queryable_identifiers')
         mock_identifiers.return_value = ['1|test']
 
@@ -164,13 +164,13 @@ class TestOCLCClassifyProcess:
         mock_classify_record = mocker.patch.object(ClassifyProcess, 'classify_record_by_metadata')
 
         test_record.authors = []
-        test_instance.frbrize_record(test_record)
+        test_instance.embellish_record(test_record)
 
         mock_identifiers.assert_called_once_with(test_record.identifiers)
         test_instance.redis_manager.check_or_set_key.assert_called_once_with('classify', '1', 'test')
         mock_classify_record.assert_called_once_with('1', 'test', None, 'Test Record')
 
-    def test_frbrize_record_identifier_in_redis(self, test_instance, test_record, mocker):
+    def test_embellish_record_identifier_in_redis(self, test_instance, test_record, mocker):
         mock_identifiers = mocker.patch.object(ClassifyProcess, '_get_queryable_identifiers')
         mock_identifiers.return_value = ['1|test']
 
@@ -179,18 +179,18 @@ class TestOCLCClassifyProcess:
         mock_classify_record = mocker.patch.object(ClassifyProcess, 'classify_record_by_metadata')
 
         test_record.authors = []
-        test_instance.frbrize_record(test_record)
+        test_instance.embellish_record(test_record)
 
         mock_identifiers.assert_called_once_with(test_record.identifiers)
         test_instance.redis_manager.check_or_set_key.assert_called_once_with('classify', '1', 'test')
         mock_classify_record.assert_not_called
 
-    def test_frbrize_record_identifier_missing(self, test_instance, test_record, mocker):
+    def test_embellish_record_identifier_missing(self, test_instance, test_record, mocker):
         mock_identifiers = mocker.patch.object(ClassifyProcess, '_get_queryable_identifiers')
         mock_identifiers.return_value = []
         mock_classify_record = mocker.patch.object(ClassifyProcess, 'classify_record_by_metadata')
 
-        test_instance.frbrize_record(test_record)
+        test_instance.embellish_record(test_record)
 
         mock_identifiers.assert_called_once_with(test_record.identifiers)
         test_instance.redis_manager.check_or_set_key.assert_not_called()
