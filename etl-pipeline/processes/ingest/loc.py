@@ -19,7 +19,8 @@ class LOCProcess():
         start_timestamp = utils.get_start_datetime(
             process_type=self.params.process_type,
             ingest_period=self.params.ingest_period,
-        ),
+        )
+        
         return self.record_ingestor.ingest(
             self.loc_service.get_records(
                 start_timestamp=start_timestamp,
