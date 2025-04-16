@@ -7,3 +7,4 @@ from .sources.gutenberg_service import GutenbergService
 from .sources.hathi_trust_service import HathiTrustService
 from .sources.met_service import METService
 from .sources.loc_service import LOCService
+from .sources.muse_service import MUSEService

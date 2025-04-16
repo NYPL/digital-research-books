@@ -12,6 +12,7 @@ class SourceService(ABC):
         self,
         start_timestamp: Optional[datetime]=None,
         offset: int=0,
-        limit: Optional[int]=None
+        limit: Optional[int]=None,
+        record_id: Optional[str]=None
     ) -> Union[list[RecordMapping], Generator[Record, None, None]]:
         pass
