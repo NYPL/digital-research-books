@@ -2,13 +2,14 @@ import json
 import os
 from time import sleep
 
-from .record_frbrizer import RecordFRBRizer
+from .record_embellisher import RecordEmbellisher
 from .record_clusterer import RecordClusterer
+from .record_deleter import RecordDeleter
 from .record_file_saver import RecordFileSaver
 from .link_fulfiller import LinkFulfiller
 
 from logger import create_log
-from managers import DBManager, RabbitMQManager, S3Manager
+from managers import DBManager, ElasticsearchManager, RabbitMQManager, S3Manager
 from model import Record
 
 logger = create_log(__name__)
@@ -28,10 +29,14 @@ class RecordPipelineProcess:
 
         self.storage_manager = S3Manager()
 
+        self.es_manager = ElasticsearchManager()
+        self.es_manager.create_elastic_connection()
+
         self.record_file_saver = RecordFileSaver(storage_manager=self.storage_manager)
-        self.record_frbrizer = RecordFRBRizer(db_manager=self.db_manager)
+        self.record_embellisher = RecordEmbellisher(db_manager=self.db_manager)
         self.record_clusterer = RecordClusterer(db_manager=self.db_manager)
         self.link_fulfiller = LinkFulfiller(db_manager=self.db_manager)
+        self.record_deleter = RecordDeleter(db_manager=self.db_manager, store_manager=self.storage_manager, es_manager=self.es_manager)
 
     def runProcess(self, max_attempts: int=4):
         try:
@@ -63,11 +68,14 @@ class RecordPipelineProcess:
 
             self.db_manager.create_session()
 
-            self.record_file_saver.save_record_files(record)
-            saved_record = self._save_record(record)
-            frbrized_record = self.record_frbrizer.frbrize_record(saved_record)
-            clustered_records = self.record_clusterer.cluster_record(frbrized_record)
-            self.link_fulfiller.fulfill_records_links(clustered_records)
+            if record._deletion_flag is True:
+                self.record_deleter.delete_record(record)
+            else:
+                self.record_file_saver.save_record_files(record)
+                saved_record = self._save_record(record)
+                embellished_record = self.record_embellisher.embellish_record(saved_record)
+                clustered_records = self.record_clusterer.cluster_record(embellished_record)
+                self.link_fulfiller.fulfill_records_links(clustered_records)
                 
             self.queue_manager.acknowledge_message_processed(message_props.delivery_tag)
         except Exception:

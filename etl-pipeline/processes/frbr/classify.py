@@ -52,28 +52,28 @@ class ClassifyProcess():
             raise e
 
     def classify_records(self, start_datetime: Optional[datetime]=None, record_uuid: Optional[str]=None, source: Optional[str]=None):
-        get_unfrbrized_records_query = (
+        get_unembellished_records_query = (
             self.db_manager.session.query(Record)
                 .filter(Record.source != 'oclcClassify' and Record.source != 'oclcCatalog')
                 .filter(Record.frbr_status == 'to_do')
         )
 
         if start_datetime:
-            get_unfrbrized_records_query = get_unfrbrized_records_query.filter(Record.date_modified > start_datetime)
+            get_unembellished_records_query = get_unembellished_records_query.filter(Record.date_modified > start_datetime)
 
         if record_uuid:
-            get_unfrbrized_records_query = get_unfrbrized_records_query.filter(Record.uuid == record_uuid)
+            get_unembellished_records_query = get_unembellished_records_query.filter(Record.uuid == record_uuid)
 
         if source:
-            get_unfrbrized_records_query = get_unfrbrized_records_query.filter(Record.source == source)
+            get_unembellished_records_query = get_unembellished_records_query.filter(Record.source == source)
 
-        while unfrbrized_record := get_unfrbrized_records_query.first():
-            self.frbrize_record(unfrbrized_record)
+        while unembellished_record := get_unembellished_records_query.first():
+            self.embellish_record(unembellished_record)
 
-            unfrbrized_record.cluster_status = False
-            unfrbrized_record.frbr_status = 'complete'
+            unembellished_record.cluster_status = False
+            unembellished_record.frbr_status = 'complete'
 
-            self.db_manager.session.add(unfrbrized_record)
+            self.db_manager.session.add(unembellished_record)
             self.db_manager.session.commit()
 
             if self.params.limit and self.record_buffer.ingest_count >= self.params.limit:
@@ -83,7 +83,7 @@ class ClassifyProcess():
                 logger.warning('Exceeded max requests to OCLC catalog')
                 break
 
-    def frbrize_record(self, record: Record):
+    def embellish_record(self, record: Record):
         queryable_ids = self._get_queryable_identifiers(record.identifiers)
 
         if len(queryable_ids) < 1:
@@ -120,7 +120,6 @@ class ClassifyProcess():
             if not oclc_number or not owi_number:
                 logger.warning(f'Unable to get identifiers for bib: {related_oclc_bib}')
                 continue
-
             if self.check_if_classify_work_fetched(owi_number=owi_number):
                 continue
 
@@ -166,3 +165,4 @@ class ClassifyProcess():
             lambda id: re.search(r'\|(?:isbn|issn|oclc)$', id) != None,
             identifiers
         ))
+

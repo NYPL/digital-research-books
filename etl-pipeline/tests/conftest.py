@@ -217,8 +217,8 @@ def test_link_id(frbrized_record_data):
 
 
 @pytest.fixture(scope='session')
-def unfrbrized_record_uuid(db_manager):
-    test_unfrbrized_record_data = {
+def unembellished_record_uuid(db_manager):
+    test_unembellished_record_data = {
         'title': 'Emma',
         'uuid': uuid4(),
         'frbr_status': 'to_do',
@@ -230,13 +230,13 @@ def unfrbrized_record_uuid(db_manager):
         'date_modified': datetime.now(timezone.utc).replace(tzinfo=None)
     }
 
-    unfrbrized_record = create_or_update_record(record_data=test_unfrbrized_record_data, db_manager=db_manager)
+    unembellished_record = create_or_update_record(record_data=test_unembellished_record_data, db_manager=db_manager)
 
-    return unfrbrized_record.uuid
+    return unembellished_record.uuid
 
 @pytest.fixture(scope='session')
-def unfrbrized_pipeline_record_uuid(db_manager):
-    test_unfrbrized_record_data = {
+def unembellished_pipeline_record_uuid(db_manager):
+    test_unembellished_pipeline_record_data = {
         'title': 'Sense and sensibility',
         'uuid': uuid4(),
         'frbr_status': 'to_do',
@@ -258,9 +258,9 @@ def unfrbrized_pipeline_record_uuid(db_manager):
         'date_modified': datetime.now(timezone.utc).replace(tzinfo=None)
     }
 
-    unfrbrized_record = create_or_update_record(record_data=test_unfrbrized_record_data, db_manager=db_manager)
+    unembellished_pipeline_record = create_or_update_record(record_data=test_unembellished_pipeline_record_data, db_manager=db_manager)
 
-    return unfrbrized_record.uuid
+    return unembellished_pipeline_record.uuid
 
 @pytest.fixture(scope='session')
 def unclustered_record_uuid(db_manager):
@@ -332,7 +332,7 @@ def limited_access_record_uuid(db_manager):
                 url='https://example.com/book.epub',
                 source=TEST_SOURCE,
                 file_type='application/epub+zip',
-                flags=str(FileFlags(reader=True, nypl_login=True))
+                flags=str(FileFlags(reader=True, nypl_login=True, fulfill_limited_access=True))
             )),
         ],
     }

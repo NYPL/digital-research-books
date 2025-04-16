@@ -107,6 +107,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     load_env_file(args.environment, './config/{}.yaml')
-    os.environ['ENVIRONMENT'] = args.environment
+    os.environ['ENVIRONMENT'] = os.environ.get('ENVIRONMENT') or args.environment
 
     main(args)
