@@ -26,4 +26,23 @@ class DOABProcess():
         self.record_ingestor = RecordIngestor(source_service=self.dspace_service, source=Source.DOAB.value)
 
     def runProcess(self) -> int:
-        return self.record_ingestor.ingest(params=self.params, source_identifier=self.DOAB_IDENTIFIER)
+        start_timestamp = utils.get_start_datetime(
+            process_type=self.params.process_type,
+            ingest_period=self.params.ingest_period,
+        )
+        
+        if self.params.record_id is not None:
+            return self.record_ingestor.ingest(
+                self.dspace_service.get_single_record(
+                    record_id=self.params.record_id,
+                    source_identifier=self.DOAB_IDENTIFIER
+                )
+            )
+        else:
+            return self.record_ingestor.ingest(
+                self.dspace_service.get_records(
+                    start_timestamp=start_timestamp,
+                    offset=self.params.offset,
+                    limit=self.params.limit
+                )
+            )
