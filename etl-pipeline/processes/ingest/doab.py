@@ -23,7 +23,7 @@ class DOABProcess():
     def __init__(self, *args):
         self.dspace_service = DSpaceService(base_url=self.DOAB_BASE_URL, source_mapping=DOABMapping)
         self.params = utils.parse_process_args(*args)
-        self.record_ingestor = RecordIngestor(source_service=self.dspace_service, source=Source.DOAB.value)
+        self.record_ingestor = RecordIngestor(source=Source.DOAB.value)
 
     def runProcess(self) -> int:
         start_timestamp = utils.get_start_datetime(

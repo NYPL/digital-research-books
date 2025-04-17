@@ -15,11 +15,3 @@ class SourceService(ABC):
         limit: Optional[int]=None
     ) -> Union[list[RecordMapping], Generator[Record, None, None]]:
         pass
-
-    @abstractmethod
-    def get_single_record(
-        self,
-        record_id: str,
-        source_identifier: str,
-    ) -> Record:
-        pass
