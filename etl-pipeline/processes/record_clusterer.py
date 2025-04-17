@@ -10,7 +10,7 @@ from managers import (
 )
 from constants.get_constants import get_constants
 from model import Record, Work
-from .record_candidate_finder import CandidateRecordFinder
+from .candidate_record_finder import CandidateRecordFinder
 
 
 logger = create_log(__name__)
