@@ -17,7 +17,7 @@ class RecordFileSaver:
     def __init__(self, storage_manager: S3Manager):
         self.storage_manager = storage_manager
         self.file_bucket = os.environ['FILE_BUCKET']
-        self.limited_file_bucket = f'drb-files-limited-{os.environ['ENVIRONMENT']}'
+        self.limited_file_bucket = f"drb-files-limited-{os.environ['ENVIRONMENT']}"
         self.drive_service = GoogleDriveService()
 
     def save_record_files(self, record: Record):

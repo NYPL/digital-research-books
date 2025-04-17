@@ -71,7 +71,7 @@ class PublisherBacklistMapping(JSONMapping):
     def add_has_part(self) -> str:
         record_permissions = self.parse_permissions(self.source.get('Access type in DRB (from Access types)')[0])
         file_location = self.source.get('DRB_File Location')
-        destination_file_bucket = os.environ['FILE_BUCKET'] if not record_permissions['requires_login'] else f'drb-files-limited-{os.environ['ENVIRONMENT']}'
+        destination_file_bucket = os.environ['FILE_BUCKET'] if not record_permissions['requires_login'] else f"drb-files-limited-{os.environ['ENVIRONMENT']}"
         pdf_bucket = os.environ["PDF_BUCKET"]
         hathi_id = self.get_hathi_id()
 
@@ -109,7 +109,7 @@ class PublisherBacklistMapping(JSONMapping):
 
             return
 
-        file_path = f'titles/publisher_backlist/{self.source['Project Name (from Project)'][0]}/{self.record.source_id}.pdf'
+        file_path = f"titles/publisher_backlist/{self.source['Project Name (from Project)'][0]}/{self.record.source_id}.pdf"
 
         self.record.has_part.append(str(Part(
             index=1,
