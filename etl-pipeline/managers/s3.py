@@ -34,13 +34,16 @@ class S3Manager:
             link_manager = DOABLinkManager(record)
 
             link_manager.parse_links()
+
+            print(f'Length of manifests: {len(link_manager.manifests)}')
             
             for manifest in link_manager.manifests:
                 manifest_path, manifest_json = manifest
                 self.create_manifest_in_s3(manifest_path=manifest_path, manifest_json=manifest_json, bucket=bucket_name)
 
+                print(f'manifest_path={manifest_path}')
                 record.has_part.insert(0, str(Part(
-                    index=pdf_part.index,
+                    index=1,
                     url=manifest_path,
                     source=record.source,
                     file_type='application/webpub+json',
