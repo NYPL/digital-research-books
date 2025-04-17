@@ -3,7 +3,7 @@ from .assert_ingested_records import assert_ingested_records
 from .assert_uploaded_manifests import assert_uploaded_manifests
 
 
-def test_gutenberg_process():
+def test_gutenberg_process(mock_epub_to_webpub):
     gutenberg_process = GutenbergProcess('complete', None, None, None, 5, None)
 
     number_of_records_ingested = gutenberg_process.runProcess()
