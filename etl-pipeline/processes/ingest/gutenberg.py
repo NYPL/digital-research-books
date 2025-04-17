@@ -85,7 +85,7 @@ class GutenbergProcess():
                     self.file_bucket,
                     f"epubs/gutenberg/{gutenberg_id}_{extension}/manifest.json",
                 ),
-                file_type="application/json",
+                file_type="application/webpub+json",
                 flags=str(FileFlags(reader=True)),
             )))
 
