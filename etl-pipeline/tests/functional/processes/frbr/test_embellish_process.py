@@ -1,50 +1,50 @@
 import pytest
 
-from processes import ClassifyProcess, CatalogProcess, RecordFRBRizer
+from processes import ClassifyProcess, CatalogProcess, RecordEmbellisher
 from managers import RedisManager
 from model import Record
 
 
-def test_frbr_processes(db_manager, unfrbrized_record_uuid):
+def test_embellish_record(db_manager, unembellished_record_uuid):
     redis_manager = RedisManager()
 
     redis_manager.create_client()
     redis_manager.clear_cache()
 
-    classify_process = ClassifyProcess(None, None, None, unfrbrized_record_uuid)
+    classify_process = ClassifyProcess(None, None, None, unembellished_record_uuid)
     classify_process.runProcess()
 
     catalog_process = CatalogProcess(None, None, None, None)
     catalog_process.runProcess(max_attempts=1)
 
-    assert_record_frbrized(record_uuid=unfrbrized_record_uuid, db_manager=db_manager)
+    assert_record_embellished(record_uuid=unembellished_record_uuid, db_manager=db_manager)
 
 
 @pytest.mark.skip
-def test_frbrize_record(db_manager, unfrbrized_record_uuid):
+def test_embellish_record(db_manager, unembellished_record_uuid):
     redis_manager = RedisManager()
 
     redis_manager.create_client()
     redis_manager.clear_cache()
 
-    record_frbrizer = RecordFRBRizer(db_manager=db_manager)
+    record_embellisher = RecordEmbellisher(db_manager=db_manager)
 
-    unfrbrized_record = db_manager.session.query(Record).filter(Record.uuid == unfrbrized_record_uuid).first()
+    unembellished_record = db_manager.session.query(Record).filter(Record.uuid == unembellished_record_uuid).first()
 
-    record_frbrizer.frbrize_record(record=unfrbrized_record)
+    record_embellisher.embellish_record(record=unembellished_record)
 
-    assert_record_frbrized(record_uuid=unfrbrized_record_uuid, db_manager=db_manager)
+    assert_record_embellished(record_uuid=unembellished_record_uuid, db_manager=db_manager)
 
-def assert_record_frbrized(record_uuid: str, db_manager):
-    frbrized_record = db_manager.session.query(Record).filter(Record.uuid == record_uuid).first()
+def assert_record_embellished(record_uuid: str, db_manager):
+    embellished_record = db_manager.session.query(Record).filter(Record.uuid == record_uuid).first()
 
-    assert frbrized_record.frbr_status == 'complete'
+    assert embellished_record.frbr_status == 'complete'
 
     classify_record = (
         db_manager.session.query(Record)
             .filter(
                 Record.source == 'oclcClassify',
-                Record.title.ilike(f"%{frbrized_record.title}%"))
+                Record.title.ilike(f"%{embellished_record.title}%"))
             .order_by(Record.date_created.desc())
             .first()
     )

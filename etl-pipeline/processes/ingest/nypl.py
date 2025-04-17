@@ -11,7 +11,18 @@ class NYPLProcess():
     def __init__(self, *args):
         self.nypl_bib_service = NYPLBibService()
         self.params = utils.parse_process_args(*args)
-        self.record_ingestor = RecordIngestor(source_service=self.nypl_bib_service, source=Source.NYPL.value)
+        self.record_ingestor = RecordIngestor(source=Source.NYPL.value)
 
-    def runProcess(self):    
-        return self.record_ingestor.ingest(params=self.params)
+    def runProcess(self):
+        start_timestamp = utils.get_start_datetime(
+            process_type=self.params.process_type,
+            ingest_period=self.params.ingest_period,
+        )
+        
+        return self.record_ingestor.ingest(
+            self.nypl_bib_service.get_records(
+                start_timestamp=start_timestamp,
+                offset=self.params.offset,
+                limit=self.params.limit,
+            ),
+        )
