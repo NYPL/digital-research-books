@@ -39,11 +39,11 @@ class PublisherBacklistMapping(JSONMapping):
         }
 
     def applyFormatting(self):
-        self.record.has_part = []
-        self.add_has_part()
-
         if self.record.source:
             self.record.source = self.record.source[0]
+
+        self.record.has_part = []
+        self.add_has_part()
 
         if self.record.publisher_project_source:
             publisher_source = self.record.publisher_project_source[0]
@@ -60,8 +60,8 @@ class PublisherBacklistMapping(JSONMapping):
 
         self.record.rights = self.format_rights()
 
-    def get_hathi_id(record) -> Optional[str]:
-        hath_identifier = next((identifier for identifier in record.identifiers if identifier.endswith('hathi')), None)
+    def get_hathi_id(self) -> Optional[str]:
+        hath_identifier = next((identifier for identifier in self.record.identifiers if identifier.endswith('hathi')), None)
 
         if hath_identifier is not None:
             return hath_identifier.split('|')[0]
@@ -101,7 +101,8 @@ class PublisherBacklistMapping(JSONMapping):
             )))
 
             self.record.has_part.append(str(Part(
-                url=get_stored_file_url(storage_name=os.environ['FILE_BUCKET'], file_path='covers/publisher_backlist/hathi_{hathi_id}.png'),
+                index=None,
+                url=get_stored_file_url(storage_name=os.environ['FILE_BUCKET'], file_path=f'covers/publisher_backlist/hathi_{hathi_id}.png'),
                 source=self.record.source,
                 file_type='image/png',
                 flags=str(FileFlags(cover=True)),
@@ -137,7 +138,7 @@ class PublisherBacklistMapping(JSONMapping):
             new_author_list = [f'{author}|||true' for author in author_list] 
             return new_author_list
         else:
-            author_list.append(f'{self.record.authors}|||true)')
+            author_list.append(f'{self.record.authors}|||true')
             return author_list
         
         
