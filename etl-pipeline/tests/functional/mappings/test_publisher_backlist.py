@@ -15,7 +15,7 @@ def test_map_loc_record():
     record = record_mapping.record
 
     destination_storage_location = get_stored_file_url(storage_name=os.environ['FILE_BUCKET'], file_path='')
-    source_storage_location = get_stored_file_url(storage_name=os.environ['PDF_BUCKET'], file_path='')
+    source_storage_location = os.environ['PDF_BUCKET']
 
     assert record is not None
     assert record.title == "Aunt Phillis's cabin; or, Southern life as it is / by Mary H. Eastman."
@@ -31,7 +31,7 @@ def test_map_loc_record():
             source='SCH Collection/Hathi files',
             file_type='application/pdf',
             flags=str(FileFlags(download=True)),
-            source_url=f'{source_storage_location}tagged_pdfs/uc1.b4102944.pdf')
+            source_url=f'https://{source_storage_location}.s3.amazonaws.com/tagged_pdfs/uc1.b4102944.pdf')
         ),
         str(Part(
             index=None,

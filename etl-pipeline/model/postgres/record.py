@@ -25,7 +25,7 @@ class Part:
         if url is None:
             return None
 
-        parsed_url = urlparse(self.url)
+        parsed_url = urlparse(url)
 
         if 'localhost' in parsed_url.hostname:
             path_parts = parsed_url.path.split('/')
@@ -49,7 +49,7 @@ class Part:
         if url is None:
             return None
 
-        parsed_url = urlparse(self.url)
+        parsed_url = urlparse(url)
 
         if 'localhost' in parsed_url.hostname:
             path_parts = parsed_url.path.split('/')

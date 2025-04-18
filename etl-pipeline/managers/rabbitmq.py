@@ -1,7 +1,7 @@
 import json
 from pika import BlockingConnection, ConnectionParameters
 from pika.credentials import PlainCredentials
-from pika.exceptions import ConnectionWrongStateError, StreamLostError, ChannelClosedByBroker
+from pika.exceptions import ConnectionWrongStateError, StreamLostError, ChannelClosedByBroker, ChannelWrongStateError
 from typing import Union
 import os
 
@@ -88,13 +88,11 @@ class RabbitMQManager:
                 routing_key=routing_key,
                 body=message
             )
-        except (ConnectionWrongStateError, StreamLostError):
-            logger.debug('Stale RabbitMQ connection - reconnecting.')
+        except (ConnectionWrongStateError, StreamLostError, ChannelWrongStateError):
             # Connection timed out. Reconnect and try again
             self.create_connection()
             self.create_or_connect_queue(queue_name, routing_key)
             self.send_message_to_queue(queue_name, routing_key, message)
-
     
     def get_message_from_queue(self, queue_name: str):
         try:

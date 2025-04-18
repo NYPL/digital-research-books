@@ -78,6 +78,23 @@ class PublisherBacklistMapping(JSONMapping):
         if not file_location and not hathi_id:
             raise Exception(f'Unable to get file url for {self.record}')
         
+        self.record.has_part.append(str(Part(
+            index=1,
+            url=get_stored_file_url(
+                storage_name=os.environ['FILE_BUCKET'],
+                file_path=f"manifests/publisher_backlist/{self.record.source}/{self.record.source_id}.json",
+            ),
+            source=self.record.source,
+            file_type='application/webpub+json',
+            flags=str(
+                FileFlags(
+                    reader=True, 
+                    nypl_login=record_permissions['requires_login'], 
+                    fulfill_limited_access=record_permissions['requires_login']
+                )
+            ),
+        )))
+        
         if hathi_id:
             self.record.has_part.append(str(Part(
                 index=1,
@@ -94,10 +111,7 @@ class PublisherBacklistMapping(JSONMapping):
                         fulfill_limited_access=record_permissions['requires_login']
                     )
                 ),
-                source_url=get_stored_file_url(
-                    storage_name=pdf_bucket,
-                    file_path=f'tagged_pdfs/{hathi_id}.pdf'
-                )
+                source_url=f'https://{pdf_bucket}.s3.amazonaws.com/tagged_pdfs/{hathi_id}.pdf'
             )))
 
             self.record.has_part.append(str(Part(
@@ -108,9 +122,7 @@ class PublisherBacklistMapping(JSONMapping):
                 flags=str(FileFlags(cover=True)),
             )))
 
-            return
-
-        file_path = f"titles/publisher_backlist/{self.source['Project Name (from Project)'][0]}/{self.record.source_id}.pdf"
+        file_path = f"titles/publisher_backlist/{self.record.source}/{self.record.source_id}.pdf"
 
         self.record.has_part.append(str(Part(
             index=1,

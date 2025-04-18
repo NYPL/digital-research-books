@@ -44,7 +44,7 @@ class RecordFileSaver:
                     web_pub_manifest = self.generate_webpub(file_root)
                     self.storage_manager.put_object(web_pub_manifest, f'{file_root}/manifest.json', self.file_bucket)
 
-            logger.info(f'Stored file {part.file_key} from {part.source_url}')
+            logger.info(f'Stored file at {part.url} from {part.source_url}')
         except Exception as e:
             logger.exception(f'Failed to store file {part.file_key} from {part.source_url}')
             raise e
