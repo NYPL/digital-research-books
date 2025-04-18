@@ -106,7 +106,7 @@ class GutenbergMapping(XMLMapping):
             epub_url = f'https://gutenberg.org/ebooks/{gutenberg_id}.epub.{extension}'
             self.record.has_part.append(str(Part(
                 index=i+1,
-                source=self.record.source.value,
+                source=self.record.source,
                 url=get_stored_file_url(
                     self.file_bucket,
                     f"epubs/gutenberg/{gutenberg_id}_{extension}.epub",
@@ -117,7 +117,7 @@ class GutenbergMapping(XMLMapping):
             )))
             self.record.has_part.append(str(Part(
                 index=i+1,
-                source=self.record.source.value,
+                source=self.record.source,
                 url=get_stored_file_url(
                     self.file_bucket,
                     f"epubs/gutenberg/{gutenberg_id}_{extension}/META-INF/container.xml",
@@ -127,7 +127,7 @@ class GutenbergMapping(XMLMapping):
             )))
             self.record.has_part.append(str(Part(
                 index=i+1,
-                source=self.record.source.value,
+                source=self.record.source,
                 url=get_stored_file_url(
                     self.file_bucket,
                     f"epubs/gutenberg/{gutenberg_id}_{extension}/manifest.json",
@@ -159,7 +159,7 @@ class GutenbergMapping(XMLMapping):
 
             self.record.has_part.append(str(Part(
                 index=None,
-                source=Source.GUTENBERG.value,
+                source=self.record.source,
                 url=cover_url,
                 file_type=mime_type,
                 flags=str(FileFlags(cover=True)),
