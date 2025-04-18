@@ -56,8 +56,13 @@ class RecordFileSaver:
         if not file:
             raise Exception(f'Unable to get file for: {part}')
 
-        file_permissions = None if part.file_bucket == self.limited_file_bucket else 'public-read'
-        self.storage_manager.put_object(file.getvalue(), part.file_key, part.file_bucket, bucket_permissions=file_permissions)
+        file_permissions = {} if part.file_bucket == self.limited_file_bucket else { 'ACL': 'public-read' }
+        self.storage_manager.client.upload_fileobj(
+            file,
+            part.file_bucket,
+            part.file_key,
+            file_permissions
+        )
 
     def _copy_file(self, part: Part):
         source_bucket_key = { 'Bucket': part.source_file_bucket, 'Key': part.source_file_key }

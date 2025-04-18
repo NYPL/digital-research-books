@@ -6,7 +6,7 @@ from mappings.publisher_backlist import PublisherBacklistMapping
 from model import Part, FileFlags
 
 
-def test_map_pubclisher_backlist_record():
+def test_map_publisher_backlist_record():
     with open('tests/fixtures/test-publisher-backlist-record.json') as f:
         publisher_backlist_data = json.load(f)
 
