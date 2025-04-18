@@ -109,7 +109,7 @@ class GutenbergProcess():
             cover_url = get_stored_file_url(self.file_bucket, cover_path)
             cover_root = yaml_file.get('url').replace('ebooks', 'files')
             cover_source_url = f"{cover_root}/{cover_data.get('image_path')}"
-            response = requests.get(cover_source_url)
+            response = requests.head(cover_source_url, allow_redirects=True)
             response.raise_for_status()
 
             gutenberg_record.record.has_part.append(str(Part(
