@@ -10,6 +10,7 @@ class TestGutenbergMapping:
             def __init__(self):
                 self.source = None
                 self.mapping = None
+                self.file_bucket = "drb-fake-test-bucket"
                 self.constants = test_constants
                 self.namespace = None
 
