@@ -26,15 +26,19 @@ class S3Manager:
             endpoint_url=os.environ.get('S3_ENDPOINT_URL', None)
         )
 
-    def store_pdf_manifest(self, record: Record, bucket_name, flags=FileFlags(reader=True), path: str=None):
+    def store_pdf_manifest(self, record: Record, bucket_name):
         record_id = record.source_id.split('|')[0]
         pdf_part = next(filter(lambda part: part.file_type == 'application/pdf', record.parts), None)
+        manifest_part = next(filter(lambda part: part.file_type == 'application/webpub+json', record.parts), None)
+
+        if manifest_part is not None and pdf_part is not None:
+            manifest_json = self.generate_manifest(record=record, source_url=pdf_part.url, manifest_url=manifest_part.url)
+            self.create_manifest_in_s3(manifest_path=manifest_part.file_key, manifest_json=manifest_json, bucket=bucket_name)
+
+            return
 
         if pdf_part is not None:
-            if path:
-                manifest_path = f'manifests/{path}/{record.source}/{record_id}.json'
-            else:
-                manifest_path = f'manifests/{record.source}/{record_id}.json'
+            manifest_path = f'manifests/{record.source}/{record_id}.json'
                 
             manifest_url = get_stored_file_url(storage_name=bucket_name, file_path=manifest_path)
             manifest_json = self.generate_manifest(record=record, source_url=pdf_part.url, manifest_url=manifest_url)
@@ -46,7 +50,7 @@ class S3Manager:
                 url=manifest_url,
                 source=record.source,
                 file_type='application/webpub+json',
-                flags=str(flags)
+                flags=str(FileFlags(reader=True))
             )))
 
     def create_manifest_in_s3(self, manifest_path: str, manifest_json, bucket: str):

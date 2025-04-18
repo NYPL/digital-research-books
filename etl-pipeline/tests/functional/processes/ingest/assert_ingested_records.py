@@ -5,14 +5,14 @@ from managers import DBManager
 from model import Record
 
 
-def assert_ingested_records(source_name: str, expected_number_of_records: Optional[int]=None) -> list[Record]:
+def assert_ingested_records(sources: list[str], expected_number_of_records: Optional[int]=None) -> list[Record]:
     db_manager = DBManager()
     db_manager.generate_engine()
     db_manager.create_session()
 
     records = (
         db_manager.session.query(Record)
-            .filter(Record.source == source_name)
+            .filter(Record.source.in_(sources))
             .filter(Record.date_modified > datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(minutes=5))
             .all()
     )

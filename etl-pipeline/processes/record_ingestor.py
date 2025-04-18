@@ -5,8 +5,6 @@ import typing
 from logger import create_log
 from managers import RabbitMQManager
 from model import Record
-from services.sources.source_service import SourceService
-from . import utils
 
 logger = create_log(__name__)
 

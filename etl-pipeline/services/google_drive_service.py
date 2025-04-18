@@ -25,7 +25,7 @@ class GoogleDriveService:
             'https://www.googleapis.com/auth/drive',
             'https://www.googleapis.com/auth/drive.file',
             'https://www.googleapis.com/auth/drive.metadata'
-            ]
+        ]
         credentials = Credentials.from_service_account_info(service_account_info, scopes=scopes)
         self.drive_service = build('drive', 'v3', credentials=credentials)
 

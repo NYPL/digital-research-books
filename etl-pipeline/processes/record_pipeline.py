@@ -38,10 +38,10 @@ class RecordPipelineProcess:
         self.link_fulfiller = LinkFulfiller(db_manager=self.db_manager)
         self.record_deleter = RecordDeleter(db_manager=self.db_manager, store_manager=self.storage_manager, es_manager=self.es_manager)
 
-    def runProcess(self, max_attempts: int=4):
+    def runProcess(self, max_attempts: int=10):
         try:
              for attempt in range(0, max_attempts):
-                wait_time = 30 * attempt
+                wait_time = 5 * attempt
 
                 if wait_time:
                     logger.info(f'Waiting {wait_time}s for record messages')
