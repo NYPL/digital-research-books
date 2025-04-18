@@ -1,7 +1,9 @@
 import os
 import pytest
+import re
 from datetime import datetime, timezone
 import json
+import requests_mock
 from sqlalchemy import text, delete
 from uuid import uuid4
 
@@ -340,3 +342,13 @@ def limited_access_record_uuid(db_manager):
     limited_access_record = create_or_update_record(record_data=test_limited_access_record_data, db_manager=db_manager)
 
     return limited_access_record.uuid
+
+
+@pytest.fixture
+def mock_epub_to_webpub(requests_mock):
+    requests_mock.real_http = True
+    with open("tests/fixtures/webpub-manifest.json", "rb") as f:
+        response_content = f.read()
+
+    matcher = re.compile("https://epub-to-webpub.vercel.app/api/.*")
+    requests_mock.get(matcher, content=response_content)
