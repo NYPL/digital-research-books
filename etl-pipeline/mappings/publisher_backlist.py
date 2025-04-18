@@ -94,13 +94,15 @@ class PublisherBacklistMapping(JSONMapping):
                 )
             ),
         )))
+
+        file_path = f"titles/publisher_backlist/{self.record.source}/{self.record.source_id}.pdf"
         
         if hathi_id:
             self.record.has_part.append(str(Part(
                 index=1,
                 url=get_stored_file_url(
                     storage_name=destination_file_bucket,
-                    file_path=f'titles/publisher_backlist/Schomburg/{hathi_id}/{hathi_id}.pdf',
+                    file_path=file_path,
                 ),
                 source=self.record.source,
                 file_type='application/pdf',
@@ -122,7 +124,7 @@ class PublisherBacklistMapping(JSONMapping):
                 flags=str(FileFlags(cover=True)),
             )))
 
-        file_path = f"titles/publisher_backlist/{self.record.source}/{self.record.source_id}.pdf"
+            return
 
         self.record.has_part.append(str(Part(
             index=1,
