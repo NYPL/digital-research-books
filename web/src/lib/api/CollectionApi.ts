@@ -22,14 +22,20 @@ export const collectionFetcher = async (query: CollectionQuery) => {
   url.search = new URLSearchParams(
     toLocationQuery(collectionApiQuery)
   ).toString();
-  const res = await fetch(url.toString());
-  const collectionResult: Opds2Feed = await res.json();
 
-  if (res.ok) {
-    return { collections: collectionResult, statusCode: null };
-  } else {
-    const err = new Error(collectionResult.message);
-    log(err, JSON.stringify(collectionResult));
-    return { collections: collectionResult, statusCode: res.status };
+  try {
+    const res = await fetch(url.toString());
+    const collectionResult: Opds2Feed = await res.json();
+
+    if (res.ok) {
+      return { collections: collectionResult, statusCode: null };
+    } else {
+      const err = new Error(collectionResult.message);
+      log(err, JSON.stringify(collectionResult));
+      return { collections: collectionResult, statusCode: res.status };
+    }
+  } catch(err) {
+    log(err, 'Failed to get collections');
+    return { collections: null, statusCode: null }
   }
 };
