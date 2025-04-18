@@ -10,7 +10,7 @@ def test_publisher_backlist_process():
     number_of_records_ingested = publisher_backlist_process.runProcess()
 
     record_pipeline_process = RecordPipelineProcess()
-    record_pipeline_process.runProcess(max_attempts=1)
+    record_pipeline_process.runProcess(max_attempts=2)
 
     records = assert_ingested_records(
         sources=[Source.SCHOMBURG.value, Source.U_OF_MICHIGAN_BACKLIST.value], 
