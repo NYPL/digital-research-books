@@ -20,10 +20,12 @@ class Part:
     file_type: str
     flags: str
     source_url: Optional[str] = None
-    
-    @property
-    def file_bucket(self) -> Optional[str]:
-        parsed_url = urlparse(self.url)
+
+    def _parse_file_bucket(self, url: Optional[str]) -> Optional[str]:
+        if url is None:
+            return None
+
+        parsed_url = urlparse(url)
 
         if 'localhost' in parsed_url.hostname:
             path_parts = parsed_url.path.split('/')
@@ -34,10 +36,20 @@ class Part:
             return None
         
         return parsed_url.hostname.split('.')[0]
-
+    
     @property
-    def file_key(self) -> Optional[str]:
-        parsed_url = urlparse(self.url)
+    def file_bucket(self) -> Optional[str]:
+        return self._parse_file_bucket(self.url)
+    
+    @property
+    def source_file_bucket(self) -> Optional[str]:
+        return self._parse_file_bucket(self.source_url)
+    
+    def _parse_file_key(self, url: Optional[str]) -> Optional[str]:
+        if url is None:
+            return None
+
+        parsed_url = urlparse(url)
 
         if 'localhost' in parsed_url.hostname:
             path_parts = parsed_url.path.split('/')
@@ -48,6 +60,14 @@ class Part:
             return None
         
         return parsed_url.path[1:]
+
+    @property
+    def file_key(self) -> Optional[str]:
+        return self._parse_file_key(self.url)
+    
+    @property
+    def source_file_key(self) -> Optional[str]:
+        return self._parse_file_key(self.source_url)
     
     def __str__(self):
         fields = [
