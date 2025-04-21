@@ -9,7 +9,6 @@ from zipfile import ZipFile
 from managers import WebpubManifest
 from digital_assets import get_stored_file_url
 from model import Record, Part, FileFlags
-from managers import DOABLinkManager
 from model import Source
 
 from logger import create_log
@@ -28,39 +27,9 @@ class S3Manager:
             endpoint_url=os.environ.get('S3_ENDPOINT_URL', None)
         )
 
-    def store_pdf_manifest(self, record: Record, bucket_name, flags=FileFlags(reader=True), path: str=None):
+    def store_pdf_manifest(self, record: Record, bucket_name, flags=FileFlags(reader=True), path: str=None):  
         
-        if record.source == 'doab':
-            link_manager = DOABLinkManager(record)
-
-            link_manager.parse_links()
-
-            print(f'Length of manifests: {len(link_manager.manifests)}')
-            
-            for manifest in link_manager.manifests:
-                manifest_path, manifest_json = manifest
-                self.create_manifest_in_s3(manifest_path=manifest_path, manifest_json=manifest_json, bucket=bucket_name)
-
-                print(f'manifest_path={manifest_path}')
-                record.has_part.insert(0, str(Part(
-                    index=1,
-                    url=manifest_path,
-                    source=record.source,
-                    file_type='application/webpub+json',
-                    flags=str(flags)
-                )))
-
-            for epub_link in link_manager.epub_links:
-                epub_path, epub_uri = epub_link
-                record.has_part.append(str(Part(
-                    index=1,
-                    url=epub_path,
-                    source=Source.LOC.value,
-                    file_type='application/epub+zip',
-                    flags=str(FileFlags(download=True)),
-                    source_url=epub_uri
-                )))
-        else:
+        if record.source != Source.DOAB.value:
             record_id = record.source_id.split('|')[0]
             pdf_part = next(filter(lambda part: part.file_type == 'application/pdf', record.parts), None)
 

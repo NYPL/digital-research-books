@@ -5,8 +5,6 @@ import typing
 from logger import create_log
 from managers import RabbitMQManager
 from model import Record
-from services.sources.source_service import SourceService
-from . import utils
 
 logger = create_log(__name__)
 
@@ -34,7 +32,6 @@ class RecordIngestor:
                         message=json.dumps(record.to_dict(), default=str)
                 )
                 ingest_count += 1
-
         except Exception:
             logger.exception(f'Failed to ingest {self.source} records')
         finally:
