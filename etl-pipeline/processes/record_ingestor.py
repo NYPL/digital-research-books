@@ -27,10 +27,11 @@ class RecordIngestor:
         try:
             for record in records:
                 self.queue_mananger.send_message_to_queue(
-                        queue_name=self.records_queue,
-                        routing_key=self.records_route,
-                        message=json.dumps(record.to_dict(), default=str)
+                    queue_name=self.records_queue,
+                    routing_key=self.records_route,
+                    message=json.dumps(record.to_dict(), default=str)
                 )
+                
                 ingest_count += 1
         except Exception:
             logger.exception(f'Failed to ingest {self.source} records')
