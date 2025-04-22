@@ -33,24 +33,24 @@ class MUSEService(SourceService):
         limit: Optional[int]=None,
         record_id: Optional[str]=None
     ) -> Generator[Record, None, None]:
-        yield from self.importMARCRecords(start_timestamp=start_timestamp, limit=limit, record_id=record_id)
+        yield from self.import_marc_records(start_timestamp=start_timestamp, limit=limit, record_id=record_id)
         
-    def importMARCRecords(self, start_timestamp, limit, record_id):
+    def import_marc_records(self, start_timestamp, limit, record_id):
         self.download_record_updates()
 
         muse_file = self.download_marc_records()
 
-        marcReader = MARCReader(muse_file)
+        marc_reader = MARCReader(muse_file)
 
         processed_record_count = 0
 
-        for marc_record in marcReader:
+        for marc_record in marc_reader:
             if limit and processed_record_count >= limit:
                 break
 
             if (start_timestamp or record_id) \
-                    and self.recordToBeUpdated(marc_record, start_timestamp, record_id)\
-                    is False:
+                    and self.skip_record_update(marc_record, start_timestamp, record_id)\
+                    is True:
                 continue
 
             try:
@@ -58,56 +58,51 @@ class MUSEService(SourceService):
                 if mapped_muse_record is not None:
                     yield mapped_muse_record
                     processed_record_count += 1
-            except MUSEError as e:
+            except Exception as e:
                 logger.warning('Unable to parse MUSE record')
-                logger.debug(e)
 
     def download_marc_records(self):
         try:
-            museResponse = requests.get(MARC_URL, stream=True, timeout=30)
-            museResponse.raise_for_status()
-        except(ReadTimeout, HTTPError) as e:
-            logger.error('Unable to load MUSE MARC records')
-            logger.debug(e)
+            muse_response = requests.get(MARC_URL, stream=True, timeout=30)
+            muse_response.raise_for_status()
+        except Exception:
             raise Exception('Unable to load Project MUSE MARC file')
 
         content = bytes()
-        for chunk in museResponse.iter_content(1024 * 250):
+        for chunk in muse_response.iter_content(1024 * 250):
             content += chunk
 
         return BytesIO(content)
 
     def download_record_updates(self):
         try:
-            csvResponse = requests.get(MARC_CSV_URL, stream=True, timeout=30)
-            csvResponse.raise_for_status()
-        except(ReadTimeout, HTTPError) as e:
-            logger.error('Unable to load MUSE CSV records')
-            logger.debug(e)
+            csv_response = requests.get(MARC_CSV_URL, stream=True, timeout=30)
+            csv_response.raise_for_status()
+        except Exception as e:
             raise Exception('Unable to load Project MUSE CSV file')
 
-        csvReader = csv.reader(
-            csvResponse.iter_lines(decode_unicode=True),
+        csv_reader = csv.reader(
+            csv_response.iter_lines(decode_unicode=True),
             skipinitialspace=True,
         )
 
         for _ in range(4):
-            next(csvReader, None)  # Skip 4 header rows
+            next(csv_reader, None)  # Skip 4 header rows
 
-        self.updateDates = {}
-        for row in csvReader:
+        self.update_dates = {}
+        for row in csv_reader:
             try:
-                self.updateDates[row[7]] = \
+                self.update_dates[row[7]] = \
                     datetime.strptime(row[11], '%Y-%m-%d')
             except (IndexError, ValueError):
                 logger.warning('Unable to parse MUSE')
                 logger.debug(row)
 
-    def recordToBeUpdated(self, record, startDate, record_id):
-        recordURL = record.get_fields('856')[0]['u']
+    def skip_record_update(self, record, start_date, record_id):
+        record_url = record.get_fields('856')[0]['u']
 
-        updateDate = self.updateDates.get(recordURL[:-1], datetime(1970, 1, 1))
+        update_date = self.update_dates.get(record_url[:-1], datetime(1970, 1, 1))
 
-        updateURL = 'https://muse.jhu.edu/book/{}'.format(record_id)
+        update_url = f'{MUSE_ROOT_URL}/book/{record_id}'
 
-        return (updateDate >= startDate) or updateURL == recordURL[:-1]
+        return (update_date >= start_date) or update_url == record_url[:-1]
