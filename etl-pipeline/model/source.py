@@ -10,3 +10,5 @@ class Source(Enum):
     MUSE = 'muse'
     NYPL = 'nypl'
     HATHI = 'hathitrust'
+    SCHOMBURG = 'SCH Collection/Hathi files'
+    U_OF_MICHIGAN_BACKLIST = 'UofMichigan Backlist'

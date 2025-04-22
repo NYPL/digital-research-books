@@ -16,4 +16,5 @@ class TestNYPLBibService:
             limit=100
         )
 
-        assert records is not None
+        for record in records:
+            assert record is not None
