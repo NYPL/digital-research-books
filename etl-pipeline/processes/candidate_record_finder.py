@@ -3,7 +3,7 @@ from logging import Logger
 from typing import List, Set, Tuple, Optional, Any
 from sqlalchemy.exc import DataError
 from managers import DBManager, RedisManager
-
+from services.monitor import Monitor
 
 from model import Record
 from logger import create_log
@@ -33,6 +33,8 @@ class CandidateRecordFinder:
         
         if record.id:
             candidate_record_ids.append(record.id)
+
+        Monitor.track_work_records_chosen(record.id, len(candidate_record_ids))
         
         return self._get_records_by_ids(candidate_record_ids)
     
