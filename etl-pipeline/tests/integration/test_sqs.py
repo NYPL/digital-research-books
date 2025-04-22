@@ -7,11 +7,11 @@ from managers import SQSManager
 @pytest.fixture
 def sqs_manager(monkeypatch):
     """Fixture providing an SQSManager instance configured for LocalStack"""
-    monkeypatch.setenv(os.environ['AWS_REGION'],'us-east-1')
-    monkeypatch.setenv(os.environ['RECORD_PIPELINE_SQS_QUEUE'], 'test-queue')
-    monkeypatch.setenv(os.environ['AWS_ACCESS'], 'test-access-key')
-    monkeypatch.setenv(os.environ['AWS_SECRET'], 'test-secret-key')
-    monkeypatch.setenv(os.environ['S3_ENDPOINT_URL'], 'http://localhost:4566')
+    monkeypatch.setenv('AWS_REGION','us-east-1')
+    monkeypatch.setenv('RECORD_PIPELINE_SQS_QUEUE', 'test-queue')
+    monkeypatch.setenv('AWS_ACCESS', 'test-access-key')
+    monkeypatch.setenv('AWS_SECRET', 'test-secret-key')
+    monkeypatch.setenv('S3_ENDPOINT_URL', 'http://localhost:4566')
     manager = SQSManager()
     return manager
 
