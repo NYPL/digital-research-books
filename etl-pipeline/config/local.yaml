@@ -1,4 +1,5 @@
 ENVIRONMENT: local
+STAGE: development
 
 LOG_LEVEL: INFO
 

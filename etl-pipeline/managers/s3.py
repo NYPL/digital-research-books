@@ -32,12 +32,15 @@ class S3Manager:
         manifest_part = next(filter(lambda part: part.file_type == 'application/webpub+json', record.parts), None)
 
         if manifest_part is not None and pdf_part is not None:
+            try: 
+                self.client.head_object(Bucket=manifest_part.file_bucket, Key=manifest_part.file_key)
+            except ClientError: 
+                logger.info(f'Manifest {manifest_part.file_key} already exists in S3')
+                return
+            
             manifest_json = self.generate_manifest(record=record, source_url=pdf_part.url, manifest_url=manifest_part.url)
             self.create_manifest_in_s3(manifest_path=manifest_part.file_key, manifest_json=manifest_json, bucket=bucket_name)
-
-            return
-
-        if pdf_part is not None:
+        elif manifest_part is None and pdf_part is not None:
             manifest_path = f'manifests/{record.source}/{record_id}.json'
                 
             manifest_url = get_stored_file_url(storage_name=bucket_name, file_path=manifest_path)
