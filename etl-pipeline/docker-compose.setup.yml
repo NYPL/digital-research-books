@@ -18,6 +18,11 @@ services:
     extends:
       file: docker-compose.yml
       service: rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
 
   redis:
     extends:
@@ -32,12 +37,19 @@ services:
   seeddb:
     container_name: drb_local_seed
     depends_on:
-      - devsetup
-      - database
-      - elasticsearch
-      - s3
-      - redis
-      - rabbitmq
+      devsetup:
+        condition: service_started
+      database:
+        condition: service_started
+      elasticsearch:
+        condition: service_started
+      s3:
+        condition: service_started
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+
     build:
       context: .
     command: -e local-compose -p SeedLocalDataProcess -i daily

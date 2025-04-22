@@ -6,14 +6,14 @@ compose_command = docker-compose --file $(compose_file)
 help:
 	@echo "make help"
 
-unit: 
+unit:
 	python -m pytest --cov-report term-missing --cov=. tests/unit
 
 functional:
-	python -m pytest tests/functional --env=$(ENV) -n auto
+	python -m pytest tests/functional --env=$(ENV)
 
-integration: 
-	python -m pytest tests/integration --env=$(ENV) -n auto
+integration:
+	python -m pytest tests/integration --env=$(ENV)
 
 up:
 	$(compose_command) up -d

@@ -3,3 +3,4 @@ pytest-cov
 pytest-mock
 allure-pytest
 pytest-xdist
+requests-mock==1.12.1

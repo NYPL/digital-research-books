@@ -6,6 +6,7 @@ from digital_assets import get_stored_file_url
 from logger import create_log
 from managers import S3Manager
 from model import Record, Part
+from services.google_drive_service import GoogleDriveService
 
 logger = create_log(__name__)
 
@@ -16,6 +17,8 @@ class RecordFileSaver:
     def __init__(self, storage_manager: S3Manager):
         self.storage_manager = storage_manager
         self.file_bucket = os.environ['FILE_BUCKET']
+        self.limited_file_bucket = f"drb-files-limited-{os.environ['ENVIRONMENT']}"
+        self.drive_service = GoogleDriveService()
 
     def save_record_files(self, record: Record):
         self.storage_manager.store_pdf_manifest(record=record, bucket_name=self.file_bucket)
@@ -26,20 +29,51 @@ class RecordFileSaver:
 
     def store_file(self, part: Part):
         try:
-            file_contents = self.get_file_contents(part.source_url)
-            self.storage_manager.put_object(file_contents, part.file_key, part.file_bucket)
-            del file_contents
+            if 'drive.google.com' in part.source_url:
+                self._store_file_from_drive(part)
+            elif part.source_file_key and part.source_file_bucket:
+                self._copy_file(part)
+            else:
+                file_contents = self.get_file_contents(part.source_url)
+                self.storage_manager.put_object(file_contents, part.file_key, part.file_bucket)
+                del file_contents
 
-            if '.epub' in part.file_key:
-                file_root = '.'.join(part.file_key.split('.')[:-1])
+                if '.epub' in part.file_key:
+                    file_root = '.'.join(part.file_key.split('.')[:-1])
 
-                web_pub_manifest = self.generate_webpub(file_root)
-                self.storage_manager.put_object(web_pub_manifest, f'{file_root}/manifest.json', self.file_bucket)
+                    web_pub_manifest = self.generate_webpub(file_root)
+                    self.storage_manager.put_object(web_pub_manifest, f'{file_root}/manifest.json', self.file_bucket)
 
-            logger.info(f'Stored file {part.file_key} from {part.source_url}')
+            logger.info(f'Stored file at {part.url} from {part.source_url}')
         except Exception as e:
             logger.exception(f'Failed to store file {part.file_key} from {part.source_url}')
             raise e
+        
+    def _store_file_from_drive(self, part: Part):
+        file_id = f'{self.drive_service.id_from_url(part.source_url)}'
+        file = self.drive_service.get_drive_file(file_id)
+
+        if not file:
+            raise Exception(f'Unable to get file for: {part}')
+
+        file_permissions = {} if part.file_bucket == self.limited_file_bucket else { 'ACL': 'public-read' }
+        self.storage_manager.client.upload_fileobj(
+            file,
+            part.file_bucket,
+            part.file_key,
+            file_permissions
+        )
+
+    def _copy_file(self, part: Part):
+        source_bucket_key = { 'Bucket': part.source_file_bucket, 'Key': part.source_file_key }
+        extra_args = { 'ACL': 'public-read' } if part.file_bucket == self.file_bucket else {}
+
+        self.storage_manager.client.copy(
+            source_bucket_key,
+            part.file_bucket,
+            part.file_key,
+            extra_args
+        )
 
     def get_file_contents(self, file_url: str):
         try:

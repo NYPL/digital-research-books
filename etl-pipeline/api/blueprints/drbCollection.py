@@ -70,6 +70,7 @@ def collectionCreate(user=None):
     if errMsg:
         return APIUtils.formatResponseObject(400, 'createCollection', {'message': errMsg})
 
+    # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
     dbClient = DBClient(current_app.config['DB_CLIENT'])
     dbClient.createSession()
 
@@ -162,6 +163,7 @@ def collectionReplace(uuid, user=None):
 
         return APIUtils.formatResponseObject(400, 'createCollection', errMsg)
 
+    # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
     dbClient = DBClient(current_app.config['DB_CLIENT'])
     dbClient.createSession()
 
@@ -202,6 +204,7 @@ def collectionReplace(uuid, user=None):
 def collectionUpdate(uuid, user=None):
     logger.info('Handling collection update request')
 
+    # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
     dbClient = DBClient(current_app.config['DB_CLIENT'])
     dbClient.createSession()
 
@@ -307,6 +310,7 @@ def get_collection(uuid):
 def collectionDelete(uuid, user=None):
     logger.info('Deleting collection {}'.format(uuid))
 
+    # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
     dbClient = DBClient(current_app.config['DB_CLIENT'])
     dbClient.createSession()
 
@@ -340,6 +344,7 @@ def collectionDeleteWorkEdition(uuid, user=None):
 
         return APIUtils.formatResponseObject(400, 'deleteCollectionWorkEdition', errMsg)
 
+    # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
     dbClient = DBClient(current_app.config['DB_CLIENT'])
     dbClient.createSession()
 
@@ -409,7 +414,7 @@ def get_collections():
             uuid = collection.uuid
             path = '/collection/{}'.format(uuid)
 
-            group = constructOPDSFeed(collection, db_client, perPage=5, path=path)
+            group = constructOPDSFeed(collection, db_client, perPage=5, path=path, build_publications=False)
 
             opds_feed.addGroup(group)
 
@@ -441,7 +446,7 @@ def constructSortMethod(sort):
 
 
 def constructOPDSFeed(
-    collection, dbClient, sort=None, page=1, perPage=10, path=None
+    collection, dbClient, sort=None, page=1, perPage=10, path=None, build_publications: bool=True
 ):
     uuid = collection.uuid
 
@@ -461,13 +466,16 @@ def constructOPDSFeed(
         'rel': 'self', 'href': path, 'type': 'application/opds+json'
     })
 
-    if collection.type == "static":
-        _addStaticPubsToFeed(opdsFeed, collection, path, page, perPage, sort)
-    elif collection.type == "automatic":
-        esClient = ElasticClient(current_app.config["REDIS_CLIENT"])
-        _addAutomaticPubsToFeed(opdsFeed, dbClient, esClient, collection.id, path, page, perPage)
+    if build_publications:
+        if collection.type == "static":
+            _addStaticPubsToFeed(opdsFeed, collection, path, page, perPage, sort)
+        elif collection.type == "automatic":
+            esClient = ElasticClient(current_app.config["REDIS_CLIENT"])
+            _addAutomaticPubsToFeed(opdsFeed, dbClient, esClient, collection.id, path, page, perPage)
+        else:
+            raise ValueError(f"Encountered collection with unhandleable type {collection.type}")
     else:
-        raise ValueError(f"Encountered collection with unhandleable type {collection.type}")
+        opdsFeed.metadata.addField('numberOfItems', len(collection.editions))
 
     return opdsFeed
 

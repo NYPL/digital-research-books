@@ -1,4 +1,3 @@
-from datetime import datetime, timezone, timedelta
 import pytest
 
 from services import PublisherBacklistService
@@ -9,9 +8,7 @@ class TestPublisherBacklistService:
         return PublisherBacklistService()
 
     def test_get_records(self, test_instance: PublisherBacklistService):
-        records = test_instance.get_records(
-            start_timestamp=datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=7), 
-            limit=100
-        )
+        records = test_instance.get_records(limit=5)
 
-        assert records is not None
+        for record in records:
+            assert record is not None

@@ -27,7 +27,7 @@ def test_record_pipeline(db_manager, rabbitmq_manager: RabbitMQManager, unembell
 
     sleep(1)
 
-    record_pipeline.runProcess(max_attempts=4)
+    record_pipeline.runProcess(max_attempts=2)
     db_manager.session.refresh(record)
 
     assert_record_embellished(record_uuid=unembellished_pipeline_record_uuid, db_manager=db_manager)

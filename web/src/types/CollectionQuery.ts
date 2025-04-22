@@ -20,6 +20,6 @@ export const CollectionQueryDefaults: CollectionQuery = {
 };
 
 export type CollectionResult = {
-  collections: Opds2Feed;
+  collections?: Opds2Feed;
   statusCode?: number;
 };

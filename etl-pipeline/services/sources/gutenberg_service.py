@@ -58,8 +58,7 @@ class GutenbergService(SourceService):
                 cursor=cursor
             )
 
-            current_position += page_size
-            if offset and current_position <= offset: 
+            if offset and current_position + page_size <= offset:
                 continue
 
             data_files = self.get_data_files_for_respositories(respository_data=repository_data)
@@ -67,14 +66,16 @@ class GutenbergService(SourceService):
             for (rdf_file, yaml_file) in data_files:
                 gutenberg_record = GutenbergMapping(rdf_file, self.GUTENBERG_NAMESPACES, self.constants, yaml_file)
                 gutenberg_record.applyMapping()
+                current_position += 1
 
                 if record_only:
                     yield gutenberg_record.record
                 else:
                     yield gutenberg_record
+                if limit is not None and current_position >= limit:
+                    has_next_page = False
+                    break
 
-            if limit is not None and current_position >= limit: 
-                break
 
     def get_repositories(self, 
         order: str='DESC', 
