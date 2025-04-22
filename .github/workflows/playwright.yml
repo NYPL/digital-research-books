@@ -67,7 +67,7 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: test_reports
-          SLACK_MESSAGE: https://reports.cucumber.io/report-collections/01dbd6e8-653b-4597-b901-6caf2e653b07
-          SLACK_TITLE: DRB Cucumber/Playwright Test Results
+          SLACK_MESSAGE: See test results in ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SLACK_TITLE: DRB Playwright Test Results
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_USERNAME: nyplorgBot
