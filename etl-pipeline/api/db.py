@@ -214,13 +214,6 @@ class DBClient():
 
         return (
             self.session.query(Collection)
-                .options(
-                    joinedload(Collection.editions),
-                    joinedload(Collection.editions, Edition.links),
-                    joinedload(Collection.editions, Edition.items),
-                    joinedload(Collection.editions, Edition.items, Item.links),
-                    joinedload(Collection.editions, Edition.items, Item.rights),
-                )
                 .order_by(text(sort))
                 .offset(offset)
                 .limit(perPage)
