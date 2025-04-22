@@ -11,7 +11,7 @@ logger = create_log(__name__)
 
 
 class SQSManager:
-    def __init__(self, visibility_timeout=30, max_receive_count=1, wait_time_seconds=30):
+    def __init__(self, visibility_timeout=30, max_receive_count=1, wait_time_seconds=10):
         super(SQSManager, self).__init__()
         self.region_name = os.environ.get("AWS_REGION", "us-east-1")
         self.endpoint_url = os.environ.get("S3_ENDPOINT_URL")
@@ -40,13 +40,14 @@ class SQSManager:
         self.queue_url = self.client.get_queue_url(QueueName=self.queue_name)["QueueUrl"]
 
     def send_message_to_queue(self, message: Union[str, dict]):
+        if not self.client:
+            self.create_client()
         if isinstance(message, dict):
             message = json.dumps(message)
 
         params = {
             "QueueUrl": self.queue_url,
-            "MessageBody": 'message',
-            "MessageAttributes": message
+            "MessageBody": message,
             }
 
         try:
@@ -76,26 +77,30 @@ class SQSManager:
             logger.error(f"Failed to receive message from SQS: {e}")
             raise
 
-    def acknowledge_message_processed(self, message):
+    def acknowledge_message_processed(self, receipt_handle):
         try:
-            message.delete()
+            self.client.delete_message(
+                QueueUrl=self.queue_url,
+                ReceiptHandle=receipt_handle,
+            )
+            return True
         except ClientError as e:
             logger.error(f"Failed to delete/acknowledge message: {e}")
             raise
 
-    def reject_message(self, message, requeue=False):
+    def reject_message(self, receipt_handle, requeue=False):
         try:
             if requeue:
                 # Reset visibility timeout to make immediately available
                 assert self.client is not None  # Tell type checker client exists
                 self.client.change_message_visibility(
                     QueueUrl=self.queue_url,
-                    ReceiptHandle=message.receipt_handle,
+                    ReceiptHandle=receipt_handle,
                     VisibilityTimeout=0,
                 )
             else:
                 # Let message go to DLQ after max receives
-                self.acknowledge_message_processed(message)
+                self.acknowledge_message_processed(receipt_handle)
         except ClientError as e:
             logger.error(f"Failed to reject message: {e}")
             raise
