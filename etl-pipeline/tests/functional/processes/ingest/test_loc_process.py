@@ -5,7 +5,7 @@ from .assert_uploaded_manifests import assert_uploaded_manifests
 from .assert_uploaded_epubs import assert_uploaded_epubs
 
 
-def test_loc_process():
+def test_loc_process(mock_epub_to_webpub):
     loc_process = LOCProcess('complete', None, None, None, 5, None)
     number_of_records_ingested = loc_process.runProcess()
 
