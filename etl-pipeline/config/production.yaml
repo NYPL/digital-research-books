@@ -4,8 +4,9 @@ ENVIRONMENT: production
 LOG_LEVEL: info
 
 # POSTGRES CONNECTION DETAILS
-# POSTGRES_USER, POSTGRES_PSWD, POSTGRES_ADMIN_USER and POSTGRES_ADMIN_PSWD must be configured in secrets file 
+# POSTGRES_USER, POSTGRES_PSWD, POSTGRES_ADMIN_USER and POSTGRES_ADMIN_PSWD must be configured in secrets file
 POSTGRES_HOST: sfr-new-metadata-production-cluster.cluster-cvy7z512hcjg.us-east-1.rds.amazonaws.com
+POSTGRES_READ_HOST: sfr-new-metadata-production-cluster.cluster-ro-cvy7z512hcjg.us-east-1.rds.amazonaws.com
 POSTGRES_NAME: dcdw_production
 POSTGRES_PORT: '5432'
 
