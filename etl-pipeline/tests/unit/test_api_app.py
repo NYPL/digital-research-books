@@ -15,6 +15,7 @@ class TestFlaskAPI:
 
     def test_run_local(self, testInstance):
         os.environ['ENVIRONMENT'] = 'local'
+        os.environ['STAGE'] = 'development'
 
         testInstance.run()
 
@@ -22,6 +23,7 @@ class TestFlaskAPI:
 
     def test_run_production(self, testInstance, mocker):
         os.environ['ENVIRONMENT'] = 'production'
+        del os.environ['STAGE']
         mockServe = mocker.patch('api.app.serve')
 
         testInstance.run()

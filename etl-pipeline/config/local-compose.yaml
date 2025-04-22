@@ -1,4 +1,7 @@
-STAGE: local
+ENVIRONMENT: local
+STAGE: development
+
+API_HOST: '0.0.0.0'
 
 LOG_LEVEL: info
 
