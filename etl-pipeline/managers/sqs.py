@@ -14,8 +14,8 @@ class SQSManager:
         super(SQSManager, self).__init__()
         self.region_name = os.environ.get("AWS_REGION", "us-east-1")
         self.endpoint_url = os.environ.get("S3_ENDPOINT_URL")
-        self.aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
-        self.aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+        self.aws_access_key_id = os.environ.get("AWS_ACCESS")
+        self.aws_secret_access_key = os.environ.get("AWS_SECRET")
         self.queue_name = os.environ.get("RECORD_PIPELINE_SQS_QUEUE", "records")
         self.visibility_timeout = visibility_timeout
         self.max_receive_count = max_receive_count
