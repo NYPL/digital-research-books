@@ -43,22 +43,11 @@ class FlaskAPI:
         self.app.register_blueprint(fulfill)
 
     def run(self):
-        if 'local-compose' in os.environ['ENVIRONMENT'] or 'sample-compose' in os.environ['ENVIRONMENT']:
-            logger.debug('Starting dev server on port 5050')
-
+        if os.environ.get('STAGE') == 'development':
             self.app.config['ENV'] = 'development'
             self.app.config['DEBUG'] = True
-            self.app.run(host='0.0.0.0', port=5050)
-
-        elif 'local' in os.environ['ENVIRONMENT']:
-            logger.debug('Starting dev server on port 5050')
-
-            self.app.config['ENV'] = 'development'
-            self.app.config['DEBUG'] = True
-            self.app.run(port=5050)
+            self.app.run(host=os.environ.get('API_HOST'), port=5050)
         else:
-            logger.debug('Starting production server on port 80')
-
             serve(self.app, host='0.0.0.0', port=80)
 
     def createErrorResponses(self):
