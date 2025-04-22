@@ -1,8 +1,6 @@
 import os
 import json
 import pytest
-import boto3
-import time
 from managers import SQSManager
 
 

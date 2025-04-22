@@ -3,7 +3,6 @@ import boto3
 from botocore.exceptions import ClientError
 from typing import Union
 import os
-from pika.exceptions import StreamLostError
 
 from logger import create_log
 
@@ -65,6 +64,8 @@ class SQSManager:
                 raise
 
     def get_message_from_queue(self):
+        if not self.client:
+            self.create_client()
         try:
             response = self.client.receive_message(
                 QueueUrl=self.queue_url,
@@ -78,6 +79,8 @@ class SQSManager:
             raise
 
     def acknowledge_message_processed(self, receipt_handle):
+        if not self.client:
+            self.create_client()
         try:
             self.client.delete_message(
                 QueueUrl=self.queue_url,
@@ -89,17 +92,17 @@ class SQSManager:
             raise
 
     def reject_message(self, receipt_handle, requeue=False):
+        if not self.client:
+            self.create_client()
         try:
             if requeue:
                 # Reset visibility timeout to make immediately available
-                assert self.client is not None  # Tell type checker client exists
                 self.client.change_message_visibility(
                     QueueUrl=self.queue_url,
                     ReceiptHandle=receipt_handle,
                     VisibilityTimeout=0,
                 )
             else:
-                # Let message go to DLQ after max receives
                 self.acknowledge_message_processed(receipt_handle)
         except ClientError as e:
             logger.error(f"Failed to reject message: {e}")
