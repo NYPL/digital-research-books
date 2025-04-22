@@ -31,7 +31,7 @@ class RecordIngestor:
                     routing_key=self.records_route,
                     message=json.dumps(record.to_dict(), default=str)
                 )
-
+                
                 ingest_count += 1
         except Exception:
             logger.exception(f'Failed to ingest {self.source} records')
