@@ -58,8 +58,10 @@ class DSpaceService(SourceService):
 
                 try:
                     parsed_record = self.parse_record(record)
+
                     if parsed_record.record is None:
                         continue
+                    
                     yield parsed_record.record
                     record_count += 1
 
