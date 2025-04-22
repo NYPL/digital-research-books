@@ -19,7 +19,7 @@ logger = create_log(__name__)
 class HathiTrustService(SourceService):
     HATHI_DATAFILES = 'https://www.hathitrust.org/files/hathifiles/hathi_file_list.json'
     HATHI_RIGHTS_SKIPS = ['ic', 'icus', 'ic-world', 'und']
-    FIELD_SIZE_LIMIT = 131072 * 2 # 131072 is the default size limit
+    FIELD_SIZE_LIMIT = 131072 * 16 # 131072 is the default size limit
 
     def __init__(self):
         self.constants = get_constants()
