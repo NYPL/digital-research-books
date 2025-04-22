@@ -9,7 +9,6 @@ from zipfile import ZipFile
 from managers import WebpubManifest
 from digital_assets import get_stored_file_url
 from model import Record, Part, FileFlags
-from model import Source
 
 from logger import create_log
 
@@ -28,18 +27,17 @@ class S3Manager:
         )
 
     def store_pdf_manifest(self, record: Record, bucket_name):
-      if record.source != Source.DOAB.value:
         record_id = record.source_id.split('|')[0]
         pdf_part = next(filter(lambda part: part.file_type == 'application/pdf', record.parts), None)
         manifest_part = next(filter(lambda part: part.file_type == 'application/webpub+json', record.parts), None)
 
         if manifest_part is not None and pdf_part is not None:
             manifest_json = self.generate_manifest(record=record, source_url=pdf_part.url, manifest_url=manifest_part.url)
-            self.create_manifest_in_s3(manifest_path=manifest_part.file_key, manifest_json=manifest_json, bucket=bucket_name)
+            if self.create_manifest_in_s3(manifest_path=manifest_part.file_key, manifest_json=manifest_json, bucket=bucket_name) == True:
+                logger.info('Manifest already exists in S3')
+                return
 
-            return
-
-        if pdf_part is not None:
+        elif manifest_part is None and pdf_part is not None:
             manifest_path = f'manifests/{record.source}/{record_id}.json'
                 
             manifest_url = get_stored_file_url(storage_name=bucket_name, file_path=manifest_path)
@@ -56,7 +54,11 @@ class S3Manager:
             )))
 
     def create_manifest_in_s3(self, manifest_path: str, manifest_json, bucket: str):
-        self.put_object(manifest_json.encode('utf-8'), manifest_path, bucket)
+        try:
+            self.client.head_object(Bucket=bucket, Key=manifest_path)
+            return True
+        except ClientError:
+            self.put_object(manifest_json.encode('utf-8'), manifest_path, bucket)
 
     def generate_manifest(self, record: Record, source_url: str, manifest_url: str):
         manifest = WebpubManifest(source_url, 'application/pdf')

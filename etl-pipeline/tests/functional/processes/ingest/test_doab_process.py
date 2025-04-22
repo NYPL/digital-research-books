@@ -11,6 +11,6 @@ def test_doab_process():
     record_pipeline_process = RecordPipelineProcess()
     record_pipeline_process.runProcess(max_attempts=1)
 
-    records = assert_ingested_records(sources=[Source.DOAB.value])
+    records = assert_ingested_records(sources=[Source.DOAB.value], expected_number_of_records=number_of_records_ingested)
     assert_uploaded_manifests(records)
     assert_uploaded_epubs(records)

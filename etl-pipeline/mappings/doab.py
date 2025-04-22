@@ -67,7 +67,7 @@ class DOABMapping(BaseMapping):
             extent=f'{extent[0]} pages' if extent else None,
             abstract=abstract[0] if abstract else None,
             subjects=self._get_subjects(doab_record, namespaces=namespaces),
-            has_part=self._get_has_part(doab_record, namespaces),
+            has_part=self._get_has_part(doab_record, namespaces=namespaces),
             rights=self._get_rights(doab_record, namespaces=namespaces),
             date_created=datetime.now(timezone.utc).replace(tzinfo=None),
             date_modified=datetime.now(timezone.utc).replace(tzinfo=None)
@@ -147,54 +147,24 @@ class DOABMapping(BaseMapping):
         return [f'{subject}||' for subject in subjects if subject[:3] != 'bic']
 
     def _get_has_part(self, record, namespaces):
-
-        has_part_array = []
-
-        link_manager = DOABLinkManager(record)
-
-        link_manager.parse_links()
-
-        print(f'Length of manifests: {len(link_manager.manifests)}')
-        
-        for manifest in link_manager.manifests:
-            manifest_path, manifest_json = manifest
-            S3Manager.create_manifest_in_s3(manifest_path=manifest_path, manifest_json=manifest_json, bucket=self.file_bucket)
-
-            print(f'manifest_path={manifest_path}')
-            has_part_array.insert(0, str(Part(
-                    index=1,
-                    url=manifest_path,
-                    source=Source.DOAB.value,
-                    file_type='application/webpub+json',
-                    flags=FileFlags(reader=True)
-                )))
-
-        for epub_link in link_manager.epub_links:
-            epub_path, epub_uri = epub_link
-            has_part_array.append(str(Part(
-                index=1,
-                url=epub_path,
-                source=Source.DOAB.value,
-                file_type='application/epub+zip',
-                flags=str(FileFlags(download=True)),
-                source_url=epub_uri
-            )))
         dc_ids = record.xpath('./dc:identifier/text()', namespaces=namespaces)
         if not dc_ids:
             return None
-
-        for dc_id in dc_ids:
-            if 'http' in dc_id:
-                has_part_array.append(str(
-                    Part(
-                        index=1,
-                        url=dc_id,
-                        source=Source.DOAB.value,
-                        file_type='text/html',
-                        flags=str(FileFlags(embed=True)
-                ))))
         
-        return has_part_array
+        html_parts = [
+            str(
+                Part(
+                    index=1,
+                    url=dc_id,
+                    source=Source.DOAB.value,
+                    file_type='text/html',
+                    flags=str(FileFlags(embed=True))
+                )
+            )
+            for dc_id in dc_ids if 'http' in dc_id
+        ]
+
+        return html_parts
 
     def _get_uri_text_data(self, record, namespaces, field_xpath, format_string):
         field_data = record.xpath(field_xpath, namespaces=namespaces)

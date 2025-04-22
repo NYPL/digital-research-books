@@ -1,14 +1,18 @@
+import os
+
 from datetime import datetime
 from typing import Optional, Generator
 import requests
 from io import BytesIO
 from lxml import etree
+from managers import DOABLinkManager, S3Manager
+from digital_assets import get_stored_file_url
 
 from constants.get_constants import get_constants
 from logger import create_log
 from mappings.base_mapping import MappingError
 from mappings.xml import XMLMapping
-from model import Record
+from model import Record, FileFlags, Part, Source
 from .source_service import SourceService
 
 logger = create_log(__name__)
@@ -29,6 +33,8 @@ class DSpaceService(SourceService):
 
         self.base_url = base_url
         self.source_mapping = source_mapping
+        self.file_bucket = os.environ['FILE_BUCKET']
+        self.s3_manager = S3Manager()
 
     def get_records(
         self, 
@@ -58,10 +64,9 @@ class DSpaceService(SourceService):
 
                 try:
                     parsed_record = self.parse_record(record)
-
                     if parsed_record.record is None:
                         continue
-                    
+                    self.manage_links(parsed_record.record)
                     yield parsed_record.record
                     record_count += 1
 
@@ -76,6 +81,39 @@ class DSpaceService(SourceService):
             return parsed_record
         except MappingError as e:
             raise Exception(e.message)
+        
+    def manage_links(self, record):
+
+        if record.source == 'doab':
+            #Not sure how to make it to where this method only runs for the DOAB ingest process besides specifying the source
+            link_manager = DOABLinkManager(record)
+
+            link_manager.parse_links()
+            
+            for manifest in link_manager.manifests:
+                manifest_path, manifest_json = manifest
+                self.s3_manager.create_manifest_in_s3(manifest_path=manifest_path, manifest_json=manifest_json, bucket=self.file_bucket)
+
+                manifest_url = get_stored_file_url(storage_name=self.file_bucket, file_path=manifest_path)
+                record.has_part.insert(0, str(Part(
+                        index=1,
+                        url=manifest_url,
+                        source=Source.DOAB.value,
+                        file_type='application/webpub+json',
+                        flags=str(FileFlags(reader=True))
+                    )))
+
+            for epub_link in link_manager.epub_links:
+                epub_path, epub_uri = epub_link
+                epub_url = get_stored_file_url(storage_name=self.file_bucket, file_path=epub_path)
+                record.has_part.append(str(Part(
+                    index=1,
+                    url=epub_url,
+                    source=Source.DOAB.value,
+                    file_type='application/epub+zip',
+                    flags=str(FileFlags(download=True)),
+                    source_url=epub_uri
+                )))
 
     def get_single_record(self, record_id, source_identifier):
         url = f'{self.base_url}verb=GetRecord&metadataPrefix=oai_dc&identifier={source_identifier}:{record_id}'
