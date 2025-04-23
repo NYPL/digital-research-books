@@ -59,7 +59,7 @@ jobs:
           sleep 5
         shell: bash
 
-      - name: Run your tests
+      - name: Run Playwright tests
         working-directory: ./web
         run: npm run playwright
         env:
