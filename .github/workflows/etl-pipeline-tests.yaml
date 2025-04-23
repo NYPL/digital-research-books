@@ -3,19 +3,19 @@ name: ETL Pipeline Tests (Pull Request)
 on:
   pull_request:
     types: [opened, synchronize]
-    # paths:
-    #   - "etl-pipeline/api/**"
-    #   - "etl-pipeline/managers/**"
-    #   - "etl-pipeline/mappings/**"
-    #   - "etl-pipeline/model/**"
-    #   - "etl-pipeline/processes/**"
-    #   - "etl-pipeline/services/**"
-    #   - "etl-pipeline/tests/**"
-    #   - "etl-pipeline/utils/**"
-    #   - "etl-pipeline/dev-requirements.txt"
-    #   - "etl-pipeline/requirements.txt"
-    #   - "etl-pipeline/main.py"
-    #   - "etl-pipeline/Makefile"
+    paths:
+      - "etl-pipeline/api/**"
+      - "etl-pipeline/managers/**"
+      - "etl-pipeline/mappings/**"
+      - "etl-pipeline/model/**"
+      - "etl-pipeline/processes/**"
+      - "etl-pipeline/services/**"
+      - "etl-pipeline/tests/**"
+      - "etl-pipeline/utils/**"
+      - "etl-pipeline/dev-requirements.txt"
+      - "etl-pipeline/requirements.txt"
+      - "etl-pipeline/main.py"
+      - "etl-pipeline/Makefile"
 
 jobs:
   test:
@@ -52,35 +52,35 @@ jobs:
           python -m pip install --upgrade pip wheel
           pip install -r requirements.txt -r dev-requirements.txt
 
-      # - name: Run unit tests
-      #   working-directory: ./etl-pipeline
-      #   run: |
-      #     make unit
+      - name: Run unit tests
+        working-directory: ./etl-pipeline
+        run: |
+          make unit
 
-      # - name: Build Docker images with cache
-      #   working-directory: ./etl-pipeline
-      #   run: |
-      #     docker compose build --progress plain \
-      #       --build-arg BUILDKIT_INLINE_CACHE=1
+      - name: Build Docker images with cache
+        working-directory: ./etl-pipeline
+        run: |
+          docker compose build --progress plain \
+            --build-arg BUILDKIT_INLINE_CACHE=1
 
-      # - name: Start services
-      #   working-directory: ./etl-pipeline
-      #   run: |
-      #     docker compose up -d
+      - name: Start services
+        working-directory: ./etl-pipeline
+        run: |
+          docker compose up -d
 
-      # - name: Wait for containers
-      #   run: |
-      #     echo "Waiting for services..." && sleep 90
+      - name: Wait for containers
+        run: |
+          echo "Waiting for services..." && sleep 90
 
-      # - name: Run functional and integration tests
-      #   env:
-      #     ENVIRONMENT: local
-      #   working-directory: ./etl-pipeline
-      #   run: |
-      #     make functional integration
+      - name: Run functional and integration tests
+        env:
+          ENVIRONMENT: local
+        working-directory: ./etl-pipeline
+        run: |
+          make functional integration
 
-      # - name: Cleanup
-      #   if: always()
-      #   working-directory: ./etl-pipeline
-      #   run: |
-      #     docker compose down
+      - name: Cleanup
+        if: always()
+        working-directory: ./etl-pipeline
+        run: |
+          docker compose down
