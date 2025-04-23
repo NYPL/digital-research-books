@@ -3,7 +3,10 @@
 # Additional notes - https://docs.google.com/document/d/1aZ5ODEzKP6qX1f4CCcGtlidRvr-Fu8HPA-AEhTwDTyk/edit?usp=sharing
 
 import pickle
+import time
+import boto3
 import os.path
+import io
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import (
     AuthorizedSession,
@@ -32,6 +35,8 @@ class GRINClient(object):
 
         # Data -- books and lists of books -- is kept here.
         self.cache_dir = cache_dir
+
+        self.s3 = boto3.client('s3')
 
         # Make sure the cache directories exist.
         for dir in (cache_dir, os.path.join(cache_dir, "books")):
@@ -72,7 +77,8 @@ class GRINClient(object):
         response = self.session.request("GET", url)
         if response.status_code != 200:
             raise IOError("%s got %s unexpectedly" % (url, response.status_code))
-        open(cache_path, "wb").write(response.content)
+        print("Upload TAR file to Glacier")
+        self.s3.put_object(Body=response.content, Bucket='drb-grin-testing', Key=str(filename), StorageClass='GLACIER_IR')
         return response.content
 
     def _for_state(self, state, *args, **kwargs):
@@ -118,8 +124,15 @@ client_config = {"installed":{"client_id":"ID_GOES_HERE.apps.googleusercontent.c
 client = GRINClient(client_config, "token.pickle", "cache")
 print("Number available: %s" % len(client.available()))
 print("Number failed: %s" % len(client.failed()))
+
 converted = client.converted()
-print("Downloading %d converted books." % len(converted))
+print("Converted books: %d" % len(converted))
+print("Downloading a converted file...")
+
+start_time = time.process_time()
+
 for filename in converted:
+    print(filename)
     content = client.download(filename)
-    print(filename, len(content))
+    print("Runtime: %d", time.process_time() - start_time)
+    break
