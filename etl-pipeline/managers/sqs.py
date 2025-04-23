@@ -10,13 +10,18 @@ logger = create_log(__name__)
 
 
 class SQSManager:
-    def __init__(self, visibility_timeout=30, max_receive_count=1, wait_time_seconds=10):
-        super(SQSManager, self).__init__()
+    def __init__(
+        self,
+        queue_name: str,
+        visibility_timeout=30,
+        max_receive_count=1,
+        wait_time_seconds=10,
+    ):
         self.region_name = os.environ.get("AWS_REGION", "us-east-1")
         self.endpoint_url = os.environ.get("S3_ENDPOINT_URL")
         self.aws_access_key_id = os.environ.get("AWS_ACCESS")
         self.aws_secret_access_key = os.environ.get("AWS_SECRET")
-        self.queue_name = os.environ.get("RECORD_PIPELINE_SQS_QUEUE", "records")
+        self.queue_name = queue_name
         self.visibility_timeout = visibility_timeout
         self.max_receive_count = max_receive_count
         self.wait_time_seconds = wait_time_seconds
@@ -47,7 +52,7 @@ class SQSManager:
         params = {
             "QueueUrl": self.queue_url,
             "MessageBody": message,
-            }
+        }
 
         try:
             response = self.client.send_message(**params)
