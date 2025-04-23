@@ -1,108 +1,113 @@
 import csv
-import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
+from itertools import islice
 from io import BytesIO
 from pymarc import MARCReader
 import requests
-from requests.exceptions import ReadTimeout, HTTPError
 
-from managers import DBManager, MUSEError, MUSEManager, RabbitMQManager, S3Manager
+from managers import S3Manager, MUSEManager
 from mappings.muse import map_muse_record
-from model import get_file_message, Record
+from model import Record
 from logger import create_log
-from processes.record_buffer import RecordBuffer
-from processes import utils
-from typing import Generator, Optional, Union
+from typing import Generator, Optional
 from .source_service import SourceService
 
 logger = create_log(__name__)
 
-MARC_URL = 'https://about.muse.jhu.edu/lib/metadata?format=marc&content=book&include=oa&filename=open_access_books&no_auth=1'
+MARC_URL = 'https://about.muse.jhu.edu/lib/metadata?format=marc&content=book&include=oa&filename=open_access_books&no_auth=1&bookid=123'
 MARC_CSV_URL = 'https://about.muse.jhu.edu/static/org/local/holdings/muse_book_metadata.csv'
 MUSE_ROOT_URL = 'https://muse.jhu.edu'
+
 
 class MUSEService(SourceService):
 
     def __init__(self):
-        pass
+        self.store_manager = S3Manager()
 
     def get_records(
         self,
         start_timestamp: Optional[datetime]=None,
         offset: int=0,
         limit: Optional[int]=None,
-        record_id: Optional[str]=None
     ) -> Generator[Record, None, None]:
-        yield from self.import_marc_records(start_timestamp=start_timestamp, limit=limit, record_id=record_id)
-        
-    def import_marc_records(self, start_timestamp, limit, record_id):
-        self.download_record_updates()
+        record_updates = self._get_record_updates()
+        record_count = 0
 
-        muse_file = self.download_marc_records()
-
-        marc_reader = MARCReader(muse_file)
-
-        processed_record_count = 0
-
-        for marc_record in marc_reader:
-            if limit and processed_record_count >= limit:
+        for marc_record in MARCReader(self._get_marc_records()):
+            if limit and record_count >= limit:
                 break
 
-            if (start_timestamp or record_id) \
-                    and self.skip_record_update(marc_record, start_timestamp, record_id)\
-                    is True:
+            if start_timestamp and self._get_record_updated_at(marc_record, record_updates) >= start_timestamp:
                 continue
 
             try:
-                mapped_muse_record = map_muse_record(marc_record)
-                if mapped_muse_record is not None:
-                    yield mapped_muse_record
-                    processed_record_count += 1
-            except Exception as e:
-                logger.warning('Unable to parse MUSE record')
+                yield self._map_marc_record(marc_record)
+                record_count += 1
+            except Exception:
+                logger.exception('Unable to parse MUSE record')
 
-    def download_marc_records(self):
+    def get_record(self, record_id: str) -> Record:
+        for marc_record in MARCReader(self._get_marc_records()):
+            if self._get_record_id(marc_record) == record_id:
+                return self._map_marc_record(marc_record)
+            
+        raise Exception(f'MUSE record not found with id: {record_id}')
+    
+    def _map_marc_record(self, marc_record) -> Record:
+        record = map_muse_record(marc_record)
+        first_part = record.parts[0]
+
+        muse_manager = MUSEManager(record, first_part.url, first_part.file_type)
+
+        muse_manager.parse_muse_page()
+        muse_manager.identify_readable_versions()
+        muse_manager.add_readable_links()
+
+        if muse_manager.pdf_webpub_manifest:
+            self.store_manager.put_object(
+                muse_manager.pdf_webpub_manifest.toJson().encode('utf-8'),
+                muse_manager.s3_pdf_read_path,
+                muse_manager.s3_bucket
+            )
+        
+        return record
+
+    def _get_marc_records(self):
         try:
-            muse_response = requests.get(MARC_URL, stream=True, timeout=30)
-            muse_response.raise_for_status()
+            marc_response = requests.get(MARC_URL, stream=True, timeout=30)
+            marc_response.raise_for_status()
         except Exception:
             raise Exception('Unable to load Project MUSE MARC file')
 
         content = bytes()
-        for chunk in muse_response.iter_content(1024 * 250):
+        for chunk in marc_response.iter_content(1024 * 250):
             content += chunk
 
         return BytesIO(content)
 
-    def download_record_updates(self):
+    def _get_record_updates(self) -> dict:
         try:
-            csv_response = requests.get(MARC_CSV_URL, stream=True, timeout=30)
-            csv_response.raise_for_status()
+            muse_metadata_response = requests.get(MARC_CSV_URL, stream=True, timeout=30)
+            muse_metadata_response.raise_for_status()
         except Exception as e:
-            raise Exception('Unable to load Project MUSE CSV file')
+            raise Exception('Unable to load Project MUSE metadata')
 
-        csv_reader = csv.reader(
-            csv_response.iter_lines(decode_unicode=True),
-            skipinitialspace=True,
-        )
+        record_updates = {}
 
-        for _ in range(4):
-            next(csv_reader, None)  # Skip 4 header rows
-
-        self.update_dates = {}
-        for row in csv_reader:
+        for record_update in islice(csv.reader(muse_metadata_response.iter_lines(decode_unicode=True), skipinitialspace=True), 4, None):
             try:
-                self.update_dates[row[7]] = \
-                    datetime.strptime(row[11], '%Y-%m-%d')
+                record_id = record_update[7]
+                updated_at = record_update[11]
+                record_updates[record_id] = datetime.strptime(updated_at, '%Y-%m-%d')
             except (IndexError, ValueError):
-                logger.warning('Unable to parse MUSE')
-                logger.debug(row)
+                logger.exception(f'Unable to get record update: {record_update}')
 
-    def skip_record_update(self, record, start_date, record_id):
+        return record_updates
+
+    def _get_record_id(self, record) -> str:
         record_url = record.get_fields('856')[0]['u']
 
-        update_date = self.update_dates.get(record_url[:-1], datetime(1970, 1, 1))
-
-        update_url = f'{MUSE_ROOT_URL}/book/{record_id}'
-
-        return (update_date >= start_date) or update_url == record_url[:-1]
+        return record_url[:-1].split('/')[-1]
+    
+    def _get_record_updated_at(self, record, record_updates: dict) -> datetime:        
+        return record_updates.get(self._get_record_id(record), datetime(1970, 1, 1))

@@ -52,7 +52,7 @@ def map_muse_record(muse_record) -> Record:
         date_modified=datetime.now(timezone.utc).replace(tzinfo=None)
     )
 
-def add_has_part_link(record, url, media_type, flags):
+def add_has_part_link(record, url, media_type, flags, source_url=None):
     last_item_no = int(record.has_part[-1][0])
 
     record.has_part.append(str(Part(
@@ -60,7 +60,8 @@ def add_has_part_link(record, url, media_type, flags):
         source=Source.MUSE.value,
         url=url,
         file_type=media_type,
-        flags=flags
+        flags=flags,
+        source_url=source_url
     )))
 
 def _get_formatted_field(record: Record, field: str, string_format: str) -> list[str]:
