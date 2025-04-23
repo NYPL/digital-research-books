@@ -24,7 +24,9 @@ class TestSQSManagerIntegration:
         assert 'MessageId' in send_result
 
         # Receive message
-        message = sqs_manager.get_message_from_queue()
+        messages = sqs_manager.get_messages_from_queue()
+        assert len(messages) == 1
+        message = messages[0]
         assert json.loads(message['Body']) == test_msg
 
         # Clean up
