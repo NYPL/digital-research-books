@@ -11,7 +11,6 @@ class TestSQSManager(unittest.TestCase):
         "AWS_ACCESS_KEY_ID": "test-key",
         "AWS_SECRET_ACCESS_KEY": "test-secret",
         "AWS_REGION": "us-east-1",
-        "RECORD_PIPELINE_SQS_QUEUE": "test-queue"
     })
     @patch('managers.sqs.boto3.client')
     def setUp(self, mock_client):
@@ -21,7 +20,7 @@ class TestSQSManager(unittest.TestCase):
         mock_client.return_value = self.mock_sqs
 
         # Create manager and fully mock its client initialization
-        self.manager = SQSManager()
+        self.manager = SQSManager("test-queue")
         self.manager.client = self.mock_sqs
         self.manager.queue_url = 'test-url'
         self.manager.create_client = MagicMock(return_value=None)  # Prevent real client creation
