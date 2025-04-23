@@ -11,6 +11,6 @@ def test_gutenberg_process(mock_epub_to_webpub):
 
     record_pipeline_process = RecordPipelineProcess()
     record_pipeline_process.runProcess(max_attempts=2)
-    records = assert_ingested_records(sources=[Source.GUTENBERG.value], expected_number_of_records=number_of_records_ingested)
 
+    records = assert_ingested_records(sources=[Source.GUTENBERG.value], expected_number_of_records=number_of_records_ingested)
     assert_uploaded_manifests(records)
