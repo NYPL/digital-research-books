@@ -76,3 +76,6 @@ class METService(SourceService):
         except Exception:
             logger.exception('Failed to process MET record')
             return None
+        
+    def get_record(self, record_id: str):
+        pass

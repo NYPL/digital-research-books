@@ -29,3 +29,6 @@ class ChicagoISACService(SourceService):
 
             if limit and record_count >= limit:
                 break
+
+    def get_record(self, record_id: str):
+        pass
