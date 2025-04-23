@@ -7,7 +7,7 @@ from .assert_uploaded_files import assert_uploaded_files
 
 
 @pytest.mark.skip
-def test_publisher_backlist_process():
+def test_publisher_backlist_process(mock_epub_to_webpub):
     publisher_backlist_process = PublisherBacklistProcess('complete', None, None, None, 1, None)
 
     number_of_records_ingested = publisher_backlist_process.runProcess()

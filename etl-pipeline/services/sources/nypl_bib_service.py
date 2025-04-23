@@ -129,3 +129,6 @@ class NYPLBibService(SourceService):
             return False if len(copyright_data['data']['results'][0]['renewals']) > 0 else True
 
         return False   
+
+    def get_record(self, record_id: str):
+        pass

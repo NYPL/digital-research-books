@@ -104,3 +104,6 @@ class HathiTrustService(SourceService):
             return datetime.strptime(date_modified, '%Y-%m-%d %H:%M:%S') if date_modified else datetime.now()
         except ValueError:
             return datetime.now()
+        
+    def get_record(self, record_id: str):
+        pass

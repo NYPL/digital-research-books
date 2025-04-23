@@ -152,7 +152,7 @@ class Record(Base, Core):
     def __repr__(self):
         title = shorten(self.title, width=50, placeholder='...') if self.title else self.title
 
-        return f"<Record(title={title}, uuid={self.uuid})>"
+        return f"<Record(title={title}, source={self.source} uuid={self.uuid})>"
     
     def __dir__(self):
         return ['uuid', 'frbr_status', 'cluster_status', 'source', 'publisher_project_source', 'source_id',

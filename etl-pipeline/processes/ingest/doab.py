@@ -18,28 +18,23 @@ class DOABProcess():
     DOAB_IDENTIFIER = 'oai:directory.doabooks.org'
 
     def __init__(self, *args):
-        self.dspace_service = DSpaceService(base_url=self.DOAB_BASE_URL, source_mapping=DOABMapping)
+        self.dspace_service = DSpaceService(base_url=self.DOAB_BASE_URL, source_mapping=DOABMapping, source_identifier=self.DOAB_IDENTIFIER)
         self.params = utils.parse_process_args(*args)
         self.record_ingestor = RecordIngestor(source=Source.DOAB.value)
 
     def runProcess(self) -> int:
+        if self.params.record_id is not None:
+            return self.record_ingestor.ingest([self.dspace_service.get_record(record_id=self.params.record_id)])
+
         start_timestamp = utils.get_start_datetime(
             process_type=self.params.process_type,
             ingest_period=self.params.ingest_period,
         )
         
-        if self.params.record_id is not None:
-            return self.record_ingestor.ingest(
-                self.dspace_service.get_single_record(
-                    record_id=self.params.record_id,
-                    source_identifier=self.DOAB_IDENTIFIER
-                )
+        return self.record_ingestor.ingest(
+            self.dspace_service.get_records(
+                start_timestamp=start_timestamp,
+                offset=self.params.offset,
+                limit=self.params.limit
             )
-        else:
-            return self.record_ingestor.ingest(
-                self.dspace_service.get_records(
-                    start_timestamp=start_timestamp,
-                    offset=self.params.offset,
-                    limit=self.params.limit
-                )
-            )
+        )

@@ -207,3 +207,6 @@ class GutenbergService(SourceService):
     @staticmethod
     def default_ctor(loader, tag_suffix, node):
         return f'{tag_suffix}{node.value}'
+    
+    def get_record(self, record_id: str):
+        pass

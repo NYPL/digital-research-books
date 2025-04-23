@@ -37,6 +37,7 @@ def test_embellish_record(db_manager, unembellished_record_uuid):
 
 def assert_record_embellished(record_uuid: str, db_manager):
     embellished_record = db_manager.session.query(Record).filter(Record.uuid == record_uuid).first()
+    db_manager.session.refresh(embellished_record)
 
     assert embellished_record.frbr_status == 'complete'
 

@@ -67,3 +67,6 @@ class PublisherBacklistService(SourceService):
         is_after_date_time_filter = urllib.parse.quote(f'IS_AFTER({{Last Modified}}, "{start_date_time_str}")')
 
         return f"&filterByFormula=AND(OR({is_same_date_time_filter}),{is_after_date_time_filter})),{ready_to_ingest_filter})"
+    
+    def get_record(self, record_id: str):
+        pass

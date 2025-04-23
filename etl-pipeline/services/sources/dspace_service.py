@@ -24,11 +24,12 @@ class DSpaceService(SourceService):
         'oaire': 'https://raw.githubusercontent.com/rcic/openaire4/master/schemas/4.0/oaire.xsd'
     }
 
-    def __init__(self, base_url, source_mapping: type[XMLMapping]):
+    def __init__(self, base_url, source_mapping: type[XMLMapping], source_identifier: str=None):
         self.constants = get_constants()
 
         self.base_url = base_url
         self.source_mapping = source_mapping
+        self.source_identifier = source_identifier
 
     def get_records(
         self, 
@@ -77,8 +78,8 @@ class DSpaceService(SourceService):
         except MappingError as e:
             raise Exception(e.message)
 
-    def get_single_record(self, record_id, source_identifier):
-        url = f'{self.base_url}verb=GetRecord&metadataPrefix=oai_dc&identifier={source_identifier}:{record_id}'
+    def get_record(self, record_id: str):
+        url = f'{self.base_url}verb=GetRecord&metadataPrefix=oai_dc&identifier={self.source_identifier}:{record_id}'
 
         response = requests.get(url, timeout=30)
 

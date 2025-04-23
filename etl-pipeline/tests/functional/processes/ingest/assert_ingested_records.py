@@ -18,7 +18,7 @@ def assert_ingested_records(sources: list[str], expected_number_of_records: Opti
     )
 
     if expected_number_of_records is not None:
-        assert len(records) >= expected_number_of_records
+        assert len(records) >= expected_number_of_records, f'Expected {expected_number_of_records} records, found {len(records)}'
     else:
         assert len(records) >= 1
 
