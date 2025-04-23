@@ -13,3 +13,4 @@ from .elasticsearch import ElasticsearchManager
 from .sfrElasticRecord import SFRElasticRecordManager
 from .s3 import S3Manager
 from .muse import MUSEError, MUSEManager
+from .sqs import SQSManager
