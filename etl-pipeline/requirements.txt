@@ -33,5 +33,5 @@ scikit-learn==1.2.2
 sqlalchemy==2.0.20
 waitress==3.0.1
 werkzeug==2.2.2
-newrelic==8.8.0
+newrelic==10.9.0
 geocoder==1.38.1
