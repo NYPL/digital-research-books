@@ -114,6 +114,15 @@ class Record(Base, Core):
         index=True
     )
     cluster_status = Column(Boolean, default=False, nullable=False, index=True)
+    state = Column(
+        Unicode,
+        ENUM(
+            "ingested", "files_saved", "complete",
+            name="record_state", create_type=False,
+        ),
+        nullable=True,
+        index=True,
+    )
     source = Column(Unicode, index=True) # dc:source, Non-Repeating
     publisher_project_source = Column(Unicode, index=True) # dc:publisherProjectSource, Non-Repeating
     source_id = Column(Unicode, index=True) # dc:identifier, Non-Repeating
