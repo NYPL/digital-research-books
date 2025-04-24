@@ -39,6 +39,7 @@ class RecordPipelineProcess:
         self.record_deleter = RecordDeleter(db_manager=self.db_manager, store_manager=self.storage_manager, es_manager=self.es_manager)
 
     def runProcess(self, max_attempts: int=10):
+        self.db_manager.create_session()
         try:
              for attempt in range(0, max_attempts):
                 wait_time = 5 * attempt
