@@ -1,10 +1,10 @@
 import json
 import os
-import typing
+from typing import Iterator
 
 from logger import create_log
 from managers import DBManager, RabbitMQManager, SQSManager
-from model import Record
+from model import Record, RecordState
 from processes.record_buffer import RecordBuffer
 
 logger = create_log(__name__)
@@ -30,10 +30,7 @@ class RecordIngestor:
         sqs_records_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
         self.sqs_manager = SQSManager(queue_name=sqs_records_queue)
 
-
-    def ingest(self, records: typing.Iterator[Record]) -> int:
-        ingest_count = 0
-
+    def ingest(self, records: Iterator[Record]) -> int:
         try:
             for record in self._persisted_records(records):
                 self.queue_manager.send_message_to_queue(
@@ -41,7 +38,7 @@ class RecordIngestor:
                     routing_key=self.records_route,
                     message=json.dumps(record.to_dict(), default=str),
                 )
-                ingest_count += 1
+
                 try:
                     message = json.dumps({"record_id": record.id})
                     self.sqs_manager.send_message_to_queue(message)
@@ -53,17 +50,16 @@ class RecordIngestor:
         finally:
             self.queue_manager.close_connection()
 
-        logger.info(f'Ingested {ingest_count} {self.source} records')
-        return ingest_count
+        logger.info(f'Ingested {self.record_buffer.ingest_count} {self.source} records')
+        return self.record_buffer.ingest_count
 
-    def _persisted_records(
-        self,
-        records: typing.Iterator[Record],
-    ) -> typing.Iterator[Record]:
+    def _persisted_records(self, records: Iterator[Record]) -> Iterator[Record]:
         for record in records:
-            record.state = "ingested"
+            record.state = RecordState.INGESTED.value
+            
             flushed_records = self.record_buffer.add(record)
+            
             if flushed_records:
-                yield from iter(flushed_records)
+                yield from flushed_records
 
-        yield from iter(self.record_buffer.flush())
+        yield from self.record_buffer.flush()

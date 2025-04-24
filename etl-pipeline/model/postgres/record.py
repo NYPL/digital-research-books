@@ -89,6 +89,13 @@ class FRBRStatus(Enum):
     COMPLETE = 'complete'
 
 
+class RecordState(Enum):
+    INGESTED = 'ingested'
+    FILES_SAVED = 'files_saved'
+    EMBELLISED = 'embellished'
+    CLUSTERED = 'clustered'
+
+
 @dataclass 
 class FileFlags:
     catalog: bool = False
