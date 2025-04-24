@@ -18,20 +18,8 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column(
-        "records",
-        # See model.postgres.record for values. Enums with `create_type=False`
-        # are basically just plain strings anyway without any constraints and
-        # I couldn't get alembic to play nice with it:
-        # https://github.com/sqlalchemy/alembic/issues/1347
-        sa.Column(
-            "state",
-            sa.String,
-            nullable=True,
-            index=True,
-        ),
-    )
+    op.add_column('records', sa.Column('state', sa.String, nullable=True))
 
 
 def downgrade():
-    pass
+    op.drop_column('records', 'state')
