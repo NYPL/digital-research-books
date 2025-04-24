@@ -58,12 +58,21 @@ class RecordEmbellisher:
                 continue
 
             search_query = self.oclc_catalog_manager.generate_search_query(identifier=id, identifier_type=id_type)
-            self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
+            oclc_bibs = self.oclc_catalog_manager.query_bibs(query=search_query)
+            self._add_owi_to_record(record, oclc_bibs)
+            self._add_works(oclc_bibs)
         
         # Fall back to author/title search if no results
         if self.record_buffer.ingest_count == 0 and len(self.record_buffer.records) == 0 and author and title:
             search_query = self.oclc_catalog_manager.generate_search_query(author=author, title=title)
+            oclc_bibs = self.oclc_catalog_manager.query_bibs(query=search_query)
+            self._add_owi_to_record(record, oclc_bibs)
             self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
+
+    def _add_owi_to_record(self, record: Record, oclc_bibs: dict):
+        for oclc_bib in oclc_bibs:
+            owi_number = oclc_bib.get('work', {}).get('id')
+            record.identifiers.append(f'{owi_number}|owi')
 
     def _add_works(self, oclc_bibs: list):
         """Process a list of OCLC bibliographic records."""
