@@ -87,3 +87,6 @@ class LOCService(SourceService):
 
                 logger.exception(f'Failed to load page data from: {page_url}')
                 return {}
+            
+    def get_record(self, record_id: str):
+        pass

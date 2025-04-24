@@ -12,6 +12,10 @@ class SourceService(ABC):
         self,
         start_timestamp: Optional[datetime]=None,
         offset: int=0,
-        limit: Optional[int]=None
+        limit: Optional[int]=None,
     ) -> Union[list[RecordMapping], Generator[Record, None, None]]:
+        pass
+
+    @abstractmethod
+    def get_record(self, record_id: str) -> Record:
         pass

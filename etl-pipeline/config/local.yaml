@@ -1,4 +1,5 @@
 ENVIRONMENT: local
+STAGE: development
 
 LOG_LEVEL: INFO
 
@@ -33,6 +34,7 @@ FILE_QUEUE: drb_files
 FILE_ROUTING_KEY: drb_files
 RECORD_PIPELINE_QUEUE: records
 RECORD_PIPELINE_ROUTING_KEY: records
+RECORD_PIPELINE_SQS_QUEUE: records
 
 AWS_REGION: us-east-1
 FILE_BUCKET: drb-files-local

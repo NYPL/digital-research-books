@@ -82,7 +82,8 @@ class MUSEManager:
                 self.record,
                 self.construct_s3_link(self.s3_epub_path),
                 'application/epub+zip',
-                json.dumps({'download': True, 'reader': False, 'catalog': False})
+                json.dumps({'download': True, 'reader': False, 'catalog': False}),
+                source_url=self.epub_url
             )
 
             self.epub_read_path = 'epubs/muse/{}/manifest.json'.format(self.muse_id)

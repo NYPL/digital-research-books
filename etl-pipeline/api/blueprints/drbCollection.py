@@ -70,6 +70,7 @@ def collectionCreate(user=None):
     if errMsg:
         return APIUtils.formatResponseObject(400, 'createCollection', {'message': errMsg})
 
+    # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
     dbClient = DBClient(current_app.config['DB_CLIENT'])
     dbClient.createSession()
 
@@ -162,6 +163,7 @@ def collectionReplace(uuid, user=None):
 
         return APIUtils.formatResponseObject(400, 'createCollection', errMsg)
 
+    # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
     dbClient = DBClient(current_app.config['DB_CLIENT'])
     dbClient.createSession()
 
@@ -202,6 +204,7 @@ def collectionReplace(uuid, user=None):
 def collectionUpdate(uuid, user=None):
     logger.info('Handling collection update request')
 
+    # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
     dbClient = DBClient(current_app.config['DB_CLIENT'])
     dbClient.createSession()
 
@@ -307,6 +310,7 @@ def get_collection(uuid):
 def collectionDelete(uuid, user=None):
     logger.info('Deleting collection {}'.format(uuid))
 
+    # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
     dbClient = DBClient(current_app.config['DB_CLIENT'])
     dbClient.createSession()
 
@@ -340,6 +344,7 @@ def collectionDeleteWorkEdition(uuid, user=None):
 
         return APIUtils.formatResponseObject(400, 'deleteCollectionWorkEdition', errMsg)
 
+    # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
     dbClient = DBClient(current_app.config['DB_CLIENT'])
     dbClient.createSession()
 

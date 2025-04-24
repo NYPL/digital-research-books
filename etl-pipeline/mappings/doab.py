@@ -1,17 +1,25 @@
 import re
+import os
 
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from digital_assets import get_stored_file_url
 from model import FileFlags, FRBRStatus, Part, Record, Source
 from services import DSpaceService
 from .base_mapping import BaseMapping
+from managers import DOABLinkManager, S3Manager
 
 class DOABMapping(BaseMapping):
     DOI_REGEX = r'doabooks.org\/handle\/([0-9]+\.[0-9]+\.[0-9]+\/[0-9]+)'
 
     def __init__(self, doab_record, namespaces):
         self.record = self.map_doab_record(doab_record, namespaces)
+        self.file_bucket = os.environ['FILE_BUCKET']
+        self.link_manager = DOABLinkManager(self.record)
+        self.store_manager = S3Manager()
+
+        self._get_links()
     
     def map_doab_record(self, record, namespaces) -> Record:
         header = record.find('.//header', namespaces=DSpaceService.ROOT_NAMESPACE)
@@ -64,7 +72,7 @@ class DOABMapping(BaseMapping):
             extent=f'{extent[0]} pages' if extent else None,
             abstract=abstract[0] if abstract else None,
             subjects=self._get_subjects(doab_record, namespaces=namespaces),
-            has_part=self._get_has_part(doab_record, namespaces),
+            has_part=self._get_has_part(doab_record, namespaces=namespaces),
             rights=self._get_rights(doab_record, namespaces=namespaces),
             date_created=datetime.now(timezone.utc).replace(tzinfo=None),
             date_modified=datetime.now(timezone.utc).replace(tzinfo=None)
@@ -147,7 +155,7 @@ class DOABMapping(BaseMapping):
         dc_ids = record.xpath('./dc:identifier/text()', namespaces=namespaces)
         if not dc_ids:
             return None
-
+        
         html_parts = [
             str(
                 Part(
@@ -160,8 +168,36 @@ class DOABMapping(BaseMapping):
             )
             for dc_id in dc_ids if 'http' in dc_id
         ]
-        
-        return html_parts 
+
+        return html_parts
+    
+    def _get_links(self):
+        self.link_manager.parse_links()
+
+        for manifest in self.link_manager.manifests:
+            manifest_path, manifest_json = manifest
+            self.store_manager.create_manifest_in_s3(manifest_path=manifest_path, manifest_json=manifest_json, bucket=self.file_bucket)
+
+            manifest_url = get_stored_file_url(storage_name=self.file_bucket, file_path=manifest_path)
+            self.record.has_part.insert(0, str(Part(
+                    index=1,
+                    url=manifest_url,
+                    source=Source.DOAB.value,
+                    file_type='application/webpub+json',
+                    flags=str(FileFlags(reader=True))
+                )))
+
+        for epub_link in self.link_manager.epub_links:
+            epub_path, epub_uri = epub_link
+            epub_url = get_stored_file_url(storage_name=self.file_bucket, file_path=epub_path)
+            self.record.has_part.append(str(Part(
+                index=1,
+                url=epub_url,
+                source=Source.DOAB.value,
+                file_type='application/epub+zip',
+                flags=str(FileFlags(download=True)),
+                source_url=epub_uri
+            )))
 
     def _get_uri_text_data(self, record, namespaces, field_xpath, format_string):
         field_data = record.xpath(field_xpath, namespaces=namespaces)
