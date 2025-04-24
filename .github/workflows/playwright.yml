@@ -13,13 +13,14 @@ on:
 
 jobs:
   tests:
-    name: Run Tests
+    name: Run Playwright Tests for DRB Web
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up node
+        uses: actions/setup-node@v4
         with:
           node-version-file: "web/.nvmrc"
           cache: npm

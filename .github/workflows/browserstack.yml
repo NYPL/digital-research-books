@@ -1,9 +1,9 @@
-name: "Playwright Tests for DRB Web via BrowserStack"
+name: Playwright Tests for DRB Web via BrowserStack
 on:
   schedule:
     - cron: "00 11 * * 1-5" # every day at 8-10 AM ET (11 AM wherever the server is) excluding weekends
   pull_request:
-    types: [opened]
+    types: [opened, synchronize, reopened]
   workflow_call:
     inputs:
       base_url:
@@ -14,10 +14,10 @@ on:
 
 jobs:
   test:
-    name: "Playwright Tests for DRB Web via BrowserStack"
+    name: Run Playwright Tests for DRB Web via BrowserStack
     runs-on: ubuntu-latest
     steps:
-      - name: "BrowserStack Env Setup"
+      - name: BrowserStack Env Setup
         uses: "browserstack/github-actions/setup-env@master"
         with:
           username: ${{ secrets.BROWSERSTACK_USERNAME }}
@@ -34,7 +34,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup node
+      - name: Set up node
         uses: actions/setup-node@v4
         with:
           node-version-file: "web/.nvmrc"
