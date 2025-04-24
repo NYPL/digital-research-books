@@ -33,7 +33,7 @@ class RecordBuffer:
         self.db_manager.bulk_save_objects(self.records)
         self.ingest_count += len(self.records)
 
-        yield iter(self.records)
+        yield from iter(self.records)
 
         self.records.clear()
 
