@@ -11,6 +11,7 @@ class RecordBuffer:
         self.deletion_count = 0
 
     def add(self, record: Record):
+        # TODO: update record state to ingested or embellished
         existing_record = self.db_manager.session.query(Record).filter(
             Record.source_id == record.source_id
         ).first()
@@ -48,9 +49,15 @@ class RecordBuffer:
 
             setattr(existing_record, attribute, value)
         
+        # TODO: deprecate cluster_status
         existing_record.cluster_status = False
         
         if existing_record.source not in ['oclcClassify', 'oclcCatalog']:
+            # TODO: deprecate frbr_status
             existing_record.frbr_status = FRBRStatus.TODO.value
+            # TODO: update record state to ingested
+        else:
+            # TODO: update record state to embellished
+            pass
 
         return existing_record

@@ -141,9 +141,10 @@ class RecordClusterer:
         self, record_ids: list[str], cluster_status: bool = True
     ):
         (
+            # TODO: update records' states
             self.db_manager.session.query(Record)
-            .filter(Record.id.in_(list(set(record_ids))))
-            .update({"cluster_status": cluster_status, "frbr_status": "complete"})
+                .filter(Record.id.in_(list(set(record_ids))))
+                .update({"cluster_status": cluster_status, "frbr_status": "complete"})
         )
 
     def _find_all_matching_records(self, record: Record) -> list[str]:

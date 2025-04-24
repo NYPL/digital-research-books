@@ -145,10 +145,6 @@ class Record(Base, Core):
         super().__init__(*args, **kwargs)
         self._deletion_flag = False
 
-    # Because SQL alchemy uses __dict__ and vars, we must use a separate to_dict function to make a Record JSON serializable
-    def to_dict(self):
-        return { attribute: value for attribute, value in self }
-
     def __repr__(self):
         title = shorten(self.title, width=50, placeholder='...') if self.title else self.title
 

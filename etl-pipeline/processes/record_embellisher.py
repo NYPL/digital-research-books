@@ -37,8 +37,9 @@ class RecordEmbellisher:
 
         self.record_buffer.flush()
 
-        # TODO: change this to embellish_status
+        # TODO: deprecate frbr_status
         record.frbr_status = 'complete'
+        # TODO: update record state to embellished
 
         self.db_manager.session.add(record)
         self.db_manager.session.commit()

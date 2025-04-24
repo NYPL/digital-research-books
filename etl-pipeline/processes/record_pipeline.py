@@ -67,16 +67,20 @@ class RecordPipelineProcess:
     def _process_message(self, message):
         try:
             message_props, _, message_body = message
-            record = self._parse_message(message_body=message_body)
+            record_id = self._parse_message(message_body=message_body)
 
             self.db_manager.create_session()
+
+            record = self.db_manager.session.query(Record).filter(Record.id == record_id).first()
+
+            if record is None:
+                raise Exception(f'Record with {record_id} not found')
 
             if record._deletion_flag is True:
                 self.record_deleter.delete_record(record)
             else:
-                self.record_file_saver.save_record_files(record)
-                saved_record = self._save_record(record)
-                embellished_record = self.record_embellisher.embellish_record(saved_record)
+                record_with_files = self.record_file_saver.save_record_files(record)
+                embellished_record = self.record_embellisher.embellish_record(record_with_files)
                 clustered_records = self.record_clusterer.cluster_record(embellished_record)
                 self.link_fulfiller.fulfill_records_links(clustered_records)
                 
@@ -88,35 +92,7 @@ class RecordPipelineProcess:
             if self.db_manager.session: 
                 self.db_manager.session.close()
 
-    def _parse_message(self, message_body) -> Record:
+    def _parse_message(self, message_body) -> int:
         message = json.loads(message_body)
 
-        return Record(**message)
-    
-    def _save_record(self, record: Record) -> Record:
-        existing_record = (
-            self.db_manager.session.query(Record)
-                .filter(Record.source_id == record.source_id)
-                .filter(Record.source == record.source)
-                .first()
-        )
-
-        if existing_record:
-            record = self._update_record(record, existing_record)
-        else:
-            self.db_manager.session.add(record)
-
-        self.db_manager.session.commit()
-        self.db_manager.session.refresh(record)
-
-        logger.info(f'{"Updated" if existing_record else "Created"} record: {record}')
-        return record
-    
-    def _update_record(self, record: Record, existing_record: Record) -> Record:
-        for attribute, value in record:
-            if attribute == 'uuid': 
-                continue
-
-            setattr(existing_record, attribute, value)
-
-        return existing_record
+        return int(message['record_id'])
