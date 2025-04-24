@@ -35,6 +35,7 @@ class RecordClusterer:
     # Regular expression to identify identifiers that should be matched
     IDENTIFIERS_TO_MATCH = r"\|(?:isbn|issn|oclc|lccn|owi)$"
     CLUSTER_TIMEOUT = 60 * 60 # 1 hour
+    CLUSTER_LOCK_KEY_PREFIX = 'cluster_lock_'
 
     def __init__(self, db_manager: DBManager, redis_manager: RedisManager):
         self.db_manager = db_manager
@@ -53,7 +54,7 @@ class RecordClusterer:
         """Clusters a single record and updates the database and Elasticsearch.
         """
         try:
-            record_lock = Redlock(key=str(record.id), masters={self.redis_manager.client}, auto_release_time=self.CLUSTER_TIMEOUT)
+            record_lock = Redlock(key=f'{self.CLUSTER_LOCK_KEY_PREFIX}{record.id}', masters={self.redis_manager.client}, auto_release_time=self.CLUSTER_TIMEOUT)
 
             with record_lock:
                 work, stale_work_ids, records = self._get_clustered_work_and_records(record)
@@ -238,9 +239,9 @@ class RecordClusterer:
                     .all()
                 )
 
-                record_ids = [record[1] for record in records]
+                cluster_lock_keys = [f'{self.CLUSTER_LOCK_KEY_PREFIX}{record[1]}' for record in records]
 
-                if self.redis_manager.any_locked(record_ids):
+                if self.redis_manager.any_locked(cluster_lock_keys):
                     raise ConcurrentClusterException('Currently clustering group of records')
 
                 matched_records.extend(records)
