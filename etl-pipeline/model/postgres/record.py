@@ -92,7 +92,7 @@ class FRBRStatus(Enum):
 class RecordState(Enum):
     INGESTED = 'ingested'
     FILES_SAVED = 'files_saved'
-    EMBELLISED = 'embellished'
+    EMBELLISHED = 'embellished'
     CLUSTERED = 'clustered'
 
 
