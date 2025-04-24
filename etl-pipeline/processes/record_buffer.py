@@ -23,7 +23,10 @@ class RecordBuffer:
             self.records.add(record)
 
         if len(self.records) > self.batch_size:
-            self.flush()
+            return self.flush()
+
+        return None
+
 
     # TODO: Implement deletion for the rest of the FRBR model
     def delete(self, record: Record):
