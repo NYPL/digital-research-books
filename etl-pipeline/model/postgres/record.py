@@ -29,22 +29,22 @@ class Part:
 
         if 'localhost' in parsed_url.hostname:
             path_parts = parsed_url.path.split('/')
-            
+
             return path_parts[1]
 
         if 's3' not in parsed_url.hostname:
             return None
-        
+
         return parsed_url.hostname.split('.')[0]
-    
+
     @property
     def file_bucket(self) -> Optional[str]:
         return self._parse_file_bucket(self.url)
-    
+
     @property
     def source_file_bucket(self) -> Optional[str]:
         return self._parse_file_bucket(self.source_url)
-    
+
     def _parse_file_key(self, url: Optional[str]) -> Optional[str]:
         if url is None:
             return None
@@ -58,23 +58,23 @@ class Part:
 
         if 's3' not in parsed_url.hostname:
             return None
-        
+
         return parsed_url.path[1:]
 
     @property
     def file_key(self) -> Optional[str]:
         return self._parse_file_key(self.url)
-    
+
     @property
     def source_file_key(self) -> Optional[str]:
         return self._parse_file_key(self.source_url)
-    
+
     def __str__(self):
         fields = [
-            str(self.index) if self.index is not None else '', 
-            self.url, 
-            self.source, 
-            self.file_type, 
+            str(self.index) if self.index is not None else '',
+            self.url,
+            self.source,
+            self.file_type,
             self.flags
         ]
 
@@ -89,7 +89,7 @@ class FRBRStatus(Enum):
     COMPLETE = 'complete'
 
 
-@dataclass 
+@dataclass
 class FileFlags:
     catalog: bool = False
     reader: bool = False
@@ -114,6 +114,15 @@ class Record(Base, Core):
         index=True
     )
     cluster_status = Column(Boolean, default=False, nullable=False, index=True)
+    state = Column(
+        Unicode,
+        ENUM(
+            "ingested", "files_saved", "complete",
+            name="record_state", create_type=False,
+        ),
+        nullable=True,
+        index=True,
+    )
     source = Column(Unicode, index=True) # dc:source, Non-Repeating
     publisher_project_source = Column(Unicode, index=True) # dc:publisherProjectSource, Non-Repeating
     source_id = Column(Unicode, index=True) # dc:identifier, Non-Repeating
@@ -153,7 +162,7 @@ class Record(Base, Core):
         title = shorten(self.title, width=50, placeholder='...') if self.title else self.title
 
         return f"<Record(title={title}, source={self.source} uuid={self.uuid})>"
-    
+
     def __dir__(self):
         return ['uuid', 'frbr_status', 'cluster_status', 'source', 'publisher_project_source', 'source_id',
             'title', 'alternative', 'medium', 'is_part_of', 'subjects', 'authors',
@@ -161,7 +170,7 @@ class Record(Base, Core):
             'date_submitted', 'requires', 'spatial', 'publisher', 'has_version',
             'table_of_contents', 'extent', 'abstract', 'has_part', 'coverage', 'date_modified'
         ]
-    
+
     def __iter__(self):
         for attr in dir(self):
             yield attr, getattr(self, attr)
@@ -209,7 +218,7 @@ class Record(Base, Core):
     @property
     def deletion_flag(self):
         return self._deletion_flag
-    
+
     @deletion_flag.setter
     def deletion_flag(self, deletion_flag):
         self._deletion_flag = deletion_flag

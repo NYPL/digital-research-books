@@ -1,7 +1,7 @@
 """add collections table
 
 Revision ID: fabf5e5c3109
-Revises: 
+Revises:
 Create Date: 2021-08-04 18:05:01.567042
 
 """
@@ -29,7 +29,8 @@ def upgrade():
         ),
         sa.Column('uuid', UUID, index=True),
         sa.Column('title', sa.String, index=True),
-        sa.Column('creator', sa.String, index=True)
+        sa.Column('creator', sa.String, index=True),
+        if_not_exists=True,
     )
 
     op.create_table(
@@ -50,7 +51,8 @@ def upgrade():
             sa.Integer,
             sa.ForeignKey('editions.id', ondelete='CASCADE'),
             index=True
-        )
+        ),
+        if_not_exists=True,
     )
 
 
