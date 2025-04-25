@@ -9,7 +9,7 @@ from managers import (
     SFRRecordManager,
 )
 from constants.get_constants import get_constants
-from model import Record, Work
+from model import Record, Work, RecordState
 
 
 logger = create_log(__name__)
@@ -129,7 +129,7 @@ class RecordClusterer:
         (
             self.db_manager.session.query(Record)
             .filter(Record.id.in_(list(set(record_ids))))
-            .update({"cluster_status": cluster_status, "frbr_status": "complete"})
+            .update({"cluster_status": cluster_status, "frbr_status": "complete", "state": RecordState.CLUSTERED.value })
         )
 
     def _find_all_matching_records(self, record: Record) -> list[str]:

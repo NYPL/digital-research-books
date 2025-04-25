@@ -4,8 +4,8 @@ from urllib.parse import quote_plus
 
 from digital_assets import get_stored_file_url
 from logger import create_log
-from managers import S3Manager
-from model import Record, Part
+from managers import DBManager, S3Manager
+from model import Record, RecordState, Part
 from services.google_drive_service import GoogleDriveService
 
 logger = create_log(__name__)
@@ -14,18 +14,26 @@ logger = create_log(__name__)
 class RecordFileSaver:
     WEBPUB_CONVERSION_BASE_URL = 'https://epub-to-webpub.vercel.app'
 
-    def __init__(self, storage_manager: S3Manager):
+    def __init__(self, db_manager: DBManager, storage_manager: S3Manager):
+        self.db_manager = db_manager
         self.storage_manager = storage_manager
         self.file_bucket = os.environ['FILE_BUCKET']
         self.limited_file_bucket = f"drb-files-limited-{os.environ['ENVIRONMENT']}"
         self.drive_service = GoogleDriveService()
 
-    def save_record_files(self, record: Record):
+    def save_record_files(self, record: Record) -> Record:
         self.storage_manager.store_pdf_manifest(record=record, bucket_name=self.file_bucket)
         files_to_store = (part for part in record.parts if part.source_url and part.file_bucket and part.file_key)
 
         for file_to_store in files_to_store:
             self.store_file(part=file_to_store)
+
+        record.state = RecordState.FILES_SAVED.value
+
+        self.db_manager.session.commit()
+        self.db_manager.session.refresh(record)
+
+        return record
 
     def store_file(self, part: Part):
         try:

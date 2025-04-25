@@ -33,18 +33,18 @@ class RecordIngestor:
     def ingest(self, records: Iterator[Record]) -> int:
         try:
             for record in self._persisted_records(records):
+                message = { "record_id": record.id }
+
                 self.queue_manager.send_message_to_queue(
                     queue_name=self.records_queue,
                     routing_key=self.records_route,
-                    message=json.dumps(record.to_dict(), default=str),
+                    message=message
                 )
 
                 try:
-                    message = json.dumps({"record_id": record.id})
                     self.sqs_manager.send_message_to_queue(message)
-                except Exception as e:
+                except Exception:
                     logger.exception(f"Failed to send message to SQS")
-
         except Exception:
             logger.exception(f'Failed to ingest {self.source} records')
         finally:
