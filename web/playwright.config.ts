@@ -24,7 +24,7 @@ const config: PlaywrightTestConfig = {
   retries: process.env.CI ? 2 : 0,
 
   // Reporter to use
-  reporter: "html",
+  reporter: "line",
 
   use: {
     headless: true,
