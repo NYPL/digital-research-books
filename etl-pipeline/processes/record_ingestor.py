@@ -33,7 +33,7 @@ class RecordIngestor:
     def ingest(self, records: Iterator[Record]) -> int:
         try:
             for record in self._persisted_records(records):
-                message = { "record_id": record.id }
+                message = { "source_id": record.source_id, "source": record.source }
 
                 self.queue_manager.send_message_to_queue(
                     queue_name=self.records_queue,

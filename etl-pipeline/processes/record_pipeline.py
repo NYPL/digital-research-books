@@ -64,14 +64,19 @@ class RecordPipelineProcess:
     def _process_message(self, message):
         try:
             message_props, _, message_body = message
-            record_id = self._parse_message(message_body=message_body)
+            source_id, source = self._parse_message(message_body=message_body)
 
             self.db_manager.create_session()
 
-            record = self.db_manager.session.get(Record, record_id)
+            record = (
+                self.db_manager.session.query(Record)
+                    .filter(Record.source_id == source_id)
+                    .filter(Record.source == source)
+                    .first()
+            )
 
             if record is None:
-                raise Exception(f'Record with id: {record_id} not found')
+                raise Exception(f'{source} record with source_id {source_id} not found')
 
             record_with_files = self.record_file_saver.save_record_files(record)
             embellished_record = self.record_embellisher.embellish_record(record_with_files)
@@ -86,7 +91,7 @@ class RecordPipelineProcess:
             if self.db_manager.session: 
                 self.db_manager.session.close()
 
-    def _parse_message(self, message_body) -> int:
+    def _parse_message(self, message_body) -> tuple:
         message = json.loads(message_body)
 
-        return int(message['record_id'])
+        return message['source_id'], message['source']

@@ -35,7 +35,7 @@ class RecordEmbellisher:
     def embellish_record(self, record: Record) -> Record:
         self._add_works_for_record(record=record)
 
-        self.record_buffer.flush(yield_records=False)
+        self.record_buffer.flush()
 
         # TODO: deprecate frbr_status
         record.frbr_status = 'complete'
@@ -67,7 +67,6 @@ class RecordEmbellisher:
             self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
 
     def _add_works(self, oclc_bibs: list):
-        print(oclc_bibs)
         """Process a list of OCLC bibliographic records."""
         for oclc_bib in oclc_bibs:
             owi_number, related_oclc_numbers = self._add_work(oclc_bib) 
@@ -93,7 +92,7 @@ class RecordEmbellisher:
         related_oclc_numbers = self.oclc_catalog_manager.get_related_oclc_numbers(oclc_number=oclc_number)
 
         oclc_bib_mapping = OCLCBibMapping(oclc_bib=oclc_bib,related_oclc_numbers=list(set(related_oclc_numbers)))
-        self.record_buffer.add(record=oclc_bib_mapping.record, yield_records=False)
+        self.record_buffer.add(record=oclc_bib_mapping.record)
 
         return (owi_number, related_oclc_numbers)
 
@@ -107,7 +106,7 @@ class RecordEmbellisher:
             catalog_record_mapping.applyMapping()
             catalog_record_mapping.record.identifiers.append(f'{owi_number}|owi')
             
-            self.record_buffer.add(catalog_record_mapping.record, yield_records=False)
+            self.record_buffer.add(catalog_record_mapping.record)
         except Exception:
             logger.exception(f'Unable to add edition with OCLC number: {oclc_number}')
             return
