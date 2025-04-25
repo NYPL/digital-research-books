@@ -1,3 +1,5 @@
+from typing import Optional, Iterable
+
 from managers import DBManager
 from model import Record, FRBRStatus
 
@@ -10,7 +12,7 @@ class RecordBuffer:
         self.ingest_count = 0
         self.deletion_count = 0
 
-    def add(self, record: Record):
+    def add(self, record: Record) -> Optional[set[Record]]:
         existing_record = self.db_manager.session.query(Record).filter(
             Record.source_id == record.source_id
         ).first()
@@ -23,23 +25,17 @@ class RecordBuffer:
             self.records.add(record)
 
         if len(self.records) > self.batch_size:
-            self.flush()
+            return self.flush()
 
-    # TODO: Implement deletion for the rest of the FRBR model
-    def delete(self, record: Record):
-        existing_record = self.db_manager.session.query(Record).filter(
-            Record.source_id == record.source_id
-        ).first()
+        return None
 
-        if existing_record:
-            self.db_manager.session.delete(existing_record)
-            self.deletion_count += 1
-            self.db_manager.session.commit()
-
-    def flush(self):
+    def flush(self) -> set[Record]:
         self.db_manager.bulk_save_objects(self.records)
         self.ingest_count += len(self.records)
+        records = self.records.copy()
         self.records.clear()
+
+        return records
 
     def _update_record(self, record: Record, existing_record: Record) -> Record:
         for attribute, value in record:

@@ -68,7 +68,7 @@ class SQSManager:
                 logger.error(f"Failed retry sending message to SQS: {e}")
                 raise
 
-    def get_messages_from_queue(self):
+    def get_messages_from_queue(self, visibility_timeout=None):
         if not self.client:
             self.create_client()
         try:
@@ -77,6 +77,7 @@ class SQSManager:
                 WaitTimeSeconds=self.wait_time_seconds,
                 MessageAttributeNames=["All"],
                 MaxNumberOfMessages=self.max_receive_count,
+                VisibilityTimeout=visibility_timeout,
             )
             return response["Messages"] if "Messages" in response else None
         except ClientError as e:
