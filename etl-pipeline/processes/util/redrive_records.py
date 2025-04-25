@@ -43,7 +43,7 @@ class RedriveRecordsProcess:
                 self.rabbitmq_manager.send_message_to_queue(
                     queue_name=self.records_queue, 
                     routing_key=self.records_route, 
-                    message=json.dumps(record.to_dict(), default=str)
+                    message={ 'record_id', record.id }
                 )
 
                 redrive_count = count
