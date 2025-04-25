@@ -2,7 +2,7 @@ import json
 import os
 
 from logger import create_log
-from managers import DBManager, RabbitMQManager
+from managers import DBManager, SQSManager
 from model import Record
 from .. import utils
 
@@ -17,12 +17,8 @@ class RedriveRecordsProcess:
         self.db_manager = DBManager()
         self.db_manager.create_session()
 
-        self.records_queue = os.environ.get('RECORD_PIPELINE_QUEUE')
-        self.records_route = os.environ.get('RECORD_PIPELINE_ROUTING_KEY')
-
-        self.rabbitmq_manager = RabbitMQManager()
-        self.rabbitmq_manager.create_connection()
-        self.rabbitmq_manager.create_or_connect_queue(queue_name=self.records_queue, routing_key=self.records_route)
+        record_pipeline_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
+        self.sqs_manager = SQSManager(record_pipeline_queue)
 
     def runProcess(self):
         try:
@@ -40,9 +36,7 @@ class RedriveRecordsProcess:
             redrive_count = 0
 
             for count, record in enumerate(records, start=1):
-                self.rabbitmq_manager.send_message_to_queue(
-                    queue_name=self.records_queue, 
-                    routing_key=self.records_route, 
+                self.sqs_manager.send_message_to_queue(
                     message={ "source_id": record.source_id, "source": record.source }
                 )
 
@@ -57,4 +51,3 @@ class RedriveRecordsProcess:
             logger.info(f'Failed to redrive {self.params.source} records for source')
         finally:
             self.db_manager.close_connection()
-            self.rabbitmq_manager.close_connection()
