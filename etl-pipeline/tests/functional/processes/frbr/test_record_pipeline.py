@@ -27,7 +27,7 @@ def test_record_pipeline(db_manager, rabbitmq_manager: RabbitMQManager, unembell
     rabbitmq_manager.send_message_to_queue(
         queue_name=record_queue,
         routing_key=record_route,
-        message=json.dumps(record.to_dict(), default=str)
+        message={ "source_id": record.source_id, "source": record.source }
     )
 
     sleep(1)

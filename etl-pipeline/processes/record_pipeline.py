@@ -32,7 +32,7 @@ class RecordPipelineProcess:
         self.es_manager = ElasticsearchManager()
         self.es_manager.create_elastic_connection()
 
-        self.record_file_saver = RecordFileSaver(storage_manager=self.storage_manager)
+        self.record_file_saver = RecordFileSaver(db_manager=self.db_manager, storage_manager=self.storage_manager)
         self.record_embellisher = RecordEmbellisher(db_manager=self.db_manager)
         self.record_clusterer = RecordClusterer(db_manager=self.db_manager)
         self.link_fulfiller = LinkFulfiller(db_manager=self.db_manager)
@@ -64,56 +64,34 @@ class RecordPipelineProcess:
     def _process_message(self, message):
         try:
             message_props, _, message_body = message
-            record = self._parse_message(message_body=message_body)
+            source_id, source = self._parse_message(message_body=message_body)
 
             self.db_manager.create_session()
 
-            if record._deletion_flag is True:
-                self.record_deleter.delete_record(record)
-            else:
-                self.record_file_saver.save_record_files(record)
-                saved_record = self._save_record(record)
-                embellished_record = self.record_embellisher.embellish_record(saved_record)
-                clustered_records = self.record_clusterer.cluster_record(embellished_record)
-                self.link_fulfiller.fulfill_records_links(clustered_records)
+            record = (
+                self.db_manager.session.query(Record)
+                    .filter(Record.source_id == source_id)
+                    .filter(Record.source == source)
+                    .first()
+            )
+
+            if record is None:
+                raise Exception(f'{source} record with source_id {source_id} not found')
+
+            record_with_files = self.record_file_saver.save_record_files(record)
+            embellished_record = self.record_embellisher.embellish_record(record_with_files)
+            clustered_records = self.record_clusterer.cluster_record(embellished_record)
+            self.link_fulfiller.fulfill_records_links(clustered_records)
                 
             self.queue_manager.acknowledge_message_processed(message_props.delivery_tag)
         except Exception:
-            logger.exception(f'Failed to process record: {record}')
+            logger.exception(f'Failed to process message: {message_body}')
             self.queue_manager.reject_message(delivery_tag=message_props.delivery_tag)         
         finally:
             if self.db_manager.session: 
                 self.db_manager.session.close()
 
-    def _parse_message(self, message_body) -> Record:
+    def _parse_message(self, message_body) -> tuple:
         message = json.loads(message_body)
 
-        return Record(**message)
-    
-    def _save_record(self, record: Record) -> Record:
-        existing_record = (
-            self.db_manager.session.query(Record)
-                .filter(Record.source_id == record.source_id)
-                .filter(Record.source == record.source)
-                .first()
-        )
-
-        if existing_record:
-            record = self._update_record(record, existing_record)
-        else:
-            self.db_manager.session.add(record)
-
-        self.db_manager.session.commit()
-        self.db_manager.session.refresh(record)
-
-        logger.info(f'{"Updated" if existing_record else "Created"} record: {record}')
-        return record
-    
-    def _update_record(self, record: Record, existing_record: Record) -> Record:
-        for attribute, value in record:
-            if attribute == 'uuid': 
-                continue
-
-            setattr(existing_record, attribute, value)
-
-        return existing_record
+        return message['source_id'], message['source']

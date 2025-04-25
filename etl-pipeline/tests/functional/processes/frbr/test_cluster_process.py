@@ -1,6 +1,6 @@
 import pytest
 from processes import ClusterProcess, RecordClusterer
-from model import Record, Item, Edition, Work
+from model import Record, Item, Edition, Work, RecordState
 
 def test_cluster_process(db_manager, unclustered_record_uuid):
     cluster_process = ClusterProcess('complete', None, None, unclustered_record_uuid, None)
