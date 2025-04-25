@@ -28,12 +28,12 @@ jobs:
           cache: npm
           cache-dependency-path: "web/package-lock.json"
 
-      # - name: Set environment for branch
-      #   working-directory: ./web
-      #   run: |
-      #     touch .env
-      #     echo "BASE_URL=${{ inputs.base_url }}" >> .env
-      #   shell: bash
+      - name: Set environment for branch
+        working-directory: ./web
+        run: |
+          touch .env
+          echo "BASE_URL=${{ inputs.base_url }}" >> .env
+        shell: bash
 
       # - name: Add hosts to /etc/hosts
       #   if: inputs.base_url == 'http://local.nypl.org:3000/'
