@@ -14,6 +14,9 @@ from model import Record
 
 logger = create_log(__name__)
 
+# Keep messages invisible to other consumers for 90 minutes
+SQS_VISIBILITY_TIMEOUT_SECS = 90 * 60
+
 
 class RecordPipelineProcess:
 
@@ -45,7 +48,7 @@ class RecordPipelineProcess:
                     logger.info(f"Waiting {wait_time}s for record messages")
                     sleep(wait_time)
 
-                while messages := self.sqs_manager.get_messages_from_queue():
+                while messages := self.sqs_manager.get_messages_from_queue(visibility_timeout=SQS_VISIBILITY_TIMEOUT_SECS):
                     for message in messages:
                         self._process_message(message)
         except Exception:
