@@ -31,6 +31,8 @@ FILE_ROUTING_KEY: sfrS3Files
 RECORD_PIPELINE_QUEUE: sfrRecords
 RECORD_PIPELINE_ROUTING_KEY: sfrRecords
 
+RECORD_PIPELINE_SQS_QUEUE: drb-record-pipeline-queue-production-tf
+
 # OCLC CONFIGURATION
 # OCLC API keys must be configured in secrets file
 OCLC_QUERY_LIMIT: '390000'
