@@ -89,6 +89,13 @@ class FRBRStatus(Enum):
     COMPLETE = 'complete'
 
 
+class RecordState(Enum):
+    INGESTED = 'ingested'
+    FILES_SAVED = 'files_saved'
+    EMBELLISHED = 'embellished'
+    CLUSTERED = 'clustered'
+
+
 @dataclass 
 class FileFlags:
     catalog: bool = False
@@ -114,6 +121,11 @@ class Record(Base, Core):
         index=True
     )
     cluster_status = Column(Boolean, default=False, nullable=False, index=True)
+    state = Column(
+        Unicode,
+        ENUM('ingested', 'files_saved', 'embellished', 'clustered', name='record_state', create_type=False),
+        nullable=True
+    )
     source = Column(Unicode, index=True) # dc:source, Non-Repeating
     publisher_project_source = Column(Unicode, index=True) # dc:publisherProjectSource, Non-Repeating
     source_id = Column(Unicode, index=True) # dc:identifier, Non-Repeating
@@ -145,17 +157,13 @@ class Record(Base, Core):
         super().__init__(*args, **kwargs)
         self._deletion_flag = False
 
-    # Because SQL alchemy uses __dict__ and vars, we must use a separate to_dict function to make a Record JSON serializable
-    def to_dict(self):
-        return { attribute: value for attribute, value in self }
-
     def __repr__(self):
         title = shorten(self.title, width=50, placeholder='...') if self.title else self.title
 
         return f"<Record(title={title}, source={self.source} uuid={self.uuid})>"
     
     def __dir__(self):
-        return ['uuid', 'frbr_status', 'cluster_status', 'source', 'publisher_project_source', 'source_id',
+        return ['uuid', 'frbr_status', 'cluster_status', 'state', 'source', 'publisher_project_source', 'source_id',
             'title', 'alternative', 'medium', 'is_part_of', 'subjects', 'authors',
             'contributors', 'languages', 'dates', 'rights', 'identifiers',
             'date_submitted', 'requires', 'spatial', 'publisher', 'has_version',
