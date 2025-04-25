@@ -36,7 +36,7 @@
     "@types/gtag.js": "0.0.4",
     "@types/jest": "29.5.4",
     "@types/react": "18.0.31",
-    "browserstack-node-sdk": "^1.34.56",
+    "browserstack-node-sdk": "^1.34.57",
     "eslint": "8.57.0",
     "eslint-config-next": "15.0.3",
     "eslint-config-prettier": "7.0.0",
