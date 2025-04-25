@@ -9,7 +9,7 @@ from .record_file_saver import RecordFileSaver
 from .link_fulfiller import LinkFulfiller
 
 from logger import create_log
-from managers import DBManager, ElasticsearchManager, S3Manager, SQSManager
+from managers import DBManager, ElasticsearchManager, S3Manager, SQSManager, RedisManager
 from model import Record
 
 logger = create_log(__name__)
@@ -28,9 +28,12 @@ class RecordPipelineProcess:
         self.es_manager = ElasticsearchManager()
         self.es_manager.create_elastic_connection()
 
+        self.redis_manager = RedisManager()
+        self.redis_manager.create_client()
+
         self.record_file_saver = RecordFileSaver(db_manager=self.db_manager, storage_manager=self.storage_manager)
         self.record_embellisher = RecordEmbellisher(db_manager=self.db_manager)
-        self.record_clusterer = RecordClusterer(db_manager=self.db_manager)
+        self.record_clusterer = RecordClusterer(db_manager=self.db_manager, redis_manager=self.redis_manager)
         self.link_fulfiller = LinkFulfiller(db_manager=self.db_manager)
         self.record_deleter = RecordDeleter(db_manager=self.db_manager, store_manager=self.storage_manager, es_manager=self.es_manager)
 

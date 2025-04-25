@@ -1,5 +1,8 @@
 import re
+from pottery import Redlock
 from sqlalchemy.exc import DataError
+from time import sleep
+
 from logger import create_log
 from managers import (
     DBManager,
@@ -7,6 +10,7 @@ from managers import (
     KMeansManager,
     SFRElasticRecordManager,
     SFRRecordManager,
+    RedisManager
 )
 from constants.get_constants import get_constants
 from model import Record, Work, RecordState
@@ -30,8 +34,10 @@ class RecordClusterer:
     CLUSTER_SIZE_LIMIT = 10000
     # Regular expression to identify identifiers that should be matched
     IDENTIFIERS_TO_MATCH = r"\|(?:isbn|issn|oclc|lccn|owi)$"
+    CLUSTER_TIMEOUT = 60 * 60 # 1 hour
+    CLUSTER_LOCK_KEY_PREFIX = 'cluster_lock_'
 
-    def __init__(self, db_manager: DBManager):
+    def __init__(self, db_manager: DBManager, redis_manager: RedisManager):
         self.db_manager = db_manager
 
         self.elastic_search_manager = ElasticsearchManager()
@@ -40,26 +46,34 @@ class RecordClusterer:
         self.elastic_search_manager.create_elastic_search_ingest_pipeline()
         self.elastic_search_manager.create_elastic_search_index()
 
+        self.redis_manager = redis_manager
+
         self.constants = get_constants()
 
     def cluster_record(self, record) -> list[Record]:
         """Clusters a single record and updates the database and Elasticsearch.
         """
         try:
-            work, stale_work_ids, records = self._get_clustered_work_and_records(record)
-            self._commit_changes()
+            record_lock = Redlock(key=f'{self.CLUSTER_LOCK_KEY_PREFIX}{record.id}', masters={self.redis_manager.client}, auto_release_time=self.CLUSTER_TIMEOUT)
 
-            self._delete_stale_works(stale_work_ids)
-            self._commit_changes()
+            with record_lock:
+                work, stale_work_ids, records = self._get_clustered_work_and_records(record)
+                self._commit_changes()
 
-            logger.info(f"Clustered record: {record}")
+                self._delete_stale_works(stale_work_ids)
+                self._commit_changes()
+
+                logger.info(f"Clustered record: {record}")
 
             self._update_elastic_search(
                 work_to_index=work, works_to_delete=stale_work_ids
             )
             logger.info(f"Indexed {work} in ElasticSearch")
-
+            
             return records
+        except ConcurrentClusterException:
+            logger.info(f"Skipping step to cluster record: {record}")
+            return []
         except Exception as e:
             logger.exception(f"Failed to cluster record {record}")
             raise e
@@ -147,7 +161,7 @@ class RecordClusterer:
             id for id in record.identifiers if re.search(self.IDENTIFIERS_TO_MATCH, id)
         }
 
-        matched_record_ids = set()
+        matched_record_ids = { record.id }
         checked_ids = set()
 
         for match_distance in range(0, self.MAX_MATCH_DISTANCE):
@@ -224,6 +238,11 @@ class RecordClusterer:
                     .filter(Record.title.isnot(None))
                     .all()
                 )
+
+                cluster_lock_keys = [f'{self.CLUSTER_LOCK_KEY_PREFIX}{record[1]}' for record in records]
+
+                if self.redis_manager.any_locked(cluster_lock_keys):
+                    raise ConcurrentClusterException('Currently clustering group of records')
 
                 matched_records.extend(records)
             except DataError:
@@ -310,3 +329,10 @@ class RecordClusterer:
             formatted_ids.append(formatted_id)
 
         return "{{{}}}".format(",".join(formatted_ids))
+    
+
+class ConcurrentClusterException(Exception):
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)

@@ -88,6 +88,11 @@ class RedisManager:
             ex=expiration_time,
         )
 
+    def any_locked(self, keys: list) -> bool:
+        keys = [f'redlock:{key}' for key in keys]
+        
+        return any(locks is not None for locks in self.client.mget(keys))
+
     def multi_set_key(
         self,
         service: str,
