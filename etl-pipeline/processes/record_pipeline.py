@@ -53,7 +53,7 @@ class RecordPipelineProcess:
 
     def _process_message(self, message):
         try:
-            body = message["Body"]
+            message_body = message["Body"]
             receipt_handle = message["ReceiptHandle"]
             source_id, source = self._parse_message(message_body=message_body)
 
@@ -84,5 +84,5 @@ class RecordPipelineProcess:
                 self.db_manager.session.close()
 
     def _parse_message(self, message_body) -> tuple:
-        message = json.loads(message_body)
-        return message['source_id'], message['source']
+        message_data = json.loads(message_body)
+        return message_data['source_id'], message_data['source']
