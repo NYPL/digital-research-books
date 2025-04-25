@@ -19,7 +19,6 @@ import PhysicalEditionBadge from "../EditionCard/PhysicalEditionBadge";
 import ScanAndDeliverBlurb from "../EditionCard/ScanAndDeliverBlurb";
 import UpBlurb from "../EditionCard/UpBlurb";
 import CopyrightLink from "../EditionCard/CopyrightLink";
-import { PLACEHOLDER_COVER_LINK } from "~/src/constants/editioncard";
 
 // Creates an Instance card out of the Edition Year and Instance object
 // Note: Edition Year only needs to be passed because `instance.publication_date`
@@ -55,7 +54,6 @@ export const InstanceCard: React.FC<{
       <Card
         imageProps={{
           src: EditionCardUtils.getCover(edition.links),
-          fallbackSrc: PLACEHOLDER_COVER_LINK,
           size: "xsmall",
           aspectRatio: "original",
           alt: ``,

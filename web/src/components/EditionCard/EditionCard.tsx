@@ -71,7 +71,6 @@ export const EditionCard: React.FC<{
         layout="row"
         imageProps={{
           src: coverUrl,
-          fallbackSrc: PLACEHOLDER_COVER_LINK,
           alt:
             coverUrl === PLACEHOLDER_COVER_LINK
               ? "Placeholder Cover"
