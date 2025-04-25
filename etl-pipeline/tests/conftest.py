@@ -11,7 +11,7 @@ from processes import ClusterProcess
 from model import Collection, Edition, FileFlags, Item, Link, Part, Record, Work
 from model.postgres.item import ITEM_LINKS
 from logger import create_log
-from managers import DBManager, RabbitMQManager, S3Manager
+from managers import DBManager, S3Manager
 from load_env import load_env_file
 from tests.fixtures.generate_test_data import generate_test_data
 
@@ -70,22 +70,8 @@ def db_manager():
         db_manager.session.execute(text('SELECT 1'))
 
         yield db_manager
-        
+
         db_manager.close_connection()
-    except:
-        yield None
-
-
-@pytest.fixture(scope='session')
-def rabbitmq_manager():
-    rabbitmq_manager = RabbitMQManager()
-
-    try: 
-        rabbitmq_manager.create_connection()
-
-        yield rabbitmq_manager
-
-        rabbitmq_manager.close_connection()
     except:
         yield None
 
