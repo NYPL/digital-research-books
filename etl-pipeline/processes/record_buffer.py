@@ -12,7 +12,7 @@ class RecordBuffer:
         self.ingest_count = 0
         self.deletion_count = 0
 
-    def add(self, record: Record) -> Optional[Iterable[Record]]:
+    def add(self, record: Record, yield_records: bool=True) -> Optional[Iterable[Record]]:
         existing_record = self.db_manager.session.query(Record).filter(
             Record.source_id == record.source_id
         ).first()
@@ -25,15 +25,16 @@ class RecordBuffer:
             self.records.add(record)
 
         if len(self.records) > self.batch_size:
-            return self.flush()
+            return self.flush(yield_records)
 
         return None
 
-    def flush(self) -> Iterable[Record]:
+    def flush(self, yield_records: bool=True) -> Optional[Iterable[Record]]:
         self.db_manager.bulk_save_objects(self.records)
         self.ingest_count += len(self.records)
 
-        yield from iter(self.records)
+        if yield_records:
+            yield from iter(self.records)
 
         self.records.clear()
 
