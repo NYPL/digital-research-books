@@ -48,9 +48,9 @@ jobs:
         working-directory: ./web
         run: npx playwright install --with-deps
 
-      # - name: Build app
-      #   working-directory: ./web
-      #   run: NODE_ENV=test npm run build
+      - name: Build app
+        working-directory: ./web
+        run: NODE_ENV=test npm run build
 
       # - name: Start the app
       #   if: inputs.base_url == 'http://local.nypl.org:3000/'
