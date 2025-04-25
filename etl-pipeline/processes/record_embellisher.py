@@ -70,9 +70,12 @@ class RecordEmbellisher:
             self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
 
     def _add_owi_to_record(self, record: Record, oclc_bibs: dict):
+        owi_number_set = set()
         for oclc_bib in oclc_bibs:
             owi_number = oclc_bib.get('work', {}).get('id')
-            record.identifiers.append(f'{owi_number}|owi')
+            if owi_number:
+                owi_number_set.add(f'{owi_number}|owi')
+        record.identifiers.extend(list(owi_number_set))
 
     def _add_works(self, oclc_bibs: list):
         """Process a list of OCLC bibliographic records."""
