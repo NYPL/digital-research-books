@@ -35,10 +35,10 @@ jobs:
           echo "BASE_URL=${{ inputs.base_url }}" >> .env
         shell: bash
 
-      # - name: Add hosts to /etc/hosts
-      #   if: inputs.base_url == 'http://local.nypl.org:3000/'
-      #   run: |
-      #     sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
+      - name: Add hosts to /etc/hosts
+        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        run: |
+          sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
 
       - name: Install Test Dependencies
         working-directory: ./web
