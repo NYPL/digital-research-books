@@ -3,7 +3,7 @@ import os
 from typing import Iterator
 
 from logger import create_log
-from managers import DBManager, RabbitMQManager, SQSManager
+from managers import DBManager, SQSManager
 from model import Record, RecordState
 from processes.record_buffer import RecordBuffer
 
@@ -20,13 +20,6 @@ class RecordIngestor:
 
         self.record_buffer = RecordBuffer(db_manager=db_manager)
 
-        self.records_queue = os.environ['RECORD_PIPELINE_QUEUE']
-        self.records_route = os.environ['RECORD_PIPELINE_ROUTING_KEY']
-
-        self.queue_manager = RabbitMQManager()
-        self.queue_manager.create_connection()
-        self.queue_manager.create_or_connect_queue(self.records_queue, self.records_route)
-
         sqs_records_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
         self.sqs_manager = SQSManager(queue_name=sqs_records_queue)
 
@@ -34,21 +27,10 @@ class RecordIngestor:
         try:
             for record in self._persisted_records(records):
                 message = { "source_id": record.source_id, "source": record.source }
+                self.sqs_manager.send_message_to_queue(message)
 
-                self.queue_manager.send_message_to_queue(
-                    queue_name=self.records_queue,
-                    routing_key=self.records_route,
-                    message=message
-                )
-
-                try:
-                    self.sqs_manager.send_message_to_queue(message)
-                except Exception:
-                    logger.exception(f"Failed to send message to SQS")
         except Exception:
             logger.exception(f'Failed to ingest {self.source} records')
-        finally:
-            self.queue_manager.close_connection()
 
         logger.info(f'Ingested {self.record_buffer.ingest_count} {self.source} records')
         return self.record_buffer.ingest_count
