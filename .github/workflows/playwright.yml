@@ -3,6 +3,8 @@ name: Playwright Tests for DRB Web
 on:
   schedule:
     - cron: "00 14 * * 1-5" # every day at 9-10 AM ET (2 PM wherever the server is) excluding weekends
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_call:
     inputs:
       base_url:
@@ -26,17 +28,17 @@ jobs:
           cache: npm
           cache-dependency-path: "web/package-lock.json"
 
-      - name: Set environment for branch
-        working-directory: ./web
-        run: |
-          touch .env
-          echo "BASE_URL=${{ inputs.base_url }}" >> .env
-        shell: bash
+      # - name: Set environment for branch
+      #   working-directory: ./web
+      #   run: |
+      #     touch .env
+      #     echo "BASE_URL=${{ inputs.base_url }}" >> .env
+      #   shell: bash
 
-      - name: Add hosts to /etc/hosts
-        if: inputs.base_url == 'http://local.nypl.org:3000/'
-        run: |
-          sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
+      # - name: Add hosts to /etc/hosts
+      #   if: inputs.base_url == 'http://local.nypl.org:3000/'
+      #   run: |
+      #     sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
 
       - name: Install Test Dependencies
         working-directory: ./web
@@ -46,17 +48,17 @@ jobs:
         working-directory: ./web
         run: npx playwright install --with-deps
 
-      - name: Build app
-        working-directory: ./web
-        run: NODE_ENV=test npm run build
+      # - name: Build app
+      #   working-directory: ./web
+      #   run: NODE_ENV=test npm run build
 
-      - name: Start the app
-        if: inputs.base_url == 'http://local.nypl.org:3000/'
-        working-directory: ./web
-        run: |
-          NODE_ENV=test npm start &
-          sleep 5
-        shell: bash
+      # - name: Start the app
+      #   if: inputs.base_url == 'http://local.nypl.org:3000/'
+      #   working-directory: ./web
+      #   run: |
+      #     NODE_ENV=test npm start &
+      #     sleep 5
+      #   shell: bash
 
       - name: Run Playwright tests
         working-directory: ./web
