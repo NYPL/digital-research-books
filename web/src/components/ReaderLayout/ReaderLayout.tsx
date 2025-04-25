@@ -19,16 +19,6 @@ import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
 
 const WebReader = dynamic(() => import("@nypl/web-reader"), { ssr: false });
-// This is how we can import a css file as a url. It's complex, but necessary
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import readiumBefore from "!file-loader!extract-loader!css-loader!@nypl/web-reader/dist/injectable-html-styles/ReadiumCSS-before.css";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import readiumDefault from "!file-loader!extract-loader!css-loader!@nypl/web-reader/dist/injectable-html-styles/ReadiumCSS-default.css";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import readiumAfter from "!file-loader!extract-loader!css-loader!@nypl/web-reader/dist/injectable-html-styles/ReadiumCSS-after.css";
 import ErrorComponent from "~/src/pages/_error";
 
 const origin =
@@ -39,15 +29,15 @@ const origin =
 const injectables = [
   {
     type: "style",
-    url: `${origin}${readiumBefore}`,
+    url: `${origin}${"/ReadiumCSS/ReadiumCSS-before.css"}`,
   },
   {
     type: "style",
-    url: `${origin}${readiumDefault}`,
+    url: `${origin}${"/ReadiumCSS/ReadiumCSS-default.css"}`,
   },
   {
     type: "style",
-    url: `${origin}${readiumAfter}`,
+    url: `${origin}${"/ReadiumCSS/ReadiumCSS-after.css"}`,
   },
   {
     type: "style",

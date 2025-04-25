@@ -74,7 +74,7 @@ export const searchFormTests = (mockRouter) => {
 
       expect(mockRouter).toMatchObject({});
       expect(
-        screen.getByText("Error: Please enter a search term")
+        screen.getByText("There was a problem. Error: Please enter a search term")
       ).toBeInTheDocument();
     });
   });
