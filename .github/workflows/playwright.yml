@@ -17,6 +17,7 @@ jobs:
   tests:
     name: Run Tests
     runs-on: ubuntu-latest
+    # environment: development
     env:
       BASE_URL: "http://local.nypl.org:3000/"
     steps:
@@ -30,17 +31,17 @@ jobs:
           cache: npm
           cache-dependency-path: "web/package-lock.json"
 
-      - name: Set environment for branch
-        working-directory: ./web
-        run: |
-          touch .env
-          echo "BASE_URL=${{ inputs.base_url }}" >> .env
-        shell: bash
+      # - name: Set environment for branch
+      #   working-directory: ./web
+      #   run: |
+      #     touch .env
+      #     echo "BASE_URL=${{ inputs.base_url }}" >> .env
+      #   shell: bash
 
-      - name: Add hosts to /etc/hosts
-        if: inputs.base_url == 'http://local.nypl.org:3000/'
-        run: |
-          sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
+      # - name: Add hosts to /etc/hosts
+      #   if: inputs.base_url == 'http://local.nypl.org:3000/'
+      #   run: |
+      #     sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
 
       - name: Install Test Dependencies
         working-directory: ./web
@@ -55,7 +56,7 @@ jobs:
         run: NODE_ENV=test npm run build
 
       - name: Start the app
-        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        # if: inputs.base_url == 'http://local.nypl.org:3000/'
         working-directory: ./web
         run: |
           NODE_ENV=test npm start &
