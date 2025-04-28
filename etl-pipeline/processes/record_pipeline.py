@@ -35,7 +35,7 @@ class RecordPipelineProcess:
         self.redis_manager.create_client()
 
         self.record_file_saver = RecordFileSaver(db_manager=self.db_manager, storage_manager=self.storage_manager)
-        self.record_embellisher = RecordEmbellisher(db_manager=self.db_manager)
+        self.record_embellisher = RecordEmbellisher(db_manager=self.db_manager, redis_manager=self.redis_manager)
         self.record_clusterer = RecordClusterer(db_manager=self.db_manager, redis_manager=self.redis_manager)
         self.link_fulfiller = LinkFulfiller(db_manager=self.db_manager)
         self.record_deleter = RecordDeleter(db_manager=self.db_manager, store_manager=self.storage_manager, es_manager=self.es_manager)

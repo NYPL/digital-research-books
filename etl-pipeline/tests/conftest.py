@@ -11,7 +11,7 @@ from processes import ClusterProcess
 from model import Collection, Edition, FileFlags, Item, Link, Part, Record, Work
 from model.postgres.item import ITEM_LINKS
 from logger import create_log
-from managers import DBManager, RabbitMQManager, S3Manager
+from managers import DBManager, RabbitMQManager, RedisManager, S3Manager
 from load_env import load_env_file
 from tests.fixtures.generate_test_data import generate_test_data
 
@@ -96,6 +96,20 @@ def s3_manager():
         s3_manager = S3Manager()
 
         yield s3_manager
+    except:
+        yield None
+
+
+@pytest.fixture(scope='session')
+def redis_manager():
+    try:
+        redis_manager = RedisManager()
+
+        redis_manager.create_client()
+
+        yield redis_manager
+
+        redis_manager.clear_cache()
     except:
         yield None
 

@@ -9,7 +9,7 @@ def test_chicago_isac_process(mock_epub_to_webpub):
     number_of_records_ingested = isac_process.runProcess()
 
     record_pipeline_process = RecordPipelineProcess()
-    record_pipeline_process.runProcess(max_attempts=2)
+    record_pipeline_process.runProcess(max_attempts=1)
 
     records = assert_ingested_records(sources=[Source.CHICACO_ISAC.value], expected_number_of_records=number_of_records_ingested)
     assert_uploaded_manifests(records)
