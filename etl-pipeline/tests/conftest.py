@@ -6,6 +6,7 @@ import json
 import requests_mock
 from sqlalchemy import text, delete
 from uuid import uuid4
+from unittest.mock import patch, MagicMock
 
 from processes import RecordClusterer
 from model import Collection, Edition, FileFlags, Item, Link, Part, Record, Work
@@ -366,3 +367,12 @@ def mock_epub_to_webpub(requests_mock):
 
     matcher = re.compile("https://epub-to-webpub.vercel.app/api/.*")
     requests_mock.get(matcher, content=response_content)
+
+
+@pytest.fixture
+def mock_sqs_manager():
+    with patch('processes.record_ingestor.SQSManager') as MockSQSManager:
+        mock_sqs_manager_instance = MagicMock()
+        MockSQSManager.return_value = mock_sqs_manager_instance
+        
+        yield mock_sqs_manager_instance

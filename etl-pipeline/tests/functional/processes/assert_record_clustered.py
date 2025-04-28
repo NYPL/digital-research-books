@@ -2,6 +2,7 @@ from model import Record, RecordState, Item, Edition, Work
 
 def assert_record_clustered(record_uuid: str, db_manager):
     clustered_record = db_manager.session.query(Record).filter(Record.uuid == record_uuid).first()
+    db_manager.session.refresh(clustered_record)
 
     assert clustered_record.cluster_status == True
     assert clustered_record.state == RecordState.CLUSTERED.value

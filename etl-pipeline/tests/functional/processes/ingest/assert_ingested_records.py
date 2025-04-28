@@ -5,11 +5,7 @@ from managers import DBManager
 from model import Record
 
 
-def assert_ingested_records(sources: list[str], expected_number_of_records: Optional[int]=None) -> list[Record]:
-    db_manager = DBManager()
-    db_manager.generate_engine()
-    db_manager.create_session()
-
+def assert_ingested_records(db_manager, sources: list[str], expected_number_of_records: Optional[int]=None) -> list[Record]:
     records = (
         db_manager.session.query(Record)
             .filter(Record.source.in_(sources))
