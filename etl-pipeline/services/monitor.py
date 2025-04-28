@@ -28,3 +28,32 @@ def track_work_records_chosen(record: Record, num_records: int):
             "num_records": num_records,
         },
     )
+
+
+def track_oclc_related_records_found(
+    record: Record, num_matches: int, fell_back_to_title_author: bool
+):
+    event_name = "Embellish:OCLCRelatedRecordsFound"
+    record_record_event(
+        record,
+        event_name,
+        {
+            "num_matches": num_matches,
+            "fell_back_to_title_author": fell_back_to_title_author,
+        },
+    )
+
+
+def track_editions_identified(
+    record: Record, num_clusters: int, num_editions: int, num_records: int
+):
+    event_name = "Cluster:EditionsIdentified"
+    record_record_event(
+        record,
+        event_name,
+        {
+            "num_clusters": num_clusters,
+            "num_editions": num_editions,
+            "num_records": num_records,
+        },
+    )
