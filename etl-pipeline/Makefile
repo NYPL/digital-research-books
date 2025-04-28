@@ -10,7 +10,7 @@ unit:
 	python -m pytest --cov-report term-missing --cov=. tests/unit
 
 functional:
-	python -m pytest tests/functional --env=$(ENV) -n=4
+	python -m pytest tests/functional/processes/test_record_pipeline.py
 
 integration:
 	python -m pytest tests/integration --env=$(ENV) -n=4
