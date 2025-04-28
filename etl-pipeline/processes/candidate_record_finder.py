@@ -2,7 +2,7 @@ import re
 from logging import Logger
 from typing import List, Set, Tuple, Optional, Any
 from sqlalchemy.exc import DataError
-from managers import DBManager
+from managers import DBManager, RedisManager
 
 
 from model import Record
