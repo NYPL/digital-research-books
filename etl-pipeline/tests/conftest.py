@@ -6,12 +6,13 @@ import json
 import requests_mock
 from sqlalchemy import text, delete
 from uuid import uuid4
+from unittest.mock import patch, MagicMock
 
-from processes import ClusterProcess
+from processes import RecordClusterer
 from model import Collection, Edition, FileFlags, Item, Link, Part, Record, Work
 from model.postgres.item import ITEM_LINKS
 from logger import create_log
-from managers import DBManager, RabbitMQManager, S3Manager
+from managers import DBManager, RabbitMQManager, RedisManager, S3Manager
 from load_env import load_env_file
 from tests.fixtures.generate_test_data import generate_test_data
 
@@ -101,6 +102,20 @@ def s3_manager():
 
 
 @pytest.fixture(scope='session')
+def redis_manager():
+    try:
+        redis_manager = RedisManager()
+
+        redis_manager.create_client()
+
+        yield redis_manager
+
+        redis_manager.clear_cache()
+    except:
+        yield None
+
+
+@pytest.fixture(scope='session')
 def test_title():
     return 'Integration Test Book'
 
@@ -116,7 +131,7 @@ def test_language():
 
 
 @pytest.fixture(scope='session')
-def frbrized_record_data(db_manager, test_title, test_subject, test_language):
+def frbrized_record_data(db_manager, redis_manager, test_title, test_subject, test_language):
     # TODO: find path forward to connect to db in GH actions
     if db_manager is None:
         return {
@@ -149,8 +164,8 @@ def frbrized_record_data(db_manager, test_title, test_subject, test_language):
 
     frbrized_record = create_or_update_record(record_data=test_frbrized_record_data, db_manager=db_manager)
 
-    cluster_process = ClusterProcess('complete', None, None, str(test_frbrized_record_data['uuid']), None)
-    cluster_process.runProcess()
+    record_clusterer = RecordClusterer(db_manager=db_manager, redis_manager=redis_manager)
+    record_clusterer.cluster_record(frbrized_record)
 
     frbrized_model = (
         db_manager.session.query(Item, Edition, Work)
@@ -352,3 +367,12 @@ def mock_epub_to_webpub(requests_mock):
 
     matcher = re.compile("https://epub-to-webpub.vercel.app/api/.*")
     requests_mock.get(matcher, content=response_content)
+
+
+@pytest.fixture
+def mock_sqs_manager():
+    with patch('processes.record_ingestor.SQSManager') as MockSQSManager:
+        mock_sqs_manager_instance = MagicMock()
+        MockSQSManager.return_value = mock_sqs_manager_instance
+        
+        yield mock_sqs_manager_instance
