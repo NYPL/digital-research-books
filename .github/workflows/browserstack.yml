@@ -22,7 +22,7 @@ jobs:
         with:
           username: ${{ secrets.BROWSERSTACK_USERNAME }}
           access-key: ${{ secrets.BROWSERSTACK_PW }}
-          project-name: DRB
+          project-name: NYPL DRB
           build-name: DRB Web Automated Tests
 
       - name: "BrowserStack Local Tunnel Setup" # set up tunnel connection between GitHub Actions runner environment and BrowserStack device cloud
@@ -34,7 +34,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up node
+      - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version-file: "web/.nvmrc"
