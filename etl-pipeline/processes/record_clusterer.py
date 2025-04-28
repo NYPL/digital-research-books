@@ -81,7 +81,7 @@ class RecordClusterer:
         record_ids = [r.id for r in records]
         
         # Group records into edition clusters
-        clustered_editions = self._cluster_records(records)
+        clustered_editions = self._cluster_records(record, records)
         
         # Build FRBR model - Create Work/Edition/Item objects
         work, stale_work_ids = self._create_work_from_editions(
@@ -109,7 +109,7 @@ class RecordClusterer:
             self.db_manager.session.query(Work).filter(Work.id.in_(list(work_ids)))
         )
 
-    def _cluster_records(self, records: list[Record]):
+    def _cluster_records(self, record: Record, records: list[Record]):
         """Groups records into clusters using KMeans clustering.
         
         Uses KMeansManager to:
@@ -125,6 +125,13 @@ class RecordClusterer:
         kmean_manager.createDF()
         kmean_manager.generateClusters()
         editions = kmean_manager.parseEditions()
+
+        Monitor.track_editions_identified(
+            record=record,
+            num_clusters=len(kmean_manager.clusters),
+            num_editions=len(editions),
+            num_records=len(records)
+        )
 
         return editions
 
