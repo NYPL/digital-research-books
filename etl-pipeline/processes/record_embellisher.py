@@ -7,6 +7,7 @@ from mappings.oclcCatalog import CatalogMapping
 from managers import DBManager, OCLCCatalogManager, RedisManager
 from model import Record, RecordState
 from .record_buffer import RecordBuffer
+from services.monitor import track_oclc_related_records_found
 
 
 logger = create_log(__name__)
@@ -50,6 +51,8 @@ class RecordEmbellisher:
         """Find works related to this record based on identifiers or metadata."""
         author = record.authors[0].split('|')[0] if record.authors else None
         title = record.title
+        fell_back_to_title_author = False
+        num_matches = 0
 
         # Try identifier-based matching first
         for id, id_type in self._get_queryable_identifiers(record.identifiers):
@@ -57,12 +60,24 @@ class RecordEmbellisher:
                 continue
 
             search_query = self.oclc_catalog_manager.generate_search_query(identifier=id, identifier_type=id_type)
-            self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
+            matches = self.oclc_catalog_manager.query_bibs(query=search_query)
+            num_matches = len(matches)
+            self._add_works(matches)
         
         # Fall back to author/title search if no results
         if self.record_buffer.ingest_count == 0 and len(self.record_buffer.records) == 0 and author and title:
+            fell_back_to_title_author = True
             search_query = self.oclc_catalog_manager.generate_search_query(author=author, title=title)
-            self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
+            matches = self.oclc_catalog_manager.query_bibs(query=search_query)
+            num_matches = len(matches)
+            self._add_works(matches)
+
+        # Track the event
+        track_oclc_related_records_found(
+            record=record,
+            num_matches=num_matches,
+            fell_back_to_title_author=fell_back_to_title_author
+        )
 
     def _add_works(self, oclc_bibs: list):
         """Process a list of OCLC bibliographic records."""
