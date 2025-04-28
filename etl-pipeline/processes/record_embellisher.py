@@ -33,12 +33,13 @@ class RecordEmbellisher:
         self.record_buffer = RecordBuffer(db_manager=self.db_manager)
 
     def embellish_record(self, record: Record) -> Record:
-        self._add_works_for_record(record=record)
+        record_new_identifiers_owi = self._add_works_for_record(record=record)
 
         self.record_buffer.flush()
 
         # TODO: change this to embellish_status
-        record.frbr_status = 'complete'
+        record.frbr_status = 'complete' 
+        record.identifiers = record_new_identifiers_owi
 
         self.db_manager.session.add(record)
         self.db_manager.session.commit()
@@ -69,6 +70,8 @@ class RecordEmbellisher:
             self._add_owi_to_record(record, oclc_bibs)
             self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
 
+        return record.identifiers
+    
     def _add_owi_to_record(self, record: Record, oclc_bibs: dict):
         owi_number_set = set()
         for oclc_bib in oclc_bibs:

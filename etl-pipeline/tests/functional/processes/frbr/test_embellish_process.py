@@ -41,6 +41,14 @@ def assert_record_embellished(record_uuid: str, db_manager):
 
     assert embellished_record.frbr_status == 'complete'
 
+    owi_flag = False
+    for identifier in embellished_record.identifiers:
+        if '|owi' in identifier:
+            owi_flag = True
+    
+    assert owi_flag is True
+
+
     classify_record = (
         db_manager.session.query(Record)
             .filter(
