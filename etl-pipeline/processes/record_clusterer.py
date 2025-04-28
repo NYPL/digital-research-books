@@ -35,7 +35,7 @@ class RecordClusterer:
 
     def __init__(self, db_manager: DBManager, redis_manager: RedisManager):
         self.db_manager = db_manager
-        self.candidate_finder = CandidateRecordFinder(db_manager=db_manager)
+        self.candidate_finder = CandidateRecordFinder(db_manager=db_manager, redis_manager=redis_manager)
 
         self.elastic_search_manager = ElasticsearchManager()
 
