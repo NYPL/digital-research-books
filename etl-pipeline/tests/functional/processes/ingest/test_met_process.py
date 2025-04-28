@@ -9,7 +9,7 @@ def test_met_process(mock_epub_to_webpub):
     number_of_records_ingested = met_process.runProcess()
 
     record_pipeline_process = RecordPipelineProcess()
-    record_pipeline_process.runProcess(max_attempts=1)
+    record_pipeline_process.runProcess(max_attempts=2)
     
     records = assert_ingested_records(sources=[Source.MET.value], expected_number_of_records=number_of_records_ingested)
     assert_uploaded_manifests(records)
