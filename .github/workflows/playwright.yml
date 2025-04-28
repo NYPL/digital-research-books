@@ -1,10 +1,6 @@
 name: Playwright Tests for DRB Web
 
 on:
-  schedule:
-    - cron: "00 14 * * 1-5" # every day at 9-10 AM ET (2 PM wherever the server is) excluding weekends
-  pull_request:
-    types: [opened, synchronize, reopened]
   workflow_call:
     inputs:
       base_url:
@@ -17,11 +13,12 @@ jobs:
   tests:
     name: Run Playwright Tests for DRB Web
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up node
+      - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version-file: "web/.nvmrc"

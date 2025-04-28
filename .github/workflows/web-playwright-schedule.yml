@@ -1,0 +1,12 @@
+name: Playwright Tests for DRB Web on Schedule
+
+on:
+  schedule:
+    - cron: "00 14 * * 1-5" # every day at 9-10 AM ET (2 PM wherever the server is) excluding weekends
+
+jobs:
+  playwright_tests:
+    uses: ./.github/workflows/playwright.yml
+    secrets: inherit
+    with:
+      base_url: "http://local.nypl.org:3000/"
