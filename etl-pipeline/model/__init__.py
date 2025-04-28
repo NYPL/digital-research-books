@@ -1,5 +1,5 @@
 from .postgres.base import Base, Core
-from .postgres.record import Record, Part, FRBRStatus, FileFlags
+from .postgres.record import Record, Part, FRBRStatus, FileFlags, RecordState
 from .postgres.work import Work
 from .postgres.edition import Edition
 from .postgres.item import Item

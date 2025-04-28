@@ -182,7 +182,11 @@ describe("Advanced Search clear", () => {
       Title: "Handbook",
     };
 
-    await userEvent.click(screen.getByRole("checkbox", { name: "english" }));
+    const englishCheckbox = screen.getByRole("checkbox", { name: "english" });
+    const readableCheckbox = screen.getByRole("checkbox", { name: "Readable" });
+    const govDocCheckbox = screen.getByRole("checkbox", { name: "Show only US government documents" });
+
+    await userEvent.click(englishCheckbox);
     await userEvent.type(
       screen.getByLabelText("Keyword"),
       inputValues["Keyword"]
@@ -207,20 +211,14 @@ describe("Advanced Search clear", () => {
       screen.getByRole("spinbutton", { name: "To" }),
       "1999"
     );
-    await userEvent.click(screen.getByRole("checkbox", { name: "Readable" }));
-    await userEvent.click(
-      screen.getByRole("checkbox", {
-        name: "Show only US government documents",
-      })
-    );
+    await userEvent.click(readableCheckbox);
+    await userEvent.click(govDocCheckbox);
 
-    expect(screen.getByLabelText("english")).toBeChecked();
+    expect(englishCheckbox).toBeChecked();
     expect(screen.getByLabelText("From")).toHaveValue(1990);
     expect(screen.getByLabelText("To")).toHaveValue(1999);
-    expect(screen.getByLabelText("Readable")).toBeChecked();
-    expect(
-      screen.getByLabelText("Show only US government documents")
-    ).toBeChecked();
+    expect(readableCheckbox).toBeChecked();
+    expect(govDocCheckbox).toBeChecked();
 
     expect(await screen.findByRole("textbox", { name: "Keyword" })).toHaveValue(
       inputValues["Keyword"]
@@ -237,11 +235,9 @@ describe("Advanced Search clear", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Clear" }));
 
-    expect(screen.getByLabelText("english")).not.toBeChecked();
-    expect(screen.getByLabelText("Readable")).not.toBeChecked();
-    expect(
-      screen.getByLabelText("Show only US government documents")
-    ).not.toBeChecked();
+    expect(englishCheckbox).not.toBeChecked();
+    expect(readableCheckbox).not.toBeChecked();
+    expect(govDocCheckbox).not.toBeChecked();
     expect(screen.getByLabelText("From")).toHaveValue(null);
     expect(screen.getByLabelText("To")).toHaveValue(null);
 

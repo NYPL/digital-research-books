@@ -2,7 +2,7 @@ import pytest
 
 from processes import ClassifyProcess, CatalogProcess, RecordEmbellisher
 from managers import RedisManager
-from model import Record
+from model import Record, RecordState
 
 
 def test_embellish_record(db_manager, unembellished_record_uuid):

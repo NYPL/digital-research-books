@@ -5,7 +5,7 @@ from logger import create_log
 from mappings.oclc_bib import OCLCBibMapping
 from mappings.oclcCatalog import CatalogMapping
 from managers import DBManager, OCLCCatalogManager, RedisManager
-from model import Record
+from model import Record, RecordState
 from .record_buffer import RecordBuffer
 
 
@@ -37,12 +37,13 @@ class RecordEmbellisher:
 
         self.record_buffer.flush()
 
-        # TODO: change this to embellish_status
-        record.frbr_status = 'complete' 
         record.identifiers = record_new_identifiers_owi
+        # TODO: deprecate frbr_status
+        record.frbr_status = 'complete'
+        record.state = RecordState.EMBELLISHED.value
 
-        self.db_manager.session.add(record)
         self.db_manager.session.commit()
+        self.db_manager.session.refresh(record)
 
         logger.info(f'Embellished record: {record}')
 

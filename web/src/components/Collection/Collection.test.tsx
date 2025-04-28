@@ -116,11 +116,11 @@ describe("Render Collection Page with >10 items", () => {
   });
 
   describe("Pagination appears", () => {
-    test("Previous page link does not appear", () => {
+    test("Previous page link is disabled", () => {
       const previousLink = screen.queryByRole("link", {
         name: "Previous page",
       });
-      expect(previousLink).not.toBeInTheDocument();
+      expect(previousLink).toHaveAttribute("aria-disabled", "true");;
     });
     test("Next page link appears and is clickable", async () => {
       const nextLink = screen.getByRole("link", { name: "Next page" });
