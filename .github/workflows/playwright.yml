@@ -8,6 +8,8 @@ on:
         default: "http://local.nypl.org:3000/"
         required: false
         type: string
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 jobs:
   tests:
@@ -39,7 +41,7 @@ jobs:
 
       - name: Install Test Dependencies
         working-directory: ./web
-        run: npm i @playwright/test@1.49.1
+        run: npm i @playwright/test@1.52.0
 
       - name: Install Playwright
         working-directory: ./web
