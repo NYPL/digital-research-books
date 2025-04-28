@@ -4,7 +4,6 @@ from typing import List, Set, Tuple, Optional, Any
 from sqlalchemy.exc import DataError
 from managers import DBManager, RedisManager
 import services.monitor as Monitor
-import newrelic.agent
 
 from model import Record
 from logger import create_log
