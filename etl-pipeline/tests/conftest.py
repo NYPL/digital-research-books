@@ -7,7 +7,7 @@ import requests_mock
 from sqlalchemy import text, delete
 from uuid import uuid4
 
-from processes import ClusterProcess
+from processes import RecordClusterer
 from model import Collection, Edition, FileFlags, Item, Link, Part, Record, Work
 from model.postgres.item import ITEM_LINKS
 from logger import create_log
@@ -130,7 +130,7 @@ def test_language():
 
 
 @pytest.fixture(scope='session')
-def frbrized_record_data(db_manager, test_title, test_subject, test_language):
+def frbrized_record_data(db_manager, redis_manager, test_title, test_subject, test_language):
     # TODO: find path forward to connect to db in GH actions
     if db_manager is None:
         return {
@@ -163,8 +163,8 @@ def frbrized_record_data(db_manager, test_title, test_subject, test_language):
 
     frbrized_record = create_or_update_record(record_data=test_frbrized_record_data, db_manager=db_manager)
 
-    cluster_process = ClusterProcess('complete', None, None, str(test_frbrized_record_data['uuid']), None)
-    cluster_process.runProcess()
+    record_clusterer = RecordClusterer(db_manager=db_manager, redis_manager=redis_manager)
+    record_clusterer.cluster_record(frbrized_record)
 
     frbrized_model = (
         db_manager.session.query(Item, Edition, Work)
