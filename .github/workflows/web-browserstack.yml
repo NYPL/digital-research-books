@@ -21,7 +21,7 @@ jobs:
         uses: "browserstack/github-actions/setup-env@master"
         with:
           username: ${{ secrets.BROWSERSTACK_USERNAME }}
-          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          access-key: ${{ secrets.BROWSERSTACK_PW }}
           project-name: DRB
           build-name: DRB Web Automated Tests
 
