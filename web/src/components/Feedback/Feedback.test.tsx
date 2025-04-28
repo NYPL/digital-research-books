@@ -21,7 +21,7 @@ describe("Feedback", () => {
     window.fetch = fakeFetch;
     test("should invoke method when success and feedback set", async () => {
       const feedback = screen.getByRole("textbox", {
-        name: "Comment (Required)",
+        name: "Comment (required)",
       });
       const commentRadio = screen.getByLabelText("Comment");
       await userEvent.type(feedback, "test value");

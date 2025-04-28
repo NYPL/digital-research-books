@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Optional
 from uuid import uuid4
 
-from model import Record
+from model import Record, RecordState
 from .base_mapping import BaseMapping
 
 
@@ -21,6 +21,7 @@ class OCLCBibMapping(BaseMapping):
             uuid=uuid4(),
             frbr_status='complete',
             cluster_status=False,
+            state=RecordState.EMBELLISHED.value,
             source='oclcClassify',
             source_id=f"{oclc_bib.get('work', {}).get('id')}|owi",
             title=oclc_bib.get('title', {}).get('mainTitles', [{}])[0].get('text'),

@@ -4,6 +4,7 @@ import requests
 from requests.exceptions import ReadTimeout, HTTPError
 
 from mappings.xml import XMLMapping
+from model import RecordState
 from logger import create_log
 
 logger = create_log(__name__)
@@ -173,7 +174,9 @@ class CatalogMapping(XMLMapping):
         self.record.source_id = f'{oclc_number}|oclc'
         self.record.identifiers[0] = self.record.source_id
 
+        # TODO: deprecate frbr_status
         self.record.frbr_status = 'complete'
+        self.record.state = RecordState.EMBELLISHED.value
 
         _, _, lang_3, *_ = tuple(self.record.languages[0].split('|'))
         self.record.languages = [('||{}'.format(lang_3[35:38]))]

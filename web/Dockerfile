@@ -64,4 +64,4 @@ EXPOSE $PORT
 
 ENTRYPOINT ["node", "server.js"]
 
-CMD ["r", "@newrelic/next"]
+CMD ["r", "newrelic"]

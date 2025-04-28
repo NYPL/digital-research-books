@@ -20,8 +20,9 @@ class CandidateRecordFinder:
     # Regular expression to identify identifiers that should be matched
     IDENTIFIERS_TO_MATCH = r"\|(?:isbn|issn|oclc|lccn|owi)$"
     
-    def __init__(self, db_manager: DBManager):
+    def __init__(self, db_manager: DBManager, redis_manager: RedisManager):
         self.db_manager = db_manager
+        self.redis_manager = redis_manager
     
     def find_candidate_records(self, record: Record) -> List[Record]:
         """Find records that might be related to the input record.
@@ -53,7 +54,7 @@ class CandidateRecordFinder:
             id for id in record.identifiers if re.search(self.IDENTIFIERS_TO_MATCH, id)
         }
 
-        candidate_record_ids = set()
+        candidate_record_ids = { record.id }
         checked_ids = set()
 
         for match_distance in range(0, self.MAX_MATCH_DISTANCE):
@@ -122,6 +123,11 @@ class CandidateRecordFinder:
                     .filter(Record.title.isnot(None))
                     .all()
                 )
+                
+                cluster_lock_keys = [f'{self.CLUSTER_LOCK_KEY_PREFIX}{record[1]}' for record in records]
+
+                if self.redis_manager.any_locked(cluster_lock_keys):
+                    raise ConcurrentClusterException('Currently clustering group of records')
 
                 matched_records.extend(records)
             except DataError:
@@ -190,3 +196,9 @@ class CandidateRecordFinder:
             formatted_ids.append(formatted_id)
 
         return "{{{}}}".format(",".join(formatted_ids)) 
+
+class ConcurrentClusterException(Exception):
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
