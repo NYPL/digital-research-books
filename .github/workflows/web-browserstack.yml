@@ -1,0 +1,13 @@
+name: Playwright Tests for DRB Web via BrowserStack
+on:
+  schedule:
+    - cron: "00 11 * * 1-5" # every day at 8-10 AM ET (11 AM wherever the server is) excluding weekends
+  pull_request: # remove before merge
+    types: [opened, synchronize, reopened]
+
+jobs:
+  playwright_tests:
+    uses: ./.github/workflows/browserstack.yml
+    secrets: inherit
+    with:
+      base_url: "http://local.nypl.org:3000/"
