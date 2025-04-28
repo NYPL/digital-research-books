@@ -3,6 +3,8 @@ name: Playwright Tests for DRB Web on Schedule
 on:
   schedule:
     - cron: "00 14 * * 1-5" # every day at 9-10 AM ET (2 PM wherever the server is) excluding weekends
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 jobs:
   playwright_tests:

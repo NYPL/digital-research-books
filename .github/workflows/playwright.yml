@@ -8,8 +8,6 @@ on:
         default: "http://local.nypl.org:3000/"
         required: false
         type: string
-  pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 jobs:
   tests:
