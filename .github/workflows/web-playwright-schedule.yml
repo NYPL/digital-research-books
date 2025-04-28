@@ -81,41 +81,41 @@ jobs:
   #       working-directory: ./web
   #       run: node_modules/typescript/bin/tsc --noEmit
 
-  # test:
-  #   name: Test & Coverage
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     CI: true
-  #   steps:
-  #     - uses: actions/checkout@v4
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - name: Setup Node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version-file: "web/.nvmrc"
-  #         cache: npm
-  #         cache-dependency-path: "web/package-lock.json"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "web/.nvmrc"
+          cache: npm
+          cache-dependency-path: "web/package-lock.json"
 
-  #     - name: Cache node modules
-  #       uses: actions/cache@v4
-  #       env:
-  #         cache-name: cache-node-modules
-  #       with:
-  #         # npm cache files are stored in `~/.npm` on Linux/macOS
-  #         path: ~/.npm
-  #         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-build-${{ env.cache-name }}-
-  #           ${{ runner.os }}-build-
-  #           ${{ runner.os }}-
+      - name: Cache node modules
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
 
-  #     - name: Install Dependencies
-  #       working-directory: ./web
-  #       run: npm ci
+      - name: Install Dependencies
+        working-directory: ./web
+        run: npm ci
 
-  #     - name: Test
-  #       working-directory: ./web
-  #       run: npm run test
+      - name: Test
+        working-directory: ./web
+        run: npm run test
 
   # docker_build:
   #   # Don't push anything to ECR, just build the docker image to make sure there are no build failures
