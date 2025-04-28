@@ -91,15 +91,6 @@ class RecordClusterer:
         # Update record status
         self._update_cluster_status(record_ids)
 
-        # log the number of candidate records found
-        logger.info(f"""Clustering complete for {record.id}. 
-                    - Work records found: {len(record_ids)}
-                    - Editions found: {len(clustered_editions)}
-                    """)
-        
-        # track the number of candidate records found
-        # Monitor.track_work_records_chosen(record.id, len(record_ids))
-
         return work, stale_work_ids, records
 
     def _commit_changes(self):
