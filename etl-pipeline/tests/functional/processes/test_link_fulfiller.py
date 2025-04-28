@@ -1,16 +1,18 @@
 from digital_assets import get_stored_file_url
-from processes import ClusterProcess, LinkFulfiller
+from processes import RecordClusterer, LinkFulfiller
 from model import FileFlags, Record, Part, Item
 import json
 import os
 from sqlalchemy.orm import joinedload
 
 
-def test_fulfill_links(db_manager, s3_manager, limited_access_record_uuid):
-    cluster_process = ClusterProcess('complete', None, None, limited_access_record_uuid, None)
-    cluster_process.runProcess()
+def test_fulfill_links(db_manager, redis_manager, s3_manager, limited_access_record_uuid):
+    record_clustered = RecordClusterer(db_manager=db_manager, redis_manager=redis_manager)
 
     record = db_manager.session.query(Record).filter_by(uuid=limited_access_record_uuid).first()
+    
+    record_clustered.cluster_record(record)
+
     item = (
         db_manager.session.query(Item)
             .options(joinedload(Item.links))
