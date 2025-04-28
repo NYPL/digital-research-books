@@ -6,7 +6,7 @@ on:
       base_url:
         description: "Base URL for environment"
         default: "http://local.nypl.org:3000/"
-        required: true
+        required: false
         type: string
 
 jobs:
