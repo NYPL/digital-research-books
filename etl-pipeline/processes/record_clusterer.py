@@ -13,9 +13,9 @@ from managers import (
     RedisManager
 )
 from constants.get_constants import get_constants
-from model import Record, Work
 from .candidate_record_finder import CandidateRecordFinder, ConcurrentClusterException
 from model import Record, Work, RecordState
+import services.monitor as Monitor
 
 
 logger = create_log(__name__)
@@ -90,6 +90,15 @@ class RecordClusterer:
         
         # Update record status
         self._update_cluster_status(record_ids)
+
+        # log the number of candidate records found
+        logger.info(f"""Clustering complete for {record.id}. 
+                    - Work records found: {len(record_ids)}
+                    - Editions found: {len(clustered_editions)}
+                    """)
+        
+        # track the number of candidate records found
+        # Monitor.track_work_records_chosen(record.id, len(record_ids))
 
         return work, stale_work_ids, records
 
