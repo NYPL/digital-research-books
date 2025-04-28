@@ -4,17 +4,17 @@ on:
     - cron: "00 11 * * 1-5" # every day at 8-10 AM ET (11 AM wherever the server is) excluding weekends
   pull_request: # remove before merge
     types: [opened, synchronize, reopened]
-  workflow_call:
-    inputs:
-      base_url:
-        description: "Base URL for environment"
-        default: "http://local.nypl.org:3000/"
-        required: false
-        type: string
+  # workflow_call:
+  #   inputs:
+  #     base_url:
+  #       description: "Base URL for environment"
+  #       default: "http://local.nypl.org:3000/"
+  #       required: false
+  #       type: string
 
 jobs:
   test:
-    name: Run Playwright Tests for DRB Web via BrowserStack
+    name: Playwright Tests for DRB Web via BrowserStack
     runs-on: ubuntu-latest
     steps:
       - name: BrowserStack Env Setup
@@ -25,7 +25,7 @@ jobs:
           project-name: NYPL DRB
           build-name: DRB Web Automated Tests
 
-      - name: "BrowserStack Local Tunnel Setup" # set up tunnel connection between GitHub Actions runner environment and BrowserStack device cloud
+      - name: BrowserStack Local Tunnel Setup # set up tunnel connection between GitHub Actions runner environment and BrowserStack device cloud
         uses: browserstack/github-actions/setup-local@master
         with:
           local-testing: start
@@ -49,7 +49,7 @@ jobs:
         shell: bash
 
       - name: Add hosts to /etc/hosts
-        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        # if: inputs.base_url == 'http://local.nypl.org:3000/'
         run: |
           sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
 
@@ -66,7 +66,7 @@ jobs:
         run: NODE_ENV=test npm run build
 
       - name: Start the app
-        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        # if: inputs.base_url == 'http://local.nypl.org:3000/'
         working-directory: ./web
         run: |
           NODE_ENV=test npm start &
