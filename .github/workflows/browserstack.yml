@@ -4,7 +4,7 @@ on:
     inputs:
       base_url:
         description: "Base URL for environment"
-        default: "http://local.nypl.org:3000/"
+        default: "http://local.nypl.org:3000"
         required: false
         type: string
 
@@ -45,7 +45,7 @@ jobs:
         shell: bash
 
       - name: Add hosts to /etc/hosts
-        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        if: inputs.base_url.default == 'http://local.nypl.org:3000'
         run: |
           sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
 
@@ -62,7 +62,7 @@ jobs:
         run: NODE_ENV=test npm run build
 
       - name: Start the app
-        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        if: inputs.base_url.default == 'http://local.nypl.org:3000'
         working-directory: ./web
         run: |
           NODE_ENV=test npm start &
