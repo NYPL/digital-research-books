@@ -73,8 +73,8 @@ export function log(error: Error, errorInfo: string) {
 }
 
 // Setup the Newrelic browser agent config for different deploy environment,
-// Monitor only the staging and production site
 function NewRelicBrowserSetup(environment) {
+  console.info("Setting up NR - ", environment);
   if (environment === "development") {
     setup(devConfig, devInfo);
   } else if (environment === "qa") {
@@ -84,18 +84,23 @@ function NewRelicBrowserSetup(environment) {
   }
 }
 
+const IS_SERVER = typeof window === "undefined";
 // This code only embeds the new relic library to the browser, to enable the monitoring, invoke the NewRelicBrowserSetup() function to start.
 export const NewRelicSnippet = () => {
-  if (!process.env.NEW_RELIC_LICENSE_KEY || process.env.APP_ENV === "testing")
+  const appEnv = process.env.APP_ENV;
+  if (!process.env.NEW_RELIC_LICENSE_KEY) {
+    console.warn("Missing New Relic License key ", appEnv);
     return null;
+  }
+
+  if (appEnv === "testing" || IS_SERVER) return null;
+
   return (
     <Script
       type="text/javascript"
       src="/newrelic-browser.js"
       onLoad={() => {
-        if (window !== undefined && process.env.NEW_RELIC_LICENSE_KEY) {
-          NewRelicBrowserSetup(process.env.APP_ENV);
-        }
+        NewRelicBrowserSetup(appEnv);
       }}
     />
   );
