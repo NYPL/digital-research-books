@@ -110,7 +110,9 @@ def redis_manager():
         return None
     else:
         yield manager
-        manager.clear_cache()
+
+        if os.environ.get('ENVIRONMENT') not in { 'qa', 'production' }:
+            manager.clear_cache()
 
 
 @pytest.fixture(scope='session')
