@@ -104,15 +104,13 @@ def s3_manager():
 @pytest.fixture(scope='session')
 def redis_manager():
     try:
-        redis_manager = RedisManager()
-
-        redis_manager.create_client()
-
-        yield redis_manager
-
-        redis_manager.clear_cache()
+        manager = RedisManager()
+        manager.create_client()
     except:
-        yield None
+        return None
+    else:
+        yield manager
+        manager.clear_cache()
 
 
 @pytest.fixture(scope='session')
