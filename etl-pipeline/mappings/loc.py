@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import os
 from typing import Optional
 from uuid import uuid4
@@ -44,7 +45,9 @@ def map_loc_record(source_record: dict) -> Optional[Record]:
         abstract=source_record.get('description')[0] if source_record.get('description') else None,
         is_part_of=[f'{part_of}|collection' for part_of in source_record.get('partof')] if source_record.get('partof') else None,
         spatial=item_details.get('location')[0] if item_details.get('location') else None,
-        has_part=_get_has_part(first_file_resource, source_id)
+        has_part=_get_has_part(first_file_resource, source_id),
+        date_created=datetime.now(timezone.utc).replace(tzinfo=None),
+        date_modified=datetime.now(timezone.utc).replace(tzinfo=None)
     )
 
 

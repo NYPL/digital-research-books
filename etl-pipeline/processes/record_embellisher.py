@@ -22,13 +22,11 @@ class RecordEmbellisher:
     4. Managing database updates
     """
 
-    def __init__(self, db_manager: DBManager):
+    def __init__(self, db_manager: DBManager, redis_manager: RedisManager):
         self.db_manager = db_manager
+        self.redis_manager = redis_manager
 
         self.oclc_catalog_manager = OCLCCatalogManager()
-        
-        self.redis_manager = RedisManager()
-        self.redis_manager.create_client()
 
         self.record_buffer = RecordBuffer(db_manager=self.db_manager)
 
