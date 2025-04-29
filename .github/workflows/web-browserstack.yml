@@ -75,6 +75,7 @@ jobs:
 
       - name: Run tests on BrowserStack
         id: run-tests
+        working-directory: ./web
         run: npx browserstack-node-sdk playwright test
         continue-on-error: true
 
