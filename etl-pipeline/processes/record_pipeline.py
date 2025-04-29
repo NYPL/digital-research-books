@@ -10,6 +10,7 @@ from .link_fulfiller import LinkFulfiller
 
 from logger import create_log
 from managers import DBManager, ElasticsearchManager, S3Manager, SQSManager, RedisManager
+from services import monitor
 from model import Record
 
 logger = create_log(__name__)
@@ -83,7 +84,10 @@ class RecordPipelineProcess:
             self.sqs_manager.acknowledge_message_processed(receipt_handle)
         except Exception:
             logger.exception(f'Failed to process message: {message_body}')
+            monitor.track_record_pipeline_message_failed(message_body)
             self.sqs_manager.reject_message(receipt_handle)
+        else:
+            monitor.track_record_pipeline_message_succeeded(record, message_body)
 
         finally:
             if self.db_manager.session:

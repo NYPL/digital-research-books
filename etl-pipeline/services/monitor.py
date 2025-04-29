@@ -57,3 +57,13 @@ def track_editions_identified(
             "num_records": num_records,
         },
     )
+
+
+def track_record_pipeline_message_succeeded(record, message_body: str):
+    event_name = "RecordPipeline:MessageSucceeded"
+    record_record_event(record, event_name, data={"message_body": message_body})
+
+
+def track_record_pipeline_message_failed(message_body: str):
+    event_name = "RecordPipeline:MessageFailed"
+    record_event(event_name, data={"message_body": message_body})
