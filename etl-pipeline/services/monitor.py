@@ -59,9 +59,13 @@ def track_editions_identified(
     )
 
 
-def track_record_pipeline_message_succeeded(record, message_body: str):
+def track_record_pipeline_message_succeeded(record, execution_time: float, message_body: str):
     event_name = "RecordPipeline:MessageSucceeded"
-    record_record_event(record, event_name, data={"message_body": message_body})
+    data = {
+        "message_body": message_body,
+        "execution_time": execution_time,
+    }
+    record_record_event(record, event_name, data=data)
 
 
 def track_record_pipeline_message_failed(message_body: str):

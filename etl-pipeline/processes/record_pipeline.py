@@ -1,6 +1,6 @@
 import json
 import os
-from time import sleep
+from time import perf_counter, sleep
 
 from .record_embellisher import RecordEmbellisher
 from .record_clusterer import RecordClusterer
@@ -59,6 +59,7 @@ class RecordPipelineProcess:
                 self.db_manager.engine.dispose()
 
     def _process_message(self, message):
+        start = perf_counter()
         try:
             message_body = message["Body"]
             receipt_handle = message["ReceiptHandle"]
@@ -87,7 +88,8 @@ class RecordPipelineProcess:
             monitor.track_record_pipeline_message_failed(message_body)
             self.sqs_manager.reject_message(receipt_handle)
         else:
-            monitor.track_record_pipeline_message_succeeded(record, message_body)
+            elapsed_time = perf_counter() - start
+            monitor.track_record_pipeline_message_succeeded(record, elapsed_time, message_body)
 
         finally:
             if self.db_manager.session:
