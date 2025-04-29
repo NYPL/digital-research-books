@@ -4,7 +4,7 @@ from typing import List, Set, Tuple, Optional, Any
 from sqlalchemy.exc import DataError
 from managers import DBManager, RedisManager
 
-
+from .constants import CLUSTER_LOCK_KEY_PREFIX
 from model import Record
 from logger import create_log
 
@@ -124,7 +124,7 @@ class CandidateRecordFinder:
                     .all()
                 )
                 
-                cluster_lock_keys = [f'{self.CLUSTER_LOCK_KEY_PREFIX}{record[1]}' for record in records]
+                cluster_lock_keys = [f'{CLUSTER_LOCK_KEY_PREFIX}{record[1]}' for record in records]
 
                 if self.redis_manager.any_locked(cluster_lock_keys):
                     raise ConcurrentClusterException('Currently clustering group of records')
