@@ -11,7 +11,7 @@ POSTGRES_NAME: dcdw_qa
 POSTGRES_PORT: '5432'
 
 # REDIS CONFIGURATION
-# REDIS_HOST configured as part of ECS deployment
+REDIS_HOST: drb-qa-redis-cache-tf.frh6pg.ng.0001.use1.cache.amazonaws.com
 REDIS_PORT: '6379'
 
 # ELASTICSEARCH CONFIGURATION
