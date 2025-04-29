@@ -61,37 +61,36 @@ class LandingPage {
     );
 
     this.accessibilityFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/accessibility']"
+      "//a[@href='//www.nypl.org/accessibility']"
     );
-    this.pressFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/press']"
-    );
+
+    this.pressFooterLink = page.locator("//a[@href='//www.nypl.org/press']");
     this.careersFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/careers']"
+      "//a[@href='//www.nypl.org/careers']"
     );
     this.spaceRentalFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/spacerental']"
+      "//a[@href='//www.nypl.org/spacerental']"
     );
     this.privacyPolicyFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/help/about-nypl/legal-notices/privacy-policy']"
+      "//a[@href='//www.nypl.org/help/about-nypl/legal-notices/privacy-policy']"
     );
     this.otherPoliciesFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/policies']"
+      "//a[@href='//www.nypl.org/policies']"
     );
     this.termsAndConditionsFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/terms-conditions']"
+      "//a[@href='//www.nypl.org/terms-conditions']"
     );
     this.governanceFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/help/about-nypl/leadership/board-trustees']"
+      "//a[@href='//www.nypl.org/help/about-nypl/leadership/board-trustees']"
     );
     this.rulesAndRegulationsFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/help/about-nypl/legal-notices/rules-and-regulations']"
+      "//a[@href='//www.nypl.org/help/about-nypl/legal-notices/rules-and-regulations']"
     );
     this.aboutNyplFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/help/about-nypl']"
+      "//a[@href='//www.nypl.org/help/about-nypl']"
     );
     this.languageFooterLink = page.locator(
-      "//a[@href='http://www.nypl.org/language']"
+      "//a[@href='//www.nypl.org/language']"
     );
 
     this.headerLogo = page.locator(
@@ -99,41 +98,35 @@ class LandingPage {
     );
     this.myAccountHeaderLink = page.locator("[aria-label='My Account']");
     this.locationsHeaderLink = page.locator(
-      "[href='https://www.nypl.org/locations']:text('Locations')"
+      "[href='//www.nypl.org/locations']:text('Locations')"
     );
     this.libraryCardHeaderLink = page.locator(
-      "[href='https://www.nypl.org/library-card/new']"
+      "[href='//www.nypl.org/library-card/new']"
     );
     this.emailUpdatesHeaderLink = page.locator(
       "[href='https://pub.email.nypl.org/subscriptioncenter']"
     );
     this.donateHeaderLink = page.locator(
-      "[href='https://www.nypl.org/donate-button']"
+      "[href='//www.nypl.org/donate-button']"
     );
     this.shopHeaderLink = page.locator(
       "[href='https://shop.nypl.org/?utm_campaign=NYPLHeaderButton&utm_source=nypl.org&utm_medium=referral']"
     );
     this.booksMusicMoviesHeaderLink = page.locator(
-      "[href='https://www.nypl.org/books-music-movies']"
+      "[href='//www.nypl.org/books-music-movies']"
     );
     this.researchHeaderLink = page.locator(
-      "[href='https://www.nypl.org/research'] >> nth=0"
+      "[href='//www.nypl.org/research'] >> nth=0"
     );
     this.educationHeaderLink = page.locator(
-      "[href='https://www.nypl.org/education'] >> nth=0"
+      "[href='//www.nypl.org/education'] >> nth=0"
     );
-    this.eventsHeaderLink = page.locator(
-      "[href='https://www.nypl.org/events']"
-    );
-    this.connectHeaderLink = page.locator(
-      "[href='https://www.nypl.org/connect']"
-    );
-    this.giveHeaderLink = page.locator("[href='https://www.nypl.org/give']");
-    this.getHelpHeaderLink = page.locator(
-      "[href='https://www.nypl.org/get-help']"
-    );
+    this.eventsHeaderLink = page.locator("[href='//www.nypl.org/events']");
+    this.connectHeaderLink = page.locator("[href='//www.nypl.org/connect']");
+    this.giveHeaderLink = page.locator("[href='//www.nypl.org/give']");
+    this.getHelpHeaderLink = page.locator("[href='//www.nypl.org/get-help']");
     this.searchHeaderLink = page.locator(
-      "[href='https://www.nypl.org/research'] >> nth=0"
+      "[href='//www.nypl.org/research'] >> nth=0"
     );
     this.catalogHeaderLink = page.locator("span:text('Go To The Catalog')");
 

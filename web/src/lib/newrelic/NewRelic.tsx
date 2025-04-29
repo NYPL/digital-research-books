@@ -88,12 +88,12 @@ const IS_SERVER = typeof window === "undefined";
 // This code only embeds the new relic library to the browser, to enable the monitoring, invoke the NewRelicBrowserSetup() function to start.
 export const NewRelicSnippet = () => {
   const appEnv = process.env.APP_ENV;
+  if (appEnv === "testing" || IS_SERVER) return null;
+
   if (!process.env.NEW_RELIC_LICENSE_KEY) {
     console.warn("Missing New Relic License key ", appEnv);
     return null;
   }
-
-  if (appEnv === "testing" || IS_SERVER) return null;
 
   return (
     <Script
