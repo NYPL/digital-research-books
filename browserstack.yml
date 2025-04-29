@@ -29,7 +29,7 @@ buildIdentifier: '#${BUILD_NUMBER}' # Supports strings along with either/both ${
 platforms:
   - os: OS X
     osVersion: Big Sur
-    browserName: playwright-webkit
+    browserName: webkit
     browserVersion: latest
   # - os: OS X
   #   osVersion: Big Sur
