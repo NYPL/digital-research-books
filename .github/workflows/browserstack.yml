@@ -41,7 +41,7 @@ jobs:
         working-directory: ./web
         run: |
           touch .env
-          echo "BASE_URL=${{ inputs.base_url }}" >> .env
+          echo "BASE_URL=${{ inputs.base_url.default }}" >> .env
         shell: bash
 
       - name: Add hosts to /etc/hosts
