@@ -15,7 +15,7 @@ from managers import (
 from constants.get_constants import get_constants
 from .candidate_record_finder import CandidateRecordFinder, ConcurrentClusterException
 from model import Record, Work, RecordState
-import services.monitor as Monitor
+import services.monitor as monitor
 
 
 logger = create_log(__name__)
@@ -126,7 +126,7 @@ class RecordClusterer:
         kmean_manager.generateClusters()
         editions = kmean_manager.parseEditions()
 
-        Monitor.track_editions_identified(
+        monitor.track_editions_identified(
             record=record,
             num_clusters=len(kmean_manager.clusters),
             num_editions=len(editions),

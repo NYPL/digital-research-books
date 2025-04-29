@@ -7,7 +7,7 @@ from mappings.oclcCatalog import CatalogMapping
 from managers import DBManager, OCLCCatalogManager, RedisManager
 from model import Record, RecordState
 from .record_buffer import RecordBuffer
-import services.monitor as Monitor
+import services.monitor as monitor
 
 
 logger = create_log(__name__)
@@ -73,7 +73,7 @@ class RecordEmbellisher:
             self._add_works(matches)
 
         # Track the event
-        Monitor.track_oclc_related_records_found(
+        monitor.track_oclc_related_records_found(
             record=record,
             num_matches=num_matches,
             fell_back_to_title_author=fell_back_to_title_author
