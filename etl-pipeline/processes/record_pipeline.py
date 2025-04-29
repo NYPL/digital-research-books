@@ -59,6 +59,7 @@ class RecordPipelineProcess:
                 self.db_manager.engine.dispose()
 
     def _process_message(self, message):
+        logger.info("Processing message %s", message)
         start = perf_counter()
         try:
             message_body = message["Body"]
@@ -85,7 +86,8 @@ class RecordPipelineProcess:
             self.sqs_manager.acknowledge_message_processed(receipt_handle)
         except Exception:
             logger.exception(f'Failed to process message: {message_body}')
-            monitor.track_record_pipeline_message_failed(message_body)
+            elapsed_time = perf_counter() - start
+            monitor.track_record_pipeline_message_failed(elapsed_time, message_body)
             self.sqs_manager.reject_message(receipt_handle)
         else:
             elapsed_time = perf_counter() - start
