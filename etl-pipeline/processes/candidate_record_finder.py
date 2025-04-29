@@ -34,8 +34,8 @@ class CandidateRecordFinder:
         if record.id:
             candidate_record_ids.append(record.id)
 
-        monitor.track_work_records_chosen(record.id, len(candidate_record_ids))
-        
+        monitor.track_work_records_chosen(record, len(candidate_record_ids))
+
         return self._get_records_by_ids(candidate_record_ids)
     
     def _find_candidate_record_ids(self, record: Record) -> List[str]:
