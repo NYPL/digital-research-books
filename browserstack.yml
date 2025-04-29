@@ -104,4 +104,4 @@ consoleLogs: errors # <string> Remote browser's console debug levels to be print
 testObservability: true
 browserstackAutomation: true
 playwright:
-  version: "latest"
+  version: "1.52.0"
