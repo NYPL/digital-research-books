@@ -103,3 +103,5 @@ consoleLogs: errors # <string> Remote browser's console debug levels to be print
 # Visit observability.browserstack.com to see your test reports and insights. To disable test observability, specify `testObservability: false` in the key below.
 testObservability: true
 browserstackAutomation: true
+playwright:
+  version: "latest"
