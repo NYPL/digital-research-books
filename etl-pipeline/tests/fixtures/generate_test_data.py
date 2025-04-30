@@ -1,4 +1,5 @@
 import json
+from model import RecordState
 
 TEST_SOURCE = 'test_source'
 
@@ -6,6 +7,7 @@ def generate_test_data(
     title='test record',
     uuid=None,
     frbr_status='complete',
+    state=RecordState.EMBELLISHED.value,
     cluster_status=False,
     source=TEST_SOURCE,
     authors=['Test Author||true'],
@@ -28,6 +30,7 @@ def generate_test_data(
         'uuid': uuid,
         'frbr_status': frbr_status,
         'cluster_status': cluster_status,
+        'state': state,
         'source': source,
         'authors': authors,
         'languages': languages,

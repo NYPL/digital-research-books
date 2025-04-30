@@ -9,7 +9,7 @@ from uuid import uuid4
 from unittest.mock import patch, MagicMock
 
 from processes import RecordClusterer
-from model import Collection, Edition, FileFlags, Item, Link, Part, Record, Work
+from model import Collection, Edition, FileFlags, Item, Link, Part, Record, RecordState, Work
 from model.postgres.item import ITEM_LINKS
 from logger import create_log
 from managers import DBManager, RabbitMQManager, RedisManager, S3Manager
@@ -145,6 +145,7 @@ def frbrized_record_data(db_manager, redis_manager, test_title, test_subject, te
         'title': test_title,
         'uuid': uuid4(),
         'frbr_status': 'complete',
+        'state': RecordState.EMBELLISHED.value,
         'cluster_status': False,
         "source": TEST_SOURCE,
         'authors': ['Ayan||true'],
