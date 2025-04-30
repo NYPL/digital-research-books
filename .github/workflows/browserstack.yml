@@ -21,6 +21,10 @@ jobs:
           project-name: NYPL DRB
           build-name: DRB Web Automated Tests
 
+      - name: Check port availability
+        run: |
+          sudo lsof -i :3000 || echo "Port 3000 is available"
+
       - name: BrowserStack Local Tunnel Setup # set up tunnel connection between GitHub Actions runner environment and BrowserStack device cloud
         uses: browserstack/github-actions/setup-local@master
         with:
@@ -90,13 +94,31 @@ jobs:
         working-directory: ./web
         run: NODE_ENV=test npm run build
 
-      - name: Start the app
-        # if: inputs.base_url == 'http://local.nypl.org:3000/'
+      - name: Start the app with logging
+        if: inputs.base_url == 'http://localhost:3000/'
         working-directory: ./web
         run: |
-          HOST=0.0.0.0 PORT=3000 NODE_ENV=test npm start &
-          sleep 5
+          NODE_ENV=test npm start > server.log 2>&1 &
+          SERVER_PID=$!
+          sleep 10
+          # Check if server is still running
+          if ps -p $SERVER_PID > /dev/null; then
+            echo "Server started successfully with PID $SERVER_PID"
+          else
+            echo "Server failed to start or crashed"
+            cat server.log
+          fi
+          # Try to access the server
+          curl -v http://localhost:3000/ || echo "Could not connect to server"
         shell: bash
+
+      # - name: Start the app
+      #   # if: inputs.base_url == 'http://local.nypl.org:3000/'
+      #   working-directory: ./web
+      #   run: |
+      #     HOST=0.0.0.0 PORT=3000 NODE_ENV=test npm start &
+      #     sleep 5
+      #   shell: bash
 
       - name: Network diagnostics
         run: |
@@ -105,11 +127,58 @@ jobs:
           netstat -tulpn | grep 3000
           ps aux | grep node
 
-      - name: Run tests on BrowserStack
+      - name: Network connectivity test
+        run: |
+          echo "=== Network diagnostics ==="
+          # Check local server
+          curl -v http://localhost:3000/ || echo "Cannot access local server"
+          # Check if BrowserStackLocal is tunneling correctly
+          curl -v http://bs-local.com:45691/check
+          # Check network interfaces
+          ip addr
+          # Check listening ports
+          netstat -tulpn
+
+      - name: Run tests on BrowserStack with explicit configuration
         id: run-tests
         working-directory: ./web
-        run: npx browserstack-node-sdk playwright test
+        run: |
+          cat > .browserstack.json << EOL
+          {
+            "browsers": [
+              {
+                "browser": "chrome",
+                "os": "Windows 10",
+                "versions": ["latest"]
+              }
+            ],
+            "run_settings": {
+              "project_name": "DRB",
+              "build_name": "DRB Web Automated Tests",
+              "parallels": 1,
+              "local": true,
+              "local_identifier": "random",
+              "debug": true,
+              "network_logs": true
+            }
+          }
+          EOL
+            
+          # Set explicit environment variables
+          export BROWSERSTACK_USERNAME=${{ secrets.BROWSERSTACK_USERNAME }}
+          export BROWSERSTACK_ACCESS_KEY=${{ secrets.BROWSERSTACK_PW }}
+          export BROWSERSTACK_LOCAL=true
+          export BROWSERSTACK_LOCAL_IDENTIFIER=random
+            
+          # Run tests with verbose logging
+          npx browserstack-node-sdk playwright test --verbose
         continue-on-error: true
+
+      # - name: Run tests on BrowserStack
+      #   id: run-tests
+      #   working-directory: ./web
+      #   run: npx browserstack-node-sdk playwright test
+      #   continue-on-error: true
 
       - name: Set failure workflow status 🚨
         if: steps.run-tests.outcome != 'success'
