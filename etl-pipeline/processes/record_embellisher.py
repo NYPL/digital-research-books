@@ -31,14 +31,14 @@ class RecordEmbellisher:
         self.record_buffer = RecordBuffer(db_manager=self.db_manager)
 
     def embellish_record(self, record: Record) -> Record:
-        owi_identifiers = self._add_works_for_record(record=record)
+        record_new_identifiers_owi = self._add_works_for_record(record=record)
 
         self.record_buffer.flush()
 
         # TODO: deprecate frbr_status
         record.frbr_status = 'complete'
         record.state = RecordState.EMBELLISHED.value
-        record.identifiers.extend(list(owi_identifiers))
+        record.identifiers = record_new_identifiers_owi
 
         self.db_manager.session.commit()
         self.db_manager.session.refresh(record)
@@ -59,25 +59,25 @@ class RecordEmbellisher:
 
             search_query = self.oclc_catalog_manager.generate_search_query(identifier=id, identifier_type=id_type)
             oclc_bibs = self.oclc_catalog_manager.query_bibs(query=search_query)
-            owi_number_set = self._add_owi_to_record(oclc_bibs)
+            self._add_owi_to_record(record, oclc_bibs)
             self._add_works(oclc_bibs)
         
         # Fall back to author/title search if no results
         if self.record_buffer.ingest_count == 0 and len(self.record_buffer.records) == 0 and author and title:
             search_query = self.oclc_catalog_manager.generate_search_query(author=author, title=title)
             oclc_bibs = self.oclc_catalog_manager.query_bibs(query=search_query)
-            owi_number_set = self._add_owi_to_record(oclc_bibs)
+            self._add_owi_to_record(record, oclc_bibs)
             self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
 
-        return owi_number_set
+        return record.identifiers
     
-    def _add_owi_to_record(self, oclc_bibs: dict):
+    def _add_owi_to_record(self, record: Record, oclc_bibs: dict):
         owi_number_set = set()
         for oclc_bib in oclc_bibs:
             owi_number = oclc_bib.get('work', {}).get('id')
             if owi_number:
                 owi_number_set.add(f'{owi_number}|owi')
-        return owi_number_set
+        record.identifiers.extend(list(owi_number_set))
 
     def _add_works(self, oclc_bibs: list):
         """Process a list of OCLC bibliographic records."""
