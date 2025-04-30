@@ -27,9 +27,9 @@ jobs:
           local-testing: start
           local-identifier: random
 
-      - name: Verify BrowserStack Local
-        run: |
-          curl -s http://bs-local.com:45691/check
+      # - name: Verify BrowserStack Local
+      #   run: |
+      #     curl -s http://bs-local.com:45691/check
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -74,6 +74,13 @@ jobs:
           HOST=0.0.0.0 PORT=3000 NODE_ENV=test npm start &
           sleep 5
         shell: bash
+
+      - name: Network diagnostics
+        run: |
+          echo "==== Testing connectivity ===="
+          curl -v http://localhost:3000 || echo "Cannot connect to localhost:3000"
+          netstat -tulpn | grep 3000
+          ps aux | grep node
 
       - name: Run tests on BrowserStack
         id: run-tests
