@@ -9,10 +9,10 @@ from uuid import uuid4
 from unittest.mock import patch, MagicMock
 
 from processes import RecordClusterer
-from model import Collection, Edition, FileFlags, Item, Link, Part, Record, Work
+from model import Collection, Edition, FileFlags, Item, Link, Part, Record, RecordState, Work
 from model.postgres.item import ITEM_LINKS
 from logger import create_log
-from managers import DBManager, RabbitMQManager, RedisManager, S3Manager
+from managers import DBManager, RedisManager, S3Manager
 from load_env import load_env_file
 from tests.fixtures.generate_test_data import generate_test_data
 
@@ -36,19 +36,19 @@ def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:
         for key, value in record_data.items():
             if key != 'uuid' and hasattr(existing_record, key):
                 setattr(existing_record, key, value)
-        
+
         existing_record.date_modified = datetime.now(timezone.utc).replace(tzinfo=None)
         record_data['uuid'] = existing_record.uuid
-        
+
         db_manager.session.commit()
-        
+
         return existing_record
-    
+
     new_record = Record(**record_data)
-    
+
     db_manager.session.add(new_record)
     db_manager.session.commit()
-    
+
     return new_record
 
 
@@ -65,28 +65,14 @@ def setup_env(pytestconfig, request):
 @pytest.fixture(scope='session')
 def db_manager():
     db_manager = DBManager()
-    
+
     try:
         db_manager.create_session()
         db_manager.session.execute(text('SELECT 1'))
 
         yield db_manager
-        
+
         db_manager.close_connection()
-    except:
-        yield None
-
-
-@pytest.fixture(scope='session')
-def rabbitmq_manager():
-    rabbitmq_manager = RabbitMQManager()
-
-    try: 
-        rabbitmq_manager.create_connection()
-
-        yield rabbitmq_manager
-
-        rabbitmq_manager.close_connection()
     except:
         yield None
 
@@ -110,7 +96,9 @@ def redis_manager():
         return None
     else:
         yield manager
-        manager.clear_cache()
+
+        if os.environ.get('ENVIRONMENT') not in { 'qa', 'production' }:
+            manager.clear_cache()
 
 
 @pytest.fixture(scope='session')
@@ -143,6 +131,7 @@ def frbrized_record_data(db_manager, redis_manager, test_title, test_subject, te
         'title': test_title,
         'uuid': uuid4(),
         'frbr_status': 'complete',
+        'state': RecordState.EMBELLISHED.value,
         'cluster_status': False,
         "source": TEST_SOURCE,
         'authors': ['Ayan||true'],
@@ -204,7 +193,7 @@ def test_collection_id(db_manager, test_edition_id):
     test_collection = Collection(
         title='Test Collection',
         uuid=uuid4(),
-        creator='Integration Tests', 
+        creator='Integration Tests',
         owner='Integration Tests',
         description='A test collection for integration tests.',
         type='static',
@@ -299,10 +288,10 @@ def unclustered_pipeline_record_uuid(db_manager):
 def unclustered_multi_edition_uuid(db_manager):
     test_unclustered_edition_data = generate_test_data(title='multi edition record', uuid=uuid4(), source_id='unclustered_edition|test', dates=['1988|publication_date'], identifiers=['1234567891011|isbn'])
     test_unclustered_edition_data2 = generate_test_data(title='the multi edition record', uuid=uuid4(), source_id='unclustered_edition2|test', dates=['1977|publication_date'], identifiers=['1234567891011|isbn'])
-    
+
     unclustered_multi_edition = create_or_update_record(record_data=test_unclustered_edition_data, db_manager=db_manager)
     create_or_update_record(record_data=test_unclustered_edition_data2, db_manager=db_manager)
-    
+
     return unclustered_multi_edition.uuid
 
 
@@ -310,9 +299,9 @@ def unclustered_multi_edition_uuid(db_manager):
 def unclustered_multi_item_uuid(db_manager):
     test_unclustered_item_data = generate_test_data(title='multi item record', uuid=uuid4(), source_id='unclustered_item|test', dates=['1966|publication_date'], identifiers=['2341317561|isbn'])
     test_unclustered_item_data2 = generate_test_data(
-        title='multi item record', 
-        uuid=uuid4(), 
-        source_id='unclustered_item2|test', 
+        title='multi item record',
+        uuid=uuid4(),
+        source_id='unclustered_item2|test',
         dates=['1966|publication_date'],
         identifiers=['2341317561|isbn'],
         has_part=[f'1|example.com/2.pdf|{TEST_SOURCE}|text/html|{str(FileFlags(embed=True))}']
@@ -372,5 +361,5 @@ def mock_sqs_manager():
     with patch('processes.record_ingestor.SQSManager') as MockSQSManager:
         mock_sqs_manager_instance = MagicMock()
         MockSQSManager.return_value = mock_sqs_manager_instance
-        
+
         yield mock_sqs_manager_instance
