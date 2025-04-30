@@ -12,6 +12,7 @@ from managers import (
     SFRRecordManager,
     RedisManager
 )
+from .constants import CLUSTER_LOCK_KEY_PREFIX
 from constants.get_constants import get_constants
 from .candidate_record_finder import CandidateRecordFinder, ConcurrentClusterException
 from model import Record, Work, RecordState
@@ -31,7 +32,6 @@ class RecordClusterer:
     4. Managing database updates and search indexing
     """
     CLUSTER_TIMEOUT = 60 * 60 # 1 hour
-    CLUSTER_LOCK_KEY_PREFIX = 'cluster_lock_'
 
     def __init__(self, db_manager: DBManager, redis_manager: RedisManager):
         self.db_manager = db_manager
@@ -51,7 +51,7 @@ class RecordClusterer:
         """Clusters a single record and updates the database and Elasticsearch.
         """
         try:
-            record_lock = Redlock(key=f'{self.CLUSTER_LOCK_KEY_PREFIX}{record.id}', masters={self.redis_manager.client}, auto_release_time=self.CLUSTER_TIMEOUT)
+            record_lock = Redlock(key=f'{CLUSTER_LOCK_KEY_PREFIX}{record.id}', masters={self.redis_manager.client}, auto_release_time=self.CLUSTER_TIMEOUT)
 
             with record_lock:
                 work, stale_work_ids, records = self._get_clustered_work_and_records(record)
