@@ -13,17 +13,15 @@ from pdb import set_trace
 
 
 class GRINClient(object):
-    
     # These are the permissions of your Google account the client
     # needs -- basically it needs your access to NYPL's books in GRIN.
     SCOPES = [
-        'openid',
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile'
+        "openid",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
     ]
-    
-    def __init__(self, client_config, token_file, cache_dir):
 
+    def __init__(self, client_config, token_file, cache_dir):
         # client config is permanent.
         self.client_config = client_config
 
@@ -37,7 +35,7 @@ class GRINClient(object):
         for dir in (cache_dir, os.path.join(cache_dir, "books")):
             if not os.path.exists(dir):
                 os.makedirs(dir)
-        
+
         self.creds = self.load_creds()
         self.session = AuthorizedSession(self.creds)
 
@@ -56,7 +54,7 @@ class GRINClient(object):
                 )
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
-            with open(self.token_file, 'wb') as token:
+            with open(self.token_file, "wb") as token:
                 pickle.dump(creds, token)
 
         return creds
@@ -67,7 +65,7 @@ class GRINClient(object):
     def get(self, url, filename, force=False):
         cache_path = os.path.join(self.cache_dir, filename)
         if os.path.exists(cache_path) and not force:
-            return open(cache_path, 'rb').read()
+            return open(cache_path, "rb").read()
         url = self._url(url)
         response = self.session.request("GET", url)
         if response.status_code != 200:
@@ -77,9 +75,9 @@ class GRINClient(object):
 
     def _for_state(self, state, *args, **kwargs):
         "Which books are in the given state?"
-        data = self.get("_%s?format=text" % state, "%s.txt" %state, *args, **kwargs)
+        data = self.get("_%s?format=text" % state, "%s.txt" % state, *args, **kwargs)
         return data.decode("utf8").strip().split("\n")
-        
+
     def available(self, *args, **kwargs):
         "Which barcodes are available for conversion?"
         return self._for_state("available", *args, **kwargs)
@@ -103,7 +101,7 @@ class GRINClient(object):
     def download(self, filename, *args, **kwargs):
         """Download a book."""
         return self.get(filename, os.path.join("books", filename), *args, **kwargs)
-    
+
     def please_process(self, barcodes):
         'Ask Google to move some barcodes from the "Available" state to "In-Process".'
         if isinstance(barcodes, list):
@@ -111,10 +109,21 @@ class GRINClient(object):
         # self.session.request("POST", self._url("_process"), body=barcodes) // signature seems wrong as of 2024
         self.session.request("POST", self._url("_process"), data=barcodes)
 
+
 # This 'secret' needs to be exactly as secure as this source code (i.e. not very) so it
 # can just go into the file to make things less complicated.
-client_config = {"installed":{"client_id":"ID_GOES_HERE.apps.googleusercontent.com","project_id":"project_id","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"CLIENT_SECRET","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
-        
+client_config = {
+    "installed": {
+        "client_id": "ID_GOES_HERE.apps.googleusercontent.com",
+        "project_id": "project_id",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret": "CLIENT_SECRET",
+        "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"],
+    }
+}
+
 client = GRINClient(client_config, "token.pickle", "cache")
 print("Number available: %s" % len(client.available()))
 print("Number failed: %s" % len(client.failed()))

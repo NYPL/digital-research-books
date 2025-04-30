@@ -6,7 +6,6 @@ from elasticsearch_dsl import Search
 
 
 def main():
-
     dbManager = DBManager(
         user=os.environ.get("POSTGRES_USER", None),
         pswd=os.environ.get("POSTGRES_PSWD", None),

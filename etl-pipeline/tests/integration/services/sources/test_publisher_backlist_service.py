@@ -2,6 +2,7 @@ import pytest
 
 from services import PublisherBacklistService
 
+
 class TestPublisherBacklistService:
     @pytest.fixture
     def test_instance(self):

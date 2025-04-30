@@ -7,69 +7,69 @@ from .link import Link
 
 class Feed:
     COMPONENT_MAPPING = {
-        'metadata': Metadata,
-        'navigation': Navigation,
-        'links': Link,
-        'groups': Group,
-        'publications': Publication
+        "metadata": Metadata,
+        "navigation": Navigation,
+        "links": Link,
+        "groups": Group,
+        "publications": Publication,
     }
 
     def __init__(self, *args, **kwargs):
-        self.metadata = kwargs.get('metadata', None)
-        self.navigation = kwargs.get('navigation', None)
-        self.links = kwargs.get('links', [])
-        self.publications = kwargs.get('publications', [])
-        self.groups = kwargs.get('groups', [])
-        self.images = kwargs.get('images', [])
-        self.facets = kwargs.get('facets', [])
+        self.metadata = kwargs.get("metadata", None)
+        self.navigation = kwargs.get("navigation", None)
+        self.links = kwargs.get("links", [])
+        self.publications = kwargs.get("publications", [])
+        self.groups = kwargs.get("groups", [])
+        self.images = kwargs.get("images", [])
+        self.facets = kwargs.get("facets", [])
 
     def addMetadata(self, metadata):
-        self.metadata = self.componentizeObject('metadata', metadata)
+        self.metadata = self.componentizeObject("metadata", metadata)
 
     def addNavigation(self, navigation):
-        self.addComponent('navigation', navigation)
+        self.addComponent("navigation", navigation)
 
     def addNavigations(self, navigations):
         for nav in navigations:
             self.addNavigation(nav)
 
     def addLink(self, link):
-        self.addComponent('links', link)
+        self.addComponent("links", link)
 
     def addLinks(self, links):
         for link in links:
             self.addLink(link)
 
     def addPublication(self, publication):
-        self.addComponent('publications', publication)
+        self.addComponent("publications", publication)
 
     def addPublications(self, publications):
         for pub in publications:
             self.addPublication(pub)
 
     def addGroup(self, group):
-        self.addComponent('groups', group)
+        self.addComponent("groups", group)
 
     def addGroups(self, groups):
         for group in groups:
             self.addGroup(group)
 
     def addImage(self, image):
-        self.addComponent('images', image)
+        self.addComponent("images", image)
 
     def addImages(self, images):
         for image in images:
             self.addImage(image)
 
     def addFacet(self, facet):
-        self.addComponent('facets', facet)
+        self.addComponent("facets", facet)
 
     def addFacets(self, facets):
         for facet in facets:
             self.addFacet(facet)
 
     def addComponent(self, name, component):
-        element = getattr(self, name) 
+        element = getattr(self, name)
 
         component = self.componentizeObject(name, component)
 
@@ -88,14 +88,20 @@ class Feed:
 
     def __dir__(self):
         return [
-            'metadata', 'navigation', 'links', 'publications', 'groups',
-            'images', 'facets'
+            "metadata",
+            "navigation",
+            "links",
+            "publications",
+            "groups",
+            "images",
+            "facets",
         ]
 
     def __iter__(self):
-        if len(list(filter(
-            lambda x: x.rel == 'self' or 'self' in x.rel, self.links
-        ))) == 0:
+        if (
+            len(list(filter(lambda x: x.rel == "self" or "self" in x.rel, self.links)))
+            == 0
+        ):
             raise OPDS2FeedException('Link with rel of "self" must be present')
 
         for componentName in dir(self):

@@ -1,5 +1,5 @@
 # TODO: This process is deprecated - remove file.
-class ClassifyProcess():
+class ClassifyProcess:
     def __init__(self, *args):
         pass
 

@@ -10,12 +10,14 @@ class JSONMapping(BaseMapping):
 
         for field, structure in self.mapping.items():
             if isinstance(structure, list):
-                formattedValue = list(filter(None, [self.formatString(s) for s in structure]))
+                formattedValue = list(
+                    filter(None, [self.formatString(s) for s in structure])
+                )
             else:
                 formattedValue = self.formatString(structure)
-            
+
             setattr(self.record, field, formattedValue)
-        
+
         self.applyFormatting()
 
     # TODO Implement means of parsing nested JSON objects
@@ -25,15 +27,17 @@ class JSONMapping(BaseMapping):
         else:
             values = [self.source.get(structure[0], None)]
 
-        cleanValues = list(filter(lambda x: x not in [[], {}, None, ''], values))
+        cleanValues = list(filter(lambda x: x not in [[], {}, None, ""], values))
 
         if len(cleanValues) > 0 and all([isinstance(v, list) for v in cleanValues]):
             return [
-                structure[1].format(*s) if isinstance(s, list) else structure[1].format(s)
-                for v in cleanValues for s in v
+                structure[1].format(*s)
+                if isinstance(s, list)
+                else structure[1].format(s)
+                for v in cleanValues
+                for s in v
             ]
         elif len(cleanValues) > 0:
             return structure[1].format(*cleanValues)
 
         return None
-

@@ -48,7 +48,9 @@ def resize_cover(s3, key: str) -> None:
     cover_stream.seek(0)
     print("Uploading resized cover")
     s3.upload_fileobj(
-        Bucket="drb-files-qa", Key=key, Fileobj=cover_stream,
+        Bucket="drb-files-qa",
+        Key=key,
+        Fileobj=cover_stream,
         ExtraArgs={"ACL": "public-read"},
     )
     # While we're here, let's throw these in prod too

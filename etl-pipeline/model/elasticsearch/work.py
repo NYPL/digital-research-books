@@ -14,8 +14,8 @@ class Work(BaseDoc):
     alt_titles = Object(PerLanguageField)
     sort_title = Keyword(index=False)
     uuid = Keyword(store=True)
-    medium = Text(fields={'keyword': Keyword()})
-    series = Text(fields={'keyword': Keyword()})
+    medium = Text(fields={"keyword": Keyword()})
+    series = Text(fields={"keyword": Keyword()})
     series_position = Keyword()
     is_government_document = Boolean(multi=False)
 
@@ -28,15 +28,22 @@ class Work(BaseDoc):
     @classmethod
     def getFields(cls):
         return [
-            'uuid', 'title', 'sort_title', 'sub_title', 'medium',
-            'series', 'series_position', 'date_modified', 'date_updated'
+            "uuid",
+            "title",
+            "sort_title",
+            "sub_title",
+            "medium",
+            "series",
+            "series_position",
+            "date_modified",
+            "date_updated",
         ]
 
     def __dir__(self):
-        return ['identifiers', 'subjects', 'agents', 'languages']
+        return ["identifiers", "subjects", "agents", "languages"]
 
     def __repr__(self):
-        return '<ESWork(title={}, uuid={})>'.format(self.title, self.uuid)
+        return "<ESWork(title={}, uuid={})>".format(self.title, self.uuid)
 
     class Index:
-        name = os.environ.get('ELASTICSEARCH_INDEX', None)
+        name = os.environ.get("ELASTICSEARCH_INDEX", None)

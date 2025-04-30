@@ -7,7 +7,7 @@ from .base import Base, Core
 
 
 class Link(Base, Core):
-    __tablename__ = 'links'
+    __tablename__ = "links"
     id = Column(Integer, primary_key=True)
     url = Column(Unicode, nullable=False, index=True)
     media_type = Column(Unicode, nullable=False, index=True)
@@ -16,14 +16,12 @@ class Link(Base, Core):
     flags = Column(JSONB)
 
     def __repr__(self):
-        return '<Link(url={}, mediaType={})>'.format(
-            self.url, self.media_type
-        )
+        return "<Link(url={}, mediaType={})>".format(self.url, self.media_type)
 
     def __dir__(self):
-        return ['url', 'media_type', 'content', 'md5', 'flags']
-    
-    @validates('url')
+        return ["url", "media_type", "content", "md5", "flags"]
+
+    @validates("url")
     def removeHTTP(self, key, url):
         """Ensures that http:// and https:// are removed from all URLs to ensure
         equality are valid
@@ -34,10 +32,10 @@ class Link(Base, Core):
             str -- The clean version of the URL
         """
         return Link.httpRegexSub(url)
-    
+
     @staticmethod
     def httpRegexSub(url):
         if isinstance(url, str):
-            return re.sub(r'^http(?:s)?:\/\/', '', url)
+            return re.sub(r"^http(?:s)?:\/\/", "", url)
 
         return url

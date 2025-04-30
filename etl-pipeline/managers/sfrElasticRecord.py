@@ -8,7 +8,7 @@ from model import (
     ESLanguage,
     ESRights,
     ESEdition,
-    PerLanguageField
+    PerLanguageField,
 )
 
 
@@ -16,33 +16,32 @@ class SFRElasticRecordManager:
     def __init__(self, dbWork):
         self.dbWork = dbWork
         self.work = None
-    
+
     def getCreateWork(self):
         workData = {
-            field: getattr(self.dbWork, field, None)
-            for field in ESWork.getFields()
+            field: getattr(self.dbWork, field, None) for field in ESWork.getFields()
         }
 
         self.work = ESWork(**workData)
 
         self.enhanceWork()
-    
+
     def saveWork(self, retries=0):
         try:
-            self.work.save(pipeline='language_detector')
+            self.work.save(pipeline="language_detector")
         except ConnectionTimeout as e:
             if retries >= 2:
                 raise e
 
-            self.saveWork(retries=retries+1)
-    
+            self.saveWork(retries=retries + 1)
+
     def updateWork(self, data):
         for key, value in data.items():
             setattr(self.work, key, value)
 
     def enhanceWork(self):
         """Build an ElasticSearch object from the provided postgresql ORM
-        object. This builds a single object from the related tables of the 
+        object. This builds a single object from the related tables of the
         db object that can be indexed and searched in ElasticSearch.
         """
         self.work.date_created = self.dbWork.date_created
@@ -62,7 +61,7 @@ class SFRElasticRecordManager:
             self.work.subjects.append(subj)
 
         self.work.agents = [
-            ESAgent(**SFRElasticRecordManager.addAgent(a, defaultRole='author'))
+            ESAgent(**SFRElasticRecordManager.addAgent(a, defaultRole="author"))
             for a in [*self.dbWork.authors, *self.dbWork.contributors]
         ]
 
@@ -71,13 +70,12 @@ class SFRElasticRecordManager:
         ]
 
         self.work.languages = [
-            ESLanguage(**l)
-            for l in list(filter(None, self.dbWork.languages))
+            ESLanguage(**l) for l in list(filter(None, self.dbWork.languages))
         ]
-        
-        for edition in self.work.editions:      
+
+        for edition in self.work.editions:
             self.work.is_government_document = SFRElasticRecordManager.addGovDocStatus(
-            edition.measurements
+                edition.measurements
             )
             if self.work.is_government_document is True:
                 break
@@ -85,21 +83,21 @@ class SFRElasticRecordManager:
         self.work.editions = [self.createEdition(e) for e in self.dbWork.editions]
 
     @staticmethod
-    def addAgent(agent, defaultRole='author'):
-        agent['sort_name'] = agent['name'].lower()
-        agent['roles'] = agent.get('roles', [defaultRole])
+    def addAgent(agent, defaultRole="author"):
+        agent["sort_name"] = agent["name"].lower()
+        agent["roles"] = agent.get("roles", [defaultRole])
         return agent
-    
+
     @staticmethod
     def addGovDocStatus(measurements):
-        '''
+        """
         Iterates through each dictionary in the measurement arrays to return True if a gov doc type and value exists
-        '''
+        """
 
         if measurements != [] and measurements != [{}]:
             for measurement in measurements:
-                if measurement['type'] == "government_document":
-                    if measurement['value'] == "1":
+                if measurement["type"] == "government_document":
+                    if measurement["value"] == "1":
                         return True
             return False
 
@@ -107,10 +105,9 @@ class SFRElasticRecordManager:
             return False
 
     def createEdition(self, edition):
-        newEd = ESEdition(**{
-            field: getattr(edition, field, None)
-            for field in ESEdition.getFields()
-        })
+        newEd = ESEdition(
+            **{field: getattr(edition, field, None) for field in ESEdition.getFields()}
+        )
         newEd.edition_id = newEd.id
         del newEd.id
 
@@ -123,15 +120,14 @@ class SFRElasticRecordManager:
         newEd.identifiers = [ESIdentifier(**dict(i)) for i in edition.identifiers]
 
         newEd.agents = [
-            ESAgent(**SFRElasticRecordManager.addAgent(a, defaultRole='publisher'))
+            ESAgent(**SFRElasticRecordManager.addAgent(a, defaultRole="publisher"))
             for a in [*edition.publishers, *edition.contributors]
         ]
 
         newEd.rights = [ESRights(**r) for r in edition.rights]
 
         newEd.languages = [
-            ESLanguage(**l)
-            for l in list(filter(None, edition.languages))
+            ESLanguage(**l) for l in list(filter(None, edition.languages))
         ]
 
         newEd.formats = [
@@ -145,7 +141,7 @@ class SFRElasticRecordManager:
         for item in items:
             for link in item.links:
                 yield link.media_type
-    
+
     def setSortTitle(self):
         if self.work.sort_title is None:
             self.work.sort_title = self.dbWork.title.lower()
