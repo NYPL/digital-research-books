@@ -27,6 +27,10 @@ jobs:
           local-testing: start
           local-identifier: random
 
+      - name: Verify BrowserStack Local
+        run: |
+          curl -s http://bs-local.com:45691/check
+
       - name: Checkout
         uses: actions/checkout@v4
 
