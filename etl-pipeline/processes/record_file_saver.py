@@ -34,7 +34,7 @@ class RecordFileSaver:
         return record
 
     def store_file(self, record: Record):
-        files_to_store = (part for part in record.parts if part.source_url and part.file_bucket and part.file_key)
+        files_to_store = [part for part in record.parts if part.source_url and part.file_bucket and part.file_key]
 
         for part in files_to_store:
             try:
@@ -54,7 +54,7 @@ class RecordFileSaver:
                         self.storage_manager.put_object(web_pub_manifest, f'{file_root}/manifest.json', self.file_bucket)
 
                         xml_part = Part(
-                            index=part.index + 1,
+                            index=part.index,
                             source=record.source,
                             url=get_stored_file_url(self.file_bucket, f"{file_root}/META-INF/container.xml"),
                             file_type="application/epub+xml",
@@ -63,7 +63,7 @@ class RecordFileSaver:
                         record.has_part.append(str(xml_part))
                         
                         webpub_part = Part(
-                            index=part.index + 2,
+                            index=part.index,
                             source=record.source,
                             url=get_stored_file_url(self.file_bucket, f"{file_root}/manifest.json"),
                             file_type="application/webpub+json",
