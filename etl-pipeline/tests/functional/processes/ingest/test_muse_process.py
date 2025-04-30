@@ -1,17 +1,18 @@
 from model import Source
-from processes import MUSEProcess
-from processes.record_pipeline import RecordPipelineProcess
+from processes import MUSEProcess, RecordFileSaver
 from .assert_ingested_records import assert_ingested_records
 from .assert_uploaded_files import assert_uploaded_files
 
 
-def test_muse_process(mock_epub_to_webpub):
+def test_muse_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager):
     muse_process = MUSEProcess('complete', None, None, None, 5, None)
     number_of_records_ingested = muse_process.runProcess()
 
-    record_pipeline_process = RecordPipelineProcess()
-    record_pipeline_process.runProcess(max_attempts=2)
+    records = assert_ingested_records(db_manager, sources=[Source.MUSE.value], expected_number_of_records=number_of_records_ingested)
 
-    records = assert_ingested_records(sources=[Source.MUSE.value], expected_number_of_records=number_of_records_ingested)
+    record_file_saver = RecordFileSaver(db_manager=db_manager, storage_manager=s3_manager)
+
+    for record in records:
+        record_file_saver.save_record_files(record)
 
     assert_uploaded_files(records)

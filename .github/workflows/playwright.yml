@@ -1,8 +1,6 @@
 name: Playwright Tests for DRB Web
 
 on:
-  schedule:
-    - cron: "00 14 * * 1-5" # every day at 9-10 AM ET (2 PM wherever the server is) excluding weekends
   workflow_call:
     inputs:
       base_url:
@@ -15,11 +13,13 @@ jobs:
   tests:
     name: Run Tests
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
         with:
           node-version-file: "web/.nvmrc"
           cache: npm
@@ -39,7 +39,7 @@ jobs:
 
       - name: Install Test Dependencies
         working-directory: ./web
-        run: npm i @playwright/test@1.49.1
+        run: npm i @playwright/test@1.52.0
 
       - name: Install Playwright
         working-directory: ./web
