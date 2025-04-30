@@ -46,7 +46,7 @@ jobs:
         shell: bash
 
       - name: Add hosts to /etc/hosts
-        if: inputs.base_url == 'http://local.nypl.org:3000'
+        if: inputs.base_url == 'http://local.nypl.org:3000/'
         run: |
           echo "${{ inputs.base_url }}"
           sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
@@ -64,7 +64,7 @@ jobs:
         run: NODE_ENV=test npm run build
 
       - name: Start the app
-        if: inputs.base_url == 'http://local.nypl.org:3000'
+        if: inputs.base_url == 'http://local.nypl.org:3000/'
         working-directory: ./web
         run: |
           NODE_ENV=test npm start &
