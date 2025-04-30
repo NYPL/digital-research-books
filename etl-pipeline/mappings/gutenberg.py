@@ -115,26 +115,6 @@ class GutenbergMapping(XMLMapping):
                 flags=str(FileFlags(download=True)),
                 source_url=epub_url,
             )))
-            self.record.has_part.append(str(Part(
-                index=i+1,
-                source=self.record.source,
-                url=get_stored_file_url(
-                    self.file_bucket,
-                    f"epubs/gutenberg/{gutenberg_id}_{extension}/META-INF/container.xml",
-                ),
-                file_type="application/epub+xml",
-                flags=str(FileFlags(reader=True)),
-            )))
-            self.record.has_part.append(str(Part(
-                index=i+1,
-                source=self.record.source,
-                url=get_stored_file_url(
-                    self.file_bucket,
-                    f"epubs/gutenberg/{gutenberg_id}_{extension}/manifest.json",
-                ),
-                file_type="application/webpub+json",
-                flags=str(FileFlags(reader=True)),
-            )))
 
     def add_cover(self):
         yaml_file = self.yaml_file

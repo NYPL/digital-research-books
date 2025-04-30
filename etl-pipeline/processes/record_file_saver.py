@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 from digital_assets import get_stored_file_url
 from logger import create_log
 from managers import DBManager, S3Manager
-from model import Record, RecordState, Part
+from model import Record, RecordState, Part, FileFlags
 from services.google_drive_service import GoogleDriveService
 
 logger = create_log(__name__)
@@ -23,10 +23,8 @@ class RecordFileSaver:
 
     def save_record_files(self, record: Record) -> Record:
         self.storage_manager.store_pdf_manifest(record=record, bucket_name=self.file_bucket)
-        files_to_store = (part for part in record.parts if part.source_url and part.file_bucket and part.file_key)
 
-        for file_to_store in files_to_store:
-            self.store_file(part=file_to_store)
+        record = self.store_file(record=record)
 
         record.state = RecordState.FILES_SAVED.value
 
@@ -35,27 +33,49 @@ class RecordFileSaver:
 
         return record
 
-    def store_file(self, part: Part):
-        try:
-            if 'drive.google.com' in part.source_url:
-                self._store_file_from_drive(part)
-            elif part.source_file_key and part.source_file_bucket:
-                self._copy_file(part)
-            else:
-                file_contents = self.get_file_contents(part.source_url)
-                self.storage_manager.put_object(file_contents, part.file_key, part.file_bucket)
-                del file_contents
+    def store_file(self, record: Record):
+        files_to_store = (part for part in record.parts if part.source_url and part.file_bucket and part.file_key)
 
-                if '.epub' in part.file_key:
-                    file_root = '.'.join(part.file_key.split('.')[:-1])
+        for part in files_to_store:
+            try:
+                if 'drive.google.com' in part.source_url:
+                    self._store_file_from_drive(part)
+                elif part.source_file_key and part.source_file_bucket:
+                    self._copy_file(part)
+                else:
+                    file_contents = self.get_file_contents(part.source_url)
+                    self.storage_manager.put_object(file_contents, part.file_key, part.file_bucket)
+                    del file_contents
 
-                    web_pub_manifest = self.generate_webpub(file_root)
-                    self.storage_manager.put_object(web_pub_manifest, f'{file_root}/manifest.json', self.file_bucket)
+                    if '.epub' in part.file_key:
+                        file_root = '.'.join(part.file_key.split('.')[:-1])
 
-            logger.info(f'Stored file at {part.url} from {part.source_url}')
-        except Exception as e:
-            logger.exception(f'Failed to store file {part.file_key} from {part.source_url}')
-            raise e
+                        web_pub_manifest = self.generate_webpub(file_root)
+                        self.storage_manager.put_object(web_pub_manifest, f'{file_root}/manifest.json', self.file_bucket)
+
+                        xml_part = Part(
+                            index=part.index + 1,
+                            source=record.source,
+                            url=get_stored_file_url(self.file_bucket, f"{file_root}/META-INF/container.xml"),
+                            file_type="application/epub+xml",
+                            flags=str(FileFlags(reader=True))
+                        )
+                        record.has_part.append(str(xml_part))
+                        
+                        webpub_part = Part(
+                            index=part.index + 2,
+                            source=record.source,
+                            url=get_stored_file_url(self.file_bucket, f"{file_root}/manifest.json"),
+                            file_type="application/webpub+json",
+                            flags=str(FileFlags(reader=True))
+                        )
+                        record.has_part.append(str(webpub_part))
+
+                logger.info(f'Stored file at {part.url} from {part.source_url}')
+            except Exception as e:
+                logger.exception(f'Failed to store file {part.file_key} from {part.source_url}')
+                raise e
+        return record
         
     def _store_file_from_drive(self, part: Part):
         file_id = f'{self.drive_service.id_from_url(part.source_url)}'
