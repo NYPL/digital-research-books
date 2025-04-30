@@ -41,14 +41,14 @@ jobs:
         working-directory: ./web
         run: |
           touch .env
-          echo "BASE_URL=${{ inputs.base_url.default }}" >> .env
-          echo "BASE_URL=${{ inputs.base_url.default }}"
+          echo "BASE_URL=${{ inputs.base_url }}" >> .env
+          echo "BASE_URL=${{ inputs.base_url }}"
         shell: bash
 
       - name: Add hosts to /etc/hosts
         if: inputs.base_url.default == 'http://local.nypl.org:3000'
         run: |
-          ${{ inputs.base_url.default }}
+          echo "${{ inputs.base_url }}"
           sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
 
       - name: Install dependencies
