@@ -27,6 +27,13 @@ jobs:
           local-testing: start
           local-identifier: random
 
+      - name: Setup BrowserStack using npm package
+        run: |
+          npm install -g browserstack-local
+          browserstack-local --key ${{ secrets.BROWSERSTACK_PW }} --force-local --verbose &
+          sleep 15
+          curl -v http://bs-local.com:45691/check || echo "BrowserStackLocal not running"
+
       - name: Verify BrowserStack Local
         run: |
           # Wait longer for BrowserStackLocal to initialize
