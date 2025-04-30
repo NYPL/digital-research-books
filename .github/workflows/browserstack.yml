@@ -27,9 +27,12 @@ jobs:
           local-testing: start
           local-identifier: random
 
-      # - name: Verify BrowserStack Local
-      #   run: |
-      #     curl -s http://bs-local.com:45691/check
+      - name: Verify BrowserStack Local
+        run: |
+          # Wait longer for BrowserStackLocal to initialize
+          sleep 15
+          echo "Checking BrowserStack Local status..."
+          curl -v http://bs-local.com:45691/check || echo "BrowserStackLocal not running"
 
       - name: Checkout
         uses: actions/checkout@v4
