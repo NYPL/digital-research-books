@@ -1,0 +1,133 @@
+{
+    "identifier": {
+      "oclcNumber": "903081363",
+      "mergedOclcNumbers": [
+        "657000658"
+      ]
+    },
+    "title": {
+      "mainTitles": [
+        {
+          "text": "Emma / by Jane Austen"
+        }
+      ]
+    },
+    "contributor": {
+      "creators": [
+        {
+          "firstName": {
+            "text": "Jane"
+          },
+          "secondName": {
+            "text": "Austen"
+          },
+          "isPrimary": true,
+          "type": "person",
+          "creatorNotes": [
+            "1775-1817."
+          ]
+        }
+      ],
+      "statementOfResponsibility": {
+        "text": "by Jane Austen."
+      }
+    },
+    "classification": {
+      "dewey": "823.74 P12",
+      "lc": "PR4034 .E5 1902"
+    },
+    "publishers": [
+      {
+        "publisherName": {
+          "text": "Little, Brown"
+        },
+        "publicationPlace": "Boston"
+      }
+    ],
+    "date": {
+      "publicationDate": "1892",
+      "machineReadableDate": "1902",
+      "createDate": "20150209",
+      "replaceDate": "20240710"
+    },
+    "language": {
+      "itemLanguage": "eng",
+      "catalogingLanguage": "eng"
+    },
+    "note": {
+      "generalNotes": [
+        {
+          "text": "A novel",
+          "local": "N"
+        }
+      ],
+      "reproductionNotes": [
+        {
+          "reproductionType": "Electronic reproduction",
+          "reproductionPlace": [
+            "[Place of publication not identified]"
+          ],
+          "agency": [
+            "HathiTrust Digital Library"
+          ],
+          "date": "2015",
+          "institution": "MiAaHDL"
+        }
+      ],
+      "systemDetailNote": "Master and use copy. Digital master created according to Benchmark for Faithful Digital Reproductions of Monographs and Serials, Version 1. Digital Library Federation, December 2002. http://purl.oclc.org/DLF/benchrepro0212"
+    },
+    "format": {
+      "generalFormat": "Book",
+      "specificFormat": "Digital",
+      "materialTypes": [
+        "dct",
+        "fic",
+        "url"
+      ]
+    },
+    "digitalAccessAndLocations": [
+      {
+        "uri": "http://books.google.com/books?id=vukYAAAAYAAJ",
+        "materialSpecified": "Google, v. 2"
+      },
+      {
+        "uri": "http://books.google.com/books?id=pusYAAAAYAAJ",
+        "materialSpecified": "Google, v. 1"
+      },
+      {
+        "uri": "http://catalog.hathitrust.org/api/volumes/oclc/9396259.html",
+        "materialSpecified": "HathiTrust Digital Library, Full view"
+      }
+    ],
+    "description": {
+      "physicalDescription": "1 online resource (2 volumes)",
+      "peerReviewed": "N"
+    },
+    "related": {
+      "additionalPhysicalFormEntries": [
+        {
+          "displayConstant": "Print version:",
+          "titles": [
+            "Emma."
+          ],
+          "recordControlOclcNumbers": [
+            "9396259"
+          ],
+          "mainEntryHeadings": [
+            "Austen, Jane, 1775-1817."
+          ]
+        }
+      ]
+    },
+    "work": {
+      "id": "4820344140",
+      "count": 3369
+    },
+    "editionCluster": {
+      "id": "815036d083b6a40b5f7f36db29c01bbb"
+    },
+    "database": {
+      "source": "xwc",
+      "collection": "xwc"
+    }
+}
