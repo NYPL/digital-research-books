@@ -35,10 +35,10 @@ class RecordEmbellisher:
 
         self.record_buffer.flush()
 
-        record.identifiers = record_new_identifiers_owi
         # TODO: deprecate frbr_status
         record.frbr_status = 'complete'
         record.state = RecordState.EMBELLISHED.value
+        record.identifiers = record_new_identifiers_owi
 
         self.db_manager.session.commit()
         self.db_manager.session.refresh(record)

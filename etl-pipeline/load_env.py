@@ -42,7 +42,7 @@ def load_env_file(run_type: str, file_string: Optional[str]=None) -> None:
         YAMLError: Indicates malformed yaml markup in the configuration file
     Returns:
         dict -- A dictionary containing the configuration details parsed from
-        the specificied yaml file.
+        the specified yaml file.
     """
     env_dict = None
 
