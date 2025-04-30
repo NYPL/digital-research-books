@@ -68,7 +68,7 @@ jobs:
         if: inputs.base_url == 'http://local.nypl.org:3000/'
         working-directory: ./web
         run: |
-          NODE_ENV=test npm start &
+          NODE_ENV=test npm run dev &
           sleep 5
         shell: bash
 
