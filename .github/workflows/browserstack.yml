@@ -42,11 +42,13 @@ jobs:
         run: |
           touch .env
           echo "BASE_URL=${{ inputs.base_url.default }}" >> .env
+          echo "BASE_URL=${{ inputs.base_url.default }}"
         shell: bash
 
       - name: Add hosts to /etc/hosts
         if: inputs.base_url.default == 'http://local.nypl.org:3000'
         run: |
+          ${{ inputs.base_url.default }}
           sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
 
       - name: Install dependencies
