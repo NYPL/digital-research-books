@@ -62,13 +62,13 @@ jobs:
 
       - name: Build app
         working-directory: ./web
-        run: npm run build
+        run: NODE_ENV=test npm run build
 
       - name: Start the app
         if: inputs.base_url == 'http://local.nypl.org:3000/'
         working-directory: ./web
         run: |
-          npm start &
+          NODE_ENV=test npm start &
           sleep 5
         shell: bash
 
