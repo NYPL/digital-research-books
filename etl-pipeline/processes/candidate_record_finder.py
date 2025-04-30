@@ -2,10 +2,11 @@ import re
 from logging import Logger
 from typing import List, Set, Tuple, Optional, Any
 from sqlalchemy.exc import DataError
+from sqlalchemy import or_
 from managers import DBManager, RedisManager
 
 from .constants import CLUSTER_LOCK_KEY_PREFIX
-from model import Record
+from model import Record, RecordState
 from logger import create_log
 
 logger = create_log(__name__)
@@ -121,6 +122,12 @@ class CandidateRecordFinder:
                     .filter(~Record.id.in_(already_matched_record_ids))
                     .filter(Record.identifiers.overlap(id_batch))
                     .filter(Record.title.isnot(None))
+                    .filter(
+                        or_(
+                            Record.state != RecordState.INGESTED.value,
+                            Record.state.is_(None)
+                        )
+                    )
                     .all()
                 )
                 
