@@ -110,3 +110,4 @@ if __name__ == '__main__':
     os.environ['ENVIRONMENT'] = os.environ.get('ENVIRONMENT') or args.environment
 
     main(args)
+    newrelic.agent.shutdown_agent()
