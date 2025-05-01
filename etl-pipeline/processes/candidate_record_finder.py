@@ -4,7 +4,7 @@ from typing import List, Set, Tuple, Optional, Any
 from sqlalchemy.exc import DataError
 from sqlalchemy import or_
 from managers import DBManager, RedisManager
-
+import services.monitor as monitor
 from .constants import CLUSTER_LOCK_KEY_PREFIX
 from model import Record, RecordState
 from logger import create_log
@@ -34,6 +34,8 @@ class CandidateRecordFinder:
         
         if record.id:
             candidate_record_ids.append(record.id)
+
+        monitor.track_work_records_chosen(record, len(candidate_record_ids))
         
         return self._get_records_by_ids(candidate_record_ids)
     
