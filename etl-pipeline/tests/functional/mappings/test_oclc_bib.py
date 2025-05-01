@@ -3,7 +3,7 @@ import json
 from mappings.oclc_bib import map_oclc_record
 from model import Source
 
-# TODO: make assertions
+
 def test_map_oclc_records():
     with open('tests/fixtures/test-oclc.json') as f:
         oclc_bib = json.load(f)
@@ -19,5 +19,9 @@ def test_map_oclc_records():
         assert oclc_record.dates == ['1892|publication_date']
         assert oclc_record.publisher == ['Little, Brown||']
         assert oclc_record.languages == ['||eng']
-        assert oclc_record.has_part == ['1|http://books.google.com/books?id=vukYAAAAYAAJ|oclc|text/html|{"embed": true}', '1|http://books.google.com/books?id=pusYAAAAYAAJ|oclc|text/html|{"embed": true}', '1|http://catalog.hathitrust.org/api/volumes/oclc/9396259.html|oclc|text/html|{"embed": true}']
+        assert oclc_record.has_part == [
+            '1|http://books.google.com/books?id=vukYAAAAYAAJ|oclc|text/html|{"embed": true}', 
+            '1|http://books.google.com/books?id=pusYAAAAYAAJ|oclc|text/html|{"embed": true}', 
+            '1|http://catalog.hathitrust.org/api/volumes/oclc/9396259.html|oclc|text/html|{"embed": true}'
+        ]
 
