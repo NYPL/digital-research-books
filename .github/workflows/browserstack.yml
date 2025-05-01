@@ -4,7 +4,7 @@ on:
     inputs:
       base_url:
         description: "Base URL for environment"
-        default: "http://local.nypl.org:3000/" # or https://digital-research-books-beta.nypl.org/
+        default: "http://local.nypl.org:3000/"
         required: false
         type: string
 
@@ -42,7 +42,6 @@ jobs:
         run: |
           touch .env
           echo "BASE_URL=${{ inputs.base_url }}" >> .env
-          echo "BASE_URL=${{ inputs.base_url }}"
         shell: bash
 
       - name: Add hosts to /etc/hosts
