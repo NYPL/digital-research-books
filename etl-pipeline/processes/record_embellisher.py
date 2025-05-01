@@ -29,7 +29,7 @@ class RecordEmbellisher:
         # TODO: deprecate frbr_status
         record.frbr_status = 'complete'
         record.state = RecordState.EMBELLISHED.value
-        record.identifiers.extend(work_identifiers)
+        record.identifiers = record.identifiers + list(work_identifiers)
 
         self.db_manager.session.commit()
         self.db_manager.session.refresh(record)
@@ -51,7 +51,7 @@ class RecordEmbellisher:
             bib_work_identifiers = self._add_bibs(self.oclc_catalog_manager.query_bibs(query=search_query))
             work_identifiers.update(bib_work_identifiers)
         
-        if self._fallback_to_title_author_query(self, author, title):
+        if self._fallback_to_title_author_query(author, title):
             search_query = self.oclc_catalog_manager.generate_title_author_query(author=author, title=title)
             bib_work_identifiers = self._add_bibs(self.oclc_catalog_manager.query_bibs(query=search_query))
             work_identifiers.update(bib_work_identifiers)
@@ -59,7 +59,7 @@ class RecordEmbellisher:
         return work_identifiers
 
     def _add_bibs(self, oclc_bibs: list) -> set:
-        return { owi_number := self._add_bib(oclc_bib) for oclc_bib in oclc_bibs if owi_number is not None }
+        return { owi_number for oclc_bib in oclc_bibs if (owi_number := self._add_bib(oclc_bib)) }
 
     def _add_bib(self, oclc_bib: dict) -> Optional[str]:
         owi_number = oclc_bib.get('work', {}).get('id')
