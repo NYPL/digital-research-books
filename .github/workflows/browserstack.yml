@@ -4,7 +4,7 @@ on:
     inputs:
       base_url:
         description: "Base URL for environment"
-        default: "https://digital-research-books-beta.nypl.org/"
+        default: "http://local.nypl.org:3000/" # or https://digital-research-books-beta.nypl.org/
         required: false
         type: string
 
@@ -37,20 +37,20 @@ jobs:
           cache: npm
           cache-dependency-path: "web/package-lock.json"
 
-      # - name: Set environment for branch
-      #   working-directory: ./web
-      #   run: |
-      #     touch .env
-      #     echo "BASE_URL=${{ inputs.base_url }}" >> .env
-      #     echo "BASE_URL=${{ inputs.base_url }}"
-      #   shell: bash
+      - name: Set environment for branch
+        working-directory: ./web
+        run: |
+          touch .env
+          echo "BASE_URL=${{ inputs.base_url }}" >> .env
+          echo "BASE_URL=${{ inputs.base_url }}"
+        shell: bash
 
-      # - name: Add hosts to /etc/hosts
-      #   if: inputs.base_url == 'http://local.nypl.org:3000/'
-      #   working-directory: ./web
-      #   run: |
-      #     echo "${{ inputs.base_url }}"
-      #     sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
+      - name: Add hosts to /etc/hosts
+        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        working-directory: ./web
+        run: |
+          echo "${{ inputs.base_url }}"
+          sudo echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
 
       - name: Install dependencies
         working-directory: ./web
@@ -60,17 +60,17 @@ jobs:
         working-directory: ./web
         run: npx playwright install --with-deps
 
-      # - name: Build app
-      #   working-directory: ./web
-      #   run: NODE_ENV=test npm run build
+      - name: Build app
+        working-directory: ./web
+        run: NODE_ENV=test npm run build
 
-      # - name: Start the app
-      #   if: inputs.base_url == 'http://local.nypl.org:3000/'
-      #   working-directory: ./web
-      #   run: |
-      #     NODE_ENV=test npm run start &
-      #     sleep 5
-      #   shell: bash
+      - name: Start the app
+        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        working-directory: ./web
+        run: |
+          NODE_ENV=test npm run start &
+          sleep 5
+        shell: bash
 
       - name: Run tests on BrowserStack
         id: run-tests
