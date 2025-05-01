@@ -6,6 +6,7 @@ from mappings.oclc_bib import map_oclc_record
 from managers import DBManager, OCLCCatalogManager, RedisManager
 from model import Record, RecordState
 from .record_buffer import RecordBuffer
+import services.monitor as monitor
 
 
 logger = create_log(__name__)
@@ -42,19 +43,36 @@ class RecordEmbellisher:
         work_identifiers = set()
         author = record.authors[0].split('|')[0] if record.authors else None
         title = record.title
+        fell_back_to_title_author = False
+        number_of_matched_bibs = 0
+
+        queries = []
 
         for id, id_type in self._get_queryable_identifiers(record.identifiers):
-            if self.redis_manager.check_or_set_key('catalog', id, id_type):
-                continue
+            if not self.redis_manager.check_or_set_key('catalog', id, id_type):
+                query = self.oclc_catalog_manager.generate_identifier_query(identifier=id, identifier_type=id_type)
+                queries.append(query)
 
-            search_query = self.oclc_catalog_manager.generate_identifier_query(identifier=id, identifier_type=id_type)
-            bib_work_identifiers = self._add_bibs(self.oclc_catalog_manager.query_bibs(query=search_query))
+        queries.append(self.oclc_catalog_manager.generate_title_author_query(author=author, title=title))
+
+        for query in queries:
+            if self._is_title_author_query(query):
+                if self._fallback_to_title_author_query(author, title):
+                    fell_back_to_title_author = True
+                else:
+                    break
+
+            matched_bibs = self.oclc_catalog_manager.query_bibs(query=query)
+            bib_work_identifiers = self._add_bibs(matched_bibs)
+            
+            number_of_matched_bibs += len(matched_bibs)
             work_identifiers.update(bib_work_identifiers)
-        
-        if self._fallback_to_title_author_query(author, title):
-            search_query = self.oclc_catalog_manager.generate_title_author_query(author=author, title=title)
-            bib_work_identifiers = self._add_bibs(self.oclc_catalog_manager.query_bibs(query=search_query))
-            work_identifiers.update(bib_work_identifiers)
+
+        monitor.track_oclc_related_records_found(
+            record=record,
+            num_matches=number_of_matched_bibs,
+            fell_back_to_title_author=fell_back_to_title_author
+        )
 
         return work_identifiers
 
@@ -78,3 +96,6 @@ class RecordEmbellisher:
     
     def _fallback_to_title_author_query(self, author, title):
        return self.record_buffer.ingest_count == 0 and len(self.record_buffer.records) == 0 and author and title
+    
+    def _is_title_author_query(self, query):
+        return 'ti:' in query and 'au:' in query 

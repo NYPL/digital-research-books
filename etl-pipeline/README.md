@@ -74,9 +74,8 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
 
    - PostgreSQL database
    - Elasticsearch
-   - RabbitMQ
    - Redis
-   - LocalStack (S3)
+   - LocalStack (S3 and SQS)
    - API service
 
 5. Verify the setup:

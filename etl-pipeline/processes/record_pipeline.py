@@ -1,6 +1,6 @@
 import json
 import os
-from time import sleep
+from time import perf_counter, sleep
 
 from .record_embellisher import RecordEmbellisher
 from .record_clusterer import RecordClusterer
@@ -10,6 +10,7 @@ from .link_fulfiller import LinkFulfiller
 
 from logger import create_log
 from managers import DBManager, ElasticsearchManager, S3Manager, SQSManager, RedisManager
+from services import monitor
 from model import Record
 
 logger = create_log(__name__)
@@ -58,6 +59,8 @@ class RecordPipelineProcess:
                 self.db_manager.engine.dispose()
 
     def _process_message(self, message):
+        logger.info("Processing message %s", message)
+        start = perf_counter()
         try:
             message_body = message["Body"]
             receipt_handle = message["ReceiptHandle"]
@@ -83,7 +86,12 @@ class RecordPipelineProcess:
             self.sqs_manager.acknowledge_message_processed(receipt_handle)
         except Exception:
             logger.exception(f'Failed to process message: {message_body}')
+            elapsed_time = perf_counter() - start
+            monitor.track_record_pipeline_message_failed(elapsed_time, message_body)
             self.sqs_manager.reject_message(receipt_handle)
+        else:
+            elapsed_time = perf_counter() - start
+            monitor.track_record_pipeline_message_succeeded(record, elapsed_time, message_body)
 
         finally:
             if self.db_manager.session:

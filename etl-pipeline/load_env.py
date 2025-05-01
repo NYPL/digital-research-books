@@ -27,8 +27,6 @@ ENV_VAR_TO_SSM_NAME = {
     'OCLC_CLIENT_SECRET': 'oclc-search-secret',
     'POSTGRES_PSWD': 'postgres/pswd',
     'POSTGRES_USER': 'postgres/user',
-    'RABBIT_PSWD': 'rabbit-pswd',
-    'RABBIT_USER': 'rabbit-user',
 }
 
 
@@ -73,7 +71,7 @@ def load_env_file(run_type: str, file_string: Optional[str]=None) -> None:
 def _set_env_vars(config: dict) -> None:
     for key, value in config.items():
         if key not in os.environ:
-            os.environ[key] = str(value)    
+            os.environ[key] = str(value)
 
 
 def _load_yaml_config(file_path: str) -> None:
@@ -81,7 +79,7 @@ def _load_yaml_config(file_path: str) -> None:
         with open(file_path, "r") as file:
             return yaml.safe_load(file) or {}
     except:
-        return {}         
+        return {}
 
 
 def load_secrets():
