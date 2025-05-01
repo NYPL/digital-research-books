@@ -6,7 +6,6 @@ from .oclc_auth import OCLCAuthManager
 from .oclc_catalog import OCLCCatalogManager
 from .nypl_api import NYPLAPIManager
 from .webpubManifest import WebpubManifest
-from .rabbitmq import RabbitMQManager
 from .redis import RedisManager
 from .sfrRecord import SFRRecordManager
 from .elasticsearch import ElasticsearchManager
