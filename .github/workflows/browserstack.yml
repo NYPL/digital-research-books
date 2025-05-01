@@ -4,7 +4,7 @@ on:
     inputs:
       base_url:
         description: "Base URL for environment"
-        default: "http://local.nypl.org:3000/"
+        default: "https://digital-research-books-beta.nypl.org/"
         required: false
         type: string
 
@@ -37,13 +37,13 @@ jobs:
           cache: npm
           cache-dependency-path: "web/package-lock.json"
 
-      - name: Set environment for branch
-        working-directory: ./web
-        run: |
-          touch .env
-          echo "BASE_URL=${{ inputs.base_url }}" >> .env
-          echo "BASE_URL=${{ inputs.base_url }}"
-        shell: bash
+      # - name: Set environment for branch
+      #   working-directory: ./web
+      #   run: |
+      #     touch .env
+      #     echo "BASE_URL=${{ inputs.base_url }}" >> .env
+      #     echo "BASE_URL=${{ inputs.base_url }}"
+      #   shell: bash
 
       # - name: Add hosts to /etc/hosts
       #   if: inputs.base_url == 'http://local.nypl.org:3000/'
