@@ -13,42 +13,42 @@ logger = create_log(__name__)
 
 
 class CandidateRecordFinder:
-    
+
     # Maximum number of "hops" to follow when matching records through identifiers
     MAX_MATCH_DISTANCE = 4
     # Maximum number of records that can be in a candidate pool
     MAX_NUMBER_OF_CANDIDATE_RECORDS = 10000
     # Regular expression to identify identifiers that should be matched
     IDENTIFIERS_TO_MATCH = r"\|(?:isbn|issn|oclc|lccn|owi)$"
-    
+
     def __init__(self, db_manager: DBManager, redis_manager: RedisManager):
         self.db_manager = db_manager
         self.redis_manager = redis_manager
-    
+
     def find_candidate_records(self, record: Record) -> List[Record]:
         """Find records that might be related to the input record.
         Raises:
             Exception: If the number of candidate records exceeds MAX_NUMBER_OF_CANDIDATE_RECORDS
         """
         candidate_record_ids = self._find_candidate_record_ids(record)
-        
+
         if record.id:
             candidate_record_ids.append(record.id)
 
         monitor.track_work_records_chosen(record, len(candidate_record_ids))
-        
+
         return self._get_records_by_ids(candidate_record_ids)
-    
+
     def _find_candidate_record_ids(self, record: Record) -> List[str]:
         """Finds all record IDs that might be related to the input record.
 
         Uses an iterative process to find potential matches:
         1. Start with record's identifiers
-        2. Find records matching one of the identifiers 
+        2. Find records matching one of the identifiers
         3. For each match, check title similarity
         4. If similar, add their identifiers to check
         5. Repeat up to MAX_MATCH_DISTANCE times
-        
+
         Raises:
             Exception: If the number of candidates exceeds MAX_NUMBER_OF_CANDIDATE_RECORDS
         """
@@ -106,7 +106,7 @@ class CandidateRecordFinder:
             )
 
         return list(candidate_record_ids)
-    
+
     def _get_records_matching_identifiers(
         self, identifiers: List[str], already_matched_record_ids: List[str]
     ) -> List[Tuple]:
@@ -132,7 +132,7 @@ class CandidateRecordFinder:
                     )
                     .all()
                 )
-                
+
                 cluster_lock_keys = [f'{CLUSTER_LOCK_KEY_PREFIX}{record[1]}' for record in records]
 
                 if self.redis_manager.any_locked(cluster_lock_keys):
@@ -143,20 +143,20 @@ class CandidateRecordFinder:
                 logger.exception("Unable to get matching records")
 
         return matched_records
-    
+
     def _get_records_by_ids(self, record_ids: List[str]) -> List[Record]:
         return (
             self.db_manager.session.query(Record)
             .filter(Record.id.in_(record_ids))
             .all()
         )
-    
+
     @staticmethod
     def _titles_overlap(
         tokenized_record_title: Set[str], tokenized_matched_record_title: Set[str]
     ) -> bool:
         """Determines if two titles are similar enough to be considered matching.
-        
+
         Rules:
         1. Single word titles must be subset/superset
         2. Multi-word titles must share at least 2 words
@@ -179,11 +179,11 @@ class CandidateRecordFinder:
             return False
 
         return True
-    
+
     @staticmethod
     def _tokenize_title(title: str) -> Set[str]:
         """Converts a title string into a set of normalized "tokens" (words).
-        
+
         1. Extracts words using regex
         2. Converts to lowercase
         3. Removes common stop words
@@ -191,7 +191,7 @@ class CandidateRecordFinder:
         title_tokens = re.findall(r"(\w+)", title.lower())
 
         return set(title_tokens) - set(["a", "an", "the", "of"])
-    
+
     @staticmethod
     def _format_identifiers(identifiers: List[str]) -> str:
         """Formats identifiers for PostgreSQL array overlap query.
@@ -204,7 +204,7 @@ class CandidateRecordFinder:
             formatted_id = f'"{id}"' if re.search(r"[{},]{1}", id) else id
             formatted_ids.append(formatted_id)
 
-        return "{{{}}}".format(",".join(formatted_ids)) 
+        return "{{{}}}".format(",".join(formatted_ids))
 
 class ConcurrentClusterException(Exception):
 
