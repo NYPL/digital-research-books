@@ -28,14 +28,6 @@ services:
     volumes:
       - drb_local_esdata:/bitnami/elasticsearch/data
 
-  rabbitmq:
-    container_name: drb_local_mq
-    image: rabbitmq:3.13
-    ports:
-      - 5672:5672
-    volumes:
-      - drb_local_mqdata:/var/lib/rabbitmq
-
   redis:
     container_name: drb_local_rs
     image: redis:7.0
