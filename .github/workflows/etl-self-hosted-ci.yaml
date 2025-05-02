@@ -126,6 +126,14 @@ jobs:
             --reruns=3 \
             --reruns-delay=5
 
+      - name: Run integration tests
+        working-directory: ./etl-pipeline
+        run: |
+          python3 -m pytest tests/integration \
+            --junitxml=integration-test-results.xml \
+            --reruns=3 \
+            --reruns-delay=5  # Longer delay for integration tests
+
       - name: Cleanup GitHub API Key
         run: |
           echo "Cleaning up GitHub API key..."
