@@ -38,6 +38,7 @@ env:
   ELASTICSEARCH_PORT: ${{ secrets.ELASTICSEARCH_PORT }}
   ELASTICSEARCH_SCHEME: ${{ secrets.ELASTICSEARCH_SCHEME }}
   REDIS_HOST: ${{ secrets.REDIS_HOST }}
+  RECORD_PIPELINE_SQS_QUEUE: "drb-record-pipeline-queue-qa-tf"
 
 jobs:
   run-tests:
