@@ -5,6 +5,8 @@ from digital_assets import get_stored_file_url
 from mappings.publisher_backlist import PublisherBacklistMapping
 from model import Part, FileFlags
 
+os.environ['PDF_BUCKET'] = 'test-pdf-bucket'
+os.environ['FILE_BUCKET'] = 'test-file-bucket'
 
 def test_map_publisher_backlist_record():
     with open('tests/fixtures/test-publisher-backlist-record.json') as f:
