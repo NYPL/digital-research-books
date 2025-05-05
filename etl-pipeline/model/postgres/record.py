@@ -5,6 +5,7 @@ import json
 from sqlalchemy import Column, DateTime, Integer, Unicode, Boolean, Index
 from sqlalchemy.dialects.postgresql import ARRAY, UUID, ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 from model.utilities.extractDailyEdition import extract
 from textwrap import shorten
 from typing import Optional
@@ -126,6 +127,8 @@ class Record(Base, Core):
         ENUM('ingested', 'files_saved', 'embellished', 'clustered', name='record_state', create_type=False),
         nullable=True
     )
+    grin_status = relationship("GRINStatus", uselist=False, back_populates="record", cascade="all, delete-orphan")
+
     source = Column(Unicode, index=True) # dc:source, Non-Repeating
     publisher_project_source = Column(Unicode, index=True) # dc:publisherProjectSource, Non-Repeating
     source_id = Column(Unicode, index=True) # dc:identifier, Non-Repeating
