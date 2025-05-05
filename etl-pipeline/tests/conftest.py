@@ -20,7 +20,6 @@ from tests.fixtures.generate_test_data import generate_test_data
 logger = create_log(__name__)
 
 TEST_SOURCE = 'test_source'
-OCLC_SOURCE = 'oclcClassify'
 
 
 def pytest_addoption(parser):
@@ -227,7 +226,7 @@ def unembellished_record_uuid(db_manager):
         'uuid': uuid4(),
         'frbr_status': 'to_do',
         'cluster_status': False,
-        "source": OCLC_SOURCE,
+        "source": TEST_SOURCE,
         'authors': ['Jane, Austen||true'],
         'identifiers': ['0198837755|isbn'],
         'source_id': '0198837755|isbn',

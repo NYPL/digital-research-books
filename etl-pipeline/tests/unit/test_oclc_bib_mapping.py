@@ -1,4 +1,4 @@
-from mappings.oclc_bib import OCLCBibMapping
+from mappings.oclc_bib import map_oclc_record
 
 base_oclc_bib = {
     'identifier': {
@@ -28,14 +28,19 @@ base_oclc_bib = {
             },
             'isPrimary': True
         }]
-    }
+    },
+    'digitalAccessAndLocations': [
+        {
+            'uri': 'http://localhost:5000/text.pdf'
+        }
+    ]
 }
 
 
 def test_oclc_bib_mapping_full_name():
-    oclc_bib_mapping = OCLCBibMapping(base_oclc_bib)
+    oclc_record = map_oclc_record(base_oclc_bib)
 
-    assert ['Trust, Hathi|||true'] == oclc_bib_mapping.record.authors
+    assert ['Trust, Hathi|||true'] == oclc_record.authors
     
 
 def test_oclc_bib_mapping_no_first_name():
@@ -48,9 +53,9 @@ def test_oclc_bib_mapping_no_first_name():
         }]
     }
 
-    oclc_bib_mapping = OCLCBibMapping(base_oclc_bib)
+    oclc_record = map_oclc_record(base_oclc_bib)
 
-    assert ['Trust|||true'] == oclc_bib_mapping.record.authors
+    assert ['Trust|||true'] == oclc_record.authors
 
 def test_oclc_bib_mapping_no_second_name():
     base_oclc_bib['contributor'] = {
@@ -62,9 +67,9 @@ def test_oclc_bib_mapping_no_second_name():
         }]
     }
 
-    oclc_bib_mapping = OCLCBibMapping(base_oclc_bib)
+    oclc_record = map_oclc_record(base_oclc_bib)
 
-    assert ['Hathi|||true'] == oclc_bib_mapping.record.authors
+    assert ['Hathi|||true'] == oclc_record.authors
 
 def test_oclc_bib_mapping_fallback_to_romanized_text():
     base_oclc_bib['contributor'] = {
@@ -79,6 +84,6 @@ def test_oclc_bib_mapping_fallback_to_romanized_text():
         }]
     }
 
-    oclc_bib_mapping = OCLCBibMapping(base_oclc_bib)
+    oclc_record = map_oclc_record(base_oclc_bib)
 
-    assert ['Simpson, Homer|||true'] == oclc_bib_mapping.record.authors
+    assert ['Simpson, Homer|||true'] == oclc_record.authors
