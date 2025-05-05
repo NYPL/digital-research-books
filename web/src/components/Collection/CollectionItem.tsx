@@ -38,7 +38,7 @@ export const CollectionItem: React.FC<{
           By <Author author={creator} />{" "}
         </Box>
       )}
-      <CollectionItemCard collectionItem={publication}></CollectionItemCard>
+      <CollectionItemCard author={creator} collectionItem={publication}></CollectionItemCard>
     </Box>
   );
 };

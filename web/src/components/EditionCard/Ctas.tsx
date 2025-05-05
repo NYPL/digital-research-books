@@ -1,16 +1,17 @@
 import React from "react";
 import { useCookies } from "react-cookie";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
-import { ApiItem } from "~/src/types/DataModel";
+import { Agent, ApiItem } from "~/src/types/DataModel";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
 import DownloadLink from "./DownloadLink";
 import EddLink from "./EddLink";
 import ReadOnlineLink from "./ReadOnlineLink";
 
 const Ctas: React.FC<{
+  authors: Agent[];
   item: ApiItem | undefined;
   title: string;
-}> = ({ item, title }) => {
+}> = ({ authors, item, title }) => {
   // cookies defaults to be undefined if not fonud
   const [cookies] = useCookies([NYPL_SESSION_ID]);
   const loginCookie = cookies[NYPL_SESSION_ID];
@@ -19,18 +20,22 @@ const Ctas: React.FC<{
   const readOnlineLink = EditionCardUtils.getReadOnlineLink(item);
   const downloadLink = EditionCardUtils.selectDownloadLink(item);
 
+  const authorNames = authors.map((author) => author.name)
+
   if (readOnlineLink || downloadLink) {
     return (
       <>
         {readOnlineLink && (
           <ReadOnlineLink
-            readOnlineLink={readOnlineLink}
+            authors={authorNames}
             isLoggedIn={isLoggedIn}
+            readOnlineLink={readOnlineLink}
             title={title}
           />
         )}
         {downloadLink && (
           <DownloadLink
+            authors={authorNames}
             downloadLink={downloadLink}
             title={title}
             isLoggedIn={isLoggedIn}

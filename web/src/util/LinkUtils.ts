@@ -22,3 +22,9 @@ export const extractQueryParam = (
 
   return typeof extracted === "string" ? extracted : undefined;
 };
+
+export const getHostname = () => {
+  return typeof window !== 'undefined' && window.location.origin
+    ? window.location.origin
+    : '';
+}
