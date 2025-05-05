@@ -18,6 +18,7 @@ def test_get_edition(endpoint, expected_status, test_edition_id):
 
     assert response.status_code is not None
     assert_response_status(url, response, expected_status)
+    print (assert_response_status)
 
     if expected_status == 200:
         response_json = response.json()

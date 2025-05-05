@@ -8,10 +8,18 @@ from managers import SQSManager
 def sqs_manager(monkeypatch):
     """Fixture providing an SQSManager instance configured for LocalStack"""
     monkeypatch.setenv('AWS_REGION','us-east-1')
-    monkeypatch.setenv('AWS_ACCESS', 'test-access-key')
-    monkeypatch.setenv('AWS_SECRET', 'test-secret-key')
-    monkeypatch.setenv('S3_ENDPOINT_URL', 'http://localhost:4566')
-    manager = SQSManager("test-queue")
+
+    if os.getenv('ENVIRONMENT') == 'qa':
+        monkeypatch.setenv('AWS_ACCESS', os.getenv('AWS_ACCESS_KEY_ID'))
+        monkeypatch.setenv('AWS_SECRET', os.getenv('AWS_SECRET_ACCESS_KEY'))
+        queue_name = os.getenv('RECORD_PIPELINE_SQS_QUEUE', 'drb-record-pipeline-queue-qa-tf')
+    else:
+        monkeypatch.setenv('AWS_ACCESS', 'test-access-key')
+        monkeypatch.setenv('AWS_SECRET', 'test-secret-key')
+        monkeypatch.setenv('S3_ENDPOINT_URL', 'http://localhost:4566')
+        queue_name = "test-queue"
+
+    manager = SQSManager(queue_name)
     return manager
 
 class TestSQSManagerIntegration:
