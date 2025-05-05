@@ -17,7 +17,7 @@ import LanguageDisplayText from "~/src/components/CollectionItemCard/LanguageDis
 
 // Creates an Collection item card out of the collectionItem object
 export const CollectionItemCard: React.FC<{
-  author: string;
+  author: string | undefined;
   collectionItem: OpdsPublication;
 }> = ({ author, collectionItem }) => {
   // cookies defaults to be undefined if not found

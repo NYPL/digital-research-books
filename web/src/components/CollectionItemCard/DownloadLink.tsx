@@ -7,7 +7,7 @@ import { formatUrl } from "~/src/util/Util";
 import { trackCtaClick } from "~/src/lib/adobe/Analytics";
 import { trackEvent } from "~/src/lib/gtag/Analytics";
 
-const DownloadLink: React.FC<{ author: string; links: OpdsLink[]; title: string }> = ({
+const DownloadLink: React.FC<{ author: string | undefined; links: OpdsLink[]; title: string }> = ({
   author,
   links,
   title,

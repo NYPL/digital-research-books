@@ -6,7 +6,7 @@ import EddLink from "~/src/components/CollectionItemCard/EddLink";
 import CollectionUtils from "~/src/util/CollectionUtils";
 
 const Ctas: React.FC<{
-  author: string;
+  author: string | undefined;
   links: OpdsLink[];
   title: string;
   isLoggedIn: boolean;

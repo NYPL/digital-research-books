@@ -6,7 +6,7 @@ import Link from "~/src/components/Link/Link";
 import { trackEvent } from "~/src/lib/gtag/Analytics";
 
 // "Read Online" button should only show up if the link was flagged as "reader" or "embed"
-const ReadOnlineLink: React.FC<{  author: string; links: OpdsLink[]; title: string; }> = ({
+const ReadOnlineLink: React.FC<{  author: string | undefined; links: OpdsLink[]; title: string; }> = ({
   author,
   links,
   title,
