@@ -20,7 +20,7 @@ const Ctas: React.FC<{
   const readOnlineLink = EditionCardUtils.getReadOnlineLink(item);
   const downloadLink = EditionCardUtils.selectDownloadLink(item);
 
-  const authorNames = authors.map((author) => author.name)
+  const authorNames = authors ? authors.map((author) => author.name) : []
 
   if (readOnlineLink || downloadLink) {
     return (
