@@ -97,11 +97,11 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
       </Box>
       {featuredEdition && (
         <Box paddingTop="l">
-          <EditionCard
+          <EditionCard 
+            authors={work.authors} 
             edition={featuredEdition}
             title={work.title}
-            isFeaturedEdition={true}
-          />
+            isFeaturedEdition={true} />
         </Box>
       )}
       {work.inCollections && work.inCollections.length > 0 && (
@@ -179,6 +179,7 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
                 )
                 .map((edition: WorkEdition) => (
                   <EditionCard
+                    authors={work.authors}
                     key={edition.edition_id}
                     edition={edition}
                     title={work.title}
