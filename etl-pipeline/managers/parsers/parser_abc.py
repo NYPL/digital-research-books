@@ -20,8 +20,8 @@ class ParserABC(ABC):
 
     @uri.setter
     def uri(self, value):
-        if not re.match(r'https?:\/\/', value):
-            self._uri = 'http://{}'.format(value)
+        if not re.match(r"https?:\/\/", value):
+            self._uri = "http://{}".format(value)
         else:
             self._uri = value
 
@@ -35,26 +35,24 @@ class ParserABC(ABC):
 
     @abstractmethod
     def generate_manifest(self, source_uri, manifest_uri):
-        manifest = WebpubManifest(source_uri, 'application/pdf')
+        manifest = WebpubManifest(source_uri, "application/pdf")
 
         manifest.addMetadata(self.record)
 
         manifest.addChapter(source_uri, self.record.title)
 
-        manifest.links.append({
-            'rel': 'self',
-            'href': manifest_uri,
-            'type': 'application/webpub+json'
-        })
+        manifest.links.append(
+            {"rel": "self", "href": manifest_uri, "type": "application/webpub+json"}
+        )
 
         return manifest.toJson()
 
     @abstractmethod
     def generate_s3_root(self):
-        bucket = os.environ['FILE_BUCKET']
-        endpoint = os.environ.get('S3_ENDPOINT_URL', None)
+        bucket = os.environ["FILE_BUCKET"]
+        endpoint = os.environ.get("S3_ENDPOINT_URL", None)
 
         if endpoint:
-            return f'{endpoint}/{bucket}/'
+            return f"{endpoint}/{bucket}/"
 
-        return 'https://{}.s3.amazonaws.com/'.format(bucket)
+        return "https://{}.s3.amazonaws.com/".format(bucket)

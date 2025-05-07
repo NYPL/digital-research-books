@@ -11,11 +11,14 @@ def deprecated(message):
         def wrapper(*args, **kwargs):
             resp = func(*args, **kwargs)
             return warn_deprecated(resp, message)
+
         return wrapper
+
     return decorator
+
 
 def warn_deprecated(response, message):
     if isinstance(response, tuple):
-        response[0].headers['Warning'] = message
+        response[0].headers["Warning"] = message
         logger.warning(message)
     return response

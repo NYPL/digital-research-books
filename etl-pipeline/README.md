@@ -178,6 +178,10 @@ python -m pytest -v                  # Run tests with verbose output
 
 For more options and detailed usage of pytest, see the [pytest documentation](https://docs.pytest.org/en/stable/how-to/usage.html).
 
+## Formatting
+
+To format new changes, run `ruff format` in the /etl-pipeline directory.
+
 ## Deployment
 
 This application uses continuous deployment (CD) via Github Actions to AWS ECS. The full CI/CD pipeline runs automatically when code is merged to `main`.

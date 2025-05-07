@@ -7,7 +7,7 @@ from .. import utils
 logger = create_log(__name__)
 
 
-class NYPLProcess():
+class NYPLProcess:
     def __init__(self, *args):
         self.nypl_bib_service = NYPLBibService()
         self.params = utils.parse_process_args(*args)
@@ -18,7 +18,7 @@ class NYPLProcess():
             process_type=self.params.process_type,
             ingest_period=self.params.ingest_period,
         )
-        
+
         return self.record_ingestor.ingest(
             self.nypl_bib_service.get_records(
                 start_timestamp=start_timestamp,

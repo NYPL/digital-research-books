@@ -52,6 +52,11 @@ jobs:
           python -m pip install --upgrade pip wheel
           pip install -r requirements.txt -r dev-requirements.txt
 
+      - name: Check formatting
+        working-directory: ./etl-pipeline
+        run: |
+          ruff format --check
+
       - name: Run unit tests
         working-directory: ./etl-pipeline
         run: |

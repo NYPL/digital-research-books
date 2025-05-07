@@ -13,7 +13,6 @@ logger = create_log(__name__)
 
 
 class CandidateRecordFinder:
-
     # Maximum number of "hops" to follow when matching records through identifiers
     MAX_MATCH_DISTANCE = 4
     # Maximum number of records that can be in a candidate pool
@@ -57,7 +56,7 @@ class CandidateRecordFinder:
             id for id in record.identifiers if re.search(self.IDENTIFIERS_TO_MATCH, id)
         }
 
-        candidate_record_ids = { record.id }
+        candidate_record_ids = {record.id}
         checked_ids = set()
 
         for match_distance in range(0, self.MAX_MATCH_DISTANCE):
@@ -127,16 +126,20 @@ class CandidateRecordFinder:
                     .filter(
                         or_(
                             Record.state != RecordState.INGESTED.value,
-                            Record.state.is_(None)
+                            Record.state.is_(None),
                         )
                     )
                     .all()
                 )
 
-                cluster_lock_keys = [f'{CLUSTER_LOCK_KEY_PREFIX}{record[1]}' for record in records]
+                cluster_lock_keys = [
+                    f"{CLUSTER_LOCK_KEY_PREFIX}{record[1]}" for record in records
+                ]
 
                 if self.redis_manager.any_locked(cluster_lock_keys):
-                    raise ConcurrentClusterException('Currently clustering group of records')
+                    raise ConcurrentClusterException(
+                        "Currently clustering group of records"
+                    )
 
                 matched_records.extend(records)
             except DataError:
@@ -206,8 +209,8 @@ class CandidateRecordFinder:
 
         return "{{{}}}".format(",".join(formatted_ids))
 
-class ConcurrentClusterException(Exception):
 
+class ConcurrentClusterException(Exception):
     def __init__(self, message: str):
         self.message = message
         super().__init__(self.message)
