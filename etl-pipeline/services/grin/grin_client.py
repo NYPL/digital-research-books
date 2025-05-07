@@ -10,22 +10,12 @@ from google.auth.transport.requests import (
 )
 from google.oauth2.service_account import Credentials
 import json
-from services.ssm_service import SSMService
+from ..ssm_service import SSMService
 from pdb import set_trace
-
 
 class GRINClient(object):
     
-    def __init__(self, cache_dir):
-
-        # Data -- books and lists of books -- is kept here.
-        self.cache_dir = cache_dir
-
-        # Make sure the cache directories exist.
-        for dir in (cache_dir, os.path.join(cache_dir, "books")):
-            if not os.path.exists(dir):
-                os.makedirs(dir)
-        
+    def __init__(self):
         self.creds = self.load_creds()
         self.session = AuthorizedSession(self.creds)
     
@@ -49,6 +39,7 @@ class GRINClient(object):
 
     def get(self, url,force=False):
         url = self._url(url)
+        print(url)
         response = self.session.request("GET", url)
         if response.status_code != 200:
             raise IOError("%s got %s unexpectedly" % (url, response.status_code))
@@ -58,15 +49,22 @@ class GRINClient(object):
         # For GRIN queries, range start is inclusive but the range end is exclusive.
         # This means you must set the upper range to one day after the desired date
         today = datetime.now()
+        # today = datetime(2025, 5, 1)
         tomorrow = today + timedelta(1)
+        year = today.strftime("%Y")
+        month = today.strftime("%m")
         range_start = today.strftime("%Y-%m-%d")
         range_end = tomorrow.strftime("%Y-%m-%d")
-        data = self.get("_monthly_report?execute_query=true&year=2025&month=5&check_in_date_start=%s&check_in_date_end=%s&format=text" %
-                        (range_start, range_end), "new")
+        data = self.get("_monthly_report?execute_query=true&year=%s&month=%s&check_in_date_start=%s&check_in_date_end=%s&format=text" %
+                        (year, month, range_start, range_end))
         data = data.decode("utf8").split("\n")
         headers = data[0].split('\t')
-        df = pd.DataFrame(data[1].split('\t'), columns=headers)
-        return data
+        rows = []
+        for row in data[1:]:
+            if row != '':
+                rows.append(row.split('\t'))
+        df = pd.DataFrame(rows, columns=headers)
+        return df
 
     def _for_state(self, state, *args, **kwargs):
         # Which books are in the given state?
@@ -86,30 +84,22 @@ class GRINClient(object):
         return self._for_state("converted", *args, **kwargs)
 
     def failed(self, *args, **kwargs):
-        "Which barcodes failed conversion?"
+        # Which barcodes failed conversion?
         return self._for_state("failed", *args, **kwargs)
 
     def all_books(self, *args, **kwargs):
-        "Get barcodes for all books in whatever state."
+        # Get barcodes for all books in whatever state.
         return self._for_state("all_books", *args, **kwargs)
 
     def download(self, filename, *args, **kwargs):
-        """Download a book."""
+        # Download desired book
         return self.get(filename, os.path.join("books", filename), *args, **kwargs)
     
     def please_process(self, barcodes):
-        'Ask Google to move some barcodes from the "Available" state to "In-Process".'
+        # Ask Google to move some barcodes from the "Available" state to "In-Process"
         if isinstance(barcodes, list):
             barcodes = "\n".join(barcodes)
-        # self.session.request("POST", self._url("_process"), body=barcodes) // signature seems wrong as of 2024
         self.session.request("POST", self._url("_process"), data=barcodes)
 
-client = GRINClient("cache")
+client = GRINClient()
 print(client.acquired_today())
-print("Number available: %s" % len(client.available()))
-print("Number failed: %s" % len(client.failed()))
-converted = client.converted()
-print("Downloading %d converted books." % len(converted))
-for filename in converted:
-    content = client.download(filename)
-    print(filename, len(content))
