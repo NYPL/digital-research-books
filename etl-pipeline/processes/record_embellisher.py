@@ -1,26 +1,18 @@
-from lxml import etree
 import re
+from typing import Optional
 
 from logger import create_log
-from mappings.oclc_bib import OCLCBibMapping
-from mappings.oclcCatalog import CatalogMapping
+from mappings.oclc_bib import map_oclc_record
 from managers import DBManager, OCLCCatalogManager, RedisManager
 from model import Record, RecordState
 from .record_buffer import RecordBuffer
+import services.monitor as monitor
 
 
 logger = create_log(__name__)
 
 
 class RecordEmbellisher:
-    """Enriches bibliographic records with related works and editions from the OCLC catalog.
-
-    This class handles the process of:
-    1. Finding records based on identifiers (ISBN, ISSN, OCLC numbers, etc.)
-    2. Retrieving work and edition data from OCLC
-    3. Creating connections between records
-    4. Managing database updates
-    """
 
     def __init__(self, db_manager: DBManager, redis_manager: RedisManager):
         self.db_manager = db_manager
@@ -31,13 +23,14 @@ class RecordEmbellisher:
         self.record_buffer = RecordBuffer(db_manager=self.db_manager)
 
     def embellish_record(self, record: Record) -> Record:
-        self._add_works_for_record(record=record)
+        work_identifiers = self._add_related_bibs(record=record)
 
         self.record_buffer.flush()
 
         # TODO: deprecate frbr_status
         record.frbr_status = "complete"
         record.state = RecordState.EMBELLISHED.value
+        record.identifiers = record.identifiers + list(work_identifiers)
 
         self.db_manager.session.commit()
         self.db_manager.session.refresh(record)
@@ -46,89 +39,63 @@ class RecordEmbellisher:
 
         return record
 
-    def _add_works_for_record(self, record: Record):
-        """Find works related to this record based on identifiers or metadata."""
-        author = record.authors[0].split("|")[0] if record.authors else None
+    def _add_related_bibs(self, record: Record) -> set:
+        work_identifiers = set()
+        author = record.authors[0].split('|')[0] if record.authors else None
         title = record.title
+        fell_back_to_title_author = False
+        number_of_matched_bibs = 0
 
-        # Try identifier-based matching first
+        queries = []
+
         for id, id_type in self._get_queryable_identifiers(record.identifiers):
-            if self.redis_manager.check_or_set_key("classify", id, id_type):
-                continue
+            if not self.redis_manager.check_or_set_key('catalog', id, id_type):
+                query = self.oclc_catalog_manager.generate_identifier_query(identifier=id, identifier_type=id_type)
+                queries.append(query)
 
-            search_query = self.oclc_catalog_manager.generate_search_query(
-                identifier=id, identifier_type=id_type
-            )
-            self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
+        queries.append(self.oclc_catalog_manager.generate_title_author_query(author=author, title=title))
 
-        # Fall back to author/title search if no results
-        if (
-            self.record_buffer.ingest_count == 0
-            and len(self.record_buffer.records) == 0
-            and author
-            and title
-        ):
-            search_query = self.oclc_catalog_manager.generate_search_query(
-                author=author, title=title
-            )
-            self._add_works(self.oclc_catalog_manager.query_bibs(query=search_query))
+        for query in queries:
+            if self._is_title_author_query(query):
+                if self._fallback_to_title_author_query(author, title):
+                    fell_back_to_title_author = True
+                else:
+                    break
 
-    def _add_works(self, oclc_bibs: list):
-        """Process a list of OCLC bibliographic records."""
-        for oclc_bib in oclc_bibs:
-            owi_number, related_oclc_numbers = self._add_work(oclc_bib)
+            matched_bibs = self.oclc_catalog_manager.query_bibs(query=query)
+            bib_work_identifiers = self._add_bibs(matched_bibs)
+            
+            number_of_matched_bibs += len(matched_bibs)
+            work_identifiers.update(bib_work_identifiers)
 
-            for oclc_number, uncached in self.redis_manager.multi_check_or_set_key(
-                "catalog", related_oclc_numbers, "oclc"
-            ):
-                if not uncached:
-                    continue
-
-                self._add_edition(owi_number, oclc_number)
-
-    def _add_work(self, oclc_bib: dict) -> tuple:
-        oclc_number = oclc_bib.get("identifier", {}).get("oclcNumber")
-        owi_number = oclc_bib.get("work", {}).get("id")
-        related_oclc_numbers = []
-
-        if not oclc_number or not owi_number:
-            logger.warning(f"Unable to get identifiers for bib: {oclc_bib}")
-            return (owi_number, related_oclc_numbers)
-
-        if self.redis_manager.check_or_set_key("classifyWork", owi_number, "owi"):
-            return (owi_number, related_oclc_numbers)
-
-        related_oclc_numbers = self.oclc_catalog_manager.get_related_oclc_numbers(
-            oclc_number=oclc_number
+        monitor.track_oclc_related_records_found(
+            record=record,
+            num_matches=number_of_matched_bibs,
+            fell_back_to_title_author=fell_back_to_title_author
         )
 
-        oclc_bib_mapping = OCLCBibMapping(
-            oclc_bib=oclc_bib, related_oclc_numbers=list(set(related_oclc_numbers))
-        )
-        self.record_buffer.add(record=oclc_bib_mapping.record)
+        return work_identifiers
 
-        return (owi_number, related_oclc_numbers)
+    def _add_bibs(self, oclc_bibs: list) -> set:
+        return { owi_number for oclc_bib in oclc_bibs if (owi_number := self._add_bib(oclc_bib)) }
 
-    def _add_edition(self, owi_number: int, oclc_number: str):
-        try:
-            catalog_record = self.oclc_catalog_manager.query_catalog(oclc_number)
+    def _add_bib(self, oclc_bib: dict) -> Optional[str]:
+        owi_number = oclc_bib.get('work', {}).get('id')
 
-            parsed_marc_xml = etree.fromstring(catalog_record.encode("utf-8"))
+        oclc_bib_record = map_oclc_record(oclc_bib=oclc_bib)
 
-            catalog_record_mapping = CatalogMapping(
-                parsed_marc_xml, {"oclc": "http://www.loc.gov/MARC21/slim"}, {}
-            )
-            catalog_record_mapping.applyMapping()
-            catalog_record_mapping.record.identifiers.append(f"{owi_number}|owi")
+        if not oclc_bib_record:
+            return None
 
-            self.record_buffer.add(catalog_record_mapping.record)
-        except Exception:
-            logger.exception(f"Unable to add edition with OCLC number: {oclc_number}")
-            return
+        self.record_buffer.add(record=oclc_bib_record)
+
+        return f'{owi_number}|owi' if owi_number is not None else None
 
     def _get_queryable_identifiers(self, identifiers) -> set:
-        return {
-            tuple(id.split("|", 1))
-            for id in identifiers
-            if re.search(r"\|(?:isbn|issn|oclc)$", id) != None
-        }
+        return { tuple(id.split('|', 1)) for id in identifiers if re.search(r'\|(?:isbn|issn|oclc)$', id) != None }
+    
+    def _fallback_to_title_author_query(self, author, title):
+       return self.record_buffer.ingest_count == 0 and len(self.record_buffer.records) == 0 and author and title
+    
+    def _is_title_author_query(self, query):
+        return 'ti:' in query and 'au:' in query 

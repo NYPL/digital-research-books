@@ -14,9 +14,9 @@ from managers import (
 )
 from .constants import CLUSTER_LOCK_KEY_PREFIX
 from constants.get_constants import get_constants
-from model import Record, Work
 from .candidate_record_finder import CandidateRecordFinder, ConcurrentClusterException
 from model import Record, Work, RecordState
+import services.monitor as monitor
 
 
 logger = create_log(__name__)
@@ -89,8 +89,8 @@ class RecordClusterer:
         record_ids = [r.id for r in records]
 
         # Group records into edition clusters
-        clustered_editions = self._cluster_records(records)
-
+        clustered_editions = self._cluster_records(record, records)
+        
         # Build FRBR model - Create Work/Edition/Item objects
         work, stale_work_ids = self._create_work_from_editions(
             clustered_editions, records
@@ -117,7 +117,7 @@ class RecordClusterer:
             self.db_manager.session.query(Work).filter(Work.id.in_(list(work_ids)))
         )
 
-    def _cluster_records(self, records: list[Record]):
+    def _cluster_records(self, record: Record, records: list[Record]):
         """Groups records into clusters using KMeans clustering.
 
         Uses KMeansManager to:
@@ -133,6 +133,13 @@ class RecordClusterer:
         kmean_manager.createDF()
         kmean_manager.generateClusters()
         editions = kmean_manager.parseEditions()
+
+        monitor.track_editions_identified(
+            record=record,
+            num_clusters=len(kmean_manager.clusters),
+            num_editions=len(editions),
+            num_records=len(records)
+        )
 
         return editions
 

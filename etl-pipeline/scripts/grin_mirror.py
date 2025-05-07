@@ -2,31 +2,19 @@
 # per https://docs.google.com/document/d/1ayu_djokdss6oCNNYSXtWRyuX7KvtLZ70A99rXy4bR8
 # Additional notes - https://docs.google.com/document/d/1aZ5ODEzKP6qX1f4CCcGtlidRvr-Fu8HPA-AEhTwDTyk/edit?usp=sharing
 
-import pickle
 import os.path
-from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import (
     AuthorizedSession,
-    Request,
 )
+from google.oauth2.service_account import Credentials
+import json
+from services.ssm_service import SSMService
 from pdb import set_trace
 
 
 class GRINClient(object):
-    # These are the permissions of your Google account the client
-    # needs -- basically it needs your access to NYPL's books in GRIN.
-    SCOPES = [
-        "openid",
-        "https://www.googleapis.com/auth/userinfo.email",
-        "https://www.googleapis.com/auth/userinfo.profile",
-    ]
-
-    def __init__(self, client_config, token_file, cache_dir):
-        # client config is permanent.
-        self.client_config = client_config
-
-        # token file is not.
-        self.token_file = token_file
+    
+    def __init__(self, cache_dir):
 
         # Data -- books and lists of books -- is kept here.
         self.cache_dir = cache_dir
@@ -38,25 +26,20 @@ class GRINClient(object):
 
         self.creds = self.load_creds()
         self.session = AuthorizedSession(self.creds)
-
+    
     def load_creds(self):
-        creds = None
-        if os.path.exists(self.token_file):
-            creds = pickle.load(open(self.token_file, "rb"))
+        ssm_service = SSMService()
+        service_account_file = ssm_service.get_parameter('grin-auth')
+        service_account_info = json.loads(service_account_file)
 
-        # If there are no (valid) credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_config(
-                    self.client_config, self.SCOPES
-                )
-                creds = flow.run_local_server(port=0)
-            # Save the credentials for the next run
-            with open(self.token_file, "wb") as token:
-                pickle.dump(creds, token)
-
+        scopes = [
+            'openid',
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile'
+        ]
+    
+        creds = Credentials.from_service_account_info(
+            service_account_info, scopes=scopes)
         return creds
 
     def _url(self, fragment):
@@ -109,22 +92,7 @@ class GRINClient(object):
         # self.session.request("POST", self._url("_process"), body=barcodes) // signature seems wrong as of 2024
         self.session.request("POST", self._url("_process"), data=barcodes)
 
-
-# This 'secret' needs to be exactly as secure as this source code (i.e. not very) so it
-# can just go into the file to make things less complicated.
-client_config = {
-    "installed": {
-        "client_id": "ID_GOES_HERE.apps.googleusercontent.com",
-        "project_id": "project_id",
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_secret": "CLIENT_SECRET",
-        "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"],
-    }
-}
-
-client = GRINClient(client_config, "token.pickle", "cache")
+client = GRINClient("cache")
 print("Number available: %s" % len(client.available()))
 print("Number failed: %s" % len(client.failed()))
 converted = client.converted()

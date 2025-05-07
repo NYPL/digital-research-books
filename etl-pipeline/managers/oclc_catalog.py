@@ -208,23 +208,17 @@ class OCLCCatalogManager:
                 f"Failed to query {bibs_endpoint} with query {query} due to {e}"
             )
             return None
-
-    def generate_search_query(
-        self, identifier=None, identifier_type=None, title=None, author=None
-    ):
-        if identifier and identifier_type:
-            return self._generate_identifier_query(identifier, identifier_type)
-        elif title and author:
-            return self._generate_title_author_query(title, author)
-        else:
-            raise OCLCCatalogError("Record lacks identifier or title/author pair")
-
-    def _generate_identifier_query(self, identifier, identifier_type):
-        identifier_map = {"isbn": "bn", "issn": "in", "oclc": "no"}
+    
+    def generate_identifier_query(self, identifier, identifier_type):
+        identifier_map = { 
+            "isbn": "bn",
+            "issn": "in",
+            "oclc": "no"
+        }
 
         return f"{identifier_map[identifier_type]}: {identifier}"
 
-    def _generate_title_author_query(self, title, author):
+    def generate_title_author_query(self, title, author):
         return f"ti:{title} au:{author}"
 
     def _get_error_detail(self, oclc_response) -> Optional[str]:

@@ -9,26 +9,17 @@ def assert_record_embellished(record_uuid: str, db_manager):
 
     assert embellished_record.frbr_status == "complete"
 
-    classify_record = (
-        db_manager.session.query(Record)
-        .filter(
-            Record.source == "oclcClassify",
-            Record.title.ilike(f"%{embellished_record.title}%"),
-        )
-        .order_by(Record.date_created.desc())
-        .first()
-    )
+    owi_number = next((id for id in embellished_record.identifiers if id.endswith('owi')), None)
 
-    assert classify_record is not None
-
-    oclc_identifiers = [
-        id for id in classify_record.identifiers if id.endswith("|oclc")
-    ]
+    assert owi_number is not None
 
     catalog_records = (
         db_manager.session.query(Record)
-        .filter(Record.source == "oclcCatalog", Record.source_id.in_(oclc_identifiers))
-        .all()
+            .filter(
+                Record.source == 'oclcCatalog',
+                Record.identifiers.overlap(embellished_record.identifiers)
+            )
+            .all()
     )
-
-    assert len(catalog_records) == len(oclc_identifiers)
+    
+    assert len(catalog_records) > 0
