@@ -6,18 +6,19 @@ import EddLink from "~/src/components/CollectionItemCard/EddLink";
 import CollectionUtils from "~/src/util/CollectionUtils";
 
 const Ctas: React.FC<{
+  author: string | undefined;
   links: OpdsLink[];
   title: string;
   isLoggedIn: boolean;
-}> = ({ links, title, isLoggedIn }) => {
+}> = ({ author, links, title, isLoggedIn }) => {
   const eddLink = CollectionUtils.getEddLink(links);
 
   if (links) {
     return (
       <>
         {/* If a digital version exists, link directly */}
-        <ReadOnlineLink links={links} title={title} />
-        <DownloadLink links={links} title={title} />
+        <ReadOnlineLink author={author} links={links} title={title} />
+        <DownloadLink author={author} links={links} title={title} />
       </>
     );
   }

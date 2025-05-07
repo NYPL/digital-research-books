@@ -6,7 +6,7 @@ import { render } from "~/src/__tests__/testUtils/render";
 
 describe("Collection Item Card", () => {
   beforeEach(() => {
-    render(<CollectionItemCard collectionItem={collectionItem} />);
+    render(<CollectionItemCard author="" collectionItem={collectionItem} />);
   });
   test("Shows year as header", () => {
     expect(
