@@ -67,7 +67,7 @@ def main():
     db_manager.create_session()
 
     url = f"{args.url}/_all_books?book_state=NEW&book_state=PREVIOUSLY_DOWNLOADED&format=text"
-    logging.info(f"Scrapping url: {url}")
+    logging.info(f"Scraping url: {url}")
 
     response = authed_session.get(url, timeout=600)
     response.raise_for_status()
@@ -77,22 +77,21 @@ def main():
     if len(barcodes) > 0: 
         insert_into_db(barcodes=barcodes, db_manager=db_manager, chunk_size=args.size)
     else:
-        logging.info("Zero record found")
+        logging.info("No record found")
 
 def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
     logging.info(f"Processing {len(barcodes)} barcodes")
 
-    for chuncked_barcodes in chunk(iter(barcodes), chunk_size):
+    for chunked_barcodes in chunk(iter(barcodes), chunk_size):
         new_records: List[Record] = []
-        for barcode in chuncked_barcodes:
-            _barcode_id = f"NYPL_{barcode}"
+        for barcode in chunked_barcodes:
             new_records.append(
                 Record(
                     uuid=uuid4(),
                     frbr_status=FRBRStatus.TODO.value,
-                    source_id=_barcode_id,
+                    source_id=f"{barcode}|grin",
                     grin_status=GRINStatus(
-                        barcode=_barcode_id,
+                        barcode=barcode,
                         failed_download=0,
                         state=GRINState.PENDING_CONVERSION.value, 
                         date_created=datetime(1991, 8, 25)
@@ -100,10 +99,10 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
                 )
             )
             
-        logging.info(f"Inserting {len(chuncked_barcodes)} barcodes into Record")
+        logging.info(f"Inserting {len(chunked_barcodes)} barcodes into Record")
 
         try:
-            db_manager.session.add_all(new_records)
+            db_manager.session.bulk_save_objects(new_records)
             db_manager.commit_changes()
         except Exception:
             logging.exception('Failed to add records')
