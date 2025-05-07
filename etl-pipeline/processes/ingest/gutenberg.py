@@ -5,7 +5,7 @@ from services import GutenbergService
 from .. import utils
 
 
-class GutenbergProcess():
+class GutenbergProcess:
     def __init__(self, *args):
         self.params = utils.parse_process_args(*args)
 

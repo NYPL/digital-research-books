@@ -5,13 +5,16 @@ import requests
 from .utils import assert_response_status
 
 
-@pytest.mark.parametrize("endpoint, expected_status", [
-    ("/works/{work_id}", 200),
-    ("/works/00000000-0000-0000-0000-000000000000", 404),
-    ("/works/invalid_id_format", 400),
-    ("/works/", 404),
-    ("/works/%$@!*", 400)
-])
+@pytest.mark.parametrize(
+    "endpoint, expected_status",
+    [
+        ("/works/{work_id}", 200),
+        ("/works/00000000-0000-0000-0000-000000000000", 404),
+        ("/works/invalid_id_format", 400),
+        ("/works/", 404),
+        ("/works/%$@!*", 400),
+    ],
+)
 def test_get_work(endpoint, expected_status, test_work_id):
     url = os.getenv("DRB_API_URL") + endpoint.format(work_id=test_work_id)
     response = requests.get(url)

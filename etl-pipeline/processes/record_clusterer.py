@@ -10,7 +10,7 @@ from managers import (
     KMeansManager,
     SFRElasticRecordManager,
     SFRRecordManager,
-    RedisManager
+    RedisManager,
 )
 from .constants import CLUSTER_LOCK_KEY_PREFIX
 from constants.get_constants import get_constants
@@ -24,18 +24,21 @@ logger = create_log(__name__)
 
 class RecordClusterer:
     """Clusters related bibliographic records and transforms them into FRBR model objects.
-    
+
     This class handles the process of:
     1. Identifying a candidate pool of related records
     2. Clustering those records using machine learning
     3. Creating Work/Edition/Item objects from the clusters
     4. Managing database updates and search indexing
     """
-    CLUSTER_TIMEOUT = 60 * 60 # 1 hour
+
+    CLUSTER_TIMEOUT = 60 * 60  # 1 hour
 
     def __init__(self, db_manager: DBManager, redis_manager: RedisManager):
         self.db_manager = db_manager
-        self.candidate_finder = CandidateRecordFinder(db_manager=db_manager, redis_manager=redis_manager)
+        self.candidate_finder = CandidateRecordFinder(
+            db_manager=db_manager, redis_manager=redis_manager
+        )
 
         self.elastic_search_manager = ElasticsearchManager()
 
@@ -48,13 +51,18 @@ class RecordClusterer:
         self.constants = get_constants()
 
     def cluster_record(self, record) -> list[Record]:
-        """Clusters a single record and updates the database and Elasticsearch.
-        """
+        """Clusters a single record and updates the database and Elasticsearch."""
         try:
-            record_lock = Redlock(key=f'{CLUSTER_LOCK_KEY_PREFIX}{record.id}', masters={self.redis_manager.client}, auto_release_time=self.CLUSTER_TIMEOUT)
+            record_lock = Redlock(
+                key=f"{CLUSTER_LOCK_KEY_PREFIX}{record.id}",
+                masters={self.redis_manager.client},
+                auto_release_time=self.CLUSTER_TIMEOUT,
+            )
 
             with record_lock:
-                work, stale_work_ids, records = self._get_clustered_work_and_records(record)
+                work, stale_work_ids, records = self._get_clustered_work_and_records(
+                    record
+                )
                 self._commit_changes()
 
                 self._delete_stale_works(stale_work_ids)
@@ -66,7 +74,7 @@ class RecordClusterer:
                 work_to_index=work, works_to_delete=stale_work_ids
             )
             logger.info(f"Indexed {work} in ElasticSearch")
-            
+
             return records
         except ConcurrentClusterException:
             logger.info(f"Skipping step to cluster record: {record}")
@@ -79,15 +87,15 @@ class RecordClusterer:
         # Identify a candidate pool of related records
         records = self.candidate_finder.find_candidate_records(record)
         record_ids = [r.id for r in records]
-        
+
         # Group records into edition clusters
         clustered_editions = self._cluster_records(record, records)
-        
+
         # Build FRBR model - Create Work/Edition/Item objects
         work, stale_work_ids = self._create_work_from_editions(
             clustered_editions, records
         )
-        
+
         # Update record status
         self._update_cluster_status(record_ids)
 
@@ -111,12 +119,12 @@ class RecordClusterer:
 
     def _cluster_records(self, record: Record, records: list[Record]):
         """Groups records into clusters using KMeans clustering.
-        
+
         Uses KMeansManager to:
         1. Create feature vectors from record metadata
         2. Run KMeans clustering
         3. Group results by publication year
-        
+
         Each cluster represents a work, and each group of records for a given publication year
         in that cluster is assumed to be an edition of that work.
         """
@@ -130,7 +138,7 @@ class RecordClusterer:
             record=record,
             num_clusters=len(kmean_manager.clusters),
             num_editions=len(editions),
-            num_records=len(records)
+            num_records=len(records),
         )
 
         return editions
@@ -141,12 +149,20 @@ class RecordClusterer:
         (
             self.db_manager.session.query(Record)
             .filter(Record.id.in_(list(set(record_ids))))
-            .update({"cluster_status": cluster_status, "frbr_status": "complete", "state": RecordState.CLUSTERED.value })
+            .update(
+                {
+                    "cluster_status": cluster_status,
+                    "frbr_status": "complete",
+                    "state": RecordState.CLUSTERED.value,
+                }
+            )
         )
 
-    def _create_work_from_editions(self, editions: list, records: list[Record]) -> tuple[Work, set[str]]:
+    def _create_work_from_editions(
+        self, editions: list, records: list[Record]
+    ) -> tuple[Work, set[str]]:
         """Creates a Work object from clustered editions.
-        
+
         Uses SFRRecordManager to:
         1. Build Work data structure from records
         2. Save Work to database

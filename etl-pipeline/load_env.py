@@ -4,33 +4,33 @@ import yaml
 from pathlib import Path
 from services.ssm_service import SSMService
 
-LOCAL_SECRETS_FILE = 'config/local-secrets.yaml'
+LOCAL_SECRETS_FILE = "config/local-secrets.yaml"
 
 ENV_VAR_TO_SSM_NAME = {
-    'CONTENT_CAFE_USER': 'contentcafe/user',
-    'CONTENT_CAFE_PSWD': 'contentcafe/pswd',
-    'ELASTICSEARCH_PSWD': 'elasticsearch/pswd',
-    'ELASTICSEARCH_USER': 'elasticsearch/user',
-    'GITHUB_API_KEY': 'github-key',
-    'GOOGLE_BOOKS_KEY': 'google-books/api-key',
-    'HATHI_API_KEY': 'hathitrust/api-key',
-    'HATHI_API_SECRET': 'hathitrust/api-secret',
-    'NEW_RELIC_LICENSE_KEY': 'newrelic/key',
-    'NYPL_API_CLIENT_ID': 'nypl-api/client-id',
-    'NYPL_API_CLIENT_PUBLIC_KEY': 'nypl-api/public-key',
-    'NYPL_API_CLIENT_SECRET': 'nypl-api/client-secret',
-    'NYPL_BIB_PSWD': 'postgres/nypl-pswd',
-    'NYPL_BIB_USER': 'postgres/nypl-user',
-    'OCLC_METADATA_ID': 'oclc-metadata-clientid',
-    'OCLC_METADATA_SECRET': 'oclc-metadata-secret',
-    'OCLC_CLIENT_ID': 'oclc-search-clientid',
-    'OCLC_CLIENT_SECRET': 'oclc-search-secret',
-    'POSTGRES_PSWD': 'postgres/pswd',
-    'POSTGRES_USER': 'postgres/user',
+    "CONTENT_CAFE_USER": "contentcafe/user",
+    "CONTENT_CAFE_PSWD": "contentcafe/pswd",
+    "ELASTICSEARCH_PSWD": "elasticsearch/pswd",
+    "ELASTICSEARCH_USER": "elasticsearch/user",
+    "GITHUB_API_KEY": "github-key",
+    "GOOGLE_BOOKS_KEY": "google-books/api-key",
+    "HATHI_API_KEY": "hathitrust/api-key",
+    "HATHI_API_SECRET": "hathitrust/api-secret",
+    "NEW_RELIC_LICENSE_KEY": "newrelic/key",
+    "NYPL_API_CLIENT_ID": "nypl-api/client-id",
+    "NYPL_API_CLIENT_PUBLIC_KEY": "nypl-api/public-key",
+    "NYPL_API_CLIENT_SECRET": "nypl-api/client-secret",
+    "NYPL_BIB_PSWD": "postgres/nypl-pswd",
+    "NYPL_BIB_USER": "postgres/nypl-user",
+    "OCLC_METADATA_ID": "oclc-metadata-clientid",
+    "OCLC_METADATA_SECRET": "oclc-metadata-secret",
+    "OCLC_CLIENT_ID": "oclc-search-clientid",
+    "OCLC_CLIENT_SECRET": "oclc-search-secret",
+    "POSTGRES_PSWD": "postgres/pswd",
+    "POSTGRES_USER": "postgres/user",
 }
 
 
-def load_env_file(run_type: str, file_string: Optional[str]=None) -> None:
+def load_env_file(run_type: str, file_string: Optional[str] = None) -> None:
     """Loads configuration details from a specific yaml file.
     Arguments:
         runType {string} -- The environment to load configuration details for.
@@ -47,18 +47,18 @@ def load_env_file(run_type: str, file_string: Optional[str]=None) -> None:
     if file_string:
         open_file = file_string.format(run_type)
     else:
-        open_file = 'local.yaml'
+        open_file = "local.yaml"
 
     try:
         with open(open_file) as env_stream:
             try:
                 env_dict = yaml.full_load(env_stream)
             except yaml.YAMLError as err:
-                print(f'{open_file} Invalid! Please review')
+                print(f"{open_file} Invalid! Please review")
                 raise err
 
     except FileNotFoundError as err:
-        print('Missing config YAML file! Check directory')
+        print("Missing config YAML file! Check directory")
         raise err
 
     if env_dict:

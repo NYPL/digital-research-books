@@ -17,22 +17,24 @@ def main():
     env = args.env
     load_env_file(f"local-{env}", file_string="config/{}.yaml")
     db_manager = DBManager(
-        user= os.environ["POSTGRES_USER"],
-        pswd= os.environ["POSTGRES_PSWD"],
-        host= os.environ["POSTGRES_HOST"],
-        port= os.environ["POSTGRES_PORT"],
-        db= os.environ["POSTGRES_NAME"],
+        user=os.environ["POSTGRES_USER"],
+        pswd=os.environ["POSTGRES_PSWD"],
+        host=os.environ["POSTGRES_HOST"],
+        port=os.environ["POSTGRES_PORT"],
+        db=os.environ["POSTGRES_NAME"],
     )
     bucket = os.environ["FILE_BUCKET"]
     s3 = boto3.Session(profile_name=args.profile).client("s3")
     db_manager.create_session()
     collection = (
-        db_manager.session.query(Collection).filter(
+        db_manager.session.query(Collection)
+        .filter(
             Collection.title == "Schomburg Collection",
-        ).one()
+        )
+        .one()
     )
     for edition in collection.editions:
-        links_by_url = { link.url: link for link in edition.links }
+        links_by_url = {link.url: link for link in edition.links}
         for identifier in edition.identifiers:
             hathi_id = identifier.identifier
             cover_key = f"covers/publisher_backlist/hathi_{hathi_id}.png"
@@ -49,6 +51,7 @@ def main():
             edition.links.append(link)
 
         db_manager.session.commit()
+
 
 def cover_exists(s3, bucket, cover_key) -> bool:
     try:

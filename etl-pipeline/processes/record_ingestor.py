@@ -11,7 +11,6 @@ logger = create_log(__name__)
 
 
 class RecordIngestor:
-
     def __init__(self, source: str):
         self.source = source
 
@@ -26,21 +25,21 @@ class RecordIngestor:
     def ingest(self, records: Iterator[Record]) -> int:
         try:
             for record in self._persisted_records(records):
-                message = { "source_id": record.source_id, "source": record.source }
+                message = {"source_id": record.source_id, "source": record.source}
                 self.sqs_manager.send_message_to_queue(message)
 
         except Exception:
-            logger.exception(f'Failed to ingest {self.source} records')
+            logger.exception(f"Failed to ingest {self.source} records")
 
-        logger.info(f'Ingested {self.record_buffer.ingest_count} {self.source} records')
+        logger.info(f"Ingested {self.record_buffer.ingest_count} {self.source} records")
         return self.record_buffer.ingest_count
 
     def _persisted_records(self, records: Iterator[Record]) -> Iterator[Record]:
         for record in records:
             record.state = RecordState.INGESTED.value
-            
+
             flushed_records = self.record_buffer.add(record)
-            
+
             if flushed_records:
                 yield from flushed_records
 

@@ -10,4 +10,4 @@ class Subject(BaseInner):
 
     @classmethod
     def getFields(cls):
-        return ['uri', 'authority', 'subject']
+        return ["uri", "authority", "subject"]

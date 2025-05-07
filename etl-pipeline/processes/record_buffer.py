@@ -5,7 +5,7 @@ from model import Record, FRBRStatus
 
 
 class RecordBuffer:
-    def __init__(self, db_manager: DBManager, batch_size: int=500):
+    def __init__(self, db_manager: DBManager, batch_size: int = 500):
         self.db_manager = db_manager
         self.records = set()
         self.batch_size = batch_size
@@ -13,9 +13,11 @@ class RecordBuffer:
         self.deletion_count = 0
 
     def add(self, record: Record) -> Optional[set[Record]]:
-        existing_record = self.db_manager.session.query(Record).filter(
-            Record.source_id == record.source_id
-        ).first()
+        existing_record = (
+            self.db_manager.session.query(Record)
+            .filter(Record.source_id == record.source_id)
+            .first()
+        )
 
         if existing_record:
             existing_record = self._update_record(record, existing_record)
@@ -39,14 +41,14 @@ class RecordBuffer:
 
     def _update_record(self, record: Record, existing_record: Record) -> Record:
         for attribute, value in record:
-            if attribute == 'uuid': 
+            if attribute == "uuid":
                 continue
 
             setattr(existing_record, attribute, value)
-        
+
         existing_record.cluster_status = False
-        
-        if existing_record.source not in ['oclcClassify', 'oclcCatalog']:
+
+        if existing_record.source not in ["oclcClassify", "oclcCatalog"]:
             existing_record.frbr_status = FRBRStatus.TODO.value
 
         return existing_record
