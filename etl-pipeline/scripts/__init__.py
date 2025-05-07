@@ -17,3 +17,4 @@ from .deleteUMPManifestLinks import main as deleteUMPManifests
 from .deleteProblemWorks import main as deleteWorks
 from .report_missing_files import main as ReportMissingFiles
 from .create_collection import main as createCollection
+from .GRIN_initial_scrape import main as GRINInitialScrape
