@@ -90,7 +90,7 @@ class RecordClusterer:
 
         # Group records into edition clusters
         clustered_editions = self._cluster_records(record, records)
-        
+
         # Build FRBR model - Create Work/Edition/Item objects
         work, stale_work_ids = self._create_work_from_editions(
             clustered_editions, records
@@ -138,7 +138,7 @@ class RecordClusterer:
             record=record,
             num_clusters=len(kmean_manager.clusters),
             num_editions=len(editions),
-            num_records=len(records)
+            num_records=len(records),
         )
 
         return editions

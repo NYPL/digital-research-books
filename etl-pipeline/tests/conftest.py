@@ -29,7 +29,7 @@ from tests.fixtures.generate_test_data import generate_test_data
 
 logger = create_log(__name__)
 
-TEST_SOURCE = 'test_source'
+TEST_SOURCE = "test_source"
 
 
 def pytest_addoption(parser):
@@ -256,15 +256,15 @@ def test_link_id(frbrized_record_data):
 @pytest.fixture(scope="session")
 def unembellished_record_uuid(db_manager):
     test_unembellished_record_data = {
-        'title': 'Emma',
-        'uuid': uuid4(),
-        'frbr_status': 'to_do',
-        'cluster_status': False,
+        "title": "Emma",
+        "uuid": uuid4(),
+        "frbr_status": "to_do",
+        "cluster_status": False,
         "source": TEST_SOURCE,
-        'authors': ['Jane, Austen||true'],
-        'identifiers': ['0198837755|isbn'],
-        'source_id': '0198837755|isbn',
-        'date_modified': datetime.now(timezone.utc).replace(tzinfo=None)
+        "authors": ["Jane, Austen||true"],
+        "identifiers": ["0198837755|isbn"],
+        "source_id": "0198837755|isbn",
+        "date_modified": datetime.now(timezone.utc).replace(tzinfo=None),
     }
 
     unembellished_record = create_or_update_record(

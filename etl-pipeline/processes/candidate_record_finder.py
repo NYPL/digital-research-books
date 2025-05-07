@@ -13,7 +13,6 @@ logger = create_log(__name__)
 
 
 class CandidateRecordFinder:
-
     # Maximum number of "hops" to follow when matching records through identifiers
     MAX_MATCH_DISTANCE = 4
     # Maximum number of records that can be in a candidate pool
@@ -133,7 +132,9 @@ class CandidateRecordFinder:
                     .all()
                 )
 
-                cluster_lock_keys = [f'{CLUSTER_LOCK_KEY_PREFIX}{record[1]}' for record in records]
+                cluster_lock_keys = [
+                    f"{CLUSTER_LOCK_KEY_PREFIX}{record[1]}" for record in records
+                ]
 
                 if self.redis_manager.any_locked(cluster_lock_keys):
                     raise ConcurrentClusterException(
@@ -207,6 +208,7 @@ class CandidateRecordFinder:
             formatted_ids.append(formatted_id)
 
         return "{{{}}}".format(",".join(formatted_ids))
+
 
 class ConcurrentClusterException(Exception):
     def __init__(self, message: str):

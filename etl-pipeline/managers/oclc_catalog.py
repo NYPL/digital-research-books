@@ -208,13 +208,9 @@ class OCLCCatalogManager:
                 f"Failed to query {bibs_endpoint} with query {query} due to {e}"
             )
             return None
-    
+
     def generate_identifier_query(self, identifier, identifier_type):
-        identifier_map = { 
-            "isbn": "bn",
-            "issn": "in",
-            "oclc": "no"
-        }
+        identifier_map = {"isbn": "bn", "issn": "in", "oclc": "no"}
 
         return f"{identifier_map[identifier_type]}: {identifier}"
 

@@ -9,17 +9,19 @@ def assert_record_embellished(record_uuid: str, db_manager):
 
     assert embellished_record.frbr_status == "complete"
 
-    owi_number = next((id for id in embellished_record.identifiers if id.endswith('owi')), None)
+    owi_number = next(
+        (id for id in embellished_record.identifiers if id.endswith("owi")), None
+    )
 
     assert owi_number is not None
 
     catalog_records = (
         db_manager.session.query(Record)
-            .filter(
-                Record.source == 'oclcCatalog',
-                Record.identifiers.overlap(embellished_record.identifiers)
-            )
-            .all()
+        .filter(
+            Record.source == "oclcCatalog",
+            Record.identifiers.overlap(embellished_record.identifiers),
+        )
+        .all()
     )
-    
+
     assert len(catalog_records) > 0

@@ -13,9 +13,7 @@ from pdb import set_trace
 
 
 class GRINClient(object):
-    
     def __init__(self, cache_dir):
-
         # Data -- books and lists of books -- is kept here.
         self.cache_dir = cache_dir
 
@@ -26,20 +24,21 @@ class GRINClient(object):
 
         self.creds = self.load_creds()
         self.session = AuthorizedSession(self.creds)
-    
+
     def load_creds(self):
         ssm_service = SSMService()
-        service_account_file = ssm_service.get_parameter('grin-auth')
+        service_account_file = ssm_service.get_parameter("grin-auth")
         service_account_info = json.loads(service_account_file)
 
         scopes = [
-            'openid',
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile'
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
         ]
-    
+
         creds = Credentials.from_service_account_info(
-            service_account_info, scopes=scopes)
+            service_account_info, scopes=scopes
+        )
         return creds
 
     def _url(self, fragment):
@@ -91,6 +90,7 @@ class GRINClient(object):
             barcodes = "\n".join(barcodes)
         # self.session.request("POST", self._url("_process"), body=barcodes) // signature seems wrong as of 2024
         self.session.request("POST", self._url("_process"), data=barcodes)
+
 
 client = GRINClient("cache")
 print("Number available: %s" % len(client.available()))
