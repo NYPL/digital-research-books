@@ -1,10 +1,10 @@
 from datetime import datetime
 import logging
-from typing import List,Iterator
+from typing import List, Iterator
 from google.auth.transport.requests import (
     AuthorizedSession,
 )
-from model import GRINState, GRINStatus, Record,FRBRStatus
+from model import GRINState, GRINStatus, Record, FRBRStatus
 from managers import DBManager
 from google.oauth2.service_account import Credentials
 import json
@@ -19,12 +19,14 @@ DEFAULT_CHUNK_SIZE = 5000
 
 logging.basicConfig(
     filename="GRIN_initial_scrape.log",
-    level=logging.INFO,  
-    format='%(asctime)s - %(levelname)s - %(message)s' 
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
 )
+
 
 class AuthSession(object):
     """Eventually, this will a service, we will use this mock code for now"""
+
     def __init__(self):
         self.creds = self.load_creds()
         self.session = AuthorizedSession(self.creds)
@@ -34,17 +36,18 @@ class AuthSession(object):
 
     def load_creds(self):
         ssm_service = SSMService()
-        service_account_file = ssm_service.get_parameter('grin-auth')
+        service_account_file = ssm_service.get_parameter("grin-auth")
         service_account_info = json.loads(service_account_file)
 
         scopes = [
-            'openid',
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile'
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
         ]
 
         creds = Credentials.from_service_account_info(
-            service_account_info, scopes=scopes)
+            service_account_info, scopes=scopes
+        )
         return creds
 
 
@@ -71,13 +74,14 @@ def main():
 
     response = authed_session.get(url, timeout=600)
     response.raise_for_status()
-   
+
     barcodes = response.content.decode("utf8").strip().split("\n")
 
-    if len(barcodes) > 0: 
+    if len(barcodes) > 0:
         insert_into_db(barcodes=barcodes, db_manager=db_manager, chunk_size=args.size)
     else:
         logging.info("No record found")
+
 
 def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
     logging.info(f"Processing {len(barcodes)} barcodes")
@@ -93,19 +97,19 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
                     grin_status=GRINStatus(
                         barcode=barcode,
                         failed_download=0,
-                        state=GRINState.PENDING_CONVERSION.value, 
-                        date_created=datetime(1991, 8, 25)
-                    )
+                        state=GRINState.PENDING_CONVERSION.value,
+                        date_created=datetime(1991, 8, 25),
+                    ),
                 )
             )
-            
+
         logging.info(f"Inserting {len(chunked_barcodes)} barcodes into Record")
 
         try:
             db_manager.session.bulk_save_objects(new_records)
             db_manager.commit_changes()
         except Exception:
-            logging.exception('Failed to add records')
+            logging.exception("Failed to add records")
             raise
 
     logging.info("Complete.")
@@ -130,4 +134,3 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logging.exception(e, exc_info=True)
-        
