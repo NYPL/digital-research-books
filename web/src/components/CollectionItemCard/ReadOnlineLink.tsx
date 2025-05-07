@@ -3,9 +3,11 @@ import { OpdsLink } from "~/src/types/OpdsModel";
 import CollectionUtils from "~/src/util/CollectionUtils";
 import { formatUrl } from "~/src/util/Util";
 import Link from "~/src/components/Link/Link";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 
 // "Read Online" button should only show up if the link was flagged as "reader" or "embed"
-const ReadOnlineLink: React.FC<{ links: OpdsLink[]; title: string }> = ({
+const ReadOnlineLink: React.FC<{  author: string | undefined; links: OpdsLink[]; title: string; }> = ({
+  author,
   links,
   title,
 }) => {
@@ -17,6 +19,15 @@ const ReadOnlineLink: React.FC<{ links: OpdsLink[]; title: string }> = ({
 
   if (!readOnlineLink) return null;
 
+  const trackReadOnlineClick = () => {
+    trackEvent({
+      "event":  "digital_read_online",
+      "item_title": title,
+      "item_author": author,
+      "read_online_url": readOnlineLink.href
+    });
+  }
+
   return (
     <Link
       to={{
@@ -24,6 +35,7 @@ const ReadOnlineLink: React.FC<{ links: OpdsLink[]; title: string }> = ({
       }}
       linkType="button"
       aria-label={`${title} Read Online`}
+      onClick={trackReadOnlineClick}
     >
       Read Online
     </Link>

@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from managers.redis import RedisManager
 
+
 def test_any_lock():
     test_key = str(uuid4())
     redis_manager = RedisManager()

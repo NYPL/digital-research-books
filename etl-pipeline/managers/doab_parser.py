@@ -2,7 +2,7 @@ import inspect
 import json
 import requests
 import re
-from requests.exceptions import ConnectionError, InvalidURL, MissingSchema, ReadTimeout 
+from requests.exceptions import ConnectionError, InvalidURL, MissingSchema, ReadTimeout
 
 from logger import create_log
 import managers.parsers as parsers
@@ -40,12 +40,14 @@ class DOABLinkManager:
     def parse_links(self):
         parsed_links = []
         for part in self.record.has_part:
-            part_no, part_uri, part_source, part_type, part_flags = list(part.split('|'))
+            part_no, part_uri, part_source, part_type, part_flags = list(
+                part.split("|")
+            )
 
             try:
                 parser = self.select_parser(part_uri, part_type)
             except LinkError:
-                logger.debug(f'Unable to parse link {part_uri}')
+                logger.debug(f"Unable to parse link {part_uri}")
                 continue
 
             if parser.uri in self.links_processed:
@@ -61,7 +63,11 @@ class DOABLinkManager:
                     part_flag_dict.update(parser_flags)
                     part_flags = json.dumps(part_flag_dict)
 
-                parsed_links.append('|'.join([part_no, parser_uri, part_source, parser_type, part_flags]))
+                parsed_links.append(
+                    "|".join(
+                        [part_no, parser_uri, part_source, parser_type, part_flags]
+                    )
+                )
 
                 if manifest:
                     self.manifests.append(manifest)
@@ -70,7 +76,7 @@ class DOABLinkManager:
                     self.epub_links.append(epub_file)
 
         self.record.has_part = parsed_links
-    
+
     @staticmethod
     def find_final_uri(uri, media_type, redirects=0):
         max_redirects = 5
@@ -80,28 +86,38 @@ class DOABLinkManager:
 
         try:
             uri_header = requests.head(uri, allow_redirects=False, timeout=15)
-            headers = dict((key.lower(), value) for key, value in uri_header.headers.items())
-        except(MissingSchema, ConnectionError, InvalidURL, ReadTimeout, UnicodeDecodeError):
-            raise LinkError('Invalid has_part URI')
+            headers = dict(
+                (key.lower(), value) for key, value in uri_header.headers.items()
+            )
+        except (
+            MissingSchema,
+            ConnectionError,
+            InvalidURL,
+            ReadTimeout,
+            UnicodeDecodeError,
+        ):
+            raise LinkError("Invalid has_part URI")
 
         try:
-            content_header = headers['content-type']
-            media_type = list(content_header.split(';'))[0].strip()
+            content_header = headers["content-type"]
+            media_type = list(content_header.split(";"))[0].strip()
         except KeyError:
             content_header = None
 
-        if uri_header.status_code in [301, 302, 307, 308]\
-            and content_header not in ['application/pdf', 'application/epub+zip']:
-            redirect_uri = headers['location']
+        if uri_header.status_code in [301, 302, 307, 308] and content_header not in [
+            "application/pdf",
+            "application/epub+zip",
+        ]:
+            redirect_uri = headers["location"]
 
-            if redirect_uri[0] == '/':
-                uri_root = re.split(r'(?<![\/:])\/{1}', uri)[0]
-                redirect_uri = '{}{}'.format(uri_root, redirect_uri)
+            if redirect_uri[0] == "/":
+                uri_root = re.split(r"(?<![\/:])\/{1}", uri)[0]
+                redirect_uri = "{}{}".format(uri_root, redirect_uri)
 
             redirects += 1
 
             return DOABLinkManager.find_final_uri(redirect_uri, media_type, redirects)
-        
+
         return (uri, media_type)
 
 

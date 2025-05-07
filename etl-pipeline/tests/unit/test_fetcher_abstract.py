@@ -16,10 +16,10 @@ class TestFetcherABC:
             def download_cover_file(self):
                 return super().download_cover_file()
 
-        return MockFetcherABC(['id1', 'id2'])
+        return MockFetcherABC(["id1", "id2"])
 
     def test_initializer(self, test_fetcher):
-        assert test_fetcher.identifiers == ['id1', 'id2']
+        assert test_fetcher.identifiers == ["id1", "id2"]
         assert test_fetcher.cover_id == None
 
     def test_has_cover(self, test_fetcher):

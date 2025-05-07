@@ -7,10 +7,12 @@ class NYPLAPIManager:
     def __init__(self, client_id=None, client_secret=None):
         super(NYPLAPIManager, self).__init__()
         self.client = None
-        self.client_id = client_id or os.environ.get('NYPL_API_CLIENT_ID', None)
-        self.client_secret = client_secret or os.environ.get('NYPL_API_CLIENT_SECRET', None)
-        self.token_url = os.environ.get('NYPL_API_CLIENT_TOKEN_URL', None)
-        self.api_root = 'https://platform.nypl.org/api/v0.1'
+        self.client_id = client_id or os.environ.get("NYPL_API_CLIENT_ID", None)
+        self.client_secret = client_secret or os.environ.get(
+            "NYPL_API_CLIENT_SECRET", None
+        )
+        self.token_url = os.environ.get("NYPL_API_CLIENT_TOKEN_URL", None)
+        self.api_root = "https://platform.nypl.org/api/v0.1"
         self.token = None
 
     def generate_access_token(self):
@@ -19,7 +21,7 @@ class NYPLAPIManager:
         self.token = oauth.fetch_token(
             token_url=self.token_url,
             client_id=self.client_id,
-            client_secret=self.client_secret
+            client_secret=self.client_secret,
         )
 
     def create_client(self):
@@ -31,8 +33,7 @@ class NYPLAPIManager:
 
         try:
             return self.client.get(
-                '{}/{}'.format(self.api_root, request_path),
-                timeout=15
+                "{}/{}".format(self.api_root, request_path), timeout=15
             ).json()
         except TokenExpiredError:
             self.generate_access_token()

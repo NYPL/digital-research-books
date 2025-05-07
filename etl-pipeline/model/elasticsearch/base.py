@@ -2,9 +2,7 @@ from elasticsearch_dsl import InnerDoc, Document, Date, analyzer, Keyword, Text
 
 
 plain_ascii = analyzer(
-    'plain_ascii',
-    tokenizer='standard',
-    filter=['lowercase', 'stop', 'asciifolding']
+    "plain_ascii", tokenizer="standard", filter=["lowercase", "stop", "asciifolding"]
 )
 
 
@@ -33,22 +31,22 @@ class BaseInner(InnerDoc):
 class PerLanguageField(InnerDoc):
     language = Keyword()
     default = Text(
-        analyzer='plain_ascii',
-        fields={'icu': {'type': 'text', 'analyzer': 'icu_analyzer'}}
+        analyzer="plain_ascii",
+        fields={"icu": {"type": "text", "analyzer": "icu_analyzer"}},
     )
-    en = Text(analyzer='english')
-    de = Text(analyzer='german')
-    fr = Text(analyzer='french')
-    sp = Text(analyzer='spanish')
-    po = Text(analyzer='polish')
-    nl = Text(analyzer='dutch')
-    it = Text(analyzer='italian')
-    da = Text(analyzer='danish')
-    ar = Text(analyzer='arabic')
-    zh = Text(analyzer='smartcn')
-    el = Text(analyzer='greek')
-    hi = Text(analyzer='hindi')
-    fa = Text(analyzer='persian')
-    ja = Text(analyzer='kuromoji')
-    ru = Text(analyzer='russian')
-    th = Text(analyzer='thai')
+    en = Text(analyzer="english")
+    de = Text(analyzer="german")
+    fr = Text(analyzer="french")
+    sp = Text(analyzer="spanish")
+    po = Text(analyzer="polish")
+    nl = Text(analyzer="dutch")
+    it = Text(analyzer="italian")
+    da = Text(analyzer="danish")
+    ar = Text(analyzer="arabic")
+    zh = Text(analyzer="smartcn")
+    el = Text(analyzer="greek")
+    hi = Text(analyzer="hindi")
+    fa = Text(analyzer="persian")
+    ja = Text(analyzer="kuromoji")
+    ru = Text(analyzer="russian")
+    th = Text(analyzer="thai")

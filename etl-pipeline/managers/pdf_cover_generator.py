@@ -13,9 +13,7 @@ logger = create_log(__name__)
 
 
 class PDFCoverGenerator:
-
     def __init__(self, pdf_content: io.BytesIO):
-
         self.pdf = pypdf.PdfReader(pdf_content)
 
     @staticmethod

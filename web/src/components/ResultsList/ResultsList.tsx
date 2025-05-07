@@ -55,6 +55,7 @@ const ResultsList: React.FC<{ works: ApiWork[] }> = ({ works }) => {
               </Box>
             )}
             <EditionCard
+              authors={work.authors}
               edition={previewEdition}
               title={work.title}
               isFeaturedEdition={work.edition_count > 1}

@@ -13,10 +13,12 @@ def test_reuse_valid_search_token():
 
     assert new_token == token
 
+
 def test_get_metadata_token():
     token = OCLCAuthManager.get_metadata_token()
 
     assert token != None
+
 
 def test_reuse_valid_metadata_token():
     token = OCLCAuthManager.get_metadata_token()

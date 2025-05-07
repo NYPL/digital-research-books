@@ -41,7 +41,9 @@ class SQSManager:
             client_params["aws_secret_access_key"] = self.aws_secret_access_key
 
         self.client = boto3.client("sqs", **client_params)
-        self.queue_url = self.client.get_queue_url(QueueName=self.queue_name)["QueueUrl"]
+        self.queue_url = self.client.get_queue_url(QueueName=self.queue_name)[
+            "QueueUrl"
+        ]
 
     def send_message_to_queue(self, message: Union[str, dict]):
         if not self.client:

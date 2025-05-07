@@ -107,7 +107,7 @@ export const InstanceCard: React.FC<{
           }}
           gap="xs"
         >
-          <Ctas item={previewItem} title={instance.title} />
+          <Ctas authors={instance.authors} item={previewItem} title={instance.title} />
         </CardActions>
       </Card>
     </Box>

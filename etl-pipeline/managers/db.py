@@ -12,11 +12,11 @@ logger = create_log(__name__)
 class DBManager:
     def __init__(self, user=None, pswd=None, host=None, port=None, db=None):
         super(DBManager, self).__init__()
-        self.user = user or DBManager.decrypt_env_var('POSTGRES_USER')
-        self.pswd = pswd or DBManager.decrypt_env_var('POSTGRES_PSWD')
-        self.host = host or DBManager.decrypt_env_var('POSTGRES_HOST')
-        self.port = port or DBManager.decrypt_env_var('POSTGRES_PORT')
-        self.db = db or DBManager.decrypt_env_var('POSTGRES_NAME')
+        self.user = user or DBManager.decrypt_env_var("POSTGRES_USER")
+        self.pswd = pswd or DBManager.decrypt_env_var("POSTGRES_PSWD")
+        self.host = host or DBManager.decrypt_env_var("POSTGRES_HOST")
+        self.port = port or DBManager.decrypt_env_var("POSTGRES_PORT")
+        self.db = db or DBManager.decrypt_env_var("POSTGRES_NAME")
 
         self.engine = None
         self.session = None
@@ -31,12 +31,8 @@ class DBManager:
     def generate_engine(self):
         try:
             self.engine = create_engine(
-                'postgresql://{}:{}@{}:{}/{}'.format(
-                    self.user,
-                    self.pswd,
-                    self.host,
-                    self.port,
-                    self.db
+                "postgresql://{}:{}@{}:{}/{}".format(
+                    self.user, self.pswd, self.host, self.port, self.db
                 )
             )
 
@@ -45,7 +41,7 @@ class DBManager:
             raise e
 
     def initialize_database(self):
-        if not inspect(self.engine).has_table('works'):
+        if not inspect(self.engine).has_table("works"):
             Base.metadata.create_all(self.engine)
 
     def create_session(self, autoflush=False):
@@ -60,15 +56,15 @@ class DBManager:
         try:
             self.session.commit()
         except OperationalError as oprErr:
-            logger.error('Deadlock in database layer, retry batch')
+            logger.error("Deadlock in database layer, retry batch")
             logger.debug(oprErr)
 
             self.rollback_changes()
-            
+
             if retry is False:
                 self.commit_changes(retry=True)
             else:
-                logger.warning('Already retried batch, dropping')
+                logger.warning("Already retried batch, dropping")
 
     def rollback_changes(self):
         self.session.rollback()
@@ -83,15 +79,15 @@ class DBManager:
             self.session.commit()
             self.session.flush()
         except OperationalError as oprErr:
-            logger.error('Deadlock in database layer, retry batch')
+            logger.error("Deadlock in database layer, retry batch")
             logger.debug(oprErr)
 
             self.rollback_changes()
-            
+
             if retry is False:
                 self.bulk_save_objects(objects, only_changed=only_changed, retry=True)
             else:
-                logger.warning('Already retried batch, dropping')
+                logger.warning("Already retried batch, dropping")
 
     def windowed_query(self, table, query, window_size=100, ingest_limit=None):
         single_entity = query.is_single_entity
@@ -122,7 +118,7 @@ class DBManager:
         try:
             query.delete()
         except OperationalError as oprErr:
-            logger.error('Deadlock in database layer, retry batch')
+            logger.error("Deadlock in database layer, retry batch")
             logger.debug(oprErr)
 
     @staticmethod
