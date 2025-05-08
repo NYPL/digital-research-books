@@ -13,7 +13,7 @@ import { render } from "~/src/__tests__/testUtils/render";
 
 describe("Edition Card with Valid Data", () => {
   beforeEach(() => {
-    render(<EditionCard edition={fullEdition} title={"title"}></EditionCard>);
+    render(<EditionCard authors={[]} edition={fullEdition} title={"title"}></EditionCard>);
   });
   test("Shows Year as Link in header", () => {
     expect(screen.getByText("1990 Edition").closest("a").href).toContain(
@@ -60,6 +60,7 @@ describe("Edition Year with Minimal Data", () => {
   beforeEach(() => {
     render(
       <EditionCard
+        authors={[]}
         edition={{ edition_id: 54321 }}
         title={"title"}
       ></EditionCard>
@@ -97,7 +98,7 @@ describe("Edition Year with Minimal Data", () => {
 
 describe("Edition with EDD", () => {
   test("Shows Download and Read Online button when edition has both EDD and readable links", () => {
-    render(<EditionCard edition={fullEdition} title={"title"}></EditionCard>);
+    render(<EditionCard authors={[]} edition={fullEdition} title={"title"}></EditionCard>);
 
     expect(screen.getByText("Download PDF")).toBeInTheDocument();
     expect(screen.getByText("Read Online")).toBeInTheDocument();
@@ -108,7 +109,7 @@ describe("Edition with EDD", () => {
   });
 
   test("Shows Login button when EDD is available but user is not logged in", () => {
-    render(<EditionCard edition={eddEdition} title={"title"}></EditionCard>);
+    render(<EditionCard authors={[]} edition={eddEdition} title={"title"}></EditionCard>);
     expect(
       screen.getByRole("link", { name: "Log in to request scan for title" })
     ).toBeInTheDocument();
@@ -128,7 +129,7 @@ describe("Edition with EDD", () => {
     cookies.set(NYPL_SESSION_ID, "randomvalue");
     render(
       <CookiesProvider cookies={cookies}>
-        <EditionCard edition={eddEdition} title={"title"} />
+        <EditionCard authors={[]} edition={eddEdition} title={"title"} />
       </CookiesProvider>
     );
 
@@ -143,7 +144,7 @@ describe("Edition with EDD", () => {
   });
 
   test("Shows 'Physical Edition' badge and 'Scan and Deliver' link", () => {
-    render(<EditionCard edition={eddEdition} title={"title"} />);
+    render(<EditionCard authors={[]} edition={eddEdition} title={"title"} />);
     expect(screen.getByText("Physical Edition")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Scan and Deliver" })
@@ -156,7 +157,7 @@ describe("Edition with EDD", () => {
 
 describe("Edition with UP", () => {
   test("Shows Login button when user is not logged in", () => {
-    render(<EditionCard edition={upEdition} title={"title"}></EditionCard>);
+    render(<EditionCard authors={[]} edition={upEdition} title={"title"}></EditionCard>);
     expect(
       screen.getByRole("link", { name: "title Log in to read online" })
     ).toBeInTheDocument();
@@ -170,7 +171,7 @@ describe("Edition with UP", () => {
     expect(screen.queryByText("Read Online")).not.toBeInTheDocument();
   });
   test("Shows 'Library Card Required' badge", () => {
-    render(<EditionCard edition={upEdition} title={"title"} />);
+    render(<EditionCard authors={[]} edition={upEdition} title={"title"} />);
     expect(screen.getByText("LIBRARY CARD REQUIRED")).toBeInTheDocument();
   });
   test("Shows Read Online and Download buttons when user is logged in", () => {
@@ -179,7 +180,7 @@ describe("Edition with UP", () => {
     cookies.set(NYPL_SESSION_ID, "randomvalue");
     render(
       <CookiesProvider cookies={cookies}>
-        <EditionCard edition={upEdition} title={"title"} />
+        <EditionCard authors={[]} edition={upEdition} title={"title"} />
       </CookiesProvider>
     );
 
@@ -197,7 +198,7 @@ describe("Edition with UP", () => {
     ).toHaveAttribute("href", expect.stringContaining("test-link-url"));
   });
   test("Shows blurb with publisher", () => {
-    render(<EditionCard edition={upEdition} title={"title"}></EditionCard>);
+    render(<EditionCard authors={[]} edition={upEdition} title={"title"}></EditionCard>);
     expect(
       screen.getByText("Digitalized by NYPL with permission of publisher_1")
     ).toBeInTheDocument();

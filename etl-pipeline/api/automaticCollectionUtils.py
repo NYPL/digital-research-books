@@ -3,13 +3,18 @@ from logger import create_log
 logger = create_log(__name__)
 
 
-def fetchAutomaticCollectionEditions(dbClient, esClient, collectionId, page: int, perPage: int):
+def fetchAutomaticCollectionEditions(
+    dbClient, esClient, collectionId, page: int, perPage: int
+):
     """Given a collection id for an automatic collection, perform the given
     search and return a list of collection editions
     """
     automaticCollection = dbClient.fetchAutomaticCollection(collectionId)
     if not automaticCollection:
-        logger.warning("Found invalid automatic collection %s with no search definition", collectionId)
+        logger.warning(
+            "Found invalid automatic collection %s with no search definition",
+            collectionId,
+        )
         return (0, [])
 
     nextPageSize = _nextPageSize(automaticCollection.limit, page, perPage)
@@ -24,7 +29,9 @@ def fetchAutomaticCollectionEditions(dbClient, esClient, collectionId, page: int
         )
 
     else:
-        (totalCount, editionIds) = _doAutoCollectionSearch(esClient, automaticCollection, page, nextPageSize)
+        (totalCount, editionIds) = _doAutoCollectionSearch(
+            esClient, automaticCollection, page, nextPageSize
+        )
         editions = dbClient.fetchEditions(editionIds)
 
     limit = (
@@ -36,19 +43,19 @@ def fetchAutomaticCollectionEditions(dbClient, esClient, collectionId, page: int
 
 
 def _doAutoCollectionSearch(esClient, automaticCollection, page, perPage):
-        searchParams = {
-            "query": _buildQueryTerms(automaticCollection),
-            "sort": [(automaticCollection.sort_field, automaticCollection.sort_direction)],
-            "filter": [],
-            "show_all": True,
-        }
-        searchResult = esClient.searchQuery(searchParams, page=page, perPage=perPage)
-        editionIds = []
-        for res in searchResult.hits:
-            editionIds.extend(e.edition_id for e in res.meta.inner_hits.editions.hits)
+    searchParams = {
+        "query": _buildQueryTerms(automaticCollection),
+        "sort": [(automaticCollection.sort_field, automaticCollection.sort_direction)],
+        "filter": [],
+        "show_all": True,
+    }
+    searchResult = esClient.searchQuery(searchParams, page=page, perPage=perPage)
+    editionIds = []
+    for res in searchResult.hits:
+        editionIds.extend(e.edition_id for e in res.meta.inner_hits.editions.hits)
 
-        totalCount = searchResult.hits.total.value
-        return (totalCount, editionIds)
+    totalCount = searchResult.hits.total.value
+    return (totalCount, editionIds)
 
 
 def _buildQueryTerms(automaticCollection) -> list[tuple[str, str]]:

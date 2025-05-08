@@ -40,11 +40,17 @@ class RedisManager:
             f"{self.environment}/{service}/{identifier}/{identifier_type}"
         )
 
-        if query_time is not None and datetime.strptime(query_time.decode("utf-8"), "%Y-%m-%dT%H:%M:%S") >= self.one_day_ago:
+        if (
+            query_time is not None
+            and datetime.strptime(query_time.decode("utf-8"), "%Y-%m-%dT%H:%M:%S")
+            >= self.one_day_ago
+        ):
             logger.debug(f"Identifier {identifier} recently queried")
             return True
 
-        self.set_key(service, identifier, identifier_type, expiration_time=expiration_time)
+        self.set_key(
+            service, identifier, identifier_type, expiration_time=expiration_time
+        )
         return False
 
     def multi_check_or_set_key(
@@ -64,14 +70,20 @@ class RedisManager:
         output = []
         for i, query_time in enumerate(identifier_query_times):
             update_required = True
-            if query_time is not None and datetime.strptime(query_time.decode("utf-8"), "%Y-%m-%dT%H:%M:%S") >= self.one_day_ago:
+            if (
+                query_time is not None
+                and datetime.strptime(query_time.decode("utf-8"), "%Y-%m-%dT%H:%M:%S")
+                >= self.one_day_ago
+            ):
                 logger.debug(f"Identifier {identifiers[i]} recently queried")
                 update_required = False
 
             output.append((identifiers[i], update_required))
 
         keys_to_set = [key[0] for key in output if key[1] is True]
-        self.multi_set_key(service, keys_to_set, identifier_type, expiration_time=expiration_time)
+        self.multi_set_key(
+            service, keys_to_set, identifier_type, expiration_time=expiration_time
+        )
 
         return output
 
@@ -89,8 +101,8 @@ class RedisManager:
         )
 
     def any_locked(self, keys: list) -> bool:
-        keys = [f'redlock:{key}' for key in keys]
-        
+        keys = [f"redlock:{key}" for key in keys]
+
         return any(locks is not None for locks in self.client.mget(keys))
 
     def multi_set_key(

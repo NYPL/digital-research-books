@@ -1,0 +1,75 @@
+ENVIRONMENT: qa
+
+# LOGGING
+LOG_LEVEL: info
+
+# POSTGRES CONNECTION DETAILS
+# POSTGRES_USER, POSTGRES_PSWD, POSTGRES_ADMIN_USER and POSTGRES_ADMIN_PSWD must be configured in secrets file
+POSTGRES_HOST: sfr-new-metadata-qa-cluster.cluster-cvy7z512hcjg.us-east-1.rds.amazonaws.com
+POSTGRES_NAME: dcdw_qa
+POSTGRES_PORT: '5432'
+
+# REDIS CONFIGURATION
+# REDIS_HOST configured as part of ECS deployment
+REDIS_HOST: drb-qa-redis-cache-tf.frh6pg.ng.0001.use1.cache.amazonaws.com
+REDIS_PORT: '6379'
+
+# ELASTICSEARCH CONFIGURATION
+# ELASTICSEARCH_INDEX, ELASTICSEARCH_HOST, ELASTICSEARCH_SCHEME, ELASTICSEARCH_PORT must be configured in secrets file
+ELASTICSEARCH_INDEX: drb_dcdw_qa_new_cluster
+ELASTICSEARCH_HOST: 10.227.133.248, 10.227.135.202, 10.227.135.215
+ELASTICSEARCH_SCHEME: http
+ELASTICSEARCH_PORT: '9200'
+ELASTICSEARCH_TIMEOUT: '10'
+
+# RABBITMQ CONFIGURATION
+# RABBIT_USER and RABBIT_PSWD must be configured in secrets file
+RABBIT_HOST: qa.rmq.aws.nypl.org
+RABBIT_PORT: '5672'
+RABBIT_VIRTUAL_HOST: /sfr
+RABBIT_EXCHANGE: sfrIngestExchange
+OCLC_QUEUE: sfrOCLCCatalog
+OCLC_ROUTING_KEY: sfrOCLCCatalog
+FILE_QUEUE: sfrS3Files
+FILE_ROUTING_KEY: sfrS3Files
+RECORD_PIPELINE_QUEUE: sfrRecords
+RECORD_PIPELINE_ROUTING_KEY: sfrRecords
+
+# OCLC CONFIGURATION
+# OCLC API keys must be configured in secrets file
+OCLC_QUERY_LIMIT: '390000'
+
+# AWS CONFIGURATION
+# AWS_ACCESS and AWS_SECRET must be configured in secrets file
+AWS_REGION: us-east-1
+FILE_BUCKET: drb-files-qa
+
+# NYPL BIB REPLICA DB CONNECTION
+# NYPL_BIB_USER and NYPL_BIB_PSWD must be configured in secrets file
+NYPL_BIB_HOST: bib-service-production-rep.cvy7z512hcjg.us-east-1.rds.amazonaws.com
+NYPL_BIB_NAME: bib_service_production
+NYPL_BIB_PORT: '5432'
+
+# NYPL Location Code Lookup
+NYPL_LOCATIONS_BY_CODE: https://nypl-core-objects-mapping-qa.s3.amazonaws.com/by_sierra_location.json
+
+# NYPL API Credentials
+# NYPL_API_CLIENT_ID and NYPL_API_CLIENT_SECRET must be configured in secrets file
+NYPL_API_CLIENT_TOKEN_URL: https://isso.nypl.org/oauth/token
+
+# DRB API Credentials
+DRB_API_HOST: 'drb-api-qa.nypl.org'
+DRB_API_PORT: '80'
+DRB_API_URL: https://drb-api-qa.nypl.org
+
+# Bardo CCE API URL
+BARDO_CCE_API: http://sfr-c-ecsal-14v3injrieoy5-258691445.us-east-1.elb.amazonaws.com/search/
+
+# Default Cover Image for OPDS2 Feed
+DEFAULT_COVER_URL: https://drb-files-qa.s3.amazonaws.com/covers/default/defaultCover.png
+
+# Allowed sources of CORS requests to proxy endpoint
+API_PROXY_CORS_ALLOWED: (?:http[s]?:\/\/.*nypl.org|https:\/\/.*(?:nypl|sfr).*vercel.app|http[s]?:\/\/.*tugboat.qa)
+
+# Current NYPL Webreader version
+READER_VERSION: v2

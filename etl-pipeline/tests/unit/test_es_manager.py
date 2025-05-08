@@ -63,7 +63,9 @@ class TestElasticsearchManager:
             max_retries=3,
         )
 
-    def test_create_elastic_connection_multi_host_success(self, test_instance_2, mocker):
+    def test_create_elastic_connection_multi_host_success(
+        self, test_instance_2, mocker
+    ):
         mock_connection = mocker.patch("managers.elasticsearch.connections")
         mock_client = mocker.patch("managers.elasticsearch.Elasticsearch")
 

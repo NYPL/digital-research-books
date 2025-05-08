@@ -14,20 +14,23 @@ from logger import create_log
 
 logger = create_log(__name__)
 
+
 class GoogleDriveService:
     def __init__(self):
         ssm_service = SSMService()
-            
-        SERVICE_ACCOUNT_FILE = ssm_service.get_parameter('google-drive-service-key')
-        
+
+        SERVICE_ACCOUNT_FILE = ssm_service.get_parameter("google-drive-service-key")
+
         service_account_info = json.loads(SERVICE_ACCOUNT_FILE)
         scopes = [
-            'https://www.googleapis.com/auth/drive',
-            'https://www.googleapis.com/auth/drive.file',
-            'https://www.googleapis.com/auth/drive.metadata'
+            "https://www.googleapis.com/auth/drive",
+            "https://www.googleapis.com/auth/drive.file",
+            "https://www.googleapis.com/auth/drive.metadata",
         ]
-        credentials = Credentials.from_service_account_info(service_account_info, scopes=scopes)
-        self.drive_service = build('drive', 'v3', credentials=credentials)
+        credentials = Credentials.from_service_account_info(
+            service_account_info, scopes=scopes
+        )
+        self.drive_service = build("drive", "v3", credentials=credentials)
 
     def get_drive_file(self, file_id: str) -> Optional[BytesIO]:
         request = self.drive_service.files().get_media(fileId=file_id)
@@ -41,7 +44,9 @@ class GoogleDriveService:
                 status, done = downloader.next_chunk()
 
         except HttpError as error:
-            logger.warning(f"HTTP error occurred when downloading Drive file {file_id}: {error}")
+            logger.warning(
+                f"HTTP error occurred when downloading Drive file {file_id}: {error}"
+            )
             return None
         except Exception as err:
             logger.exception(f"Error occurred when downloading Drive file {file_id}")
@@ -57,4 +62,4 @@ class GoogleDriveService:
 
     @staticmethod
     def id_from_url(url: str) -> Optional[str]:
-        return parse_qs(urlparse(url).query)['id'][0]
+        return parse_qs(urlparse(url).query)["id"][0]

@@ -12,7 +12,7 @@ class Group:
     def addMetadata(self, metadataFields):
         for field, value in metadataFields.items():
             setattr(self.metadata, field, value)
-    
+
     def addPublication(self, publication):
         if isinstance(publication, dict):
             publication = Publication(**publication)
@@ -20,8 +20,9 @@ class Group:
         self.publications.append(publication)
 
     def addPublications(self, publications):
-        for pub in publications: self.addPublication(pub)
-    
+        for pub in publications:
+            self.addPublication(pub)
+
     def addNavigation(self, nav):
         if isinstance(nav, dict):
             nav = Navigation(**nav)
@@ -29,18 +30,21 @@ class Group:
         self.navigation.append(nav)
 
     def addNavigations(self, navs):
-        for nav in navs: self.addNavigation(nav)
+        for nav in navs:
+            self.addNavigation(nav)
 
     def __repr__(self):
-        return '<Group(title={}, publications={}, navigation={})>'.format(
+        return "<Group(title={}, publications={}, navigation={})>".format(
             self.metadata.title, len(self.publications), len(self.navigation)
         )
 
     def __iter__(self):
         if len(self.publications) > 0 and len(self.navigation) > 0:
-            raise OPDS2GroupException('Group cannot contain publication and navigation arrays')
+            raise OPDS2GroupException(
+                "Group cannot contain publication and navigation arrays"
+            )
 
-        for attr in ['metadata', 'publications', 'navigation']:
+        for attr in ["metadata", "publications", "navigation"]:
             value = getattr(self, attr)
 
             if isinstance(value, list):

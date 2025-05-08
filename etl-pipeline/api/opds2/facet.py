@@ -1,6 +1,7 @@
 from .metadata import Metadata
 from .link import Link
 
+
 class Facet:
     def __init__(self, metadata={}, links=[]):
         self.metadata = Metadata(**metadata)
@@ -11,7 +12,8 @@ class Facet:
             setattr(self.metadata, field, value)
 
     def addLinks(self, links):
-        for link in links: self.addLink(link)
+        for link in links:
+            self.addLink(link)
 
     def addLink(self, link):
         if isinstance(link, dict):
@@ -20,12 +22,12 @@ class Facet:
         self.links.append(link)
 
     def __dir__(self):
-        return ['metadata', 'links']
+        return ["metadata", "links"]
 
     def __iter__(self):
         for attr in dir(self):
             component = getattr(self, attr)
-            
+
             if component is None:
                 continue
             if isinstance(component, list):
@@ -36,7 +38,7 @@ class Facet:
                 yield attr, component
 
     def __repr__(self):
-        return '<Facet(title={}, links={})>'.format(
+        return "<Facet(title={}, links={})>".format(
             self.metadata.title, len(self.links)
         )
 

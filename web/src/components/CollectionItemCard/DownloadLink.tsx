@@ -5,8 +5,10 @@ import Link from "~/src/components/Link/Link";
 import { OpdsLink } from "~/src/types/OpdsModel";
 import { formatUrl } from "~/src/util/Util";
 import { trackCtaClick } from "~/src/lib/adobe/Analytics";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 
-const DownloadLink: React.FC<{ links: OpdsLink[]; title: string }> = ({
+const DownloadLink: React.FC<{ author: string | undefined; links: OpdsLink[]; title: string }> = ({
+  author,
   links,
   title,
 }) => {
@@ -21,6 +23,14 @@ const DownloadLink: React.FC<{ links: OpdsLink[]; title: string }> = ({
       cta_section: `${title}`,
       cta_text: "Download",
       destination_url: `${formattedUrl}`,
+    });
+    trackEvent({
+      "event":  "file_download",
+      "click_text": "Download PDF",
+      "file_extension": selectedLink.type == "application/pdf" ? "pdf" : "epub",
+      "file_name": title,
+      "item_title": title,
+      "item_author": author,
     });
   };
 

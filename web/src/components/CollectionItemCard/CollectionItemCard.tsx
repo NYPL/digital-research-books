@@ -17,8 +17,9 @@ import LanguageDisplayText from "~/src/components/CollectionItemCard/LanguageDis
 
 // Creates an Collection item card out of the collectionItem object
 export const CollectionItemCard: React.FC<{
+  author: string | undefined;
   collectionItem: OpdsPublication;
-}> = ({ collectionItem }) => {
+}> = ({ author, collectionItem }) => {
   // cookies defaults to be undefined if not found
   const [cookies] = useCookies([NYPL_SESSION_ID]);
   const { links, metadata } = collectionItem;
@@ -60,6 +61,7 @@ export const CollectionItemCard: React.FC<{
       </CardContent>
       <CardActions display="flex" flexDir="column" whiteSpace="nowrap" gap={4}>
         <Ctas
+          author={author}
           links={links}
           title={title}
           isLoggedIn={!!cookies[NYPL_SESSION_ID]}

@@ -4,11 +4,20 @@ from sqlalchemy.orm import joinedload, sessionmaker
 from sqlalchemy.sql import column, func, select, text, values
 from uuid import uuid4
 
-from model import Work, Edition, Link, Item, Record, Collection, User, AutomaticCollection
+from model import (
+    Work,
+    Edition,
+    Link,
+    Item,
+    Record,
+    Collection,
+    User,
+    AutomaticCollection,
+)
 from .utils import APIUtils
 
 
-class DBClient():
+class DBClient:
     def __init__(self, engine):
         self.engine = engine
 
@@ -29,40 +38,44 @@ class DBClient():
         uuids = [i[0] for i in ids]
         editionIds = list(set(APIUtils.flatten([i[1] for i in ids])))
 
-        return self.session.query(Work)\
-            .join(Edition)\
+        return (
+            self.session.query(Work)
+            .join(Edition)
             .options(
                 joinedload(Work.editions, Edition.links),
                 joinedload(Work.editions, Edition.items),
-                joinedload(
-                    Work.editions, Edition.items, Item.links, innerjoin=True
-                ),
+                joinedload(Work.editions, Edition.items, Item.links, innerjoin=True),
                 joinedload(Work.editions, Edition.items, Item.rights),
-            )\
-            .filter(Work.uuid.in_(uuids), Edition.id.in_(editionIds))\
+            )
+            .filter(Work.uuid.in_(uuids), Edition.id.in_(editionIds))
             .all()
+        )
 
     def fetchSingleWork(self, uuid):
-        return self.session.query(Work)\
+        return (
+            self.session.query(Work)
             .options(
                 joinedload(Work.editions),
                 joinedload(Work.editions, Edition.rights),
                 joinedload(Work.editions, Edition.items),
-                joinedload(
-                    Work.editions, Edition.items, Item.links, innerjoin=True
-                )
-            )\
-            .filter(Work.uuid == uuid).first()
+                joinedload(Work.editions, Edition.items, Item.links, innerjoin=True),
+            )
+            .filter(Work.uuid == uuid)
+            .first()
+        )
 
     def fetchSingleEdition(self, editionID, showAll=False):
-        return self.session.query(Edition)\
+        return (
+            self.session.query(Edition)
             .options(
                 joinedload(Edition.links),
                 joinedload(Edition.items),
                 joinedload(Edition.items, Item.links),
-                joinedload(Edition.items, Item.rights)
-            )\
-            .filter(Edition.id == editionID).first()
+                joinedload(Edition.items, Item.rights),
+            )
+            .filter(Edition.id == editionID)
+            .first()
+        )
 
     def fetchAllPreferredEditions(
         self,
@@ -80,22 +93,23 @@ class DBClient():
 
         # For perf reasons, filter to the last 100 days.  We might be able to tune the
         # query to improve this...
-        startDate = datetime.now(timezone.utc).replace(tzinfo=None).date() - timedelta(days=100)
+        startDate = datetime.now(timezone.utc).replace(tzinfo=None).date() - timedelta(
+            days=100
+        )
         # Sort all the `Work`s and rank their editions by oldest
         workQuery = (
             self.session.query(
                 Work,
                 Edition.id.label("edition_id"),
-                func.rank().over(
+                func.rank()
+                .over(
                     order_by=(Edition.date_created.asc(), Edition.id.asc()),
                     partition_by=Work.id,
-                ).label("rnk"),
+                )
+                .label("rnk"),
             )
             .join(Edition)
-            .where(
-                (Edition.date_created > startDate)
-                & (Work.date_created > startDate)
-            )
+            .where((Edition.date_created > startDate) & (Work.date_created > startDate))
         ).subquery()
 
         offset = (page - 1) * perPage
@@ -114,12 +128,12 @@ class DBClient():
 
         editionsQuery = (
             self.session.query(Edition)
-                # Get the editions from the sorted works
-                .join(workQuery, Edition.id == workQuery.c.edition_id)
-                # And filter to only the oldest edition per work to get
-                # the 'preferred' edition
-                .where(workQuery.c.rnk == 1)
-                .order_by(sortClause)
+            # Get the editions from the sorted works
+            .join(workQuery, Edition.id == workQuery.c.edition_id)
+            # And filter to only the oldest edition per work to get
+            # the 'preferred' edition
+            .where(workQuery.c.rnk == 1)
+            .order_by(sortClause)
         )
 
         return (
@@ -143,19 +157,19 @@ class DBClient():
         ).cte("edition_ids")
         return (
             self.session.query(Edition)
-                .options(
-                    joinedload(Edition.links),
-                    joinedload(Edition.items),
-                    joinedload(Edition.items, Item.links),
-                    joinedload(Edition.items, Item.rights),
-                )
-                # join on the defined CTE and order below by the index
-                .join(
-                    editionIdCTE,
-                    Edition.id == editionIdCTE.c.edition_id,
-                )
-                .order_by(editionIdCTE.c.idx)
-                .all()
+            .options(
+                joinedload(Edition.links),
+                joinedload(Edition.items),
+                joinedload(Edition.items, Item.links),
+                joinedload(Edition.items, Item.rights),
+            )
+            # join on the defined CTE and order below by the index
+            .join(
+                editionIdCTE,
+                Edition.id == editionIdCTE.c.edition_id,
+            )
+            .order_by(editionIdCTE.c.idx)
+            .all()
         )
 
     def fetchSingleLink(self, linkID):
@@ -177,24 +191,26 @@ class DBClient():
     def fetchNewWorks(self, page=0, size=50):
         offset = page * size
 
-        createdSince = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=1)
+        createdSince = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
+            days=1
+        )
 
-        baseQuery = self.session.query(Work)\
-            .filter(Work.date_created >= createdSince)
+        baseQuery = self.session.query(Work).filter(Work.date_created >= createdSince)
 
         return (baseQuery.count(), baseQuery.offset(offset).limit(size).all())
 
     def fetchSingleCollection(self, uuid):
         return (
             self.session.query(Collection)
-                .options(
-                    joinedload(Collection.editions),
-                    joinedload(Collection.editions, Edition.links),
-                    joinedload(Collection.editions, Edition.items),
-                    joinedload(Collection.editions, Edition.items, Item.links),
-                    joinedload(Collection.editions, Edition.items, Item.rights),
-                )
-                .filter(Collection.uuid == uuid).one()
+            .options(
+                joinedload(Collection.editions),
+                joinedload(Collection.editions, Edition.links),
+                joinedload(Collection.editions, Edition.items),
+                joinedload(Collection.editions, Edition.items, Item.links),
+                joinedload(Collection.editions, Edition.items, Item.rights),
+            )
+            .filter(Collection.uuid == uuid)
+            .one()
         )
 
     def fetchCollections(self, sort=None, page=1, perPage=10):
@@ -214,21 +230,27 @@ class DBClient():
 
         return (
             self.session.query(Collection)
-                .order_by(text(sort))
-                .offset(offset)
-                .limit(perPage)
-                .all()
+            .order_by(text(sort))
+            .offset(offset)
+            .limit(perPage)
+            .all()
         )
 
     def fetchAutomaticCollection(self, collection_id: int):
         return (
             self.session.query(AutomaticCollection)
-                .filter(AutomaticCollection.collection_id == collection_id)
-                .one()
+            .filter(AutomaticCollection.collection_id == collection_id)
+            .one()
         )
 
     def createStaticCollection(
-        self, title, creator, description, owner, workUUIDs=[], editionIDs=[],
+        self,
+        title,
+        creator,
+        description,
+        owner,
+        workUUIDs=[],
+        editionIDs=[],
     ):
         newCollection = Collection(
             uuid=uuid4(),
@@ -241,17 +263,22 @@ class DBClient():
 
         collectionEditions = []
         if len(workUUIDs) > 0:
-            collectionWorks = self.session.query(Work)\
-                .join(Work.editions)\
-                .filter(Work.uuid.in_(workUUIDs))\
+            collectionWorks = (
+                self.session.query(Work)
+                .join(Work.editions)
+                .filter(Work.uuid.in_(workUUIDs))
                 .all()
+            )
 
             for work in collectionWorks:
-                editions = list(sorted(
-                    [ed for ed in work.editions],
-                    key=lambda x: x.publication_date
-                    if x.publication_date else date.today()
-                ))
+                editions = list(
+                    sorted(
+                        [ed for ed in work.editions],
+                        key=lambda x: x.publication_date
+                        if x.publication_date
+                        else date.today(),
+                    )
+                )
 
                 for edition in editions:
                     if len(edition.items) > 0:
@@ -260,9 +287,7 @@ class DBClient():
 
         if len(editionIDs) > 0:
             collectionEditions.extend(
-                self.session.query(Edition)
-                .filter(Edition.id.in_(editionIDs))
-                .all()
+                self.session.query(Edition).filter(Edition.id.in_(editionIDs)).all()
             )
 
         newCollection.editions = collectionEditions
@@ -276,7 +301,8 @@ class DBClient():
         title,
         creator,
         description,
-        owner, *,
+        owner,
+        *,
         sortField,
         sortDirection,
         limit=None,
@@ -291,10 +317,11 @@ class DBClient():
             creator=creator,
             description=description,
             owner=owner,
-            type='automatic',
+            type="automatic",
         )
         nonNullKwargs = {
-            k: v for k, v in {
+            k: v
+            for k, v in {
                 "sort_field": sortField,
                 "sort_direction": sortDirection,
                 "limit": limit,
@@ -313,10 +340,7 @@ class DBClient():
         return newCollection
 
     def deleteCollection(self, uuid):
-        return self.session.query(Collection)\
-            .filter(Collection.uuid == uuid).delete()
+        return self.session.query(Collection).filter(Collection.uuid == uuid).delete()
 
     def fetchUser(self, user):
-        return self.session.query(User)\
-            .filter(User.user == user)\
-            .one_or_none()
+        return self.session.query(User).filter(User.user == user).one_or_none()

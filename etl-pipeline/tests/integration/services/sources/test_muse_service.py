@@ -13,6 +13,6 @@ def test_get_records():
 def test_get_record():
     muse_service = MUSEService()
 
-    record = muse_service.get_record(record_id='97971')
+    record = muse_service.get_record(record_id="97971")
 
     assert record is not None
