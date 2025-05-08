@@ -3,7 +3,6 @@
 # Additional notes - https://docs.google.com/document/d/1aZ5ODEzKP6qX1f4CCcGtlidRvr-Fu8HPA-AEhTwDTyk/edit?usp=sharing
 
 import os.path
-import pandas as pd
 from datetime import datetime, timedelta
 from google.auth.transport.requests import (
     AuthorizedSession,
@@ -48,23 +47,18 @@ class GRINClient(object):
     def acquired_today(self, *args, **kwargs):
         # For GRIN queries, range start is inclusive but the range end is exclusive.
         # This means you must set the upper range to one day after the desired date
-        today = datetime.now()
-        # today = datetime(2025, 5, 1)
+        # today = datetime.now()
+        today = datetime(2025, 5, 1)
         tomorrow = today + timedelta(1)
         year = today.strftime("%Y")
         month = today.strftime("%m")
         range_start = today.strftime("%Y-%m-%d")
         range_end = tomorrow.strftime("%Y-%m-%d")
+        
         data = self.get("_monthly_report?execute_query=true&year=%s&month=%s&check_in_date_start=%s&check_in_date_end=%s&format=text" %
                         (year, month, range_start, range_end))
         data = data.decode("utf8").split("\n")
-        headers = data[0].split('\t')
-        rows = []
-        for row in data[1:]:
-            if row != '':
-                rows.append(row.split('\t'))
-        df = pd.DataFrame(rows, columns=headers)
-        return df
+        return data
 
     def _for_state(self, state, *args, **kwargs):
         # Which books are in the given state?
@@ -100,6 +94,3 @@ class GRINClient(object):
         if isinstance(barcodes, list):
             barcodes = "\n".join(barcodes)
         self.session.request("POST", self._url("_process"), data=barcodes)
-
-client = GRINClient()
-print(client.acquired_today())
