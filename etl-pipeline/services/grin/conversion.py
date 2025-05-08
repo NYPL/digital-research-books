@@ -1,6 +1,7 @@
 # Script run daily to scrape and initialize conversion for GRIN books acquired in the previous day
 # Temporarily, script will also intialize conversion for backfilled books
 from .grin_client import GRINClient
+import logging
 import pandas as pd
 import os
 from model import GRINState, GRINStatus, Record, FRBRStatus
@@ -10,6 +11,11 @@ from uuid import uuid4
 
 CHUNK_SIZE = 1000
 
+logging.basicConfig(
+    filename="GRIN_conversion.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 
 class GRINConversion:
     def __init__(self):
@@ -34,10 +40,10 @@ class GRINConversion:
             dataframe = self.transform_scraped_data(data)
 
             barcodes_needing_conversion = dataframe.query('State == "NEW"')
-            self.save_barcodes(barcodes_needing_conversion, "PENDING_CONVERSION")
+            self.save_barcodes(barcodes_needing_conversion, GRINState.PENDING_CONVERSION)
 
             newly_converted_barcodes = dataframe.query('State == "CONVERTED"')
-            self.save_barcodes(newly_converted_barcodes, "CONVERTED")
+            self.save_barcodes(newly_converted_barcodes, GRINState.CONVERTED)
 
     def convert(self):
         # convert new books within the month
@@ -69,11 +75,11 @@ class GRINConversion:
                     Record(
                         uuid=uuid4(),
                         frbr_status=FRBRStatus.TODO.value,
-                        source_id=NOT_YET_IMPLEMENTED_ExprJoinedStr,
+                        source_id=f"{barcode}|grin",
                         grin_status=GRINStatus(
                             barcode=barcode,
                             failed_download=0,
-                            state=GRINState.status.value,
+                            state=status.value,
                         ),
                     )
                 )
@@ -81,9 +87,8 @@ class GRINConversion:
             self.db_manager.session.bulk_save_objects(records)
             self.db_manager.commit_changes()
         except Exception:
-            self.logging.exception("Failed to add the following records")
+            self.logging.exception("Failed to add the following records:")
             raise
-
 
 def chunk(xs: Iterator, size: int) -> Iterator[list]:
     while True:
@@ -91,12 +96,16 @@ def chunk(xs: Iterator, size: int) -> Iterator[list]:
         try:
             for _ in range(size):
                 chunk.append(next(xs))
-            NOT_YET_IMPLEMENTED_ExprYield
+            yield chunk
         except StopIteration:
             if chunk:
-                NOT_YET_IMPLEMENTED_ExprYield
+                yield chunk
 
             break
 
+if __name__ == "__main__":
+    try:
+        conversion = GRINConversion()
+    except Exception as e:
+        logging.exception(e, exc_info=True)
 
-conversion = GRINConversion()
