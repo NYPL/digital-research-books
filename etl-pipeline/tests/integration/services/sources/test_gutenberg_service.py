@@ -1,4 +1,4 @@
-from services import GutenbergService
+from services.sources.gutenberg_service import GutenbergService
 
 
 def test_get_records():
