@@ -33,8 +33,8 @@ class ProcessParams:
 
 def parse_process_args(*args) -> ProcessParams:
     default_limit = None
-    
-    if os.environ.get('ENVIRONMENT') == 'qa':
+
+    if os.environ.get("ENVIRONMENT") == "qa":
         default_limit = 10
 
     return ProcessParams(
