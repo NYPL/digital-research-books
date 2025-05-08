@@ -96,7 +96,7 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
         logging.info(f"Inserting {len(chunked_barcodes)} barcodes into Record")
 
         try:
-            db_manager.session.bulk_save_objects(new_records)
+            db_manager.session.add_all(new_records)
             db_manager.commit_changes()
         except Exception:
             logging.exception("Failed to insert barcodes")
