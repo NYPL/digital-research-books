@@ -73,7 +73,7 @@ class GutenbergService(SourceService):
                 current_position += 1
 
                 yield gutenberg_record.record
-                
+
                 if limit is not None and current_position >= limit:
                     has_next_page = False
                     break
