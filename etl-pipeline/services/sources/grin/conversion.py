@@ -6,7 +6,6 @@ from google.auth.transport.requests import (
 from model import GRINState, GRINStatus, Record, FRBRStatus
 from managers import DBManager
 from google.oauth2.service_account import Credentials
-import json
 from services.ssm_service import SSMService
 from logger import create_log
 
@@ -40,24 +39,19 @@ class GRINConversion:
     def process_converted(self):
         converted_barcodes = self.client.converted()
 
-        if converted_barcodes and len(converted_barcodes) > 0:
+        if len(converted_barcodes) > 0:
             for barcode in converted_barcodes:
-                record = (
-                    self.db_manager.session.query(Record)
-                    .join(GRINStatus)
-                    .filter(
-                        Record.source_id == f"{barcode}|grin",
+                try:
+                    self.db_manager.session.query(GRINStatus).filter(
+                        GRINStatus.barcode == f"{barcode}",
                         GRINStatus.state != GRINState.DOWNLOADED.value,
-                    )
-                )
+                        GRINStatus.state != GRINState.CONVERTED.value,
+                    ).update({"state": GRINState.CONVERTED.value})
+                    self.db_manager.commit_changes()
+                except:
+                    self.db_manager.session.rollback()
+                    raise
 
-                if record is not None:
-                    try:
-                        record.grin_status.state = GRINState.CONVERTED.value
-                        self.db_manager.commit_changes()
-                    except Exception:
-                        self.db_manager.session.rollback()
-                        raise
 
 if __name__ == "__main__":
     # Run the process
