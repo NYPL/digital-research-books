@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from dateutil import parser
 from datetime import datetime, timedelta, timezone
+import os
 from typing import Optional
 
 
@@ -31,12 +32,17 @@ class ProcessParams:
 
 
 def parse_process_args(*args) -> ProcessParams:
+    default_limit = None
+    
+    if os.environ.get('ENVIRONMENT') == 'qa':
+        default_limit = 10
+
     return ProcessParams(
         process_type=args[0] if (len(args) > 0 and args[0]) else "daily",
         custom_file=args[1] if len(args) > 1 else None,
         ingest_period=args[2] if len(args) > 2 else None,
         record_id=args[3] if len(args) > 3 else None,
-        limit=int(args[4]) if len(args) > 4 and args[4] is not None else None,
+        limit=int(args[4]) if len(args) > 4 and args[4] is not None else default_limit,
         offset=int(args[5]) if len(args) > 5 and args[5] is not None else 0,
         source=args[6] if len(args) > 6 else None,
     )
