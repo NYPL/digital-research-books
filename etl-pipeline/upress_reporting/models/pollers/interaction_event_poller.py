@@ -10,9 +10,15 @@ REQUEST_REGEX = r"REST.GET.OBJECT "
 TIMESTAMP_REGEX = r"\[.+\]"
 
 
-class InteractionEventPoller():
-    def __init__(self, date_range, reporting_data: pandas.DataFrame,
-                 file_id_regex, bucket_name, interaction_type):
+class InteractionEventPoller:
+    def __init__(
+        self,
+        date_range,
+        reporting_data: pandas.DataFrame,
+        file_id_regex,
+        bucket_name,
+        interaction_type,
+    ):
         self.date_range = date_range
         self.reporting_data = reporting_data
         self.file_id_regex = file_id_regex
@@ -23,8 +29,7 @@ class InteractionEventPoller():
         self.get_events(self.bucket_name)
 
     def get_events(self, bucket_name):
-        self.events = self._pull_interaction_events_from_logs(
-            bucket_name)
+        self.events = self._pull_interaction_events_from_logs(bucket_name)
 
     def _pull_interaction_events_from_logs(self, bucket_name) -> list[InteractionEvent]:
         events = []
@@ -32,17 +37,20 @@ class InteractionEventPoller():
 
         for date in self.date_range:
             if date > today:
-                print("No logs exist past today's date: ",
-                      today.strftime("%b %d, %Y"))
+                print("No logs exist past today's date: ", today.strftime("%b %d, %Y"))
                 break
 
-            formatted_date = date.strftime('%Y/%m/%d')
-            file_name = f"analytics/upress_reporting/log_files/{
-                bucket_name}/{formatted_date}/aggregated_log"
+            formatted_date = date.strftime("%Y/%m/%d")
+            file_name = f"analytics/upress_reporting/log_files/{bucket_name}/{
+                formatted_date
+            }/aggregated_log"
 
             if not os.path.isfile(file_name):
-                print(f"There are no logs for {
-                      formatted_date}. Attempting to access logs beyond this date...")
+                print(
+                    f"There are no logs for {
+                        formatted_date
+                    }. Attempting to access logs beyond this date..."
+                )
                 continue
 
             events_per_day = self._parse_aggregated_log_file(file_name)
@@ -76,11 +84,12 @@ class InteractionEventPoller():
         if self.interaction_type == InteractionType.VIEW:
             file_name = match_file_id.group(1).split("/", 1)[1]
         else:
-            file_name = match_file_id.group(1).strip().split("\"")[0]
+            file_name = match_file_id.group(1).strip().split('"')[0]
 
-        drb_data_match = self.reporting_data.loc[self.reporting_data.index.str.contains(
-            file_name)]
-        
+        drb_data_match = self.reporting_data.loc[
+            self.reporting_data.index.str.contains(file_name)
+        ]
+
         if drb_data_match.empty:
             return None
 
@@ -98,9 +107,9 @@ class InteractionEventPoller():
             publication_year=match_data["publication_year"],
             disciplines=match_data["disciplines"],
             usage_type=match_data["usage_type"],
-            timestamp=match_time[0]
+            timestamp=match_time[0],
         )
-    
+
     def _map_ip_to_country(self, ip) -> str | None:
         if re.match(IP_REGEX, ip):
             geocoded_ip = geocoder.ip(ip)
@@ -111,6 +120,7 @@ class InteractionEventPoller():
         split_path = path.split("/")
         split_path[1] = "NYPL_AWS_ID"
         return "/".join(split_path)
+
 
 class UnconfiguredEnvironmentError(Exception):
     def __init__(self, message=None):

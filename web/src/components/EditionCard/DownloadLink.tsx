@@ -9,17 +9,19 @@ import React, { useState } from "react";
 import Link from "~/src/components/Link/Link";
 import { LOGIN_LINK_BASE } from "~/src/constants/links";
 import { trackCtaClick } from "~/src/lib/adobe/Analytics";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { fulfillFetcher } from "~/src/lib/api/SearchApi";
 import { ItemLink } from "~/src/types/DataModel";
 import { formatUrl } from "~/src/util/Util";
 import { LOGIN_TO_DOWNLOAD_TEST_ID } from "~/src/constants/testIds";
 
 const DownloadLink: React.FC<{
+  authors: string[];
   downloadLink: ItemLink;
   title: string;
   isLoggedIn: boolean;
   loginCookie?: any;
-}> = ({ downloadLink, title, isLoggedIn, loginCookie }) => {
+}> = ({ authors, downloadLink, title, isLoggedIn, loginCookie }) => {
   const router = useRouter();
   let errorModalMessage;
   const { onOpen, Modal } = useModal();
@@ -65,6 +67,14 @@ const DownloadLink: React.FC<{
         cta_section: `${title}`,
         cta_text: "Download",
         destination_url: `${linkUrl}`,
+      });
+      trackEvent({
+        "event":  "file_download",
+        "click_text": linkText,
+        "file_extension": downloadLink.mediaType == "application/pdf" ? "pdf" : "epub",
+        "file_name": title,
+        "item_title": title,
+        "item_author": authors,
       });
     };
 

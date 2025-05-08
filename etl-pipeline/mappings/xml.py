@@ -22,18 +22,18 @@ class XMLMapping(BaseMapping):
                 else:
                     fieldData = [f for s in structure for f in self.getFieldData(s)]
             except IndexError:
-                logger.debug(f'Missing data from field: {field}')
+                logger.debug(f"Missing data from field: {field}")
                 continue
-            
+
             setattr(newRecord, field, fieldData)
 
-        newRecord.identifiers = list(filter(
-            lambda x: x[0] != '|', newRecord.identifiers
-        ))
+        newRecord.identifiers = list(
+            filter(lambda x: x[0] != "|", newRecord.identifiers)
+        )
 
         self.record = newRecord
         self.applyFormatting()
-    
+
     def getFieldData(self, structure):
         if isinstance(structure[0], str):
             return [
@@ -56,13 +56,15 @@ class XMLMapping(BaseMapping):
                         else:
                             components.append(elem)
                 else:
-                    components.append('')
+                    components.append("")
                 groups.append(components)
 
-            fields = list(filter(self.filterEmptyFields, list(zip_longest(*groups, fillvalue=''))))
+            fields = list(
+                filter(self.filterEmptyFields, list(zip_longest(*groups, fillvalue="")))
+            )
             return [self.formatter.format(structure[1], *f) for f in fields]
-    
+
     def filterEmptyFields(self, fields):
-        if len(list(filter(lambda x: x != '', fields))) > 0:
+        if len(list(filter(lambda x: x != "", fields))) > 0:
             return True
         return False

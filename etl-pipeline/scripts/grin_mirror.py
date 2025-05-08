@@ -13,9 +13,7 @@ from pdb import set_trace
 
 
 class GRINClient(object):
-    
     def __init__(self, cache_dir):
-
         # Data -- books and lists of books -- is kept here.
         self.cache_dir = cache_dir
 
@@ -23,23 +21,24 @@ class GRINClient(object):
         for dir in (cache_dir, os.path.join(cache_dir, "books")):
             if not os.path.exists(dir):
                 os.makedirs(dir)
-        
+
         self.creds = self.load_creds()
         self.session = AuthorizedSession(self.creds)
-    
+
     def load_creds(self):
         ssm_service = SSMService()
-        service_account_file = ssm_service.get_parameter('grin-auth')
+        service_account_file = ssm_service.get_parameter("grin-auth")
         service_account_info = json.loads(service_account_file)
 
         scopes = [
-            'openid',
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile'
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
         ]
-    
+
         creds = Credentials.from_service_account_info(
-            service_account_info, scopes=scopes)
+            service_account_info, scopes=scopes
+        )
         return creds
 
     def _url(self, fragment):
@@ -48,7 +47,7 @@ class GRINClient(object):
     def get(self, url, filename, force=False):
         cache_path = os.path.join(self.cache_dir, filename)
         if os.path.exists(cache_path) and not force:
-            return open(cache_path, 'rb').read()
+            return open(cache_path, "rb").read()
         url = self._url(url)
         response = self.session.request("GET", url)
         if response.status_code != 200:
@@ -58,9 +57,9 @@ class GRINClient(object):
 
     def _for_state(self, state, *args, **kwargs):
         "Which books are in the given state?"
-        data = self.get("_%s?format=text" % state, "%s.txt" %state, *args, **kwargs)
+        data = self.get("_%s?format=text" % state, "%s.txt" % state, *args, **kwargs)
         return data.decode("utf8").strip().split("\n")
-        
+
     def available(self, *args, **kwargs):
         "Which barcodes are available for conversion?"
         return self._for_state("available", *args, **kwargs)
@@ -84,13 +83,14 @@ class GRINClient(object):
     def download(self, filename, *args, **kwargs):
         """Download a book."""
         return self.get(filename, os.path.join("books", filename), *args, **kwargs)
-    
+
     def please_process(self, barcodes):
         'Ask Google to move some barcodes from the "Available" state to "In-Process".'
         if isinstance(barcodes, list):
             barcodes = "\n".join(barcodes)
         # self.session.request("POST", self._url("_process"), body=barcodes) // signature seems wrong as of 2024
         self.session.request("POST", self._url("_process"), data=barcodes)
+
 
 client = GRINClient("cache")
 print("Number available: %s" % len(client.available()))

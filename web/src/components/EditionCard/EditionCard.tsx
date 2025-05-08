@@ -8,7 +8,7 @@ import {
   Flex,
 } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
-import { WorkEdition } from "~/src/types/DataModel";
+import { Agent, WorkEdition } from "~/src/types/DataModel";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
 import { PLACEHOLDER_COVER_LINK } from "~/src/constants/editioncard";
 import Ctas from "./Ctas";
@@ -22,10 +22,11 @@ import UpBlurb from "./UpBlurb";
 import CopyrightLink from "./CopyrightLink";
 
 export const EditionCard: React.FC<{
+  authors: Agent[];
   edition: WorkEdition;
   title: string;
   isFeaturedEdition?: boolean;
-}> = ({ edition, title, isFeaturedEdition }) => {
+}> = ({ authors, edition, title, isFeaturedEdition }) => {
   const previewItem = EditionCardUtils.getPreviewItem(edition.items);
 
   const editionYearElem = (edition: WorkEdition) => {
@@ -129,7 +130,7 @@ export const EditionCard: React.FC<{
           }}
           gap="xs"
         >
-          <Ctas item={previewItem} title={title} />
+          <Ctas authors={authors} item={previewItem} title={title} />
         </CardActions>
       </Card>
     </Box>

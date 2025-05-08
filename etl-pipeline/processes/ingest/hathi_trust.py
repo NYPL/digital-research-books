@@ -6,7 +6,8 @@ from .. import utils
 
 logger = create_log(__name__)
 
-class HathiTrustProcess():
+
+class HathiTrustProcess:
     def __init__(self, *args):
         self.hathi_trust_service = HathiTrustService()
         self.params = utils.parse_process_args(*args)
@@ -17,7 +18,7 @@ class HathiTrustProcess():
             process_type=self.params.process_type,
             ingest_period=self.params.ingest_period,
         )
-        
+
         return self.record_ingestor.ingest(
             self.hathi_trust_service.get_records(
                 start_timestamp=start_timestamp,

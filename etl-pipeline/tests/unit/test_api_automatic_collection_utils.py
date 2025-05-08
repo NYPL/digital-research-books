@@ -14,7 +14,10 @@ def test_fetchAutomaticCollectionEditions_mostRecent(mocker):
         sort_direction="DESC",
         limit=100,
     )
-    dbClient.fetchAllPreferredEditions.return_value = (20, mocker.sentinel.sortedEditions)
+    dbClient.fetchAllPreferredEditions.return_value = (
+        20,
+        mocker.sentinel.sortedEditions,
+    )
     total, editions = fetchAutomaticCollectionEditions(
         dbClient,
         mocker.sentinel.esClient,
@@ -39,22 +42,19 @@ def test_fetchAutomaticCollectionEditions_searchBased(mocker):
     )
     dbClient.fetchEditions.return_value = mocker.sentinel.editions
     esClient = mocker.MagicMock()
+
     def _mockHit(*editionIds):
         return mocker.MagicMock(
             meta=mocker.MagicMock(
                 inner_hits=mocker.MagicMock(
                     editions=mocker.MagicMock(
-                        hits=[
-                            mocker.MagicMock(edition_id=eid)
-                            for eid in editionIds
-                        ],
+                        hits=[mocker.MagicMock(edition_id=eid) for eid in editionIds],
                     )
                 ),
             ),
         )
 
     class _mockHits(list):
-
         def __init__(self, totalCount, *items):
             self.total = mocker.MagicMock(value=totalCount)
             super().__init__(items)

@@ -33,74 +33,109 @@ class KMeansManager:
         self.instances = instances
         self.df = None
         self.clusters = defaultdict(list)
-    
+
     def createPipeline(self, transformers):
         pipelineComponents = {
-            'place': ('place', Pipeline([
-                ('selector', FeatureSelector(key='place')),
-                ('tfidf', TfidfVectorizer(
-                    preprocessor=KMeansManager.pubProcessor,
-                    strip_accents='unicode',
-                    analyzer='char_wb',
-                    ngram_range=(2,4))
-                )
-            ])),
-            'publisher': ('publisher', Pipeline([
-                ('selector', FeatureSelector(key='publisher')),
-                ('tfidf', TfidfVectorizer(
-                    preprocessor=KMeansManager.pubProcessor,
-                    strip_accents='unicode',
-                    analyzer='char_wb',
-                    ngram_range=(2,4))
-                )
-            ])),
-            'edition': ('edition', Pipeline([
-                ('selector', FeatureSelector(key='edition')),
-                ('tfidf', TfidfVectorizer(
-                    preprocessor=KMeansManager.pubProcessor,
-                    strip_accents='unicode',
-                    analyzer='char_wb',
-                    ngram_range=(1,3))
-                )
-            ])),
-            'pubDate': ('pubDate', Pipeline([
-                ('selector', FeatureSelector(key='pubDate')),
-                ('vect', DictVectorizer())
-            ]))
+            "place": (
+                "place",
+                Pipeline(
+                    [
+                        ("selector", FeatureSelector(key="place")),
+                        (
+                            "tfidf",
+                            TfidfVectorizer(
+                                preprocessor=KMeansManager.pubProcessor,
+                                strip_accents="unicode",
+                                analyzer="char_wb",
+                                ngram_range=(2, 4),
+                            ),
+                        ),
+                    ]
+                ),
+            ),
+            "publisher": (
+                "publisher",
+                Pipeline(
+                    [
+                        ("selector", FeatureSelector(key="publisher")),
+                        (
+                            "tfidf",
+                            TfidfVectorizer(
+                                preprocessor=KMeansManager.pubProcessor,
+                                strip_accents="unicode",
+                                analyzer="char_wb",
+                                ngram_range=(2, 4),
+                            ),
+                        ),
+                    ]
+                ),
+            ),
+            "edition": (
+                "edition",
+                Pipeline(
+                    [
+                        ("selector", FeatureSelector(key="edition")),
+                        (
+                            "tfidf",
+                            TfidfVectorizer(
+                                preprocessor=KMeansManager.pubProcessor,
+                                strip_accents="unicode",
+                                analyzer="char_wb",
+                                ngram_range=(1, 3),
+                            ),
+                        ),
+                    ]
+                ),
+            ),
+            "pubDate": (
+                "pubDate",
+                Pipeline(
+                    [
+                        ("selector", FeatureSelector(key="pubDate")),
+                        ("vect", DictVectorizer()),
+                    ]
+                ),
+            ),
         }
 
         pipelineWeights = {
-            'place': 1.0,
-            'publisher': 1.0,
-            'edition': 1.0,
-            'pubDate': 1.75
+            "place": 1.0,
+            "publisher": 1.0,
+            "edition": 1.0,
+            "pubDate": 1.75,
         }
 
-        return Pipeline([
-            ('union', FeatureUnion(
-                transformer_list=[pipelineComponents[t] for t in transformers],
-                transformer_weights={t: pipelineWeights[t] for t in transformers}
-            )),
-            ('kmeans', KMeans(n_clusters=self.currentK, max_iter=100, n_init=3))
-        ])
-    
+        return Pipeline(
+            [
+                (
+                    "union",
+                    FeatureUnion(
+                        transformer_list=[pipelineComponents[t] for t in transformers],
+                        transformer_weights={
+                            t: pipelineWeights[t] for t in transformers
+                        },
+                    ),
+                ),
+                ("kmeans", KMeans(n_clusters=self.currentK, max_iter=100, n_init=3)),
+            ]
+        )
+
     @classmethod
     def pubProcessor(cls, raw):
         if isinstance(raw, list):
-            raw = ', '.join(filter(None, raw))
+            raw = ", ".join(filter(None, raw))
         if raw is not None:
-            raw = raw.replace('&', 'and')
-            cleanStr = raw.translate(
-                str.maketrans('', '', string.punctuation)
-            ).lower()
-            cleanStr = cleanStr\
-                .replace('sn', '')\
-                .replace('place of publication not identified', '')\
-                .replace('publisher not identified', '')
-            cleanStr = re.sub(r'\s+', ' ', cleanStr)
+            raw = raw.replace("&", "and")
+            cleanStr = raw.translate(str.maketrans("", "", string.punctuation)).lower()
+            cleanStr = (
+                cleanStr.replace("sn", "")
+                .replace("place of publication not identified", "")
+                .replace("publisher not identified", "")
+            )
+            cleanStr = re.sub(r"\s+", " ", cleanStr)
             return cleanStr
-        logger.debug('Unable to clean NoneType, returning empty string')
-        return ''
+        logger.debug("Unable to clean NoneType, returning empty string")
+        return ""
 
     def createDF(self):
         frameRows = []
@@ -109,29 +144,32 @@ class KMeansManager:
             spatialData, dateData, publisherData = self.getInstanceData(i)
 
             if bool(spatialData) or dateData != {} or publisherData:
-                frameRows.append({
-                    'place': spatialData or '',
-                    'publisher': publisherData,
-                    'pubDate': dateData,
-                    'edition': self.getEditionStatement(i.has_version),
-                    'uuid': i.uuid
-                })
+                frameRows.append(
+                    {
+                        "place": spatialData or "",
+                        "publisher": publisherData,
+                        "pubDate": dateData,
+                        "edition": self.getEditionStatement(i.has_version),
+                        "uuid": i.uuid,
+                    }
+                )
 
         self.df = pd.DataFrame(frameRows)
 
         self.maxK = len(self.df.index) if len(self.df.index) > 1 else 2
 
         if self.maxK > 5000:
-            self.maxK = int(self.maxK * (1/9))
+            self.maxK = int(self.maxK * (1 / 9))
         elif self.maxK > 1000:
-            self.maxK = int(self.maxK * (2/9))
+            self.maxK = int(self.maxK * (2 / 9))
         elif self.maxK > 500:
-            self.maxK = int(self.maxK * (3/9))
+            self.maxK = int(self.maxK * (3 / 9))
         elif self.maxK > 250:
-            self.maxK = int(self.maxK * (4/9))
+            self.maxK = int(self.maxK * (4 / 9))
 
-        if self.maxK > 1000: self.maxK = 1000
-    
+        if self.maxK > 1000:
+            self.maxK = 1000
+
     @classmethod
     def getInstanceData(cls, instance):
         spatial = instance.spatial
@@ -142,29 +180,30 @@ class KMeansManager:
 
     @classmethod
     def getPubDateObject(cls, dates):
-        if dates is None or len(dates) < 1: return {}
+        if dates is None or len(dates) < 1:
+            return {}
 
         pubYears = {}
 
         for d in dates:
             try:
-                date, dateType = tuple(d.split('|'))
+                date, dateType = tuple(d.split("|"))
 
-                dateGroups = re.search(r'([\d\-\?]+)', date)
+                dateGroups = re.search(r"([\d\-\?]+)", date)
 
                 dateStr = dateGroups.group(1)
 
-                startYear, endYear = ('', '')
+                startYear, endYear = ("", "")
 
-                if re.match(r'[0-9]{4}-[0-9]{4}', dateStr):
-                    rangeMatches = re.match(r'([0-9]{4})-([0-9]{4})', dateStr)
+                if re.match(r"[0-9]{4}-[0-9]{4}", dateStr):
+                    rangeMatches = re.match(r"([0-9]{4})-([0-9]{4})", dateStr)
                     startYear = rangeMatches.group(1)
                     endYear = rangeMatches.group(2)
-                elif re.match(r'[0-9]{4}-[0-9]{2}-[0-9]{2}', dateStr):
-                    year, _, _ = tuple(dateStr.split('-'))
+                elif re.match(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", dateStr):
+                    year, _, _ = tuple(dateStr.split("-"))
                     startYear, endYear = (year, year)
-                elif re.match(r'[0-9]{4}-[0-9]{2}', dateStr):
-                    year, _ = tuple(dateStr.split('-'))
+                elif re.match(r"[0-9]{4}-[0-9]{2}", dateStr):
+                    year, _ = tuple(dateStr.split("-"))
                     startYear, endYear = (year, year)
                 else:
                     startYear, endYear = (dateStr, dateStr)
@@ -173,53 +212,55 @@ class KMeansManager:
                 yearParser.setYearComponents()
                 pubYears[dateType] = dict(yearParser)
             except (ValueError, AttributeError, IndexError) as e:
-                logger.warning('Unable to parse date {}'.format(d))
+                logger.warning("Unable to parse date {}".format(d))
 
-        for datePref in ['copyright_date', 'publication_date', 'issued']:
+        for datePref in ["copyright_date", "publication_date", "issued"]:
             if datePref in pubYears.keys():
                 return pubYears[datePref]
-        
-        logger.debug('Unable to locate publication date')
+
+        logger.debug("Unable to locate publication date")
         return {}
-    
+
     @classmethod
     def getPublishers(cls, publishers):
-        if not publishers or len(publishers) < 1: return ''
+        if not publishers or len(publishers) < 1:
+            return ""
 
         pubs = []
         for pub in publishers:
-            if not pub: continue 
+            if not pub:
+                continue
 
-            publisher, *_ = tuple(pub.split('|'))
-            pubs.append(publisher.strip(',. []').lower())
+            publisher, *_ = tuple(pub.split("|"))
+            pubs.append(publisher.strip(",. []").lower())
 
-        return ', '.join(pubs)
+        return ", ".join(pubs)
 
     @classmethod
     def getEditionStatement(cls, hasVersion):
         if not hasVersion:
-            return ''
+            return ""
         for version in hasVersion:
             try:
-                statement, _ = tuple(version.split('|'))
+                statement, _ = tuple(version.split("|"))
                 return statement
             except ValueError:
                 pass
-        
-        return ''
-    
+
+        return ""
+
     def generateClusters(self):
         try:
             self.getK(2, self.maxK)
         except ZeroDivisionError:
-            logger.warning('Single instance found - setting K to 1')
+            logger.warning("Single instance found - setting K to 1")
             self.k = 1
-        
+
         try:
             labels = self.cluster(self.k)
         except ValueError as err:
             labels = [0] * len(self.instances)
-        
+
         for n, item in enumerate(labels):
             try:
                 self.clusters[item].append(self.df.loc[[n]])
@@ -227,7 +268,7 @@ class KMeansManager:
                 continue
 
     def getK(self, start, stop):
-        warnings.filterwarnings('error', category=ConvergenceWarning)
+        warnings.filterwarnings("error", category=ConvergenceWarning)
 
         startScore = 0
         stopScore = 0
@@ -236,20 +277,22 @@ class KMeansManager:
         prevStop = 0
 
         while True:
-            middle = int((stop + start)/2)
+            middle = int((stop + start) / 2)
 
             try:
-                if start != prevStart: startScore = self.cluster(start, score=True) 
+                if start != prevStart:
+                    startScore = self.cluster(start, score=True)
             except (ValueError, ConvergenceWarning):
-                logger.debug('Exceeded number of distinct clusters, break')
+                logger.debug("Exceeded number of distinct clusters, break")
                 start = 1
                 startScore = 1
                 break
 
             try:
-                if stop != prevStop: stopScore = self.cluster(stop, score=True) 
+                if stop != prevStop:
+                    stopScore = self.cluster(stop, score=True)
             except (ValueError, ConvergenceWarning):
-                logger.debug('Exceeded number of distinct clusters, break')
+                logger.debug("Exceeded number of distinct clusters, break")
                 stop = middle
                 continue
 
@@ -268,7 +311,7 @@ class KMeansManager:
 
     def cluster(self, k, score=False):
         self.currentK = k
-        logger.debug('Generating cluster for k={}'.format(k))
+        logger.debug("Generating cluster for k={}".format(k))
         columnsWithData = self.getDataColumns()
         pipeline = self.createPipeline(columnsWithData)
 
@@ -284,23 +327,24 @@ class KMeansManager:
     def getDataColumns(self):
         dataColumns = []
         for colName in self.df.columns:
-            if colName == 'uuid': continue
+            if colName == "uuid":
+                continue
 
-            hasValue = self.df[colName] != ''
+            hasValue = self.df[colName] != ""
             if len(list(filter(lambda x: x is True, list(hasValue.head())))) > 0:
                 dataColumns.append(colName)
-        
+
         return dataColumns
-    
+
     def parseEditions(self):
         eds = []
         for clust in dict(self.clusters):
             yearEds = defaultdict(list)
-            logger.debug('Parsing cluster {}'.format(clust))
+            logger.debug("Parsing cluster {}".format(clust))
             for ed in self.clusters[clust]:
-                editionYear = YearObject.convertYearDictToStr(ed.iloc[0]['pubDate'])
-                logger.debug('Adding instance to {} edition'.format(editionYear))
-                yearEds[editionYear].append(ed.iloc[0]['uuid'])
+                editionYear = YearObject.convertYearDictToStr(ed.iloc[0]["pubDate"])
+                logger.debug("Adding instance to {} edition".format(editionYear))
+                yearEds[editionYear].append(ed.iloc[0]["uuid"])
             eds.extend([(year, data) for year, data in yearEds.items()])
             eds.sort(key=lambda x: x[0])
 
@@ -319,41 +363,54 @@ class YearObject:
         self.setCentury()
         self.setDecade()
         self.setYear()
-    
+
     def setCentury(self):
         self.century[0] = int(self.start[:2])
 
-        if len(self.end) > 2: self.century[1] = int(self.end[:2])
+        if len(self.end) > 2:
+            self.century[1] = int(self.end[:2])
 
     def setDecade(self):
-        if self.start[2] not in ['-', '?']: self.decade[0] = int(self.start[2])
+        if self.start[2] not in ["-", "?"]:
+            self.decade[0] = int(self.start[2])
 
-        if len(self.end) > 2 and self.end[2] not in ['-', '?']: self.decade[1] = int(self.end[2])
+        if len(self.end) > 2 and self.end[2] not in ["-", "?"]:
+            self.decade[1] = int(self.end[2])
 
     def setYear(self):
-        if self.start[3] not in ['-', '?']: self.year[0] = int(self.start[3])
+        if self.start[3] not in ["-", "?"]:
+            self.year[0] = int(self.start[3])
 
-        if len(self.end) > 2 and self.end[3] not in ['-', '?']: self.year[1] = int(self.end[3])
+        if len(self.end) > 2 and self.end[3] not in ["-", "?"]:
+            self.year[1] = int(self.end[3])
 
     def __iter__(self):
-        for key in ['century', 'decade', 'year']:
+        for key in ["century", "decade", "year"]:
             yearComp = getattr(self, key)
 
-            if yearComp[0] is not None: yield '{}Start'.format(key), yearComp[0]
+            if yearComp[0] is not None:
+                yield "{}Start".format(key), yearComp[0]
 
-            if yearComp[1] is not None: yield '{}End'.format(key), yearComp[1]
+            if yearComp[1] is not None:
+                yield "{}End".format(key), yearComp[1]
 
     @staticmethod
     def convertYearDictToStr(yearDict):
-        startYear = YearObject.getYearStr(yearDict, 'Start')
-        endYear = YearObject.getYearStr(yearDict, 'End')
+        startYear = YearObject.getYearStr(yearDict, "Start")
+        endYear = YearObject.getYearStr(yearDict, "End")
 
-        return '{}-{}'.format(startYear, endYear) if endYear and endYear != startYear else str(startYear)
+        return (
+            "{}-{}".format(startYear, endYear)
+            if endYear and endYear != startYear
+            else str(startYear)
+        )
 
     @staticmethod
     def getYearStr(yearDict, yearType):
-        century = yearDict.get('century{}'.format(yearType), None)
-        decade = yearDict.get('decade{}'.format(yearType), None)
-        year = yearDict.get('year{}'.format(yearType), None)
+        century = yearDict.get("century{}".format(yearType), None)
+        decade = yearDict.get("decade{}".format(yearType), None)
+        year = yearDict.get("year{}".format(yearType), None)
 
-        return ''.join(map(lambda x: str(x) if x is not None else 'x', [century, decade, year]))
+        return "".join(
+            map(lambda x: str(x) if x is not None else "x", [century, decade, year])
+        )

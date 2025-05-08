@@ -4,19 +4,35 @@ from .assert_record_clustered import assert_record_clustered
 
 
 def test_cluster_record(db_manager, redis_manager, unclustered_pipeline_record_uuid):
-    record_clusterer = RecordClusterer(db_manager=db_manager, redis_manager=redis_manager)
+    record_clusterer = RecordClusterer(
+        db_manager=db_manager, redis_manager=redis_manager
+    )
 
-    unclustered_record = db_manager.session.query(Record).filter(Record.uuid == unclustered_pipeline_record_uuid).first()
+    unclustered_record = (
+        db_manager.session.query(Record)
+        .filter(Record.uuid == unclustered_pipeline_record_uuid)
+        .first()
+    )
 
     record_clusterer.cluster_record(unclustered_record)
 
-    assert_record_clustered(record_uuid=unclustered_pipeline_record_uuid, db_manager=db_manager)
+    assert_record_clustered(
+        record_uuid=unclustered_pipeline_record_uuid, db_manager=db_manager
+    )
 
 
-def test_cluster_multi_edition(db_manager, redis_manager, unclustered_multi_edition_uuid):
-    record_clusterer = RecordClusterer(db_manager=db_manager, redis_manager=redis_manager)
+def test_cluster_multi_edition(
+    db_manager, redis_manager, unclustered_multi_edition_uuid
+):
+    record_clusterer = RecordClusterer(
+        db_manager=db_manager, redis_manager=redis_manager
+    )
 
-    record_to_cluster = db_manager.session.query(Record).filter(Record.uuid == unclustered_multi_edition_uuid).first()
+    record_to_cluster = (
+        db_manager.session.query(Record)
+        .filter(Record.uuid == unclustered_multi_edition_uuid)
+        .first()
+    )
 
     record_clusterer.cluster_record(record_to_cluster)
 
@@ -24,22 +40,22 @@ def test_cluster_multi_edition(db_manager, redis_manager, unclustered_multi_edit
 
     assert record_to_cluster.cluster_status == True
     assert record_to_cluster.state == RecordState.CLUSTERED.value
-    
+
     work = (
         db_manager.session.query(Work)
-            .join(Edition, Work.id == Edition.work_id)
-            .join(Item, Edition.id == Item.edition_id)
-            .filter(Item.record_id == record_to_cluster.id)
-            .first()
+        .join(Edition, Work.id == Edition.work_id)
+        .join(Item, Edition.id == Item.edition_id)
+        .filter(Item.record_id == record_to_cluster.id)
+        .first()
     )
 
     editions = (
         db_manager.session.query(Edition)
-            .join(Item, Edition.id == Item.edition_id)
-            .filter(Edition.work_id == work.id)
-            .all()
+        .join(Item, Edition.id == Item.edition_id)
+        .filter(Edition.work_id == work.id)
+        .all()
     )
-    
+
     assert work is not None
 
     assert len(editions) == 2
@@ -49,9 +65,15 @@ def test_cluster_multi_edition(db_manager, redis_manager, unclustered_multi_edit
 
 
 def test_cluster_multi_item(db_manager, redis_manager, unclustered_multi_item_uuid):
-    record_clusterer = RecordClusterer(db_manager=db_manager, redis_manager=redis_manager)
+    record_clusterer = RecordClusterer(
+        db_manager=db_manager, redis_manager=redis_manager
+    )
 
-    record_to_cluster = db_manager.session.query(Record).filter(Record.uuid == unclustered_multi_item_uuid).first()
+    record_to_cluster = (
+        db_manager.session.query(Record)
+        .filter(Record.uuid == unclustered_multi_item_uuid)
+        .first()
+    )
 
     record_clusterer.cluster_record(record_to_cluster)
 
@@ -59,28 +81,26 @@ def test_cluster_multi_item(db_manager, redis_manager, unclustered_multi_item_uu
 
     assert record_to_cluster.cluster_status == True
     assert record_to_cluster.state == RecordState.CLUSTERED.value
-    
+
     work = (
         db_manager.session.query(Work)
-            .join(Edition, Work.id == Edition.work_id)
-            .join(Item, Edition.id == Item.edition_id)
-            .filter(Item.record_id == record_to_cluster.id)
-            .first()
+        .join(Edition, Work.id == Edition.work_id)
+        .join(Item, Edition.id == Item.edition_id)
+        .filter(Item.record_id == record_to_cluster.id)
+        .first()
     )
 
     editions = (
         db_manager.session.query(Edition)
-            .join(Item, Edition.id == Item.edition_id)
-            .filter(Edition.work_id == work.id)
-            .all()
+        .join(Item, Edition.id == Item.edition_id)
+        .filter(Edition.work_id == work.id)
+        .all()
     )
-    
+
     items = (
-        db_manager.session.query(Item)
-            .filter(Item.edition_id == editions[0].id)
-            .all()
+        db_manager.session.query(Item).filter(Item.edition_id == editions[0].id).all()
     )
-    
+
     assert work is not None
 
     assert len(editions) == 1
