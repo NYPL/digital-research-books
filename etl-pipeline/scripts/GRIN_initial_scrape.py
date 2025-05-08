@@ -54,13 +54,7 @@ def main():
     auth = AuthSession()
     authed_session = auth.get_session()
 
-    db_manager = DBManager(
-        user=os.environ.get("POSTGRES_USER", None),
-        pswd=os.environ.get("POSTGRES_PSWD", None),
-        host=os.environ.get("POSTGRES_HOST", None),
-        port=os.environ.get("POSTGRES_PORT", None),
-        db=os.environ.get("POSTGRES_NAME", None),
-    )
+    db_manager = DBManager()
     db_manager.create_session()
 
     url = f"{DEFAULT_BASE_URL}/_all_books?book_state=NEW&book_state=PREVIOUSLY_DOWNLOADED&format=text"
