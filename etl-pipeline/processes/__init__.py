@@ -3,11 +3,7 @@ from .ingest.doab import DOABProcess
 from .ingest.gutenberg import GutenbergProcess
 from .ingest.hathi_trust import HathiTrustProcess
 from .ingest.nypl import NYPLProcess
-from .frbr.catalog import CatalogProcess
-from .frbr.classify import ClassifyProcess
-from .cluster import ClusterProcess
 from .local_development.local_development_setup import LocalDevelopmentSetupProcess
-from .file.s3_files import S3Process
 from .api import APIProcess
 from .ingest.muse import MUSEProcess
 from .ingest.met import METProcess
