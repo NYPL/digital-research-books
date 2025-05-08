@@ -10,6 +10,7 @@ from uuid import uuid4
 
 CHUNK_SIZE = 1000
 
+
 class GRINConversion:
     def __init__(self):
         self.client = GRINClient()
@@ -21,7 +22,7 @@ class GRINConversion:
             db=os.environ.get("POSTGRES_NAME", None),
         )
         self.db_manager.create_session()
-        
+
         self.acquire_new_books()
 
         self.db_manager.session.close()
@@ -37,7 +38,7 @@ class GRINConversion:
 
             newly_converted_barcodes = dataframe.query('State == "CONVERTED"')
             self.save_barcodes(newly_converted_barcodes, "CONVERTED")
-            
+
     def convert(self):
         # convert new books within the month
         pass
@@ -51,24 +52,24 @@ class GRINConversion:
         pass
 
     def transform_scraped_data(self, data):
-        headers = data[0].split('\t')
+        headers = data[0].split("\t")
         rows = []
         for row in data[1:]:
-            if row != '':
-                rows.append(row.split('\t'))
-        
+            if row != "":
+                rows.append(row.split("\t"))
+
         return pd.DataFrame(rows, columns=headers)
 
     def save_barcodes(self, barcodes, status):
         for chunked_barcodes in chunk(iter(barcodes), CHUNK_SIZE):
             records: List[Record] = []
-            
+
             for barcode in chunked_barcodes:
                 records.append(
                     Record(
                         uuid=uuid4(),
                         frbr_status=FRBRStatus.TODO.value,
-                        source_id=f"{barcode}|grin",
+                        source_id=NOT_YET_IMPLEMENTED_ExprJoinedStr,
                         grin_status=GRINStatus(
                             barcode=barcode,
                             failed_download=0,
@@ -90,11 +91,12 @@ def chunk(xs: Iterator, size: int) -> Iterator[list]:
         try:
             for _ in range(size):
                 chunk.append(next(xs))
-            yield chunk
+            NOT_YET_IMPLEMENTED_ExprYield
         except StopIteration:
             if chunk:
-                yield chunk
+                NOT_YET_IMPLEMENTED_ExprYield
 
             break
+
 
 conversion = GRINConversion()

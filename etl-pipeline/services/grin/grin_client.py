@@ -12,38 +12,39 @@ import json
 from ..ssm_service import SSMService
 from pdb import set_trace
 
+
 class GRINClient(object):
-    
     def __init__(self):
         self.creds = self.load_creds()
         self.session = AuthorizedSession(self.creds)
-    
+
     def load_creds(self):
         ssm_service = SSMService()
-        service_account_file = ssm_service.get_parameter('grin-auth')
+        service_account_file = ssm_service.get_parameter("grin-auth")
         service_account_info = json.loads(service_account_file)
 
         scopes = [
-            'openid',
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile'
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
         ]
-    
+
         creds = Credentials.from_service_account_info(
-            service_account_info, scopes=scopes)
+            service_account_info, scopes=scopes
+        )
         return creds
 
     def _url(self, fragment):
         return "https://books.google.com/libraries/NYPL/" + fragment
 
-    def get(self, url,force=False):
+    def get(self, url, force=False):
         url = self._url(url)
         print(url)
         response = self.session.request("GET", url)
         if response.status_code != 200:
             raise IOError("%s got %s unexpectedly" % (url, response.status_code))
         return response.content
-    
+
     def acquired_today(self, *args, **kwargs):
         # For GRIN queries, range start is inclusive but the range end is exclusive.
         # This means you must set the upper range to one day after the desired date
@@ -54,9 +55,11 @@ class GRINClient(object):
         month = today.strftime("%m")
         range_start = today.strftime("%Y-%m-%d")
         range_end = tomorrow.strftime("%Y-%m-%d")
-        
-        data = self.get("_monthly_report?execute_query=true&year=%s&month=%s&check_in_date_start=%s&check_in_date_end=%s&format=text" %
-                        (year, month, range_start, range_end))
+
+        data = self.get(
+            "_monthly_report?execute_query=true&year=%s&month=%s&check_in_date_start=%s&check_in_date_end=%s&format=text"
+            % (year, month, range_start, range_end)
+        )
         data = data.decode("utf8").split("\n")
         return data
 
@@ -64,7 +67,7 @@ class GRINClient(object):
         # Which books are in the given state?
         data = self.get("_%s?format=text" % state, *args, **kwargs)
         return data.decode("utf8").strip().split("\n")
-        
+
     def available(self, *args, **kwargs):
         # Which barcodes are available for conversion?
         return self._for_state("available", *args, **kwargs)
@@ -88,7 +91,7 @@ class GRINClient(object):
     def download(self, filename, *args, **kwargs):
         # Download desired book
         return self.get(filename, os.path.join("books", filename), *args, **kwargs)
-    
+
     def please_process(self, barcodes):
         # Ask Google to move some barcodes from the "Available" state to "In-Process"
         if isinstance(barcodes, list):
