@@ -10,7 +10,6 @@ from google.oauth2.service_account import Credentials
 import json
 from services.ssm_service import SSMService
 from uuid import uuid4
-import argparse
 import os
 
 
@@ -52,11 +51,6 @@ class AuthSession(object):
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--url", default=DEFAULT_BASE_URL)
-    parser.add_argument("--size", default=DEFAULT_CHUNK_SIZE)
-    args = parser.parse_args()
-
     auth = AuthSession()
     authed_session = auth.get_session()
 
@@ -69,7 +63,7 @@ def main():
     )
     db_manager.create_session()
 
-    url = f"{args.url}/_all_books?book_state=NEW&book_state=PREVIOUSLY_DOWNLOADED&format=text"
+    url = f"{DEFAULT_BASE_URL}/_all_books?book_state=NEW&book_state=PREVIOUSLY_DOWNLOADED&format=text"
     logging.info(f"Scraping url: {url}")
 
     response = authed_session.get(url, timeout=600)
@@ -78,7 +72,9 @@ def main():
     barcodes = response.content.decode("utf8").strip().split("\n")
 
     if len(barcodes) > 0:
-        insert_into_db(barcodes=barcodes, db_manager=db_manager, chunk_size=args.size)
+        insert_into_db(
+            barcodes=barcodes, db_manager=db_manager, chunk_size=DEFAULT_CHUNK_SIZE
+        )
     else:
         logging.info("No record found")
 
@@ -109,7 +105,8 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
             db_manager.session.bulk_save_objects(new_records)
             db_manager.commit_changes()
         except Exception:
-            logging.exception("Failed to add records")
+            logging.exception("Failed to insert barcodes")
+            logging.exception(chunked_barcodes)
             raise
 
     logging.info("Complete.")
