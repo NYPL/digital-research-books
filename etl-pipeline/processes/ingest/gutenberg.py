@@ -20,6 +20,5 @@ class GutenbergProcess:
             ),
             offset=self.params.offset,
             limit=self.params.limit,
-            record_only=True,
         )
         return self.record_ingestor.ingest(records)

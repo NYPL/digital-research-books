@@ -9,6 +9,7 @@ from typing import Optional, Generator
 
 from constants.get_constants import get_constants
 from mappings.gutenberg import GutenbergMapping
+from model import Record
 from .source_service import SourceService
 from logger import create_log
 
@@ -41,8 +42,7 @@ class GutenbergService(SourceService):
         start_timestamp: Optional[datetime] = None,
         offset: int = 0,
         limit: Optional[int] = None,
-        record_only: bool = False,
-    ) -> Generator[GutenbergMapping, None, None]:
+    ) -> Generator[Record, None, None]:
         current_position = 0
         page_size = 100
 
@@ -72,10 +72,8 @@ class GutenbergService(SourceService):
                 gutenberg_record.applyMapping()
                 current_position += 1
 
-                if record_only:
-                    yield gutenberg_record.record
-                else:
-                    yield gutenberg_record
+                yield gutenberg_record.record
+
                 if limit is not None and current_position >= limit:
                     has_next_page = False
                     break
