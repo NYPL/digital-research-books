@@ -39,7 +39,6 @@ class GRINClient(object):
 
     def get(self, url, force=False):
         url = self._url(url)
-        print(url)
         response = self.session.request("GET", url)
         if response.status_code != 200:
             raise IOError("%s got %s unexpectedly" % (url, response.status_code))
