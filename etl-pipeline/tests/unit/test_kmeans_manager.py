@@ -141,7 +141,6 @@ class TestKMeansModel(object):
         mockPipeline.side_effect = [
             "placePipe",
             "pubPipe",
-            "edPipe",
             "datePipe",
             "mainPipe",
         ]
@@ -184,8 +183,6 @@ class TestKMeansModel(object):
             (None, {}, None),
             ("place2", {"century": 19, "decade": 5, "year": 1}, None),
         ]
-        mockGetEd = mocker.patch.object(KMeansManager, "getEditionStatement")
-        mockGetEd.side_effect = ["ed1", "ed2", False]
 
         testModel.createDF()
         assert isinstance(testModel.df, pd.DataFrame)
@@ -199,7 +196,6 @@ class TestKMeansModel(object):
         ]
         mockGetData = mocker.patch.object(KMeansManager, "getInstanceData")
         mockGetData.side_effect = [(i, i, i) for i in range(1200)]
-        mocker.patch.object(KMeansManager, "getEditionStatement")
 
         testModel.createDF()
 
@@ -211,7 +207,6 @@ class TestKMeansModel(object):
         ]
         mockGetData = mocker.patch.object(KMeansManager, "getInstanceData")
         mockGetData.side_effect = [(i, i, i) for i in range(750)]
-        mocker.patch.object(KMeansManager, "getEditionStatement")
 
         testModel.createDF()
 
@@ -223,7 +218,6 @@ class TestKMeansModel(object):
         ]
         mockGetData = mocker.patch.object(KMeansManager, "getInstanceData")
         mockGetData.side_effect = [(i, i, i) for i in range(350)]
-        mocker.patch.object(KMeansManager, "getEditionStatement")
 
         testModel.createDF()
 
@@ -288,21 +282,6 @@ class TestKMeansModel(object):
         outPublisher = KMeansManager.getPublishers(None)
 
         assert outPublisher == ""
-
-    def test_getEditionStatement_value_present(self, mocker):
-        edStmt = KMeansManager.getEditionStatement(["edition|1"])
-
-        assert edStmt == "edition"
-
-    def test_getEditionStatement_no_value(self, mocker):
-        edStmt = KMeansManager.getEditionStatement(None)
-
-        assert edStmt == ""
-
-    def test_getEditionStatement_empty_array(self, mocker):
-        edStmt = KMeansManager.getEditionStatement([])
-
-        assert edStmt == ""
 
     def test_generateClusters_multiple(self, mocker, testModel):
         mockGetK = mocker.patch.object(KMeansManager, "getK")
