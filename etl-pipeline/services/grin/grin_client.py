@@ -48,8 +48,7 @@ class GRINClient(object):
     def acquired_today(self, *args, **kwargs):
         # For GRIN queries, range start is inclusive but the range end is exclusive.
         # This means you must set the upper range to one day after the desired date
-        # today = datetime.now()
-        today = datetime(2025, 5, 1)
+        today = datetime.now()
         tomorrow = today + timedelta(1)
         year = today.strftime("%Y")
         month = today.strftime("%m")
