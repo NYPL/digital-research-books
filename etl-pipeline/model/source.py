@@ -14,3 +14,4 @@ class Source(Enum):
     SCHOMBURG = "SCH Collection/Hathi files"
     U_OF_MICHIGAN_BACKLIST = "UofMichigan Backlist"
     OCLC_CATALOG = "oclcCatalog"
+    PUBLISHER_BACKLIST = "Publisher Backlist"
