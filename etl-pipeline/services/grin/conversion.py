@@ -1,5 +1,6 @@
 # Script run daily to scrape and initialize conversion for GRIN books acquired in the previous day
 # Temporarily, script will also intialize conversion for backfilled books
+# ruff: noqa
 from .grin_client import GRINClient
 import pandas as pd
 from model import GRINState, GRINStatus, Record, FRBRStatus
@@ -9,6 +10,7 @@ from uuid import uuid4
 from logger import create_log
 
 CHUNK_SIZE = 1000
+
 
 class GRINConversion:
     def __init__(self):
@@ -33,7 +35,7 @@ class GRINConversion:
             grin_converted_barcodes = dataframe.query('State == "CONVERTED"')
             self.save_barcodes(grin_converted_barcodes["Barcode"], GRINState.CONVERTED)
 
-            new_barcodes= dataframe.query('State == "NEW"')
+            new_barcodes = dataframe.query('State == "NEW"')
             self.save_barcodes(new_barcodes["Barcode"], GRINState.PENDING_CONVERSION)
 
     def convert(self):
@@ -53,11 +55,9 @@ class GRINConversion:
                         Record(
                             uuid=uuid4(),
                             frbr_status=FRBRStatus.TODO.value,
-                            source_id=f"{barcode}|grin",
+                            source_id=NOT_YET_IMPLEMENTED_ExprJoinedStr,
                             grin_status=GRINStatus(
-                                barcode=barcode,
-                                failed_download=0,
-                                state=status.value
+                                barcode=barcode, failed_download=0, state=status.value
                             ),
                         )
                     )
@@ -67,7 +67,7 @@ class GRINConversion:
             except Exception:
                 self.logger.exception("Failed to add the following records:")
                 raise
-    
+
     def process_converted_books(self):
         converted_barcodes = self.client.converted()
 
@@ -75,7 +75,7 @@ class GRINConversion:
             for barcode in converted_barcodes:
                 try:
                     self.db_manager.session.query(GRINStatus).filter(
-                        GRINStatus.barcode == f"{barcode}",
+                        GRINStatus.barcode == NOT_YET_IMPLEMENTED_ExprJoinedStr,
                         GRINStatus.state != GRINState.DOWNLOADED.value,
                         GRINStatus.state != GRINState.CONVERTED.value,
                     ).update({"state": GRINState.CONVERTED.value})
@@ -83,7 +83,7 @@ class GRINConversion:
                 except:
                     self.db_manager.session.rollback()
                     raise
-    
+
     def transform_scraped_data(self, data):
         headers = data[0].split("\t")
         rows = []
@@ -93,18 +93,20 @@ class GRINConversion:
 
         return pd.DataFrame(rows, columns=headers)
 
+
 def chunk(xs: Iterator, size: int) -> Iterator[list]:
     while True:
         chunk = []
         try:
             for _ in range(size):
                 chunk.append(next(xs))
-            yield chunk
+            NOT_YET_IMPLEMENTED_ExprYield
         except StopIteration:
             if chunk:
-                yield chunk
+                NOT_YET_IMPLEMENTED_ExprYield
 
             break
+
 
 if __name__ == "__main__":
     grin_conversion = GRINConversion()
