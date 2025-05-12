@@ -55,7 +55,7 @@ class GRINConversion:
                         Record(
                             uuid=uuid4(),
                             frbr_status=FRBRStatus.TODO.value,
-                            source_id=f"{barcode}|grin", # noqa
+                            source_id=f"{barcode}|grin",
                             grin_status=GRINStatus(
                                 barcode=barcode, failed_download=0, state=state.value
                             ),
@@ -75,7 +75,7 @@ class GRINConversion:
             for barcode in converted_barcodes:
                 try:
                     self.db_manager.session.query(GRINStatus).filter(
-                        GRINStatus.barcode == f"{barcode}", # noqa
+                        GRINStatus.barcode == f"{barcode}",
                         GRINStatus.state != GRINState.DOWNLOADED.value,
                         GRINStatus.state != GRINState.CONVERTED.value,
                     ).update({"state": GRINState.CONVERTED.value})
@@ -100,10 +100,10 @@ def chunk(xs: Iterator, size: int) -> Iterator[list]:
         try:
             for _ in range(size):
                 chunk.append(next(xs))
-            yield chunk # noqa
+            yield chunk
         except StopIteration:
             if chunk:
-                yield chunk # noqa
+                yield chunk
 
             break
 
