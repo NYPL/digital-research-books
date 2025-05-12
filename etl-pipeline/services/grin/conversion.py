@@ -3,7 +3,6 @@
 from .grin_client import GRINClient
 import logging
 import pandas as pd
-import os
 from model import GRINState, GRINStatus, Record, FRBRStatus
 from typing import List, Iterator
 from managers import DBManager
@@ -21,55 +20,46 @@ class GRINConversion:
     def __init__(self):
         self.client = GRINClient()
         self.db_manager = DBManager(
-            user=os.environ.get("POSTGRES_USER", None),
-            pswd=os.environ.get("POSTGRES_PSWD", None),
-            host=os.environ.get("POSTGRES_HOST", None),
-            port=os.environ.get("POSTGRES_PORT", None),
-            db=os.environ.get("POSTGRES_NAME", None),
+            user="localuser",
+            pswd="localpsql",
+            host="localhost",
+            port="5432",
+            db="drb_test_db",
         )
+
+    def run_process(self):
         self.db_manager.create_session()
 
-        self.acquire_new_books()
+        self.acquire_and_convert_new_books()
+
+        self.process_converted_books()
 
         self.db_manager.session.close()
-        pass
 
-    def acquire_new_books(self):
+    def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
         if len(data) > 1:
             dataframe = self.transform_scraped_data(data)
 
-            barcodes_needing_conversion = dataframe.query('State == "NEW"')
-            self.save_barcodes(barcodes_needing_conversion, GRINState.PENDING_CONVERSION)
+            grin_converted_barcodes = dataframe.query('State == "CONVERTED"')
 
-            newly_converted_barcodes = dataframe.query('State == "CONVERTED"')
-            self.save_barcodes(newly_converted_barcodes, GRINState.CONVERTED)
+            new_barcodes= dataframe.query('State == "NEW"')
+            converted_barcodes = self.convert(new_barcodes)
+
+            barcodes = converted_barcodes + grin_converted_barcodes
+            self.save_barcodes(barcodes, GRINState.CONVERTING)
 
     def convert(self):
-        # convert new books within the month
+        # Add conversion step
         pass
 
     def convert_backfills(self):
         # initialize conversion the new books, and update the DB
         pass
 
-    def get_converted(self):
-        # scrape the converted files from GRIN and update the DB
-        pass
-
-    def transform_scraped_data(self, data):
-        headers = data[0].split("\t")
-        rows = []
-        for row in data[1:]:
-            if row != "":
-                rows.append(row.split("\t"))
-
-        return pd.DataFrame(rows, columns=headers)
-
     def save_barcodes(self, barcodes, status):
         for chunked_barcodes in chunk(iter(barcodes), CHUNK_SIZE):
             records: List[Record] = []
-
             for barcode in chunked_barcodes:
                 records.append(
                     Record(
@@ -79,7 +69,7 @@ class GRINConversion:
                         grin_status=GRINStatus(
                             barcode=barcode,
                             failed_download=0,
-                            state=status.value,
+                            state=status.value
                         ),
                     )
                 )
@@ -89,6 +79,31 @@ class GRINConversion:
         except Exception:
             self.logging.exception("Failed to add the following records:")
             raise
+    
+    def process_converted_books(self):
+        converted_barcodes = self.client.converted()
+
+        if len(converted_barcodes) > 0:
+            for barcode in converted_barcodes:
+                try:
+                    self.db_manager.session.query(GRINStatus).filter(
+                        GRINStatus.barcode == f"{barcode}",
+                        GRINStatus.state != GRINState.DOWNLOADED.value,
+                        GRINStatus.state != GRINState.CONVERTED.value,
+                    ).update({"state": GRINState.CONVERTED.value})
+                    self.db_manager.commit_changes()
+                except:
+                    self.db_manager.session.rollback()
+                    raise
+    
+    def transform_scraped_data(self, data):
+        headers = data[0].split("\t")
+        rows = []
+        for row in data[1:]:
+            if row != "":
+                rows.append(row.split("\t"))
+
+        return pd.DataFrame(rows, columns=headers)
 
 def chunk(xs: Iterator, size: int) -> Iterator[list]:
     while True:
@@ -102,10 +117,3 @@ def chunk(xs: Iterator, size: int) -> Iterator[list]:
                 yield chunk
 
             break
-
-if __name__ == "__main__":
-    try:
-        conversion = GRINConversion()
-    except Exception as e:
-        logging.exception(e, exc_info=True)
-
