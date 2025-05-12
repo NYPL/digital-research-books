@@ -1,6 +1,6 @@
 # Script run daily to scrape and initialize conversion for GRIN books acquired in the previous day
 # Temporarily, script will also intialize conversion for backfilled books
-# ruff: noqa
+
 from .grin_client import GRINClient
 import pandas as pd
 from model import GRINState, GRINStatus, Record, FRBRStatus
@@ -55,7 +55,7 @@ class GRINConversion:
                         Record(
                             uuid=uuid4(),
                             frbr_status=FRBRStatus.TODO.value,
-                            source_id=NOT_YET_IMPLEMENTED_ExprJoinedStr,
+                            source_id=f"{barcode}|grin", # noqa
                             grin_status=GRINStatus(
                                 barcode=barcode, failed_download=0, state=status.value
                             ),
@@ -75,7 +75,7 @@ class GRINConversion:
             for barcode in converted_barcodes:
                 try:
                     self.db_manager.session.query(GRINStatus).filter(
-                        GRINStatus.barcode == NOT_YET_IMPLEMENTED_ExprJoinedStr,
+                        GRINStatus.barcode == f"{barcode}", # noqa
                         GRINStatus.state != GRINState.DOWNLOADED.value,
                         GRINStatus.state != GRINState.CONVERTED.value,
                     ).update({"state": GRINState.CONVERTED.value})
@@ -100,10 +100,10 @@ def chunk(xs: Iterator, size: int) -> Iterator[list]:
         try:
             for _ in range(size):
                 chunk.append(next(xs))
-            NOT_YET_IMPLEMENTED_ExprYield
+            yield chunk # noqa
         except StopIteration:
             if chunk:
-                NOT_YET_IMPLEMENTED_ExprYield
+                yield chunk # noqa
 
             break
 
