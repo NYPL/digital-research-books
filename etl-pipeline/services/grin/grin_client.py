@@ -37,8 +37,8 @@ class GRINClient(object):
     def _url(self, fragment):
         return "https://books.google.com/libraries/NYPL/" + fragment
 
-    def get(self, url, force=False):
-        url = self._url(url)
+    def get(self, fragment):
+        url = self._url(fragment)
         response = self.session.request("GET", url)
         if response.status_code != 200:
             raise IOError("%s got %s unexpectedly" % (url, response.status_code))

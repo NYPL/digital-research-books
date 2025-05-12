@@ -46,7 +46,7 @@ class GRINConversion:
         # initialize conversion the new books, and update the DB
         pass
 
-    def save_barcodes(self, barcodes, status):
+    def save_barcodes(self, barcodes, state):
         if len(barcodes) > 0:
             for chunked_barcodes in chunk(iter(barcodes), CHUNK_SIZE):
                 records: List[Record] = []
@@ -57,7 +57,7 @@ class GRINConversion:
                             frbr_status=FRBRStatus.TODO.value,
                             source_id=f"{barcode}|grin", # noqa
                             grin_status=GRINStatus(
-                                barcode=barcode, failed_download=0, state=status.value
+                                barcode=barcode, failed_download=0, state=state.value
                             ),
                         )
                     )
