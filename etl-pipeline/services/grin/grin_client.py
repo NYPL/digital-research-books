@@ -93,30 +93,23 @@ class GRINClient(object):
         return data
 
     def _for_state(self, state, *args, **kwargs):
-        # Which books are in the given state?
         data = self.get("_%s?format=text" % state, *args, **kwargs)
         return data.decode("utf8").strip().split("\n")
 
-    def available(self, *args, **kwargs):
-        # Which barcodes are available for conversion?
+    def available_for_conversion(self, *args, **kwargs):
         return self._for_state("available", *args, **kwargs)
 
     def in_process(self, *args, **kwargs):
-        # Which barcodes are being converted?
         return self._for_state("in_process", *args, **kwargs)
 
     def converted(self, *args, **kwargs):
-        # What are the filenames of files that have been converted?
         return self._for_state("converted", *args, **kwargs)
 
-    def failed(self, *args, **kwargs):
-        # Which barcodes failed conversion?
+    def failed_conversion(self, *args, **kwargs):
         return self._for_state("failed", *args, **kwargs)
 
     def all_books(self, *args, **kwargs):
-        # Get barcodes for all books in whatever state.
         return self._for_state("all_books", *args, **kwargs)
 
     def download(self, filename, *args, **kwargs):
-        # Download desired book
         return self.get(filename, os.path.join("books", filename), *args, **kwargs)
