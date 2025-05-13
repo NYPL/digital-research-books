@@ -8,7 +8,7 @@ from sqlalchemy import select, desc
 
 logger = create_log(__name__)
 
-S3_BUCKET_NAME = "grin_bucket"  # TODO: Update name
+S3_BUCKET_NAME = "drb-files-qa"
 BATCH_SIZE_LIMIT = 1000
 
 
@@ -24,24 +24,25 @@ class GRINDownload:
         books: List[Record] = self._get_converted_books(batch_size, backfill)
 
         for book in books:
-            try:
-                barcode = book.source_id.split("|")[0]
-                file_name = f"{barcode}.tar.gz.gpg"
-                s3_key = f"grin/{file_name}"
+            barcode = book.source_id.split("|")[0]
+            file_name = f"{barcode}.tar.gz.gpg"
+            s3_key = f"grin/{file_name}"
 
+            try:
                 content = self._download(file_name)
-                try:
-                    # TODO: Add the storage tier to the put_object function
-                    self.s3_client.put_object(
-                        object=content, s3_key=s3_key, bucket=S3_BUCKET_NAME
-                    )
-                    self._update_state(book, GRINState.DOWNLOADED.value)
-                except Exception as e:
-                    logger.exception(f"Error uploading to s3 for {book}")
             except:
                 logger.exception(f"Error downloading content for {book}")
                 book.grin_status.failed_download += 1
                 self.db_manager.commit_changes()
+                continue
+
+            try:
+                self.s3_client.put_object(
+                    object=content, s3_key=s3_key, bucket=S3_BUCKET_NAME, storage_class="GLACIER_IR"
+                )
+                self._update_state(book, GRINState.DOWNLOADED.value)
+            except Exception as e:
+                logger.exception(f"Error uploading to s3 for {book}")
 
         self.db_manager.session.close()
 
@@ -62,7 +63,6 @@ class GRINDownload:
         query = (
             select(Record)
             .join(Record.grin_status)
-            .where(GRINStatus.state != GRINState.DOWNLOADED.value)
             .where(GRINStatus.state == GRINState.CONVERTED.value)
             .order_by(desc(Record.date_modified))
             .limit(batch_size)
