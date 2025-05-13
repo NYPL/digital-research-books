@@ -39,28 +39,30 @@ class GRINDownload:
 
             try:
                 self.s3_client.put_object(
-                    object=content, s3_key=s3_key, bucket=S3_BUCKET_NAME, storage_class="GLACIER_IR"
+                    object=content,
+                    s3_key=s3_key,
+                    bucket=S3_BUCKET_NAME,
+                    storage_class="GLACIER_IR",
                 )
             except Exception as e:
                 logger.exception(f"Error uploading to s3 for {book}")
                 continue
 
             # Only update the `state` when download and upload_to_S3 operations succeeded
+            book.grin_status.state = GRINState.DOWNLOADED.value
             books_done_processing.append(book)
 
         if len(books_done_processing) > 0:
-            self._update_states(books_done_processing, GRINState.DOWNLOADED.value)
+            self._update_states(books_done_processing)
 
         self.db_manager.session.close()
 
-    def _update_states(self, books: List[Record], state: str):
+    def _update_states(self, books: List[Record]):
         try:
-            for book in books:
-                book.grin_status.state = state
             self.db_manager.bulk_save_objects(books)
         except:
             self.db_manager.session.rollback()
-            logger.exception(f"Error updating to {state} state for {books}")
+            logger.exception(f"Error updating the GRINStatus table for {books}")
 
     def _download(self, file_name: str):
         response = self.client.download(file_name)
