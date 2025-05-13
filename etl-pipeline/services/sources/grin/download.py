@@ -1,0 +1,84 @@
+from datetime import datetime
+from typing import List
+from model import GRINState, GRINStatus, Record
+from managers import DBManager, S3Manager
+from logger import create_log
+from scripts.grin_mirror import GRINClient
+from sqlalchemy import select, desc
+
+logger = create_log(__name__)
+
+S3_BUCKET_NAME = "grin_bucket"  # TODO: Update name
+BATCH_SIZE_LIMIT = 1000
+
+
+class GRINDownload:
+    def __init__(self):
+        self.s3_client = S3Manager()
+        self.db_manager = DBManager()
+        self.db_manager.create_session()
+
+        self.client = GRINClient()
+
+    def run_process(self, batch_size=BATCH_SIZE_LIMIT, backfill=False):
+        books: List[Record] = self._get_converted_books(batch_size, backfill)
+
+        for book in books:
+            try:
+                barcode = book.source_id.split("|")[0]
+                file_name = f"{barcode}.tar.gz.gpg"
+                s3_key = f"grin/{file_name}"
+
+                content = self._download(file_name)
+                try:
+                    # TODO: Add the storage tier to the put_object function
+                    self.s3_client.put_object(
+                        object=content, s3_key=s3_key, bucket=S3_BUCKET_NAME
+                    )
+                    self._update_state(book, GRINState.DOWNLOADED.value)
+                except Exception as e:
+                    logger.exception(f"Error uploading to s3 for {book}")
+            except:
+                logger.exception(f"Error downloading content for {book}")
+                book.grin_status.failed_download += 1
+                self.db_manager.commit_changes()
+
+        self.db_manager.session.close()
+
+    def _update_state(self, book: Record, state: str):
+        try:
+            book.grin_status.state = state
+            self.db_manager.commit_changes()
+        except:
+            self.db_manager.session.rollback()
+            logger.exception(f"Error updating to {state} state for {book}")
+
+    def _download(self, file_name: str):
+        response = self.client.download(file_name)
+        return response
+
+    def _get_converted_books(self, batch_size: int, backfill: bool):
+        """Should return the DB object so that we can update the state directly"""
+        query = (
+            select(Record)
+            .join(Record.grin_status)
+            .where(GRINStatus.state != GRINState.DOWNLOADED.value)
+            .where(GRINStatus.state == GRINState.CONVERTED.value)
+            .order_by(desc(Record.date_modified))
+            .limit(batch_size)
+        )
+
+        if backfill:
+            query = query.where(GRINStatus.date_created <= datetime(1991, 8, 25))
+
+        books = self.db_manager.session.execute(query).scalars().all()
+        return books
+
+
+if __name__ == "__main__":
+    # Run the main process
+    grin_download = GRINDownload()
+    grin_download.run_process()
+
+    # Run the backfill process
+    grin_download.run_process(backfill=True)
