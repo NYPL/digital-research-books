@@ -98,7 +98,12 @@ class S3Manager:
         return manifest.toJson()
 
     def put_object(
-        self, object, key: str, bucket: str, bucket_permissions: str = "public-read"
+        self,
+        object,
+        key: str,
+        bucket: str,
+        bucket_permissions: str = "public-read",
+        storage_class: str = "STANDARD",
     ):
         object_md5 = S3Manager.get_md5_hash(object)
         object_extension = key[-4:].lower()
@@ -130,6 +135,7 @@ class S3Manager:
                 ContentMD5=object_md5,
                 ContentType=object_type,
                 Metadata={"md5Checksum": object_md5},
+                StorageClass=storage_class,
                 **(
                     {"ACL": bucket_permissions}
                     if bucket_permissions is not None
