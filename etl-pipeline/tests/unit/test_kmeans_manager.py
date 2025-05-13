@@ -254,7 +254,6 @@ class TestKMeansModel(object):
 
         mockDates = ["2000-12-01|other_date", "1900-01-01|publication_date"]
         outYear = get_publication_date_object(mockDates)
-        print(outYear)
 
         assert outYear == {"century": 19, "decade": 0, "year": 0}
 
