@@ -21,7 +21,6 @@ def main(args):
 
     if args.script is not None:
         logger.info(f"Running script {args.script} in {environment}")
-
         run_script(args.script, *args.options)
 
         return
