@@ -70,23 +70,6 @@ class KMeansManager:
                     ]
                 ),
             ),
-            "edition": (
-                "edition",
-                Pipeline(
-                    [
-                        ("selector", FeatureSelector(key="edition")),
-                        (
-                            "tfidf",
-                            TfidfVectorizer(
-                                preprocessor=KMeansManager.pubProcessor,
-                                strip_accents="unicode",
-                                analyzer="char_wb",
-                                ngram_range=(1, 3),
-                            ),
-                        ),
-                    ]
-                ),
-            ),
             "pubDate": (
                 "pubDate",
                 Pipeline(
@@ -101,7 +84,6 @@ class KMeansManager:
         pipelineWeights = {
             "place": 1.0,
             "publisher": 1.0,
-            "edition": 1.0,
             "pubDate": 1.75,
         }
 
@@ -149,7 +131,6 @@ class KMeansManager:
                         "place": spatialData or "",
                         "publisher": publisherData,
                         "pubDate": dateData,
-                        "edition": self.getEditionStatement(i.has_version),
                         "uuid": i.uuid,
                     }
                 )
@@ -235,19 +216,6 @@ class KMeansManager:
             pubs.append(publisher.strip(",. []").lower())
 
         return ", ".join(pubs)
-
-    @classmethod
-    def getEditionStatement(cls, hasVersion):
-        if not hasVersion:
-            return ""
-        for version in hasVersion:
-            try:
-                statement, _ = tuple(version.split("|"))
-                return statement
-            except ValueError:
-                pass
-
-        return ""
 
     def generateClusters(self):
         try:
