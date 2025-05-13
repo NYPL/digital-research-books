@@ -1,7 +1,8 @@
 import os
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
+from pgvector.psycopg2 import register_vector
 
 from model import Base
 from logger import create_log
@@ -36,9 +37,14 @@ class DBManager:
                 )
             )
 
+            event.listen(self.engine, "connect", self._register_vector_type)
+
             return self.engine
         except Exception as e:
             raise e
+
+    def _register_vector_type(self, db_connection, connection_record):
+        register_vector(db_connection)
 
     def initialize_database(self):
         if not inspect(self.engine).has_table("works"):

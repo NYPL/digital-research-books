@@ -5,7 +5,8 @@ import json
 from sqlalchemy import Column, DateTime, Integer, Unicode, Boolean, Index
 from sqlalchemy.dialects.postgresql import ARRAY, UUID, ENUM
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from pgvector.sqlalchemy import Vector
 from model.utilities.extractDailyEdition import extract
 from textwrap import shorten
 from typing import Optional
@@ -198,6 +199,7 @@ class Record(Base, Core):
     coverage = Column(
         ARRAY(Unicode, dimensions=1)
     )  # dc:coverage, non-Repeating, Format "locationCode|locationName|itemNo"
+    embedding: Mapped[list[float]] = mapped_column(Vector(768))
 
     __tableargs__ = Index("ix_record_identifiers", identifiers, postgresql_using="gin")
 
@@ -245,6 +247,7 @@ class Record(Base, Core):
             "has_part",
             "coverage",
             "date_modified",
+            "embedding",
         ]
 
     def __iter__(self):
