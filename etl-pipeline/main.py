@@ -21,10 +21,7 @@ def main(args):
 
     if args.script is not None:
         logger.info(f"Running script {args.script} in {environment}")
-        app = newrelic.agent.register_application(timeout=10.0)
-
-        with newrelic.agent.BackgroundTask(app, name=args.script):
-            run_script(args.script, *args.options)
+        run_script(args.script, *args.options)
 
         return
 
