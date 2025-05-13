@@ -1,12 +1,12 @@
 import pytest
 
-from managers.kMeans import YearObject
+from parsers import YearParser
 
 
-class TestYearObject:
+class TestYearParser:
     @pytest.fixture
     def testObject(self):
-        return YearObject(1900, 2000)
+        return YearParser(1900, 2000)
 
     def test_initializer(self, testObject):
         assert testObject.start == "1900"
@@ -17,7 +17,7 @@ class TestYearObject:
 
     def test_setYearComponents(self, testObject, mocker):
         objectMocks = mocker.patch.multiple(
-            YearObject,
+            YearParser,
             setCentury=mocker.DEFAULT,
             setDecade=mocker.DEFAULT,
             setYear=mocker.DEFAULT,
@@ -63,21 +63,21 @@ class TestYearObject:
         assert testObject.year == [0, None]
 
     def test_convertYearDictToStr_start_end(self, mocker):
-        mockGetYear = mocker.patch.object(YearObject, "getYearStr")
+        mockGetYear = mocker.patch.object(YearParser, "getYearStr")
         mockGetYear.side_effect = [1900, 2000]
 
-        assert YearObject.convertYearDictToStr("mockDict") == "1900-2000"
+        assert YearParser.convertYearDictToStr("mockDict") == "1900-2000"
 
     def test_convertYearDictToStr_start_only(self, mocker):
-        mockGetYear = mocker.patch.object(YearObject, "getYearStr")
+        mockGetYear = mocker.patch.object(YearParser, "getYearStr")
         mockGetYear.side_effect = [1900, None]
 
-        assert YearObject.convertYearDictToStr("mockDict") == "1900"
+        assert YearParser.convertYearDictToStr("mockDict") == "1900"
 
     def test_getYearStr(self):
         testYearDict = {"centuryTest": 19, "decadeTest": 9, "yearTest": None}
 
-        assert YearObject.getYearStr(testYearDict, "Test") == "199x"
+        assert YearParser.getYearStr(testYearDict, "Test") == "199x"
 
     def test_iter_for_dict(self, testObject):
         testObject.century = [19, 20]
