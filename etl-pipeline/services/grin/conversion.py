@@ -26,13 +26,13 @@ class GRINConversion:
         self.process_converted_books()
 
         self.db_manager.session.close()
-    
+
     def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
         if len(data) > 1:
             new_books_df = self.transform_scraped_data(data)
 
-            new_barcodes= new_books_df.query('State == "NEW"')
+            new_barcodes = new_books_df.query('State == "NEW"')
             converted_data = self.client.convert(new_barcodes["Barcode"])
             converted_df = self.transform_scraped_data(converted_data)
 

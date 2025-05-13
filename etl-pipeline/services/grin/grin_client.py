@@ -14,6 +14,7 @@ from pdb import set_trace
 
 BATCH_LIMIT = 1000
 
+
 class GRINClient(object):
     def __init__(self):
         self.creds = self.load_creds()
@@ -44,22 +45,27 @@ class GRINClient(object):
         if response.status_code != 200:
             raise IOError("%s got %s unexpectedly" % (url, response.status_code))
         return response.content
-    
+
     def convert(self, barcodes):
         # Ask Google to move some barcodes from the "Available" state to "In-Process"
         # Response to process will always be a 200 and the content will a table of Barcodes and corresponding Statuses.
-        # For each barcode, a status will be returned of either 
+        # For each barcode, a status will be returned of either
         # "Success", "Already being converted" "Other error", "Not allowed to be downloaded"
         response = []
-        
+
         if len(barcodes) >= BATCH_LIMIT:
-            chunked_barcodes = [barcodes[i:i + BATCH_LIMIT] for i in range(0, len(barcodes), BATCH_LIMIT)]
+            chunked_barcodes = [
+                barcodes[i : i + BATCH_LIMIT]
+                for i in range(0, len(barcodes), BATCH_LIMIT)
+            ]
         else:
             chunked_barcodes = [barcodes]
 
         for chunk in chunked_barcodes:
             barcodes = "\n".join(chunk)
-            raw_response = self.session.request("POST", self._url("_process"), data=barcodes)
+            raw_response = self.session.request(
+                "POST", self._url("_process"), data=barcodes
+            )
             sanitized_response = raw_response.content.decode("utf8").split("\n")
             if len(response) > 0:
                 # Remove headers if this is not the first request
