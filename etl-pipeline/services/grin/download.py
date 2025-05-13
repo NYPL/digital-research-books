@@ -22,6 +22,7 @@ class GRINDownload:
 
     def run_process(self, batch_size=BATCH_SIZE_LIMIT, backfill=False):
         books: List[Record] = self._get_converted_books(batch_size, backfill)
+        books_done_processing: List[str] = []
 
         for book in books:
             barcode = book.source_id.split("|")[0]
@@ -40,19 +41,26 @@ class GRINDownload:
                 self.s3_client.put_object(
                     object=content, s3_key=s3_key, bucket=S3_BUCKET_NAME, storage_class="GLACIER_IR"
                 )
-                self._update_state(book, GRINState.DOWNLOADED.value)
             except Exception as e:
                 logger.exception(f"Error uploading to s3 for {book}")
+                continue
+
+            # Only update the `state` when download and upload_to_S3 operations succeeded
+            books_done_processing.append(book)
+
+        if len(books_done_processing) > 0:
+            self._update_states(books_done_processing, GRINState.DOWNLOADED.value)
 
         self.db_manager.session.close()
 
-    def _update_state(self, book: Record, state: str):
+    def _update_states(self, books: List[Record], state: str):
         try:
-            book.grin_status.state = state
-            self.db_manager.commit_changes()
+            for book in books:
+                book.grin_status.state = state
+            self.db_manager.bulk_save_objects(books)
         except:
             self.db_manager.session.rollback()
-            logger.exception(f"Error updating to {state} state for {book}")
+            logger.exception(f"Error updating to {state} state for {books}")
 
     def _download(self, file_name: str):
         response = self.client.download(file_name)
