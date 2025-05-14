@@ -4,8 +4,8 @@ from model import GRINState, GRINStatus, Record
 from managers import DBManager, S3Manager
 from logger import create_log
 from sqlalchemy import select, desc
-from util import chunk
-from grin_client import GRINClient
+from .util import chunk
+from .grin_client import GRINClient
 
 logger = create_log(__name__)
 
@@ -95,4 +95,4 @@ if __name__ == "__main__":
     grin_download.run_process()
 
     # Run the backfill process
-    grin_download.run_process(backfill=True)
+    # grin_download.run_process(backfill=True)
