@@ -49,7 +49,7 @@ class GRINConversion:
                 GRINStatus.state == GRINState.PENDING_CONVERSION.value,
             )
             .where(GRINStatus.date_created <= datetime(1991, 8, 25))
-            .limit(CHUNK_SIZE)
+            .limit(batch_size)
         )
 
         backfilled_barcodes = (
