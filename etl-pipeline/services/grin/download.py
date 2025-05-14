@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import  List
+from typing import List
 from model import GRINState, GRINStatus, Record
 from managers import DBManager, S3Manager
 from logger import create_log
@@ -42,7 +42,7 @@ class GRINDownload:
                 try:
                     self.s3_client.put_object(
                         object=content,
-                        s3_key=s3_key,
+                        key=s3_key,
                         bucket=S3_BUCKET_NAME,
                         storage_class="GLACIER_IR",
                     )
