@@ -13,13 +13,14 @@ from logger import create_log
 
 CHUNK_SIZE = 1000
 
+
 class GRINConversion:
     def __init__(self):
         self.client = GRINClient()
         self.db_manager = DBManager()
         self.logger = create_log(__name__)
 
-    def run_process(self, backfill = False):
+    def run_process(self, backfill=False):
         self.db_manager.create_session()
 
         self.acquire_and_convert_new_books()
@@ -42,19 +43,32 @@ class GRINConversion:
             self.save_barcodes(converting_barcodes, GRINState.CONVERTING)
 
     def convert_backfills(self, batch_size):
-        backfill_query = select(GRINStatus.barcode).where(
-            GRINStatus.state == GRINState.PENDING_CONVERSION.value,
-        ).where(GRINStatus.date_created <= datetime(1991, 8, 25)).limit(CHUNK_SIZE)
-        
-        backfilled_barcodes = self.db_manager.session.execute(backfill_query).scalars().all()
+        backfill_query = (
+            select(GRINStatus.barcode)
+            .where(
+                GRINStatus.state == GRINState.PENDING_CONVERSION.value,
+            )
+            .where(GRINStatus.date_created <= datetime(1991, 8, 25))
+            .limit(CHUNK_SIZE)
+        )
+
+        backfilled_barcodes = (
+            self.db_manager.session.execute(backfill_query).scalars().all()
+        )
         converting_barcodes = self.convert_barcodes(backfilled_barcodes)
         try:
-            update_barcodes = (update(GRINStatus).filter(GRINStatus.barcode.in_(converting_barcodes)).values(state = GRINState.CONVERTING.value))
+            update_barcodes = (
+                update(GRINStatus)
+                .filter(GRINStatus.barcode.in_(converting_barcodes))
+                .values(state=GRINState.CONVERTING.value)
+            )
             self.db_manager.session.execute(update_barcodes)
             self.db_manager.commit_changes()
         except:
             self.db_manager.session.rollback()
-            self.logger.exception(f"Failed to update the following records: {converting_barcodes}")
+            self.logger.exception(
+                f"Failed to update the following records: {converting_barcodes}"
+            )
 
     def convert_barcodes(self, barcodes):
         converted_data = self.client.convert(barcodes)
@@ -82,7 +96,9 @@ class GRINConversion:
                 self.db_manager.commit_changes()
             except Exception:
                 self.db_manager.session.rollback()
-                self.logger.exception(f"Failed to update the following records: {chunked_barcodes}")
+                self.logger.exception(
+                    f"Failed to update the following records: {chunked_barcodes}"
+                )
 
     def process_converted_books(self):
         converted_barcodes = self.client.converted()
