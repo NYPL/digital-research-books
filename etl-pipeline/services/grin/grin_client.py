@@ -12,6 +12,8 @@ import json
 from ..ssm_service import SSMService
 from pdb import set_trace
 
+BATCH_LIMIT = 1000
+
 
 class GRINClient(object):
     def __init__(self):
@@ -43,6 +45,35 @@ class GRINClient(object):
         if response.status_code != 200:
             raise IOError("%s got %s unexpectedly" % (url, response.status_code))
         return response.content
+
+    def convert(self, barcodes):
+        # Ask Google to move some barcodes from the "Available" state to "In-Process"
+        # Response to process will always be a 200 and the content will a table of Barcodes and corresponding Statuses.
+        # For each barcode, a status will be returned of either
+        # "Success", "Already being converted" "Other error", "Not allowed to be downloaded"
+        response = []
+
+        if len(barcodes) >= BATCH_LIMIT:
+            chunked_barcodes = [
+                barcodes[i : i + BATCH_LIMIT]
+                for i in range(0, len(barcodes), BATCH_LIMIT)
+            ]
+        else:
+            chunked_barcodes = [barcodes]
+
+        for chunk in chunked_barcodes:
+            barcodes = "\n".join(chunk)
+            raw_response = self.session.request(
+                "POST", self._url("_process"), data=barcodes
+            )
+            sanitized_response = raw_response.content.decode("utf8").split("\n")
+            if len(response) > 0:
+                # Remove headers if this is not the first request
+                response += sanitized_response[1:]
+            else:
+                response = sanitized_response
+
+        return response
 
     def acquired_today(self, *args, **kwargs):
         # For GRIN queries, range start is inclusive but the range end is exclusive.
@@ -89,9 +120,3 @@ class GRINClient(object):
     def download(self, filename, *args, **kwargs):
         # Download desired book
         return self.get(filename, os.path.join("books", filename), *args, **kwargs)
-
-    def please_process(self, barcodes):
-        # Ask Google to move some barcodes from the "Available" state to "In-Process"
-        if isinstance(barcodes, list):
-            barcodes = "\n".join(barcodes)
-        self.session.request("POST", self._url("_process"), data=barcodes)

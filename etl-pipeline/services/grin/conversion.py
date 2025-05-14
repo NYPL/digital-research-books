@@ -21,26 +21,24 @@ class GRINConversion:
     def run_process(self):
         self.db_manager.create_session()
 
-        self.acquire_new_books()
+        self.acquire_and_convert_new_books()
 
         self.process_converted_books()
 
         self.db_manager.session.close()
 
-    def acquire_new_books(self):
+    def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
         if len(data) > 1:
-            dataframe = self.transform_scraped_data(data)
+            new_books_df = self.transform_scraped_data(data)
 
-            grin_converted_barcodes = dataframe.query('State == "CONVERTED"')
-            self.save_barcodes(grin_converted_barcodes["Barcode"], GRINState.CONVERTED)
+            new_barcodes = new_books_df.query('State == "NEW"')
+            converted_data = self.client.convert(new_barcodes["Barcode"])
+            converted_df = self.transform_scraped_data(converted_data)
 
-            new_barcodes = dataframe.query('State == "NEW"')
-            self.save_barcodes(new_barcodes["Barcode"], GRINState.PENDING_CONVERSION)
+            converted_barcodes = converted_df.query('Status == "Success"')
 
-    def convert(self):
-        # Add conversion step
-        pass
+            self.save_barcodes(converted_barcodes["Barcode"], GRINState.CONVERTING)
 
     def convert_backfills(self):
         # initialize conversion the new books, and update the DB
