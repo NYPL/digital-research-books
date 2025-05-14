@@ -9,7 +9,7 @@ from util import chunk
 
 logger = create_log(__name__)
 
-S3_BUCKET_NAME = "drb-files-qa"
+S3_BUCKET_NAME = "drb-grin-files-test"
 BATCH_SIZE_LIMIT = 1000
 
 
