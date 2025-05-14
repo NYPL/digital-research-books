@@ -3,9 +3,9 @@ from typing import List
 from model import GRINState, GRINStatus, Record
 from managers import DBManager, S3Manager
 from logger import create_log
-from scripts.grin_mirror import GRINClient
 from sqlalchemy import select, desc
 from util import chunk
+from grin_client import GRINClient
 
 logger = create_log(__name__)
 
