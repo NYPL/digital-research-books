@@ -17,21 +17,15 @@ CHUNK_SIZE = 1000
 class GRINConversion:
     def __init__(self):
         self.client = GRINClient()
-        self.db_manager = DBManager(
-            user="localuser",
-            pswd="localpsql",
-            host="localhost",
-            port="5432",
-            db="drb_test_db",
-        )
+        self.db_manager = DBManager()
         self.logger = create_log(__name__)
 
     def run_process(self, backfill=False):
         self.db_manager.create_session()
 
-        # self.acquire_and_convert_new_books()
+        self.acquire_and_convert_new_books()
 
-        # self.process_converted_books()
+        self.process_converted_books()
 
         if backfill:
             self.convert_backfills(CHUNK_SIZE)
