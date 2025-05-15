@@ -4,11 +4,14 @@
 from sqlalchemy import update
 from .grin_client import GRINClient
 import pandas as pd
+from sqlalchemy import select, update
 from model import GRINState, GRINStatus, Record, FRBRStatus
+from datetime import datetime
 from typing import List, Iterator
 from managers import DBManager
 from uuid import uuid4
 from logger import create_log
+from .util import chunk
 
 CHUNK_SIZE = 1000
 
@@ -19,31 +22,62 @@ class GRINConversion:
         self.db_manager = DBManager()
         self.logger = create_log(__name__)
 
-    def run_process(self):
+    def run_process(self, backfill=False):
         self.db_manager.create_session()
 
         self.acquire_and_convert_new_books()
 
         self.process_converted_books()
 
+        if backfill:
+            self.convert_backfills(CHUNK_SIZE)
+
         self.db_manager.session.close()
 
     def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
-        if len(data) > 1:
+        if len(data) > 2:
             new_books_df = self.transform_scraped_data(data)
-
             new_barcodes = new_books_df.query('State == "NEW"')
-            converted_data = self.client.convert(new_barcodes["Barcode"])
-            converted_df = self.transform_scraped_data(converted_data)
 
-            converted_barcodes = converted_df.query('Status == "Success"')
+            converting_barcodes = self.convert_barcodes(new_barcodes["Barcode"])
 
-            self.save_barcodes(converted_barcodes["Barcode"], GRINState.CONVERTING)
+            self.save_barcodes(converting_barcodes, GRINState.CONVERTING)
 
-    def convert_backfills(self):
-        # initialize conversion the new books, and update the DB
-        pass
+    def convert_backfills(self, batch_size):
+        backfill_query = (
+            select(GRINStatus.barcode)
+            .where(
+                GRINStatus.state == GRINState.PENDING_CONVERSION.value,
+            )
+            .where(GRINStatus.date_created <= datetime(1991, 8, 25))
+            .limit(batch_size)
+        )
+
+        backfilled_barcodes = (
+            self.db_manager.session.execute(backfill_query).scalars().all()
+        )
+        if len(backfilled_barcodes) > 0:
+            converting_barcodes = self.convert_barcodes(backfilled_barcodes)
+            try:
+                update_barcodes = (
+                    update(GRINStatus)
+                    .filter(GRINStatus.barcode.in_(converting_barcodes))
+                    .values(state=GRINState.CONVERTING.value)
+                )
+                self.db_manager.session.execute(update_barcodes)
+                self.db_manager.commit_changes()
+            except:
+                self.db_manager.session.rollback()
+                self.logger.exception(
+                    f"Failed to update the following records: {converting_barcodes}"
+                )
+
+    def convert_barcodes(self, barcodes):
+        converted_data = self.client.convert(barcodes)
+        converted_df = self.transform_scraped_data(converted_data)
+        converted_barcodes = converted_df.query('Status == "Success"')
+        return converted_barcodes["Barcode"]
 
     def save_barcodes(self, barcodes, state):
         if len(barcodes) > 0:
@@ -64,8 +98,10 @@ class GRINConversion:
                 self.db_manager.session.add_all(records)
                 self.db_manager.commit_changes()
             except Exception:
-                self.logger.exception("Failed to add the following records:")
-                raise
+                self.db_manager.session.rollback()
+                self.logger.exception(
+                    f"Failed to update the following records: {chunked_barcodes}"
+                )
 
     def process_converted_books(self):
         converted_barcodes = self.client.converted_filenames()
@@ -100,20 +136,6 @@ class GRINConversion:
         return pd.DataFrame(rows, columns=headers)
 
 
-def chunk(xs: Iterator, size: int) -> Iterator[list]:
-    while True:
-        chunk = []
-        try:
-            for _ in range(size):
-                chunk.append(next(xs))
-            yield chunk
-        except StopIteration:
-            if chunk:
-                yield chunk
-
-            break
-
-
 if __name__ == "__main__":
     grin_conversion = GRINConversion()
-    grin_conversion.run_process()
+    grin_conversion.run_process(backfill=True)
