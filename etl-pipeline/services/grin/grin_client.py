@@ -119,4 +119,4 @@ class GRINClient(object):
 
     def download(self, filename, *args, **kwargs):
         # Download desired book
-        return self.get(filename, os.path.join("books", filename), *args, **kwargs)
+        return self.get(filename, *args, **kwargs)
