@@ -81,6 +81,7 @@ class GRINConversion:
                     update_barcodes = (
                         update(GRINStatus)
                         .filter(GRINStatus.barcode.in_(stripped_barcodes))
+                        .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
                         .values(state=GRINState.CONVERTED.value)
                     )
                     self.db_manager.session.execute(update_barcodes)
