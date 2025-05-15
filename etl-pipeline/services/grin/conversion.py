@@ -72,6 +72,7 @@ class GRINConversion:
         if len(converted_barcodes) > 0:
             for barcode in converted_barcodes:
                 try:
+                    barcode = barcode.split(".", 1)[0] # converted file name has the following pattern 1234.tar.gz.gpg
                     self.db_manager.session.query(GRINStatus).filter(
                         GRINStatus.barcode == f"{barcode}",
                         GRINStatus.state != GRINState.DOWNLOADED.value,
