@@ -1,4 +1,3 @@
-
 from typing import Iterator
 
 
@@ -14,4 +13,3 @@ def chunk(xs: Iterator, size: int) -> Iterator[list]:
                 yield chunk
 
             break
-
