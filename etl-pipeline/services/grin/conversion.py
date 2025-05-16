@@ -1,6 +1,7 @@
 # Script run daily to scrape and initialize conversion for GRIN books acquired in the previous day
 # Temporarily, script will also intialize conversion for backfilled books
 
+from sqlalchemy import update
 from .grin_client import GRINClient
 import pandas as pd
 from sqlalchemy import select, update
@@ -10,6 +11,7 @@ from typing import List, Iterator
 from managers import DBManager
 from uuid import uuid4
 from logger import create_log
+from .util import chunk
 
 CHUNK_SIZE = 1000
 
@@ -102,16 +104,23 @@ class GRINConversion:
                 )
 
     def process_converted_books(self):
-        converted_barcodes = self.client.converted()
+        converted_barcodes = self.client.converted_filenames()
 
         if len(converted_barcodes) > 0:
-            for barcode in converted_barcodes:
+            for chunked_barcodes in chunk(iter(converted_barcodes), CHUNK_SIZE):
+                stripped_barcodes: List[str] = []
+                for barcode in chunked_barcodes:
+                    barcode = barcode.split(".", 1)[0]  # converted file name has the following pattern 1234.tar.gz.gpg
+                    stripped_barcodes.append(barcode)
+
                 try:
-                    self.db_manager.session.query(GRINStatus).filter(
-                        GRINStatus.barcode == f"{barcode}",
-                        GRINStatus.state != GRINState.DOWNLOADED.value,
-                        GRINStatus.state != GRINState.CONVERTED.value,
-                    ).update({"state": GRINState.CONVERTED.value})
+                    update_barcodes = (
+                        update(GRINStatus)
+                        .filter(GRINStatus.barcode.in_(stripped_barcodes))
+                        .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
+                        .values(state=GRINState.CONVERTED.value)
+                    )
+                    self.db_manager.session.execute(update_barcodes)
                     self.db_manager.commit_changes()
                 except:
                     self.db_manager.session.rollback()
@@ -125,20 +134,6 @@ class GRINConversion:
                 rows.append(row.split("\t"))
 
         return pd.DataFrame(rows, columns=headers)
-
-
-def chunk(xs: Iterator, size: int) -> Iterator[list]:
-    while True:
-        chunk = []
-        try:
-            for _ in range(size):
-                chunk.append(next(xs))
-            yield chunk
-        except StopIteration:
-            if chunk:
-                yield chunk
-
-            break
 
 
 if __name__ == "__main__":

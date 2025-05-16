@@ -102,7 +102,8 @@ class GRINClient(object):
     def in_process(self, *args, **kwargs):
         return self._for_state("in_process", *args, **kwargs)
 
-    def converted(self, *args, **kwargs):
+    def converted_filenames(self, *args, **kwargs):
+        # What are the filenames of files that have been converted?
         return self._for_state("converted", *args, **kwargs)
 
     def failed_conversion(self, *args, **kwargs):
