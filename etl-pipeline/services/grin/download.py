@@ -14,6 +14,7 @@ logger = create_log(__name__)
 S3_BUCKET_NAME = "drb-grin-files-test"
 BATCH_SIZE_LIMIT = 1000
 
+
 class GRINDownload:
     def __init__(self):
         self.s3_client = S3Manager()
@@ -23,7 +24,9 @@ class GRINDownload:
 
     def run_process(self, batch_size=BATCH_SIZE_LIMIT, backfill=False):
         if backfill:
-            backfilled_books: List[Record] = self._get_converted_books(batch_size, backfill)
+            backfilled_books: List[Record] = self._get_converted_books(
+                batch_size, backfill
+            )
             self.download_and_upload_books(backfilled_books, batch_size)
 
         daily_converted_books: List[Record] = self._get_converted_books()
@@ -86,7 +89,9 @@ class GRINDownload:
         )
 
         if backfill:
-            query = query.where(GRINStatus.date_created <= GRINStatus.historical_timestamp())
+            query = query.where(
+                GRINStatus.date_created <= GRINStatus.historical_timestamp()
+            )
             query = query.limit(batch_size)
         else:
             yesterday = datetime.now() - timedelta(days=1)
@@ -94,6 +99,7 @@ class GRINDownload:
 
         books = self.db_manager.session.execute(query).scalars().all()
         return books
+
 
 if __name__ == "__main__":
     grin_download = GRINDownload()

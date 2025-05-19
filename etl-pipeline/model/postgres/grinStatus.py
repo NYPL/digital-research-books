@@ -34,7 +34,7 @@ class GRINStatus(Base, Core):
         nullable=False,
     )
     record = relationship("Record", back_populates="grin_status")
-    
+
     def historical_timestamp():
         return datetime(1991, 8, 25)
 

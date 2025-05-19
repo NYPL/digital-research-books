@@ -1,6 +1,4 @@
-# An API interface to https://books.google.com/libraries/NYPL/,
-# per https://docs.google.com/document/d/1ayu_djokdss6oCNNYSXtWRyuX7KvtLZ70A99rXy4bR8
-# Additional notes - https://docs.google.com/document/d/1aZ5ODEzKP6qX1f4CCcGtlidRvr-Fu8HPA-AEhTwDTyk/edit?usp=sharing
+# An API interface to https://books.google.com/libraries/NYPL/
 
 from datetime import datetime, timedelta
 from google.auth.transport.requests import (
@@ -12,6 +10,7 @@ from ..ssm_service import SSMService
 from pdb import set_trace
 
 BATCH_LIMIT = 1000
+
 
 class GRINClient(object):
     def __init__(self):
@@ -72,7 +71,7 @@ class GRINClient(object):
                 response = sanitized_response
 
         return response
-    
+
     def download(self, filename, *args, **kwargs):
         return self.get(filename, *args, **kwargs)
 

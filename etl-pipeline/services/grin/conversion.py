@@ -109,7 +109,8 @@ class GRINConversion:
             for chunked_barcodes in chunk(iter(converted_barcodes), CHUNK_SIZE):
                 stripped_barcodes: List[str] = []
                 for barcode in chunked_barcodes:
-                    barcode = barcode.split(".", 1)[0]  # converted file name has the following pattern 1234.tar.gz.gpg
+                    # converted file name has the following pattern 1234.tar.gz.gpg
+                    barcode = barcode.split(".", 1)[0]
                     stripped_barcodes.append(barcode)
 
                 try:
