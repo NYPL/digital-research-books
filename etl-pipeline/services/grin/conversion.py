@@ -1,12 +1,11 @@
 # Script run daily to scrape and initialize conversion for GRIN books acquired in the previous day
-# Temporarily, script will also intialize conversion for backfilled books
+# as well as to initialize conversion for a portion of backfilled books
 
 from sqlalchemy import update
 from .grin_client import GRINClient
 import pandas as pd
 from sqlalchemy import select, update
 from model import GRINState, GRINStatus, Record, FRBRStatus
-from datetime import datetime
 from typing import List, Iterator
 from managers import DBManager
 from uuid import uuid4
@@ -50,7 +49,7 @@ class GRINConversion:
             .where(
                 GRINStatus.state == GRINState.PENDING_CONVERSION.value,
             )
-            .where(GRINStatus.date_created <= datetime(1991, 8, 25))
+            .where(GRINStatus.date_created <= GRINStatus.historical_timestamp())
             .limit(batch_size)
         )
 

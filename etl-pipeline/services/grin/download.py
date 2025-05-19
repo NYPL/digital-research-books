@@ -1,3 +1,5 @@
+# Script run daily to download GRIN books that were converted in the past day
+
 from datetime import datetime, timedelta
 from typing import List
 from model import GRINState, GRINStatus, Record
@@ -12,18 +14,24 @@ logger = create_log(__name__)
 S3_BUCKET_NAME = "drb-grin-files-test"
 BATCH_SIZE_LIMIT = 1000
 
-
 class GRINDownload:
     def __init__(self):
         self.s3_client = S3Manager()
         self.db_manager = DBManager()
         self.db_manager.create_session()
-
         self.client = GRINClient()
 
     def run_process(self, batch_size=BATCH_SIZE_LIMIT, backfill=False):
-        books: List[Record] = self._get_converted_books(batch_size, backfill)
+        if backfill:
+            backfilled_books: List[Record] = self._get_converted_books(batch_size, backfill)
+            self.download_and_upload_books(backfilled_books, batch_size)
 
+        daily_converted_books: List[Record] = self._get_converted_books()
+        self.download_and_upload_books(daily_converted_books, batch_size)
+
+        self.db_manager.session.close()
+
+    def download_and_upload_books(self, books, batch_size):
         for chunked_books in chunk(iter(books), batch_size):
             books_done_processing: List[str] = []
             for book in chunked_books:
@@ -57,8 +65,6 @@ class GRINDownload:
             if len(books_done_processing) > 0:
                 self._update_states(books_done_processing)
 
-        self.db_manager.session.close()
-
     def _update_states(self, books: List[Record]):
         try:
             self.db_manager.bulk_save_objects(books)
@@ -70,29 +76,25 @@ class GRINDownload:
         response = self.client.download(file_name)
         return response
 
-    def _get_converted_books(self, batch_size: int, backfill: bool):
-        """Should return the DB object so that we can update the state directly"""
-        yesterday = datetime.now() - timedelta(days=1)
+    def _get_converted_books(self, batch_size=None, backfill=False):
+        """Should return the DB objects so that we can update the state directly"""
         query = (
             select(Record)
             .join(Record.grin_status)
             .where(GRINStatus.state == GRINState.CONVERTED.value)
-            .where(GRINStatus.date_modified >= yesterday)
             .order_by(desc(Record.date_modified))
         )
 
         if backfill:
-            query = query.where(GRINStatus.date_created <= datetime(1991, 8, 25))
+            query = query.where(GRINStatus.date_created <= GRINStatus.historical_timestamp())
             query = query.limit(batch_size)
+        else:
+            yesterday = datetime.now() - timedelta(days=1)
+            query = query.where(GRINStatus.date_modified >= yesterday)
 
         books = self.db_manager.session.execute(query).scalars().all()
         return books
 
-
 if __name__ == "__main__":
-    # Run the main process
     grin_download = GRINDownload()
-    grin_download.run_process()
-
-    # Run the backfill process
-    # grin_download.run_process(backfill=True)
+    grin_download.run_process(backfill=True)

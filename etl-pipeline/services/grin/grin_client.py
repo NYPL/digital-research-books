@@ -2,7 +2,6 @@
 # per https://docs.google.com/document/d/1ayu_djokdss6oCNNYSXtWRyuX7KvtLZ70A99rXy4bR8
 # Additional notes - https://docs.google.com/document/d/1aZ5ODEzKP6qX1f4CCcGtlidRvr-Fu8HPA-AEhTwDTyk/edit?usp=sharing
 
-import os.path
 from datetime import datetime, timedelta
 from google.auth.transport.requests import (
     AuthorizedSession,
@@ -13,7 +12,6 @@ from ..ssm_service import SSMService
 from pdb import set_trace
 
 BATCH_LIMIT = 1000
-
 
 class GRINClient(object):
     def __init__(self):
@@ -49,7 +47,7 @@ class GRINClient(object):
     def convert(self, barcodes):
         # Ask Google to move some barcodes from the "Available" state to "In-Process"
         # Response to process will always be a 200 and the content will a table of Barcodes and corresponding Statuses.
-        # For each barcode, a status will be returned of either
+        # For each barcode, a status will be returned of either:
         # "Success", "Already being converted" "Other error", "Not allowed to be downloaded"
         response = []
 
@@ -74,6 +72,9 @@ class GRINClient(object):
                 response = sanitized_response
 
         return response
+    
+    def download(self, filename, *args, **kwargs):
+        return self.get(filename, *args, **kwargs)
 
     def acquired_today(self, *args, **kwargs):
         # For GRIN queries, range start is inclusive but the range end is exclusive.
@@ -103,7 +104,6 @@ class GRINClient(object):
         return self._for_state("in_process", *args, **kwargs)
 
     def converted_filenames(self, *args, **kwargs):
-        # What are the filenames of files that have been converted?
         return self._for_state("converted", *args, **kwargs)
 
     def failed_conversion(self, *args, **kwargs):
@@ -111,6 +111,3 @@ class GRINClient(object):
 
     def all_books(self, *args, **kwargs):
         return self._for_state("all_books", *args, **kwargs)
-
-    def download(self, filename, *args, **kwargs):
-        return self.get(filename, *args, **kwargs)
