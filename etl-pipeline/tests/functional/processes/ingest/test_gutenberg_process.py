@@ -34,4 +34,6 @@ def test_gutenberg_process(
     assert_uploaded_manifests(succeeded_records)
 
     assert all(record.state == RecordState.INGESTED.value for record in failed_records)
-    assert all(record.state == RecordState.FILES_SAVED.value for record in succeeded_records)
+    assert all(
+        record.state == RecordState.FILES_SAVED.value for record in succeeded_records
+    )
