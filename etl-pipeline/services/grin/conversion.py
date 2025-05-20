@@ -79,7 +79,8 @@ class GRINConversion:
         return converted_barcodes["Barcode"]
 
     def save_barcodes(self, barcodes, state):
-        if not barcodes: return
+        if not barcodes:
+            return
 
         for chunked_barcodes in chunk(iter(barcodes), CHUNK_SIZE):
             records: List[Record] = []
@@ -105,7 +106,8 @@ class GRINConversion:
 
     def process_converted_books(self):
         converted_barcodes = self.client.converted_filenames()
-        if not converted_barcodes: return
+        if not converted_barcodes:
+            return
 
         for chunked_barcodes in chunk(iter(converted_barcodes), CHUNK_SIZE):
             stripped_barcodes: List[str] = []
