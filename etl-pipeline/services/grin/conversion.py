@@ -79,52 +79,53 @@ class GRINConversion:
         return converted_barcodes["Barcode"]
 
     def save_barcodes(self, barcodes, state):
-        if len(barcodes) > 0:
-            for chunked_barcodes in chunk(iter(barcodes), CHUNK_SIZE):
-                records: List[Record] = []
-                for barcode in chunked_barcodes:
-                    records.append(
-                        Record(
-                            uuid=uuid4(),
-                            frbr_status=FRBRStatus.TODO.value,
-                            source_id=f"{barcode}|grin",
-                            grin_status=GRINStatus(
-                                barcode=barcode, failed_download=0, state=state.value
-                            ),
-                        )
+        if not barcodes: return
+
+        for chunked_barcodes in chunk(iter(barcodes), CHUNK_SIZE):
+            records: List[Record] = []
+            for barcode in chunked_barcodes:
+                records.append(
+                    Record(
+                        uuid=uuid4(),
+                        frbr_status=FRBRStatus.TODO.value,
+                        source_id=f"{barcode}|grin",
+                        grin_status=GRINStatus(
+                            barcode=barcode, failed_download=0, state=state.value
+                        ),
                     )
-            try:
-                self.db_manager.session.add_all(records)
-                self.db_manager.commit_changes()
-            except Exception:
-                self.db_manager.session.rollback()
-                self.logger.exception(
-                    f"Failed to update the following records: {chunked_barcodes}"
                 )
+        try:
+            self.db_manager.session.add_all(records)
+            self.db_manager.commit_changes()
+        except Exception:
+            self.db_manager.session.rollback()
+            self.logger.exception(
+                f"Failed to update the following records: {chunked_barcodes}"
+            )
 
     def process_converted_books(self):
         converted_barcodes = self.client.converted_filenames()
+        if not converted_barcodes: return
 
-        if len(converted_barcodes) > 0:
-            for chunked_barcodes in chunk(iter(converted_barcodes), CHUNK_SIZE):
-                stripped_barcodes: List[str] = []
-                for barcode in chunked_barcodes:
-                    # converted file name has the following pattern 1234.tar.gz.gpg
-                    barcode = barcode.split(".", 1)[0]
-                    stripped_barcodes.append(barcode)
+        for chunked_barcodes in chunk(iter(converted_barcodes), CHUNK_SIZE):
+            stripped_barcodes: List[str] = []
+            for barcode in chunked_barcodes:
+                # converted file name has the following pattern 1234.tar.gz.gpg
+                barcode = barcode.split(".", 1)[0]
+                stripped_barcodes.append(barcode)
 
-                try:
-                    update_barcodes = (
-                        update(GRINStatus)
-                        .filter(GRINStatus.barcode.in_(stripped_barcodes))
-                        .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
-                        .values(state=GRINState.CONVERTED.value)
-                    )
-                    self.db_manager.session.execute(update_barcodes)
-                    self.db_manager.commit_changes()
-                except:
-                    self.db_manager.session.rollback()
-                    raise
+            try:
+                update_barcodes = (
+                    update(GRINStatus)
+                    .filter(GRINStatus.barcode.in_(stripped_barcodes))
+                    .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
+                    .values(state=GRINState.CONVERTED.value)
+                )
+                self.db_manager.session.execute(update_barcodes)
+                self.db_manager.commit_changes()
+            except:
+                self.db_manager.session.rollback()
+                raise
 
     def transform_scraped_data(self, data):
         headers = data[0].split("\t")
