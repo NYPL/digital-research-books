@@ -9,7 +9,7 @@ from .postgres.olCover import OpenLibraryCover
 from .postgres.rights import Rights
 from .postgres.collection import Collection, AutomaticCollection
 from .postgres.user import User
-from .postgres.grinStatus import GRINStatus, GRINState
+from .postgres.grin_status import GRINStatus, GRINState
 
 from .elasticsearch.agent import Agent as ESAgent
 from .elasticsearch.edition import Edition as ESEdition

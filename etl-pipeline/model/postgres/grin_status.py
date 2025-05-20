@@ -35,7 +35,8 @@ class GRINStatus(Base, Core):
     )
     record = relationship("Record", back_populates="grin_status")
 
-    def historical_timestamp():
+    def backfill_timestamp():
+        # Old timestamp all backfilled titles were set to differentiate them
         return datetime(1991, 8, 25)
 
     def __repr__(self):

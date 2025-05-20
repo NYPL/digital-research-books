@@ -49,7 +49,7 @@ class GRINConversion:
             .where(
                 GRINStatus.state == GRINState.PENDING_CONVERSION.value,
             )
-            .where(GRINStatus.date_created <= GRINStatus.historical_timestamp())
+            .where(GRINStatus.date_created <= GRINStatus.backfill_timestamp())
             .limit(batch_size)
         )
 

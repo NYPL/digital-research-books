@@ -90,7 +90,7 @@ class GRINDownload:
 
         if backfill:
             query = query.where(
-                GRINStatus.date_created <= GRINStatus.historical_timestamp()
+                GRINStatus.date_created <= GRINStatus.backfill_timestamp()
             )
             query = query.limit(batch_size)
         else:
