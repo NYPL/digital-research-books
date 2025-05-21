@@ -18,20 +18,16 @@ CHUNK_SIZE = 1000
 class GRINConversion:
     def __init__(self):
         self.client = GRINClient()
-        self.db_manager = DBManager()
         self.logger = create_log(__name__)
 
     def run_process(self, backfill=False):
-        self.db_manager.create_session()
+        with DBManager() as self.db_manager:
+            self.acquire_and_convert_new_books()
 
-        self.acquire_and_convert_new_books()
+            self.process_converted_books()
 
-        self.process_converted_books()
-
-        if backfill:
-            self.convert_backfills(CHUNK_SIZE)
-
-        self.db_manager.session.close()
+            if backfill:
+                self.convert_backfills(CHUNK_SIZE)
 
     def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
@@ -79,7 +75,7 @@ class GRINConversion:
         return converted_barcodes["Barcode"]
 
     def save_barcodes(self, barcodes, state):
-        if not barcodes:
+        if barcodes.empty:
             return
 
         for chunked_barcodes in chunk(iter(barcodes), CHUNK_SIZE):
