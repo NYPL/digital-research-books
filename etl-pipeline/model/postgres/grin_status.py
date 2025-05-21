@@ -2,6 +2,7 @@ from enum import Enum
 from sqlalchemy.dialects.postgresql import ENUM, INTEGER
 from sqlalchemy import ForeignKey, Unicode, Integer, Column
 from sqlalchemy.orm import relationship
+from datetime import datetime
 
 from .base import Base, Core
 
@@ -33,6 +34,10 @@ class GRINStatus(Base, Core):
         nullable=False,
     )
     record = relationship("Record", back_populates="grin_status")
+
+    def backfill_timestamp():
+        # Old timestamp all backfilled titles were set to differentiate them
+        return datetime(1991, 8, 25)
 
     def __repr__(self):
         return "<GRINStatus(record_id={}, failed_download={}, state={})>".format(
