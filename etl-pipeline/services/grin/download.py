@@ -8,16 +8,17 @@ from logger import create_log
 from sqlalchemy import select, desc
 from .util import chunk
 from .grin_client import GRINClient
+import os
 
 logger = create_log(__name__)
 
-S3_BUCKET_NAME = "drb-grin-files-test"
+S3_BUCKET_NAME = os.environ["FILE_BUCKET"]
 BATCH_SIZE_LIMIT = 1000
 
 
 class GRINDownload:
     def __init__(self):
-        self.s3_client = S3Manager()
+        self.s3_manager = S3Manager()
         self.db_manager = DBManager()
         self.db_manager.create_session()
         self.client = GRINClient()
@@ -51,7 +52,7 @@ class GRINDownload:
                     continue
 
                 try:
-                    self.s3_client.put_object(
+                    self.s3_manager.put_object(
                         object=content,
                         key=s3_key,
                         bucket=S3_BUCKET_NAME,
