@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
 
-from managers.kMeans import KMeansManager, YearObject
+from managers.kMeans import KMeansManager
+from parsers import YearParser, get_publication_date_object
 
 
 class TestKMeansModel(object):
@@ -141,7 +142,6 @@ class TestKMeansModel(object):
         mockPipeline.side_effect = [
             "placePipe",
             "pubPipe",
-            "edPipe",
             "datePipe",
             "mainPipe",
         ]
@@ -184,8 +184,6 @@ class TestKMeansModel(object):
             (None, {}, None),
             ("place2", {"century": 19, "decade": 5, "year": 1}, None),
         ]
-        mockGetEd = mocker.patch.object(KMeansManager, "getEditionStatement")
-        mockGetEd.side_effect = ["ed1", "ed2", False]
 
         testModel.createDF()
         assert isinstance(testModel.df, pd.DataFrame)
@@ -199,7 +197,6 @@ class TestKMeansModel(object):
         ]
         mockGetData = mocker.patch.object(KMeansManager, "getInstanceData")
         mockGetData.side_effect = [(i, i, i) for i in range(1200)]
-        mocker.patch.object(KMeansManager, "getEditionStatement")
 
         testModel.createDF()
 
@@ -211,7 +208,6 @@ class TestKMeansModel(object):
         ]
         mockGetData = mocker.patch.object(KMeansManager, "getInstanceData")
         mockGetData.side_effect = [(i, i, i) for i in range(750)]
-        mocker.patch.object(KMeansManager, "getEditionStatement")
 
         testModel.createDF()
 
@@ -223,55 +219,54 @@ class TestKMeansModel(object):
         ]
         mockGetData = mocker.patch.object(KMeansManager, "getInstanceData")
         mockGetData.side_effect = [(i, i, i) for i in range(350)]
-        mocker.patch.object(KMeansManager, "getEditionStatement")
 
         testModel.createDF()
 
         assert testModel.maxK == int(350 * (4 / 9))
 
     def test_getPubDateObject_range(self, mocker, TestYear):
-        mockParser = mocker.patch("managers.kMeans.YearObject")
+        mockParser = mocker.patch("parsers.date_parser.YearParser")
         mockParser.side_effect = [TestYear(20, 0, 0), TestYear(19, 0, 0)]
 
         mockDates = ["2000|other_date", "1900-1901|publication_date"]
-        outYear = KMeansManager.getPubDateObject(mockDates)
+        outYear = get_publication_date_object(mockDates)
 
         assert outYear == {"century": 19, "decade": 0, "year": 0}
 
     def test_getPubDateObject_year_only(self, mocker, TestYear):
-        mockParser = mocker.patch("managers.kMeans.YearObject")
+        mockParser = mocker.patch("parsers.date_parser.YearParser")
         mockParser.side_effect = [TestYear(20, 0, 0), TestYear(19, 0, 0)]
 
         mockDates = ["2000|other_date", "1900|publication_date"]
-        outYear = KMeansManager.getPubDateObject(mockDates)
+        outYear = get_publication_date_object(mockDates)
 
         assert outYear == {"century": 19, "decade": 0, "year": 0}
 
     def test_getPubDateObject_full_date(self, mocker, TestYear):
-        mockParser = mocker.patch("managers.kMeans.YearObject")
+        mockParser = mocker.patch("parsers.date_parser.YearParser")
         mockParser.side_effect = [TestYear(20, 0, 0), TestYear(19, 0, 0)]
 
         mockDates = ["2000-12-01|other_date", "1900-01-01|publication_date"]
-        outYear = KMeansManager.getPubDateObject(mockDates)
+        outYear = get_publication_date_object(mockDates)
 
         assert outYear == {"century": 19, "decade": 0, "year": 0}
 
     def test_getPubDateFloat_neither(self, mocker):
-        mocker.patch("managers.kMeans.YearObject")
+        mocker.patch("parsers.date_parser.YearParser")
         mockDates = ["2000|other_date", "1900-1901|pub_date"]
-        outYear = KMeansManager.getPubDateObject(mockDates)
+        outYear = get_publication_date_object(mockDates)
         assert outYear == {}
 
     def test_getPubDateFloat_no_dates(self, mocker):
-        outYear = KMeansManager.getPubDateObject([])
+        outYear = get_publication_date_object([])
         assert outYear == {}
 
     def test_getPubDateFloat_bad_value(self, mocker):
-        outYear = KMeansManager.getPubDateObject(["2000"])
+        outYear = get_publication_date_object(["2000"])
         assert outYear == {}
 
     def test_getPubDateFloat_bad_string_value(self, mocker):
-        outYear = KMeansManager.getPubDateObject(["test|date"])
+        outYear = get_publication_date_object(["test|date"])
         assert outYear == {}
 
     def test_getPublishers_clean(self, mocker):
@@ -288,21 +283,6 @@ class TestKMeansModel(object):
         outPublisher = KMeansManager.getPublishers(None)
 
         assert outPublisher == ""
-
-    def test_getEditionStatement_value_present(self, mocker):
-        edStmt = KMeansManager.getEditionStatement(["edition|1"])
-
-        assert edStmt == "edition"
-
-    def test_getEditionStatement_no_value(self, mocker):
-        edStmt = KMeansManager.getEditionStatement(None)
-
-        assert edStmt == ""
-
-    def test_getEditionStatement_empty_array(self, mocker):
-        edStmt = KMeansManager.getEditionStatement([])
-
-        assert edStmt == ""
 
     def test_generateClusters_multiple(self, mocker, testModel):
         mockGetK = mocker.patch.object(KMeansManager, "getK")
@@ -361,7 +341,7 @@ class TestKMeansModel(object):
         mockPipeline.fit_predict.assert_called_once()
 
     def test_parseEditions(self, testModel, mocker):
-        mockConvert = mocker.patch.object(YearObject, "convertYearDictToStr")
+        mockConvert = mocker.patch.object(YearParser, "convertYearDictToStr")
         mockConvert.side_effect = [1900, 1900, 2000, 1950]
         outEditions = testModel.parseEditions()
         assert len(outEditions) == 3

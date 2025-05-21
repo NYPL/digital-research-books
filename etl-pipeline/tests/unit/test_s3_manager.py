@@ -44,6 +44,7 @@ class TestS3Manager:
             ContentType="application/epub+zip",
             ContentMD5="testMd5Hash",
             Metadata={"md5Checksum": "testMd5Hash"},
+            StorageClass="STANDARD",
         )
 
     def test_put_object_existing_outdated(self, test_instance: S3Manager, mocker):
@@ -81,6 +82,7 @@ class TestS3Manager:
             ContentType="application/epub+zip",
             ContentMD5="testMd5Hash",
             Metadata={"md5Checksum": "testMd5Hash"},
+            StorageClass="STANDARD",
         )
 
     def test_put_object_existing_unmodified(self, test_instance: S3Manager, mocker):

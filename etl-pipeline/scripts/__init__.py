@@ -15,6 +15,6 @@ from .countCABooks import main as countCA
 from .nyplLoginFlags import main as nyplFlags
 from .deleteUMPManifestLinks import main as deleteUMPManifests
 from .deleteProblemWorks import main as deleteWorks
-from .check_queue_size import main as checkQueueSize
 from .report_missing_files import main as ReportMissingFiles
 from .create_collection import main as createCollection
+from .GRIN_initial_scrape import main as GRINInitialScrape

@@ -13,6 +13,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 
 from logger import create_log
+from parsers import YearParser, get_publication_date_object
 
 logger = create_log(__name__)
 
@@ -70,23 +71,6 @@ class KMeansManager:
                     ]
                 ),
             ),
-            "edition": (
-                "edition",
-                Pipeline(
-                    [
-                        ("selector", FeatureSelector(key="edition")),
-                        (
-                            "tfidf",
-                            TfidfVectorizer(
-                                preprocessor=KMeansManager.pubProcessor,
-                                strip_accents="unicode",
-                                analyzer="char_wb",
-                                ngram_range=(1, 3),
-                            ),
-                        ),
-                    ]
-                ),
-            ),
             "pubDate": (
                 "pubDate",
                 Pipeline(
@@ -101,7 +85,6 @@ class KMeansManager:
         pipelineWeights = {
             "place": 1.0,
             "publisher": 1.0,
-            "edition": 1.0,
             "pubDate": 1.75,
         }
 
@@ -149,7 +132,6 @@ class KMeansManager:
                         "place": spatialData or "",
                         "publisher": publisherData,
                         "pubDate": dateData,
-                        "edition": self.getEditionStatement(i.has_version),
                         "uuid": i.uuid,
                     }
                 )
@@ -173,53 +155,10 @@ class KMeansManager:
     @classmethod
     def getInstanceData(cls, instance):
         spatial = instance.spatial
-        date = cls.getPubDateObject(instance.dates)
+        date = get_publication_date_object(instance.dates)
         publisher = cls.getPublishers(instance.publisher)
 
         return (spatial, date, publisher)
-
-    @classmethod
-    def getPubDateObject(cls, dates):
-        if dates is None or len(dates) < 1:
-            return {}
-
-        pubYears = {}
-
-        for d in dates:
-            try:
-                date, dateType = tuple(d.split("|"))
-
-                dateGroups = re.search(r"([\d\-\?]+)", date)
-
-                dateStr = dateGroups.group(1)
-
-                startYear, endYear = ("", "")
-
-                if re.match(r"[0-9]{4}-[0-9]{4}", dateStr):
-                    rangeMatches = re.match(r"([0-9]{4})-([0-9]{4})", dateStr)
-                    startYear = rangeMatches.group(1)
-                    endYear = rangeMatches.group(2)
-                elif re.match(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", dateStr):
-                    year, _, _ = tuple(dateStr.split("-"))
-                    startYear, endYear = (year, year)
-                elif re.match(r"[0-9]{4}-[0-9]{2}", dateStr):
-                    year, _ = tuple(dateStr.split("-"))
-                    startYear, endYear = (year, year)
-                else:
-                    startYear, endYear = (dateStr, dateStr)
-
-                yearParser = YearObject(startYear, endYear)
-                yearParser.setYearComponents()
-                pubYears[dateType] = dict(yearParser)
-            except (ValueError, AttributeError, IndexError) as e:
-                logger.warning("Unable to parse date {}".format(d))
-
-        for datePref in ["copyright_date", "publication_date", "issued"]:
-            if datePref in pubYears.keys():
-                return pubYears[datePref]
-
-        logger.debug("Unable to locate publication date")
-        return {}
 
     @classmethod
     def getPublishers(cls, publishers):
@@ -235,19 +174,6 @@ class KMeansManager:
             pubs.append(publisher.strip(",. []").lower())
 
         return ", ".join(pubs)
-
-    @classmethod
-    def getEditionStatement(cls, hasVersion):
-        if not hasVersion:
-            return ""
-        for version in hasVersion:
-            try:
-                statement, _ = tuple(version.split("|"))
-                return statement
-            except ValueError:
-                pass
-
-        return ""
 
     def generateClusters(self):
         try:
@@ -342,75 +268,10 @@ class KMeansManager:
             yearEds = defaultdict(list)
             logger.debug("Parsing cluster {}".format(clust))
             for ed in self.clusters[clust]:
-                editionYear = YearObject.convertYearDictToStr(ed.iloc[0]["pubDate"])
+                editionYear = YearParser.convertYearDictToStr(ed.iloc[0]["pubDate"])
                 logger.debug("Adding instance to {} edition".format(editionYear))
                 yearEds[editionYear].append(ed.iloc[0]["uuid"])
             eds.extend([(year, data) for year, data in yearEds.items()])
             eds.sort(key=lambda x: x[0])
 
         return eds
-
-
-class YearObject:
-    def __init__(self, start, end):
-        self.start = str(start)
-        self.end = str(end)
-        self.century = [None, None]
-        self.decade = [None, None]
-        self.year = [None, None]
-
-    def setYearComponents(self):
-        self.setCentury()
-        self.setDecade()
-        self.setYear()
-
-    def setCentury(self):
-        self.century[0] = int(self.start[:2])
-
-        if len(self.end) > 2:
-            self.century[1] = int(self.end[:2])
-
-    def setDecade(self):
-        if self.start[2] not in ["-", "?"]:
-            self.decade[0] = int(self.start[2])
-
-        if len(self.end) > 2 and self.end[2] not in ["-", "?"]:
-            self.decade[1] = int(self.end[2])
-
-    def setYear(self):
-        if self.start[3] not in ["-", "?"]:
-            self.year[0] = int(self.start[3])
-
-        if len(self.end) > 2 and self.end[3] not in ["-", "?"]:
-            self.year[1] = int(self.end[3])
-
-    def __iter__(self):
-        for key in ["century", "decade", "year"]:
-            yearComp = getattr(self, key)
-
-            if yearComp[0] is not None:
-                yield "{}Start".format(key), yearComp[0]
-
-            if yearComp[1] is not None:
-                yield "{}End".format(key), yearComp[1]
-
-    @staticmethod
-    def convertYearDictToStr(yearDict):
-        startYear = YearObject.getYearStr(yearDict, "Start")
-        endYear = YearObject.getYearStr(yearDict, "End")
-
-        return (
-            "{}-{}".format(startYear, endYear)
-            if endYear and endYear != startYear
-            else str(startYear)
-        )
-
-    @staticmethod
-    def getYearStr(yearDict, yearType):
-        century = yearDict.get("century{}".format(yearType), None)
-        decade = yearDict.get("decade{}".format(yearType), None)
-        year = yearDict.get("year{}".format(yearType), None)
-
-        return "".join(
-            map(lambda x: str(x) if x is not None else "x", [century, decade, year])
-        )
