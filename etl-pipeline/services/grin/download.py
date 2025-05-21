@@ -10,11 +10,6 @@ from .util import chunk
 from .grin_client import GRINClient
 import os
 
-S3_BUCKET = (
-    "drb-files-limited-production"
-    if os.environ.get("ENVIRONMENT", "qa") == "production"
-    else "drb-files-limited-qa"
-)
 BATCH_SIZE_LIMIT = 1000
 
 
@@ -23,6 +18,11 @@ class GRINDownload:
         self.s3_manager = S3Manager()
         self.client = GRINClient()
         self.logger = create_log(__name__)
+        self.bucket = (
+            "drb-files-limited-production"
+            if os.environ.get("ENVIRONMENT", "qa") == "production"
+            else "drb-files-limited-qa"
+        )
 
     def run_process(self, batch_size=BATCH_SIZE_LIMIT, backfill=False):
         with DBManager() as self.db_manager:
@@ -54,8 +54,8 @@ class GRINDownload:
                 try:
                     self.s3_manager.put_object(
                         object=content,
-                        key="grin/" + s3_key,
-                        bucket=S3_BUCKET,
+                        key=s3_key,
+                        bucket=self.bucket,
                         storage_class="GLACIER_IR",
                     )
                 except Exception as e:
