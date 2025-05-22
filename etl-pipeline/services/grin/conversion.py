@@ -86,6 +86,7 @@ class GRINConversion:
                         uuid=uuid4(),
                         frbr_status=FRBRStatus.TODO.value,
                         source_id=f"{barcode}|grin",
+                        source="grin",
                         grin_status=GRINStatus(
                             barcode=barcode, failed_download=0, state=state.value
                         ),
