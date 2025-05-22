@@ -9,12 +9,11 @@ from sqlalchemy import select, desc
 from .util import chunk
 from .grin_client import GRINClient
 import os
-
-BATCH_SIZE_LIMIT = 1000
+import argparse
 
 
 class GRINDownload:
-    def __init__(self):
+    def __init__(self, batch_limit=1000):
         self.s3_manager = S3Manager()
         self.client = GRINClient()
         self.logger = create_log(__name__)
@@ -23,20 +22,20 @@ class GRINDownload:
             if os.environ.get("ENVIRONMENT", "qa") == "production"
             else "drb-files-limited-qa"
         )
+        self.batch_limit = batch_limit
+        print(self.batch_limit)
 
-    def run_process(self, batch_size=BATCH_SIZE_LIMIT, backfill=False):
+    def run_process(self, backfill=False):
         with DBManager() as self.db_manager:
             if backfill:
-                backfilled_books: List[Record] = self._get_converted_books(
-                    batch_size, backfill
-                )
-                self.download_and_upload_books(backfilled_books, batch_size)
+                backfilled_books: List[Record] = self._get_converted_books(backfill)
+                self.download_and_upload_books(backfilled_books)
 
             daily_converted_books: List[Record] = self._get_converted_books()
-            self.download_and_upload_books(daily_converted_books, batch_size)
+            self.download_and_upload_books(daily_converted_books)
 
-    def download_and_upload_books(self, books, batch_size):
-        for chunked_books in chunk(iter(books), batch_size):
+    def download_and_upload_books(self, books):
+        for chunked_books in chunk(iter(books), self.batch_limit):
             successfully_processed_books: List[str] = []
             for book in chunked_books:
                 barcode = book.source_id.split("|")[0]
@@ -80,7 +79,7 @@ class GRINDownload:
         response = self.client.download(file_name)
         return response
 
-    def _get_converted_books(self, batch_size=None, backfill=False):
+    def _get_converted_books(self, backfill=False):
         """Should return the DB objects so that we can update the state directly"""
         query = (
             select(Record)
@@ -93,7 +92,7 @@ class GRINDownload:
             query = query.where(
                 GRINStatus.date_created <= GRINStatus.backfill_timestamp()
             )
-            query = query.limit(batch_size)
+            query = query.limit(self.batch_limit)
         else:
             yesterday = datetime.now() - timedelta(days=1)
             query = query.where(GRINStatus.date_modified >= yesterday)
@@ -103,5 +102,10 @@ class GRINDownload:
 
 
 if __name__ == "__main__":
-    grin_download = GRINDownload()
-    grin_download.run_process(backfill=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--batch_limit")
+    args = parser.parse_args()
+    batch_limit = args.batch_limit
+
+    grin_download = GRINDownload(batch_limit)
+    # grin_download.run_process(backfill=True)
