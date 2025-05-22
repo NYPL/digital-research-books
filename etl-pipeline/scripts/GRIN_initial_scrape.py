@@ -3,7 +3,6 @@ import logging
 from typing import List, Iterator
 from model import GRINState, GRINStatus, Record, FRBRStatus
 from managers import DBManager
-from sqlalchemy.dialects.postgresql import insert
 from uuid import uuid4
 from services.grin.grin_client import GRINClient
 from services.grin.util import chunk
