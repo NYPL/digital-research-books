@@ -16,16 +16,13 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
+
 def main():
     grin_client = GRINClient()
-    with DBManager(
-            user="localuser",
-            pswd="localpsql",
-            host="localhost",
-            port="5432",
-            db="drb_test_db",
-        ) as db_manager:
-        url = grin_client._url(f"_all_books?book_state=NEW&book_state=PREVIOUSLY_DOWNLOADED&format=text")
+    with DBManager() as db_manager:
+        url = grin_client._url(
+            f"_all_books?book_state=NEW&book_state=PREVIOUSLY_DOWNLOADED&format=text"
+        )
         print(f"Scraping url: {url}")
 
         response = grin_client.session.request("GET", url, timeout=600)
@@ -47,9 +44,9 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
         new_records: List[Record] = []
         for barcode in chunked_barcodes:
             existing_record = (
-            db_manager.session.query(Record)
-            .filter(Record.source_id == f"{barcode}|grin")
-            .first()
+                db_manager.session.query(Record)
+                .filter(Record.source_id == f"{barcode}|grin")
+                .first()
             )
             if not existing_record:
                 new_records.append(
@@ -65,7 +62,7 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
                             date_created=datetime(1991, 8, 25),
                         ),
                     )
-            )
+                )
         logging.info(f"Inserting {len(new_records)} barcodes into Record")
 
         try:
@@ -74,10 +71,10 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
         except Exception:
             logging.exception(f"Failed to insert barcodes: {chunked_barcodes}")
             raise
-        
+
         break
     logging.info("Complete.")
-    
+
 
 if __name__ == "__main__":
     try:
