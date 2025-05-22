@@ -7,8 +7,7 @@ from sqlalchemy.dialects.postgresql import insert
 from uuid import uuid4
 from services.grin.grin_client import GRINClient
 from services.grin.util import chunk
-
-DEFAULT_CHUNK_SIZE = 5000
+import argparse
 
 logging.basicConfig(
     filename="GRIN_initial_scrape.log",
@@ -17,7 +16,7 @@ logging.basicConfig(
 )
 
 
-def main():
+def main(batch_limit=1000):
     grin_client = GRINClient()
     with DBManager() as db_manager:
         url = grin_client._url(
@@ -31,7 +30,7 @@ def main():
         barcodes = response.content.decode("utf8").strip().split("\n")
         if len(barcodes) > 0:
             insert_into_db(
-                barcodes=barcodes, db_manager=db_manager, chunk_size=DEFAULT_CHUNK_SIZE
+                barcodes=barcodes, db_manager=db_manager, chunk_size=batch_limit
             )
         else:
             logging.info("No record found")
@@ -78,6 +77,10 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
 
 if __name__ == "__main__":
     try:
-        main()
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--batch_limit")
+        args = parser.parse_args()
+        batch_limit = args.batch_limit
+        main(batch_limit)
     except Exception as e:
         logging.exception(e, exc_info=True)
