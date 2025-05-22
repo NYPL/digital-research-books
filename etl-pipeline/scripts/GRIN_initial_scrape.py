@@ -81,6 +81,7 @@ if __name__ == "__main__":
         parser.add_argument("--batch_limit")
         args = parser.parse_args()
         batch_limit = args.batch_limit
+
         main(batch_limit)
     except Exception as e:
         logging.exception(e, exc_info=True)

@@ -108,4 +108,4 @@ if __name__ == "__main__":
     batch_limit = args.batch_limit
 
     grin_download = GRINDownload(batch_limit)
-    # grin_download.run_process(backfill=True)
+    grin_download.run_process(backfill=True)

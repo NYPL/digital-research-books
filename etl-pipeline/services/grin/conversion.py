@@ -143,4 +143,4 @@ if __name__ == "__main__":
     batch_limit = args.batch_limit
 
     grin_conversion = GRINConversion(batch_limit)
-    # grin_conversion.run_process(backfill=True)
+    grin_conversion.run_process(backfill=True)
