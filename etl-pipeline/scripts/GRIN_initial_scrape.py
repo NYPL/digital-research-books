@@ -8,7 +8,7 @@ from uuid import uuid4
 from services.grin.grin_client import GRINClient
 from services.grin.util import chunk
 
-DEFAULT_CHUNK_SIZE = 1000
+DEFAULT_CHUNK_SIZE = 5000
 
 logging.basicConfig(
     filename="GRIN_initial_scrape.log",
