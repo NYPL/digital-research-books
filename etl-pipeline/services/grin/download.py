@@ -23,7 +23,6 @@ class GRINDownload:
             else "drb-files-limited-qa"
         )
         self.batch_limit = batch_limit
-        print(self.batch_limit)
 
     def run_process(self, backfill=False):
         with DBManager() as self.db_manager:
