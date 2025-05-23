@@ -11,14 +11,14 @@ from managers import DBManager
 from uuid import uuid4
 from logger import create_log
 from .util import chunk
-
-CHUNK_SIZE = 1000
+import argparse
 
 
 class GRINConversion:
-    def __init__(self):
+    def __init__(self, batch_limit=1000):
         self.client = GRINClient()
         self.logger = create_log(__name__)
+        self.batch_limit = batch_limit
 
     def run_process(self, backfill=False):
         with DBManager() as self.db_manager:
@@ -27,7 +27,7 @@ class GRINConversion:
             self.process_converted_books()
 
             if backfill:
-                self.convert_backfills(CHUNK_SIZE)
+                self.convert_backfills()
 
     def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
@@ -39,14 +39,14 @@ class GRINConversion:
 
             self.save_barcodes(converting_barcodes, GRINState.CONVERTING)
 
-    def convert_backfills(self, batch_size):
+    def convert_backfills(self):
         backfill_query = (
             select(GRINStatus.barcode)
             .where(
                 GRINStatus.state == GRINState.PENDING_CONVERSION.value,
             )
             .where(GRINStatus.date_created <= GRINStatus.backfill_timestamp())
-            .limit(batch_size)
+            .limit(self.batch_limit)
         )
 
         backfilled_barcodes = (
@@ -78,7 +78,7 @@ class GRINConversion:
         if barcodes.empty:
             return
 
-        for chunked_barcodes in chunk(iter(barcodes), CHUNK_SIZE):
+        for chunked_barcodes in chunk(iter(barcodes), self.batch_limit):
             records: List[Record] = []
             for barcode in chunked_barcodes:
                 records.append(
@@ -86,6 +86,7 @@ class GRINConversion:
                         uuid=uuid4(),
                         frbr_status=FRBRStatus.TODO.value,
                         source_id=f"{barcode}|grin",
+                        source="grin",
                         grin_status=GRINStatus(
                             barcode=barcode, failed_download=0, state=state.value
                         ),
@@ -105,7 +106,7 @@ class GRINConversion:
         if not converted_barcodes:
             return
 
-        for chunked_barcodes in chunk(iter(converted_barcodes), CHUNK_SIZE):
+        for chunked_barcodes in chunk(iter(converted_barcodes), self.batch_limit):
             stripped_barcodes: List[str] = []
             for barcode in chunked_barcodes:
                 # converted file name has the following pattern 1234.tar.gz.gpg
@@ -136,5 +137,10 @@ class GRINConversion:
 
 
 if __name__ == "__main__":
-    grin_conversion = GRINConversion()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--batch_limit")
+    args = parser.parse_args()
+    batch_limit = int(args.batch_limit)
+
+    grin_conversion = GRINConversion(batch_limit)
     grin_conversion.run_process(backfill=True)
