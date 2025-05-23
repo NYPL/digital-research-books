@@ -79,7 +79,7 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser()
         parser.add_argument("--batch_limit")
         args = parser.parse_args()
-        batch_limit = args.batch_limit
+        batch_limit = int(args.batch_limit)
 
         main(batch_limit)
     except Exception as e:
