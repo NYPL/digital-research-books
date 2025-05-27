@@ -5,7 +5,9 @@ from .assert_uploaded_files import assert_uploaded_files
 
 
 def test_muse_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager):
-    muse_process = IngestProcess("complete", None, None, None, 5, None, Source.MUSE.value)
+    muse_process = IngestProcess(
+        "complete", None, None, None, 5, None, Source.MUSE.value
+    )
     number_of_records_ingested = muse_process.runProcess()
 
     records = assert_ingested_records(

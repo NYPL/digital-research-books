@@ -5,7 +5,9 @@ from .assert_uploaded_manifests import assert_uploaded_manifests
 
 
 def test_clacso_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager):
-    clacso_process = IngestProcess("complete", None, None, None, 5, None, Source.CLACSO.value)
+    clacso_process = IngestProcess(
+        "complete", None, None, None, 5, None, Source.CLACSO.value
+    )
     number_of_records_ingested = clacso_process.runProcess()
 
     records = assert_ingested_records(

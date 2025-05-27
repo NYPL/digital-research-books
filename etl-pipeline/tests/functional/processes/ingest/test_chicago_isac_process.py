@@ -7,7 +7,9 @@ from .assert_uploaded_manifests import assert_uploaded_manifests
 def test_chicago_isac_process(
     db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager
 ):
-    isac_process = IngestProcess("complete", None, None, None, 5, None, Source.CHICACO_ISAC.value)
+    isac_process = IngestProcess(
+        "complete", None, None, None, 5, None, Source.CHICACO_ISAC.value
+    )
     number_of_records_ingested = isac_process.runProcess()
 
     records = assert_ingested_records(
