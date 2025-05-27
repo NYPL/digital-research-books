@@ -1,5 +1,5 @@
 from model import Source
-from processes import HathiTrustProcess, RecordFileSaver
+from processes import IngestProcess, RecordFileSaver
 from .assert_uploaded_manifests import assert_uploaded_manifests
 from .assert_ingested_records import assert_ingested_records
 
@@ -7,7 +7,9 @@ from .assert_ingested_records import assert_ingested_records
 def test_hathi_trust_process(
     db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager
 ):
-    hathi_trust_process = HathiTrustProcess("weekly", None, None, None, 5, None)
+    hathi_trust_process = IngestProcess(
+        "weekly", None, None, None, 5, None, Source.HATHI.value
+    )
     number_of_records_ingested = hathi_trust_process.runProcess()
 
     records = assert_ingested_records(

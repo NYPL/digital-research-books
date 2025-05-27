@@ -1,4 +1,4 @@
-from processes import DOABProcess, RecordFileSaver
+from processes import IngestProcess, RecordFileSaver
 from model import Source
 from .assert_ingested_records import assert_ingested_records
 from .assert_uploaded_manifests import assert_uploaded_manifests
@@ -6,7 +6,9 @@ from .assert_uploaded_epubs import assert_uploaded_epubs
 
 
 def test_doab_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager):
-    doab_process = DOABProcess("complete", None, None, None, 1, None)
+    doab_process = IngestProcess(
+        "complete", None, None, None, 1, None, Source.DOAB.value
+    )
     number_of_records_ingested = doab_process.runProcess()
 
     records = assert_ingested_records(
