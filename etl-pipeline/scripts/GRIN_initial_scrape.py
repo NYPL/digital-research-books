@@ -1,5 +1,5 @@
 from datetime import datetime
-import logging
+from logger import create_log
 from typing import List, Iterator
 from model import GRINState, GRINStatus, Record, FRBRStatus
 from managers import DBManager
@@ -8,12 +8,7 @@ from services.grin.grin_client import GRINClient
 from services.grin.util import chunk
 import argparse
 
-logging.basicConfig(
-    filename="GRIN_initial_scrape.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
-
+logger = create_log(__name__)
 
 def main(batch_limit=1000):
     grin_client = GRINClient()
@@ -32,11 +27,11 @@ def main(batch_limit=1000):
                 barcodes=barcodes, db_manager=db_manager, chunk_size=batch_limit
             )
         else:
-            logging.info("No record found")
+            logger.info("No record found")
 
 
 def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
-    logging.info(f"Processing {len(barcodes)} barcodes")
+    logger.info(f"Processing {len(barcodes)} barcodes")
 
     for chunked_barcodes in chunk(iter(barcodes), chunk_size):
         new_records: List[Record] = []
@@ -61,17 +56,17 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
                         ),
                     )
                 )
-        logging.info(f"Inserting {len(new_records)} barcodes into Record")
+        logger.info(f"Inserting {len(new_records)} barcodes into Record")
 
         try:
             db_manager.session.add_all(new_records)
             db_manager.commit_changes()
         except Exception:
-            logging.exception(f"Failed to insert barcodes: {chunked_barcodes}")
+            logger.exception(f"Failed to insert barcodes: {chunked_barcodes}")
             raise
 
         break
-    logging.info("Complete.")
+    logger.info("Complete.")
 
 
 if __name__ == "__main__":
@@ -83,4 +78,4 @@ if __name__ == "__main__":
 
         main(batch_limit)
     except Exception as e:
-        logging.exception(e, exc_info=True)
+        logger.exception(e, exc_info=True)
