@@ -1,7 +1,7 @@
 import pytest
 
 from model import Source
-from processes import PublisherBacklistProcess, RecordFileSaver
+from processes import IngestProcess, RecordFileSaver
 from .assert_ingested_records import assert_ingested_records
 from .assert_uploaded_files import assert_uploaded_files
 
@@ -10,8 +10,8 @@ from .assert_uploaded_files import assert_uploaded_files
 def test_publisher_backlist_process(
     db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager
 ):
-    publisher_backlist_process = PublisherBacklistProcess(
-        "complete", None, None, None, 1, None
+    publisher_backlist_process = IngestProcess(
+        "complete", None, None, None, 1, None, Source.PUBLISHER_BACKLIST.value
     )
     number_of_records_ingested = publisher_backlist_process.runProcess()
 

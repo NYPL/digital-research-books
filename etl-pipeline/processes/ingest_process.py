@@ -1,8 +1,7 @@
 from services import get_source_service
-from model import Source
 from logger import create_log
 from .record_ingestor import RecordIngestor
-import utils
+from . import utils
 
 logger = create_log(__name__)
 

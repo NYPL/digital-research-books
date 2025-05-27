@@ -1,5 +1,5 @@
 from model import RecordState, Source
-from processes import RecordFileSaver, GutenbergProcess
+from processes import RecordFileSaver, IngestProcess
 from .assert_ingested_records import assert_ingested_records
 from .assert_uploaded_manifests import assert_uploaded_manifests
 
@@ -7,7 +7,7 @@ from .assert_uploaded_manifests import assert_uploaded_manifests
 def test_gutenberg_process(
     db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager
 ):
-    gutenberg_process = GutenbergProcess("complete", None, None, None, 5, None)
+    gutenberg_process = IngestProcess("complete", None, None, None, 5, None, Source.GUTENBERG.value)
     number_of_records_ingested = gutenberg_process.runProcess()
 
     records = assert_ingested_records(

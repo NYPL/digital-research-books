@@ -7,6 +7,7 @@ from .chicago_isac_service import ChicagoISACService
 from .dspace_service import DSpaceService
 from .gutenberg_service import GutenbergService
 from .hathi_trust_service import HathiTrustService
+from .loc_service import LOCService
 from .met_service import METService
 from .muse_service import MUSEService
 from .nypl_bib_service import NYPLBibService
@@ -32,6 +33,8 @@ def get_source_service(source: str) -> Optional[SourceService]:
         return GutenbergService()
     if source == Source.HATHI.value:
         return HathiTrustService()
+    if source == Source.LOC.value:
+        return LOCService()
     if source == Source.MET.value:
         return METService()
     if source == Source.MUSE.value:

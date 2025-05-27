@@ -5,6 +5,7 @@ from .ingest.hathi_trust import HathiTrustProcess
 from .ingest.nypl import NYPLProcess
 from .local_development.local_development_setup import LocalDevelopmentSetupProcess
 from .api import APIProcess
+from .ingest_process import IngestProcess
 from .ingest.muse import MUSEProcess
 from .ingest.met import METProcess
 from .util.db_maintenance import DatabaseMaintenanceProcess

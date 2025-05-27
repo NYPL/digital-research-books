@@ -1,11 +1,11 @@
 from model import Source
-from processes import MUSEProcess, RecordFileSaver
+from processes import IngestProcess, RecordFileSaver
 from .assert_ingested_records import assert_ingested_records
 from .assert_uploaded_files import assert_uploaded_files
 
 
 def test_muse_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager):
-    muse_process = MUSEProcess("complete", None, None, None, 5, None)
+    muse_process = IngestProcess("complete", None, None, None, 5, None, Source.MUSE.value)
     number_of_records_ingested = muse_process.runProcess()
 
     records = assert_ingested_records(
