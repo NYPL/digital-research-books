@@ -9,7 +9,7 @@ from alembic import context
 from load_env import load_env_file
 
 # set config file here, e.g. local-qa.yaml to run migrations in QA
-load_env_file("sample-compose", file_string="local-qa.yaml")
+load_env_file("sample-compose", file_string="config/{}.yaml")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
