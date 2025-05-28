@@ -1,4 +1,3 @@
-from .file.covers import CoverProcess
 from .ingest.doab import DOABProcess
 from .ingest.gutenberg import GutenbergProcess
 from .ingest.hathi_trust import HathiTrustProcess
