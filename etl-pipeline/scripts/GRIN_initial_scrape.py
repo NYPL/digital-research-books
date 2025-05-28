@@ -4,8 +4,8 @@ from typing import List, Iterator
 from model import GRINState, GRINStatus, Record, FRBRStatus
 from managers import DBManager
 from uuid import uuid4
-from services.grin.grin_client import GRINClient
-from services.grin.util import chunk
+from processes.grin.grin_client import GRINClient
+from processes.grin.util import chunk
 import argparse
 
 logger = create_log(__name__)
