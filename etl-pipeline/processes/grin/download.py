@@ -13,7 +13,7 @@ import argparse
 
 
 class GRINDownload:
-    def __init__(self, *args, batch_limit=1):
+    def __init__(self, *args, batch_limit=1000):
         self.s3_manager = S3Manager()
         self.client = GRINClient()
         self.logger = create_log(__name__)
