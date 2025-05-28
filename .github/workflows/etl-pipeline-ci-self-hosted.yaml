@@ -1,36 +1,37 @@
-name: 'ETL Pipeline Tests (Self-Hosted)'
+name: 'ETL Pipeline CI (Self-Hosted)'
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
 
 permissions:
   contents: read
   id-token: write
 
-env:
-  AWS_REGION: us-east-1
-  PRIMARY_AWS_ACCOUNTID: "491147561046"
-  SECONDARY_AWS_ACCOUNTID: "946183545209"
-  IMAGE_TAG: nypl-nginx-test
-  ENVIRONMENT: qa
-  REDIS_TIMEOUT: 10
-  ELASTICSEARCH_HOST: ${{ secrets.ELASTICSEARCH_HOST }}
-  ELASTICSEARCH_INDEX: ${{ secrets.ELASTICSEARCH_INDEX }}
-  ELASTICSEARCH_PORT: ${{ secrets.ELASTICSEARCH_PORT }}
-  ELASTICSEARCH_SCHEME: ${{ secrets.ELASTICSEARCH_SCHEME }}
-  REDIS_HOST: ${{ secrets.REDIS_HOST }}
-
 jobs:
   run-tests:
     runs-on: self-hosted
-    environment: qa
+    env:
+      AWS_REGION: us-east-1
+      PRIMARY_AWS_ACCOUNTID: "491147561046"
+      SECONDARY_AWS_ACCOUNTID: "946183545209"
+      IMAGE_TAG: nypl-nginx-test
+      ENVIRONMENT: qa
+      REDIS_TIMEOUT: 10
+      ELASTICSEARCH_HOST: ${{ secrets.ELASTICSEARCH_HOST }}
+      ELASTICSEARCH_INDEX: ${{ secrets.ELASTICSEARCH_INDEX }}
+      ELASTICSEARCH_PORT: ${{ secrets.ELASTICSEARCH_PORT }}
+      ELASTICSEARCH_SCHEME: ${{ secrets.ELASTICSEARCH_SCHEME }}
+      REDIS_HOST: ${{ secrets.REDIS_HOST }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Verify config file exists
         working-directory: ./etl-pipeline
         run: |
@@ -43,7 +44,6 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: GHAPrimarySession-${{ github.run_id }}
           audience: sts.amazonaws.com
-
       - name: Configure cross-account AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -53,7 +53,6 @@ jobs:
           role-chaining: true
           role-duration-seconds: 1800
           audience: sts.amazonaws.com
-
       - name: Get GitHub API Key from SSM
         id: get-github-key
         run: |
@@ -98,10 +97,7 @@ jobs:
       - name: Run QA functional tests
         working-directory: ./etl-pipeline
         run: |
-          python3 -m pytest tests/functional \
-            --junitxml=test-results.xml \
-            --reruns=3 \
-            --reruns-delay=5
+          make functional
       - name: Cleanup GitHub API Key
         run: |
           echo "Cleaning up GitHub API key..."
