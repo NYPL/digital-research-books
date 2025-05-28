@@ -1,13 +1,9 @@
-from mappings.doab import DOABMapping
-from processes import CLACSOProcess
-from services.sources.dspace_service import DSpaceService
+from model import Source
+from services import get_source_service
 
 
 def test_get_records():
-    dspace_service = DSpaceService(
-        base_url=CLACSOProcess.CLACSO_BASE_URL, source_mapping=DOABMapping
-    )
-
+    dspace_service = get_source_service(Source.CLACSO.value)
     records = dspace_service.get_records(limit=5)
 
     for record in records:
