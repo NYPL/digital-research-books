@@ -11,7 +11,7 @@ import argparse
 logger = create_log(__name__)
 
 
-def main(batch_limit=5000):
+def main(batch_limit=1000):
     grin_client = GRINClient()
     with DBManager() as db_manager:
         url = grin_client._url(
