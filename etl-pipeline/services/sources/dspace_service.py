@@ -131,7 +131,9 @@ class DSpaceService(SourceService):
         url = f"{self.base_url}{url_params}"
 
         # Warning: bypassing verification of SSL certs is a security concern. However, some sources do not keep their DSpace SSL cert up to date.
-        response = requests.get(url, stream=True, timeout=30, headers=headers, verify=False)
+        response = requests.get(
+            url, stream=True, timeout=30, headers=headers, verify=False
+        )
 
         if response.status_code == 200:
             content = bytes()
