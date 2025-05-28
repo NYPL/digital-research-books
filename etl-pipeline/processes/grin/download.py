@@ -13,7 +13,7 @@ import argparse
 
 
 class GRINDownload:
-    def __init__(self, batch_limit=1000):
+    def __init__(self, *args, batch_limit=1):
         self.s3_manager = S3Manager()
         self.client = GRINClient()
         self.logger = create_log(__name__)
@@ -24,7 +24,7 @@ class GRINDownload:
         )
         self.batch_limit = batch_limit
 
-    def runProcess(self, backfill=False):
+    def runProcess(self, backfill=True):
         with DBManager() as self.db_manager:
             if backfill:
                 backfilled_books: List[Record] = self._get_converted_books(backfill)
@@ -44,7 +44,7 @@ class GRINDownload:
                 try:
                     content = self._download(file_name)
                 except:
-                    self.logger.exception(f"Error downloading content for {book}")
+                    self.logger.exception(f"Error downloading content for {barcode}")
                     book.grin_status.failed_download += 1
                     self.db_manager.commit_changes()
                     continue
@@ -57,7 +57,7 @@ class GRINDownload:
                         storage_class="GLACIER_IR",
                     )
                 except Exception as e:
-                    self.logger.exception(f"Error uploading to s3 for {book}")
+                    self.logger.exception(f"Error uploading to s3 for {barcode}")
                     continue
 
                 # Only update the `state` when download and upload_to_S3 operations succeeded
@@ -66,6 +66,9 @@ class GRINDownload:
 
             if len(successfully_processed_books) > 0:
                 self._update_states(successfully_processed_books)
+                self.logger.info(
+                    f"Successfully downloaded and uploaded {len(successfully_processed_books)} books"
+                )
 
     def _update_states(self, books: List[Record]):
         try:
@@ -106,5 +109,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     batch_limit = int(args.batch_limit)
 
-    grin_download = GRINDownload(batch_limit)
-    grin_download.runProcess(backfill=True)
+    grin_download = GRINDownload(batch_limit=batch_limit)
+    grin_download.runProcess()

@@ -157,5 +157,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     batch_limit = int(args.batch_limit)
 
-    grin_conversion = GRINConversion(batch_limit)
+    grin_conversion = GRINConversion(batch_limit=batch_limit)
     grin_conversion.runProcess()
