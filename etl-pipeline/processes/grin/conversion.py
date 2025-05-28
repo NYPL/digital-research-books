@@ -15,12 +15,12 @@ import argparse
 
 
 class GRINConversion:
-    def __init__(self, batch_limit=1000):
+    def __init__(self, *args, batch_limit=1000):
         self.client = GRINClient()
         self.logger = create_log(__name__)
         self.batch_limit = batch_limit
 
-    def run_process(self, backfill=False):
+    def runProcess(self, backfill=True):
         with DBManager() as self.db_manager:
             self.acquire_and_convert_new_books()
 
@@ -36,7 +36,9 @@ class GRINConversion:
             new_barcodes = new_books_df.query('State == "NEW"')
 
             converting_barcodes = self.convert_barcodes(new_barcodes["Barcode"])
-
+            
+            self.logger.info(f"Acquired and converted {len(converting_barcodes)} books")
+            
             self.save_barcodes(converting_barcodes, GRINState.CONVERTING)
 
     def convert_backfills(self):
@@ -60,12 +62,14 @@ class GRINConversion:
                     .filter(GRINStatus.barcode.in_(converting_barcodes))
                     .values(state=GRINState.CONVERTING.value)
                 )
-                self.db_manager.session.execute(update_barcodes)
+                updated_results = self.db_manager.session.execute(update_barcodes)
                 self.db_manager.commit_changes()
+
+                self.logger.info(f"Converted + updated {updated_results.rowcount} backfill books")
             except:
                 self.db_manager.session.rollback()
                 self.logger.exception(
-                    f"Failed to update the following records: {converting_barcodes}"
+                    f"Failed to update the following backfilled records: {converting_barcodes}"
                 )
 
     def convert_barcodes(self, barcodes):
@@ -103,6 +107,9 @@ class GRINConversion:
 
     def process_converted_books(self):
         converted_barcodes = self.client.converted_filenames()
+        # TODO: Remove this line once we make this a recurring task
+        converted_barcodes = converted_barcodes[:self.batch_limit]
+
         if not converted_barcodes:
             return
 
@@ -120,11 +127,15 @@ class GRINConversion:
                     .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
                     .values(state=GRINState.CONVERTED.value)
                 )
-                self.db_manager.session.execute(update_barcodes)
+                updated_results = self.db_manager.session.execute(update_barcodes)
                 self.db_manager.commit_changes()
+
+                self.logger.info(f"Updated {updated_results.rowcount} converted books in DB")
             except:
                 self.db_manager.session.rollback()
-                raise
+                self.logger.exception(
+                f"Failed to update the following converted records: {chunked_barcodes}"
+                )
 
     def transform_scraped_data(self, data):
         headers = data[0].split("\t")
@@ -143,4 +154,4 @@ if __name__ == "__main__":
     batch_limit = int(args.batch_limit)
 
     grin_conversion = GRINConversion(batch_limit)
-    grin_conversion.run_process(backfill=True)
+    grin_conversion.runProcess()

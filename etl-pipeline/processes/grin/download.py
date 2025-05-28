@@ -24,7 +24,7 @@ class GRINDownload:
         )
         self.batch_limit = batch_limit
 
-    def run_process(self, backfill=False):
+    def runProcess(self, backfill=False):
         with DBManager() as self.db_manager:
             if backfill:
                 backfilled_books: List[Record] = self._get_converted_books(backfill)
@@ -107,4 +107,4 @@ if __name__ == "__main__":
     batch_limit = int(args.batch_limit)
 
     grin_download = GRINDownload(batch_limit)
-    grin_download.run_process(backfill=True)
+    grin_download.runProcess(backfill=True)
