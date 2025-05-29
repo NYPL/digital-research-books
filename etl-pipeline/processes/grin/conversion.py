@@ -55,19 +55,34 @@ class GRINConversion:
             self.db_manager.session.execute(backfill_query).scalars().all()
         )
         if len(backfilled_barcodes) > 0:
-            converting_barcodes = self.convert_barcodes(backfilled_barcodes)
+            converting_barcodes, converted_barcodes = self.convert_barcodes(backfilled_barcodes)
             try:
-                update_barcodes = (
+                update_converting_barcodes = (
                     update(GRINStatus)
                     .filter(GRINStatus.barcode.in_(converting_barcodes))
                     .values(state=GRINState.CONVERTING.value)
                 )
-                updated_results = self.db_manager.session.execute(update_barcodes)
+                updated_results = self.db_manager.session.execute(update_converting_barcodes)
                 self.db_manager.commit_changes()
 
                 self.logger.info(
                     f"Converted + updated {updated_results.rowcount} backfill books"
                 )
+
+                update_converted_barcodes = (
+                    update(GRINStatus)
+                    .filter(GRINStatus.barcode.in_(converted_barcodes))
+                    .values(state=GRINState.CONVERTED.value)
+                )
+
+                updated_results = self.db_manager.session.execute(update_converted_barcodes)
+                self.db_manager.commit_changes()
+
+                self.logger.info(
+                    f"Updated {updated_results.rowcount} already converted backfill books"
+                )
+
+                # Already available for download
             except:
                 self.db_manager.session.rollback()
                 self.logger.exception(
@@ -77,8 +92,11 @@ class GRINConversion:
     def convert_barcodes(self, barcodes):
         converted_data = self.client.convert(barcodes)
         converted_df = self.transform_scraped_data(converted_data)
-        converted_barcodes = converted_df.query('Status == "Success"')
-        return converted_barcodes["Barcode"]
+
+        converting_barcodes = converted_df.query("Status in ('Success', 'Already being converted')")
+        converted_barcodes = converted_df.query("Status=='Already available for download'")
+
+        return converting_barcodes["Barcode"], converted_barcodes["Barcode"]
 
     def save_barcodes(self, barcodes, state):
         if barcodes.empty:
@@ -109,8 +127,6 @@ class GRINConversion:
 
     def process_converted_books(self):
         converted_barcodes = self.client.converted_filenames()
-        # TODO: Remove this line once we make this a recurring task
-        converted_barcodes = converted_barcodes[: self.batch_limit]
 
         if not converted_barcodes:
             return
