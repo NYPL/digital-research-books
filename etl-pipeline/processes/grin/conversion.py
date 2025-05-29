@@ -55,14 +55,18 @@ class GRINConversion:
             self.db_manager.session.execute(backfill_query).scalars().all()
         )
         if len(backfilled_barcodes) > 0:
-            converting_barcodes, converted_barcodes = self.convert_barcodes(backfilled_barcodes)
+            converting_barcodes, converted_barcodes = self.convert_barcodes(
+                backfilled_barcodes
+            )
             try:
                 update_converting_barcodes = (
                     update(GRINStatus)
                     .filter(GRINStatus.barcode.in_(converting_barcodes))
                     .values(state=GRINState.CONVERTING.value)
                 )
-                updated_results = self.db_manager.session.execute(update_converting_barcodes)
+                updated_results = self.db_manager.session.execute(
+                    update_converting_barcodes
+                )
                 self.db_manager.commit_changes()
 
                 self.logger.info(
@@ -75,14 +79,15 @@ class GRINConversion:
                     .values(state=GRINState.CONVERTED.value)
                 )
 
-                updated_results = self.db_manager.session.execute(update_converted_barcodes)
+                updated_results = self.db_manager.session.execute(
+                    update_converted_barcodes
+                )
                 self.db_manager.commit_changes()
 
                 self.logger.info(
                     f"Updated {updated_results.rowcount} already converted backfill books"
                 )
 
-                # Already available for download
             except:
                 self.db_manager.session.rollback()
                 self.logger.exception(
@@ -93,8 +98,12 @@ class GRINConversion:
         converted_data = self.client.convert(barcodes)
         converted_df = self.transform_scraped_data(converted_data)
 
-        converting_barcodes = converted_df.query("Status in ('Success', 'Already being converted')")
-        converted_barcodes = converted_df.query("Status=='Already available for download'")
+        converting_barcodes = converted_df.query(
+            "Status in ('Success', 'Already being converted')"
+        )
+        converted_barcodes = converted_df.query(
+            "Status=='Already available for download'"
+        )
 
         return converting_barcodes["Barcode"], converted_barcodes["Barcode"]
 
