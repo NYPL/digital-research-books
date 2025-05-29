@@ -58,3 +58,5 @@ API_PROXY_CORS_ALLOWED: (?:http[s]?:\/\/.*nypl.org|https:\/\/.*(?:nypl|sfr).*ver
 
 # Current NYPL Webreader version
 READER_VERSION: v2
+
+PDF_BUCKET: pdf-pipeline-store-qa
