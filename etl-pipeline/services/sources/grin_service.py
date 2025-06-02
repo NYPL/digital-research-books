@@ -35,7 +35,6 @@ class GRINService(SourceService):
                     
                     # TODO: get mets file, map to record, yield record
 
-        return
 
-    def get_record(self, record_id):
+    def get_record(self, record_id) -> Record:
         return
