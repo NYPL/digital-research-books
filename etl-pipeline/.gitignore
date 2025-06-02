@@ -27,3 +27,6 @@ service-account.json
 
 #mise local version manager config
 mise.local.toml
+
+bin/
+lib/

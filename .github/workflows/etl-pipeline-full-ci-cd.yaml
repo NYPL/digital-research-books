@@ -26,6 +26,6 @@ jobs:
     secrets: inherit
 
   deploy_to_production:
-    needs: run_ci
+    needs: [run_ci, run_ci_self_hosted]
     uses: ./.github/workflows/etl-pipeline-deploy-production.yaml
     secrets: inherit
