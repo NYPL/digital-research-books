@@ -29,4 +29,5 @@ service-account.json
 mise.local.toml
 
 bin/
+include/
 lib/
