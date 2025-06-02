@@ -1,0 +1,110 @@
+name: 'ETL Pipeline CI (Self-Hosted)'
+
+on:
+  workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  run-tests:
+    runs-on: self-hosted
+    env:
+      AWS_ACCESS: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: us-east-1
+      PRIMARY_AWS_ACCOUNTID: "491147561046"
+      SECONDARY_AWS_ACCOUNTID: "946183545209"
+      IMAGE_TAG: nypl-nginx-test
+      ENVIRONMENT: qa
+      REDIS_TIMEOUT: 10
+      ELASTICSEARCH_HOST: ${{ secrets.ELASTICSEARCH_HOST }}
+      ELASTICSEARCH_INDEX: ${{ secrets.ELASTICSEARCH_INDEX }}
+      ELASTICSEARCH_PORT: ${{ secrets.ELASTICSEARCH_PORT }}
+      ELASTICSEARCH_SCHEME: ${{ secrets.ELASTICSEARCH_SCHEME }}
+      REDIS_HOST: ${{ secrets.REDIS_HOST }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify config file exists
+        working-directory: ./etl-pipeline
+        run: |
+          ls -la config/qa.yaml
+          # cat config/qa.yaml  # Uncomment if you need to verify content
+      - name: Configure primary AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.PRIMARY_AWS_ACCOUNTID }}:role/GithubActionsRunnerRole
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GHAPrimarySession-${{ github.run_id }}
+          audience: sts.amazonaws.com
+      - name: Configure cross-account AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.SECONDARY_AWS_ACCOUNTID }}:role/GHACrossAccountRole
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GHASecondarySession-${{ github.run_id }}
+          role-chaining: true
+          role-duration-seconds: 1800
+          audience: sts.amazonaws.com
+      - name: Get GitHub API Key from SSM
+        id: get-github-key
+        run: |
+          echo "Retrieving GitHub API key from SSM..."
+          GITHUB_API_KEY=$(aws ssm get-parameter \
+            --name "/drb/qa/github-key" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text)
+          
+          echo "::add-mask::$GITHUB_API_KEY"
+          echo "GITHUB_API_KEY=${GITHUB_API_KEY}" >> $GITHUB_ENV
+      - name: Install Python 3.9 and build tools
+        run: |
+          sudo apt update
+          sudo apt install -y software-properties-common
+          sudo add-apt-repository -y ppa:deadsnakes/ppa
+          sudo apt update
+          sudo apt install -y \
+            python3.9 \
+            python3.9-dev \
+            python3.9-venv \
+            gcc \
+            g++ \
+            build-essential \
+            cmake \
+            libblas-dev \
+            liblapack-dev \
+            jq
+          sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
+          sudo update-alternatives --set python3 /usr/bin/python3.9
+      - name: Add local bin to PATH
+        run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Set up Python environment
+        working-directory: ./etl-pipeline
+        run: |
+          python3 -m pip install --upgrade pip wheel
+          pip install setuptools==58.2.0
+          pip install pytest-rerunfailures tenacity
+          pip install --prefer-binary -r requirements.txt -r dev-requirements.txt
+      - name: Run QA functional tests
+        working-directory: ./etl-pipeline
+        run: |
+          python3 -m pytest tests/functional/processes/ingest \
+            --junitxml=test-results.xml \
+            --reruns=3 \
+            --reruns-delay=5
+      - name: Cleanup GitHub API Key
+        run: |
+          echo "Cleaning up GitHub API key..."
+          unset GITHUB_API_KEY
+          echo "GITHUB_API_KEY=" >> $GITHUB_ENV
