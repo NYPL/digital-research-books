@@ -20,7 +20,12 @@ jobs:
     uses: ./.github/workflows/etl-pipeline-ci.yaml
     secrets: inherit
 
+  run_ci_self_hosted:
+    needs: deploy_to_qa
+    uses: ./.github/workflows/etl-pipeline-ci-self-hosted.yaml
+    secrets: inherit
+
   deploy_to_production:
-    needs: run_ci
+    needs: [run_ci, run_ci_self_hosted]
     uses: ./.github/workflows/etl-pipeline-deploy-production.yaml
     secrets: inherit

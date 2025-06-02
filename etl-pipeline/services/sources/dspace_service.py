@@ -87,7 +87,8 @@ class DSpaceService(SourceService):
     def get_record(self, record_id: str):
         url = f"{self.base_url}verb=GetRecord&metadataPrefix=oai_dc&identifier={self.source_identifier}:{record_id}"
 
-        response = requests.get(url, timeout=30)
+        # Warning: bypassing verification of SSL certs is a security concern. However, some sources do not keep their DSpace SSL cert up to date.
+        response = requests.get(url, timeout=30, verify=False)
 
         if response.status_code == 200:
             content = BytesIO(response.content)
@@ -129,7 +130,10 @@ class DSpaceService(SourceService):
 
         url = f"{self.base_url}{url_params}"
 
-        response = requests.get(url, stream=True, timeout=30, headers=headers)
+        # Warning: bypassing verification of SSL certs is a security concern. However, some sources do not keep their DSpace SSL cert up to date.
+        response = requests.get(
+            url, stream=True, timeout=30, headers=headers, verify=False
+        )
 
         if response.status_code == 200:
             content = bytes()

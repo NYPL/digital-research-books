@@ -6,10 +6,10 @@ from google.auth.transport.requests import (
 )
 from google.oauth2.service_account import Credentials
 import json
-from ..ssm_service import SSMService
+from services.ssm_service import SSMService
 from pdb import set_trace
 
-BATCH_LIMIT = 1000
+BATCH_LIMIT = 100
 
 
 class GRINClient(object):
