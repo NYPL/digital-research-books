@@ -6,6 +6,7 @@ from logger import create_log
 from managers import DBManager, SQSManager
 from model import Record, RecordState
 from processes.record_buffer import RecordBuffer
+from services import monitor
 
 logger = create_log(__name__)
 
@@ -32,6 +33,8 @@ class RecordIngestor:
             logger.exception(f"Failed to ingest {self.source} records")
 
         logger.info(f"Ingested {self.record_buffer.ingest_count} {self.source} records")
+        monitor.track_records_ingested(self.record_buffer.ingest_count)
+        
         return self.record_buffer.ingest_count
 
     def _persisted_records(self, records: Iterator[Record]) -> Iterator[Record]:
