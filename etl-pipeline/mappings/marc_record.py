@@ -111,14 +111,14 @@ def _get_formatted_fields(
     ]
 
 
-def _get_identifiers(marc_record: MARCRecord):
+def _get_identifiers(marc_record: MARCRecord, source: Source):
     fields = [
-        ("001", "{0}|grin"),
+        ("001", f"{{0}}|{source.value}"),
         ("010", "{z}|lccn"),
         ("020", "{a}{z}|isbn"),
         ("022", "{a}|issn"),
         ("035", "{a}|oclc"),
-        ("040", "{a}|grin"),
+        ("040", f"{{a}}|{source.value}"),
     ]
     all_identifiers = _get_formatted_fields(marc_record, fields)
 
