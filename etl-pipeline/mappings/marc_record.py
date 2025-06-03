@@ -1,5 +1,6 @@
 from pymarc import Record as MARCRecord
 import re
+from typing import Optional
 
 from . import utils
 from model import FileFlags, FRBRStatus, Part, Record, Source
@@ -9,8 +10,9 @@ from mappings.base_mapping import CustomFormatter
 from .rights import get_rights_string
 
 
-# TODO: do not use muse mapping with this mapping
-def map_marc_record(marc_record: MARCRecord, source: Source) -> Record:
+def map_marc_record(
+    marc_record: MARCRecord, source: Source, default_publisher: str = None
+) -> Record:
     identifiers = _get_identifiers(marc_record)
     alternative = _get_formatted_field(marc_record, "240", "{a} {k}")
     has_version = _get_formatted_field(marc_record, "250", "{a} {b}|")
@@ -18,8 +20,8 @@ def map_marc_record(marc_record: MARCRecord, source: Source) -> Record:
     extent = _get_formatted_field(marc_record, "300", "{a}{b}{c}")
     toc = _get_formatted_field(marc_record, "505", "{a}")
 
-    # TODO: get rights
-    rights = get_rights_string(
+    # TODO: get rights from marc record
+    default_rights = get_rights_string(
         rights_source=source.value,
         license="https://creativecommons.org/licenses/by-nc/4.0/",
         rights_statement="Attribution-NonCommercial 4.0 International",
@@ -36,7 +38,7 @@ def map_marc_record(marc_record: MARCRecord, source: Source) -> Record:
         title=_get_title(marc_record),
         alternative=alternative[0] if alternative else None,
         has_version=has_version[0] if has_version else None,
-        publisher=_get_publishers(marc_record),
+        publisher=_get_publishers(marc_record, default_publisher),
         spatial=spatial[0] if spatial else None,
         dates=_get_dates(marc_record),
         languages=_get_languages(marc_record),
@@ -47,13 +49,32 @@ def map_marc_record(marc_record: MARCRecord, source: Source) -> Record:
         contributors=_get_contributors(marc_record),
         is_part_of=_get_formatted_field(marc_record, "490", "{a}|{v}|volume"),
         has_part=_get_has_part(marc_record, source),
-        rights=rights,
+        rights=default_rights,
         date_created=datetime.now(timezone.utc).replace(tzinfo=None),
         date_modified=datetime.now(timezone.utc).replace(tzinfo=None),
     )
 
 
-def _get_formatted_field(marc_record: MARCRecord, field: str, string_format: str) -> list[str]:
+def add_has_part_link(record: Record, url, media_type, flags, source_url=None):
+    last_item_no = int(record.has_part[-1][0])
+
+    record.has_part.append(
+        str(
+            Part(
+                index=last_item_no,
+                source=record.source,
+                url=url,
+                file_type=media_type,
+                flags=flags,
+                source_url=source_url,
+            )
+        )
+    )
+
+
+def _get_formatted_field(
+    marc_record: MARCRecord, field: str, string_format: str
+) -> list[str]:
     formatted_data = []
     field_data = marc_record.get_fields(field)
     subfield_keys = re.findall(r"\{(\w+)\}", string_format)
@@ -80,7 +101,9 @@ def _get_formatted_field(marc_record: MARCRecord, field: str, string_format: str
     return formatted_data
 
 
-def _get_formatted_fields(marc_record: MARCRecord, fields: list[tuple[str, str]]) -> list[str]:
+def _get_formatted_fields(
+    marc_record: MARCRecord, fields: list[tuple[str, str]]
+) -> list[str]:
     return [
         formatted_item
         for field, string_format in fields
@@ -110,29 +133,31 @@ def _get_authors(marc_record: MARCRecord):
     return _get_formatted_fields(marc_record, fields)
 
 
-def _get_title(record):
+def _get_title(marc_record: MARCRecord):
     fields = [("245", "{a} {b}"), ("130", "{a}")]
 
-    all_titles = _get_formatted_fields(record, fields)
+    all_titles = _get_formatted_fields(marc_record, fields)
 
     return all_titles[0]
 
 
-def _get_publishers(record):
-    return _get_formatted_field(record, "264", "{b}||")
+def _get_publishers(marc_record: MARCRecord, default_publisher: Optional[str] = None):
+    publishers = _get_formatted_field(marc_record, "264", "{b}||")
+
+    return publishers or [f"{default_publisher}||"]
 
 
-def _get_dates(record):
-    dates = _get_formatted_field(record, "264", "{c}|publication_date")
+def _get_dates(marc_record: MARCRecord):
+    dates = _get_formatted_field(marc_record, "264", "{c}|publication_date")
 
-    if not dates and (publication_date := record["008"].data[11:15]):
+    if not dates and (publication_date := marc_record["008"].data[11:15]):
         dates.append(f"{publication_date}|publication_date")
 
     return dates
 
 
-def _get_languages(record):
-    languages = _get_formatted_field(record, "008", "||{0}")
+def _get_languages(marc_record: MARCRecord):
+    languages = _get_formatted_field(marc_record, "008", "||{0}")
     formatted_languages = [
         extracted_langauge
         for language in languages
@@ -142,10 +167,10 @@ def _get_languages(record):
     return formatted_languages
 
 
-def _get_abstracts(record):
+def _get_abstracts(marc_record: MARCRecord):
     fields = [("500", "{a}"), ("520", "{a}"), ("504", "{a}")]
 
-    return _get_formatted_fields(record, fields)
+    return _get_formatted_fields(marc_record, fields)
 
 
 def _get_subjects(marc_record: MARCRecord):
@@ -178,10 +203,10 @@ def _get_contributors(marc_record: MARCRecord):
 def _get_has_part(marc_record: MARCRecord, source: Source):
     has_part = []
     field_data = marc_record.get_fields("856")
-    
+
     for data in field_data:
         url = data.get_subfields("u")[0]
-        
+
         if url:
             has_part.append(
                 str(
