@@ -13,7 +13,7 @@ from .rights import get_rights_string
 def map_marc_record(
     marc_record: MARCRecord, source: Source, default_publisher: str = None
 ) -> Record:
-    identifiers = _get_identifiers(marc_record)
+    identifiers = _get_identifiers(marc_record, source)
     alternative = _get_formatted_field(marc_record, "240", "{a} {k}")
     has_version = _get_formatted_field(marc_record, "250", "{a} {b}|")
     spatial = _get_formatted_field(marc_record, "264", "{a}")
