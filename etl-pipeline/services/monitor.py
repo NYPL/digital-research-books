@@ -81,9 +81,6 @@ def track_record_pipeline_message_failed(execution_time: float, message_body: st
 
 def track_records_ingested(number_of_records: str, source: str):
     event_name = "RecordIngest:IngestCount"
-    data = {
-        "number_of_records": number_of_records,
-        "source": source
-    }
+    data = {"number_of_records": number_of_records, "source": source}
 
     record_event(event_name, data)
