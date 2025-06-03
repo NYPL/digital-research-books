@@ -23,7 +23,7 @@ service-account.json
 # functional test files
 !test-doab.xml
 !test-doab-deleted.xml
-!test-clacso.
+!test-clacso.xml
 !grin-mets.xml
 
 #mise local version manager config
