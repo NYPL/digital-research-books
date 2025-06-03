@@ -33,7 +33,7 @@ class RecordIngestor:
             logger.exception(f"Failed to ingest {self.source} records")
 
         logger.info(f"Ingested {self.record_buffer.ingest_count} {self.source} records")
-        monitor.track_records_ingested(self.record_buffer.ingest_count)
+        monitor.track_records_ingested(number_of_records=self.record_buffer.ingest_count, source=self.source)
         
         return self.record_buffer.ingest_count
 
