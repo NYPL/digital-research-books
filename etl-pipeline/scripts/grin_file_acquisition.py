@@ -1,20 +1,14 @@
-import boto3
-from ..processes.grin.download import GRINDownload
-from managers import DBManager, S3Manager
+from processes.grin.download import GRINDownload
+import logging
 
-s3_manager = S3Manager()
 logger = logging.getLogger()
 
 def lambda_handler(event, context):
     # TODO: Add parsing of the actual StepFunction input to retrieve barcode correctly
-    barcode = event
+    barcode = 33433115534525
 
-    # Download TAR file from GRIN
-    downloader = GRINDownload()
-    downloader.download_book(barcode)
-    
-    # Upload TAR file to Glacier
+    downloader = GRINDownload(barcode)
+    downloader.run_process()
 
-    # Unpack TAR file
-
-    # Upload unpacked files to s3 standard
+if __name__ == "__main__":
+    lambda_handler()

@@ -109,5 +109,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     batch_limit = int(args.batch_limit)
 
-    grin_download = GRINDownload(batch_limit=batch_limit)
+    grin_download = GRINBulkDownload(batch_limit=batch_limit)
     grin_download.runProcess()
