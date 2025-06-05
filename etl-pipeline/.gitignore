@@ -24,6 +24,7 @@ service-account.json
 !test-doab.xml
 !test-doab-deleted.xml
 !test-clacso.xml
+!grin-mets.xml
 
 #mise local version manager config
 mise.local.toml

@@ -21,6 +21,7 @@ class TestMUSEManager:
         class TestMUSE(MUSEManager):
             def __init__(self):
                 self.record = mocker.MagicMock(record="test_record")
+                self.record.source = "test_source"
                 self.muse_id = 1
                 self.link = "test_link"
                 self.media_type = "test_type"

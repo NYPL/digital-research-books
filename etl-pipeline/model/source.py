@@ -5,6 +5,7 @@ class Source(Enum):
     CHICACO_ISAC = "isac"
     CLACSO = "clacso"
     DOAB = "doab"
+    GRIN = "grin"
     GUTENBERG = "gutenberg"
     LOC = "loc"
     MET = "met"

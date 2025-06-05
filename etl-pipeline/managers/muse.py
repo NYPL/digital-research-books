@@ -6,7 +6,7 @@ from requests.exceptions import ReadTimeout, ConnectionError, HTTPError
 
 from managers import WebpubManifest
 from logger import create_log
-from mappings.muse import add_has_part_link
+from mappings.marc_record import add_has_part_link
 
 logger = create_log(__name__)
 

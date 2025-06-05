@@ -6,8 +6,8 @@ from pymarc import MARCReader
 import requests
 
 from managers import S3Manager, MUSEManager
-from mappings.muse import map_muse_record
-from model import Record
+from mappings.marc_record import map_marc_record
+from model import Record, Source
 from logger import create_log
 from typing import Generator, Optional
 from .source_service import SourceService
@@ -19,6 +19,7 @@ MARC_CSV_URL = (
     "https://about.muse.jhu.edu/static/org/local/holdings/muse_book_metadata.csv"
 )
 MUSE_ROOT_URL = "https://muse.jhu.edu"
+DEFAULT_PUBLISHER = "John Hopkins University Press"
 
 
 class MUSEService(SourceService):
@@ -59,7 +60,9 @@ class MUSEService(SourceService):
         raise Exception(f"MUSE record not found with id: {record_id}")
 
     def _map_marc_record(self, marc_record) -> Record:
-        record = map_muse_record(marc_record)
+        record = map_marc_record(
+            marc_record, source=Source.MUSE, default_publisher=DEFAULT_PUBLISHER
+        )
         first_part = record.parts[0]
 
         muse_manager = MUSEManager(record, first_part.url, first_part.file_type)

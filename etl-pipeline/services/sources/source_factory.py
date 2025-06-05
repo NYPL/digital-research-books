@@ -5,6 +5,7 @@ from model import Source
 from .source_service import SourceService
 from .chicago_isac_service import ChicagoISACService
 from .dspace_service import DSpaceService
+from .grin_service import GRINService
 from .gutenberg_service import GutenbergService
 from .hathi_trust_service import HathiTrustService
 from .loc_service import LOCService
@@ -31,6 +32,8 @@ def get_source_service(source: str) -> Optional[SourceService]:
         )
     if source == Source.GUTENBERG.value:
         return GutenbergService()
+    if source == Source.GRIN.value:
+        return GRINService()
     if source == Source.HATHI.value:
         return HathiTrustService()
     if source == Source.LOC.value:
