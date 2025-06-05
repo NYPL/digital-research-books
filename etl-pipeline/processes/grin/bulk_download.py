@@ -1,4 +1,4 @@
-# Script run daily to download GRIN books that were converted in the past day
+# Script run daily to download all GRIN books that were converted in the past day
 
 from datetime import datetime, timedelta
 from typing import List
