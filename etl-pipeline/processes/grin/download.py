@@ -61,9 +61,9 @@ class GRINDownload:
         decrypted_content = gpg.decrypt(
             file_content,
             always_trust=True,
+            # TODO: add this an environment variable
             # passphrase=grin_access_key,
         )
-        print("Decryption successful!")
 
         tar_stream_data = io.BytesIO(decrypted_content.data)
         try:
