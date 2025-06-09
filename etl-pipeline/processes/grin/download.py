@@ -9,7 +9,6 @@ import io
 import argparse
 import tarfile
 
-
 class GRINDownload:
     def __init__(self, barcode):
         self.grin_client = GRINClient()
@@ -41,16 +40,16 @@ class GRINDownload:
             self.db_manager.commit_changes()
             return
 
-        # try:
-        #     self.s3_manager.put_object(
-        #         object=content,
-        #         key=s3_key,
-        #         bucket=self.bucket,
-        #         storage_class="GLACIER_IR",
-        #     )
-        # except Exception as e:
-        #     self.logger.exception(f"Error uploading to s3 for {self.barcode}")
-        #     return
+        try:
+            self.s3_manager.put_object(
+                object=content,
+                key=s3_key,
+                bucket=self.bucket,
+                storage_class="GLACIER_IR",
+            )
+        except Exception as e:
+            self.logger.exception(f"Error uploading to s3 for {self.barcode}")
+            return
 
         grin_status.state = GRINState.DOWNLOADED.value
         self.db_manager.commit_changes()
@@ -61,8 +60,7 @@ class GRINDownload:
         decrypted_content = gpg.decrypt(
             file_content,
             always_trust=True,
-            # TODO: add this an environment variable
-            # passphrase=grin_access_key,
+            passphrase=os.environ.get("GRIN_ACCESS_KEY")
         )
 
         tar_stream_data = io.BytesIO(decrypted_content.data)

@@ -13,6 +13,7 @@ ENV_VAR_TO_SSM_NAME = {
     "ELASTICSEARCH_USER": "elasticsearch/user",
     "GITHUB_API_KEY": "github-key",
     "GOOGLE_BOOKS_KEY": "google-books/api-key",
+    "GRIN_ACCESS_KEY": "grin/access-key",
     "HATHI_API_KEY": "hathitrust/api-key",
     "HATHI_API_SECRET": "hathitrust/api-secret",
     "NEW_RELIC_LICENSE_KEY": "newrelic/key",
