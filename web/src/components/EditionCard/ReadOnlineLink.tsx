@@ -6,6 +6,8 @@ import { ItemLink } from "~/src/types/DataModel";
 import { LOGIN_TO_READ_TEST_ID } from "~/src/constants/testIds";
 import { getHostname } from "~/src/util/LinkUtils";
 import { trackEvent } from "~/src/lib/gtag/Analytics";
+import { formatUrl } from "~/src/util/Util";
+
 
 // "Read Online" button should only show up if the link was flagged as "reader" or "embed"
 const ReadOnlineLink: React.FC<{
@@ -16,7 +18,7 @@ const ReadOnlineLink: React.FC<{
   loginCookie?: any;
 }> = ({  authors, isLoggedIn, readOnlineLink, title }) => {
   let linkText = "Read Online";
-  let linkUrl: any = {
+  let linkUrl: any = readOnlineLink.flags.embed ? formatUrl(readOnlineLink.url) : {
     pathname: `/read/${readOnlineLink.link_id}`,
   };
 
@@ -46,7 +48,7 @@ const ReadOnlineLink: React.FC<{
       <Box data-testid={LOGIN_TO_READ_TEST_ID}>
         <Link
           to={linkUrl}
-          linkType="button"
+          linkType={readOnlineLink.flags.embed ? "external" : "button"}
           aria-label={`${title} ${linkText}`}
           onClick={trackReadOnlineClick}
         >
