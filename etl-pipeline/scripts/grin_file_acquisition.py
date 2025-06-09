@@ -9,6 +9,7 @@ def lambda_handler(event, context):
     barcode = 33433115534525
 
     downloader = GRINDownload(barcode)
+
     downloader.run_process()
 
 

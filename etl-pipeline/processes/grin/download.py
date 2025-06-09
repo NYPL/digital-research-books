@@ -1,19 +1,21 @@
 from .grin_client import GRINClient
 from managers import DBManager, S3Manager
 from model import GRINStatus, GRINState
+from services.ssm_service import SSMService
 import gnupg
 import logging
 import os
-import base64
 import io
 import argparse
 import tarfile
+
 
 class GRINDownload:
     def __init__(self, barcode):
         self.grin_client = GRINClient()
         self.logger = logging.getLogger()
         self.s3_manager = S3Manager()
+        self.ssm_service = SSMService()
         self.bucket = (
             "drb-files-limited-production"
             if os.environ.get("ENVIRONMENT", "qa") == "production"
@@ -34,6 +36,7 @@ class GRINDownload:
 
         try:
             content = self.grin_client.download(file_name)
+            self.logger.info(f"Downloading {barcode} from GRIN")
         except:
             self.logger.exception(f"Error downloading content for {self.barcode}")
             grin_status.failed_download += 1
@@ -45,8 +48,10 @@ class GRINDownload:
                 object=content,
                 key=s3_key,
                 bucket=self.bucket,
+                bucket_permissions=None,
                 storage_class="GLACIER_IR",
             )
+            self.logger.info(f"Uploading {barcode} TAR to s3")
         except Exception as e:
             self.logger.exception(f"Error uploading to s3 for {self.barcode}")
             return
@@ -60,16 +65,20 @@ class GRINDownload:
         decrypted_content = gpg.decrypt(
             file_content,
             always_trust=True,
-            passphrase=os.environ.get("GRIN_ACCESS_KEY")
+            passphrase=self.ssm_service.get_parameter("grin-access-key"),
         )
 
         tar_stream_data = io.BytesIO(decrypted_content.data)
+
+        self.logger.info(f"Unpacking and uploading {barcode} OCR files to s3")
         try:
             with tarfile.open(fileobj=tar_stream_data, mode="r|*") as tar_file:
                 for file in tar_file:
-                    self.bucket.upload_file(
-                        io.BytesIO(tar_file.extractfile(file).read()),
+                    self.s3_manager.put_object(
+                        object=tar_file.extractfile(file).read(),
                         key=f"grin/{self.barcode}/{file.name}",
+                        bucket=self.bucket,
+                        bucket_permissions=None,
                     )
         except tarfile.StreamError as e:
             print(f"Error reading stream: {e}")
