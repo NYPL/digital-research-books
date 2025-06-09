@@ -381,7 +381,7 @@ describe("Renders Search Results Page", () => {
       test("Shows 'read online' as link", () => {
         expect(
           screen.getAllByText("Read Online")[0].closest("a").href
-        ).toContain("read/3330416");
+        ).toContain("https://test-link-url-2/");
       });
       test("Number of editions links to work page", () => {
         expect(
@@ -499,7 +499,7 @@ describe("Renders Search Results Page", () => {
       test("Shows 'read online' as link", () => {
         expect(
           screen.getAllByText("Read Online")[1].closest("a").href
-        ).toContain("read/3234");
+        ).toContain("https://test-link-url-5/");
       });
       test("Number of editions links to work page", () => {
         expect(
