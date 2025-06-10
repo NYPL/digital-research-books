@@ -1,113 +1,94 @@
-# Script run daily to download GRIN books that were converted in the past day
-
-from datetime import datetime, timedelta
-from typing import List
-from model import GRINState, GRINStatus, Record
-from managers import DBManager, S3Manager
-from logger import create_log
-from sqlalchemy import select, desc
-from .util import chunk
 from .grin_client import GRINClient
+from managers import DBManager, S3Manager
+from model import GRINStatus, GRINState
+from services.ssm_service import SSMService
+import gnupg
+import logging
 import os
+import io
 import argparse
+import tarfile
 
 
 class GRINDownload:
-    def __init__(self, *args, batch_limit=1000):
+    def __init__(self, barcode):
+        self.grin_client = GRINClient()
+        self.logger = logging.getLogger()
         self.s3_manager = S3Manager()
-        self.client = GRINClient()
-        self.logger = create_log(__name__)
+        self.ssm_service = SSMService()
         self.bucket = (
             "drb-files-limited-production"
             if os.environ.get("ENVIRONMENT", "qa") == "production"
             else "drb-files-limited-qa"
         )
-        self.batch_limit = batch_limit
+        self.barcode = str(barcode)
 
-    def runProcess(self, backfill=True):
+    def run_process(self):
         with DBManager() as self.db_manager:
-            if backfill:
-                backfilled_books: List[Record] = self._get_converted_books(backfill)
-                self.download_and_upload_books(backfilled_books)
+            file_content = self.download_and_upload_book()
 
-            daily_converted_books: List[Record] = self._get_converted_books()
-            self.download_and_upload_books(daily_converted_books)
+            self.unpack_and_upload_ocr_files(file_content)
 
-    def download_and_upload_books(self, books):
-        for chunked_books in chunk(iter(books), self.batch_limit):
-            successfully_processed_books: List[str] = []
-            for book in chunked_books:
-                barcode = book.source_id.split("|")[0]
-                file_name = f"{barcode}.tar.gz.gpg"
-                s3_key = f"grin/{file_name}"
+    def download_and_upload_book(self):
+        grin_status = self.db_manager.session.get(GRINStatus, self.barcode)
+        file_name = f"{self.barcode}.tar.gz.gpg"
+        s3_key = f"grin/{self.barcode}/{file_name}"
 
-                try:
-                    content = self._download(file_name)
-                except:
-                    self.logger.exception(f"Error downloading content for {barcode}")
-                    book.grin_status.failed_download += 1
-                    self.db_manager.commit_changes()
-                    continue
-
-                try:
-                    self.s3_manager.put_object(
-                        object=content,
-                        key=s3_key,
-                        bucket=self.bucket,
-                        storage_class="GLACIER_IR",
-                    )
-                except Exception as e:
-                    self.logger.exception(f"Error uploading to s3 for {barcode}")
-                    continue
-
-                # Only update the `state` when download and upload_to_S3 operations succeeded
-                book.grin_status.state = GRINState.DOWNLOADED.value
-                successfully_processed_books.append(book)
-
-            if len(successfully_processed_books) > 0:
-                self._update_states(successfully_processed_books)
-                self.logger.info(
-                    f"Successfully downloaded and uploaded {len(successfully_processed_books)} books"
-                )
-
-    def _update_states(self, books: List[Record]):
         try:
-            self.db_manager.bulk_save_objects(books)
+            content = self.grin_client.download(file_name)
+            self.logger.info(f"Downloading {barcode} from GRIN")
         except:
-            self.db_manager.session.rollback()
-            self.logger.exception(f"Error updating the GRINStatus table for {books}")
+            self.logger.exception(f"Error downloading content for {self.barcode}")
+            grin_status.failed_download += 1
+            self.db_manager.commit_changes()
+            return
 
-    def _download(self, file_name: str):
-        response = self.client.download(file_name)
-        return response
+        try:
+            self.s3_manager.put_object(
+                object=content,
+                key=s3_key,
+                bucket=self.bucket,
+                bucket_permissions=None,
+                storage_class="GLACIER_IR",
+            )
+            self.logger.info(f"Uploading {barcode} TAR to s3")
+        except Exception as e:
+            self.logger.exception(f"Error uploading to s3 for {self.barcode}")
+            return
 
-    def _get_converted_books(self, backfill=False):
-        """Should return the DB objects so that we can update the state directly"""
-        query = (
-            select(Record)
-            .join(Record.grin_status)
-            .where(GRINStatus.state == GRINState.CONVERTED.value)
-            .order_by(desc(Record.date_modified))
+        grin_status.state = GRINState.DOWNLOADED.value
+        self.db_manager.commit_changes()
+        return content
+
+    def unpack_and_upload_ocr_files(self, file_content):
+        gpg = gnupg.GPG()
+        decrypted_content = gpg.decrypt(
+            file_content,
+            always_trust=True,
+            passphrase=self.ssm_service.get_parameter("grin-access-key"),
         )
 
-        if backfill:
-            query = query.where(
-                GRINStatus.date_created <= GRINStatus.backfill_timestamp()
-            )
-            query = query.limit(self.batch_limit)
-        else:
-            yesterday = datetime.now() - timedelta(days=1)
-            query = query.where(GRINStatus.date_modified >= yesterday)
+        tar_stream_data = io.BytesIO(decrypted_content.data)
 
-        books = self.db_manager.session.execute(query).scalars().all()
-        return books
+        self.logger.info(f"Unpacking and uploading {barcode} OCR files to s3")
+        try:
+            with tarfile.open(fileobj=tar_stream_data, mode="r|*") as tar_file:
+                for file in tar_file:
+                    self.s3_manager.put_object(
+                        object=tar_file.extractfile(file).read(),
+                        key=f"grin/{self.barcode}/{file.name}",
+                        bucket=self.bucket,
+                        bucket_permissions=None,
+                    )
+        except tarfile.StreamError as e:
+            print(f"Error reading stream: {e}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_limit")
+    parser.add_argument("--barcode")
     args = parser.parse_args()
-    batch_limit = int(args.batch_limit)
+    barcode = int(args.barcode)
 
-    grin_download = GRINDownload(batch_limit=batch_limit)
-    grin_download.runProcess()
+    grin_download = GRINDownload(barcode)
+    grin_download.run_process()
