@@ -32,10 +32,10 @@ class NYPLAPIManager:
         self.generate_access_token()
         self.create_client()
 
-        response = self.client.post(self.api_root + "/pdf-pipeline/workflow", data=json.dumps({
-            "bucket": bucket,
-            "mets_key": mets_key
-        }))
+        response = self.client.post(
+            self.api_root + "/pdf-pipeline/workflow",
+            data=json.dumps({"bucket": bucket, "mets_key": mets_key}),
+        )
 
         return response.json()
 
