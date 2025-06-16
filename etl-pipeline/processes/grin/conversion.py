@@ -21,13 +21,7 @@ class GRINConversion:
         self.batch_limit = batch_limit
 
     def runProcess(self, backfill=True):
-        with DBManager(
-            user="localuser",
-            pswd="localpsql",
-            host="localhost",
-            port="5432",
-            db="drb_test_db",
-        ) as self.db_manager:
+        with DBManager() as self.db_manager:
             self.acquire_and_convert_new_books()
 
             self.process_converted_books()
@@ -36,7 +30,7 @@ class GRINConversion:
                 self.convert_backfills()
 
     def acquire_and_convert_new_books(self):
-        data = self.client.acquired_today()[:12]
+        data = self.client.acquired_today()
         if len(data) > 2:
             new_books_df = self.transform_scraped_data(data)
             new_barcodes = new_books_df.query('State == "NEW"')
