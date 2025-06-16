@@ -1,5 +1,5 @@
 from .grin_client import GRINClient
-from managers import DBManager, S3Manager
+from managers import DBManager, S3Manager, NYPLAPIManager
 from model import GRINStatus, GRINState
 from services.ssm_service import SSMService
 import gnupg
@@ -22,12 +22,21 @@ class GRINDownload:
             else "drb-files-limited-qa"
         )
         self.barcode = str(barcode)
+        
+        self.nypl_api_manager = NYPLAPIManager()   
 
     def run_process(self):
         with DBManager() as self.db_manager:
             file_content = self.download_and_upload_book()
 
             self.unpack_and_upload_ocr_files(file_content)
+
+            mets_key = f"grin/{self.barcode}/NYPL_{self.barcode}.xml"
+            response = self.nypl_api_manager.post_file_conversion_workflow(self.bucket, mets_key)
+            if response == "200":
+                self.logger.info("Successfully started file conversion")
+            else:
+                self.logger.info("File conversion failed to start. Error:" + response.content)
 
     def download_and_upload_book(self):
         grin_status = self.db_manager.session.get(GRINStatus, self.barcode)
