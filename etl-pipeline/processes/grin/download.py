@@ -35,7 +35,7 @@ class GRINDownload:
             response = self.nypl_api_manager.post_file_conversion_workflow(
                 self.bucket, mets_key
             )
-            if response == "200":
+            if response.status_code == 200:
                 self.logger.info("Successfully started file conversion")
             else:
                 self.logger.info(
