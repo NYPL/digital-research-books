@@ -37,7 +37,7 @@ class NYPLAPIManager:
             data=json.dumps({"bucket": bucket, "mets_key": mets_key}),
         )
 
-        return response.json()
+        return response
 
     def query_api(self, request_path):
         if not self.client:

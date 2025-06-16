@@ -3,7 +3,7 @@ from managers import DBManager, S3Manager, NYPLAPIManager
 from model import GRINStatus, GRINState
 from services.ssm_service import SSMService
 import gnupg
-import logging
+from logger import create_log
 import os
 import io
 import argparse
@@ -13,7 +13,7 @@ import tarfile
 class GRINDownload:
     def __init__(self, barcode):
         self.grin_client = GRINClient()
-        self.logger = logging.getLogger()
+        self.logger = create_log(__name__)
         self.s3_manager = S3Manager()
         self.ssm_service = SSMService()
         self.bucket = (
@@ -39,7 +39,7 @@ class GRINDownload:
                 self.logger.info("Successfully started file conversion")
             else:
                 self.logger.info(
-                    "File conversion failed to start. Error:" + response.content
+                    f"File conversion failed to start. Error: {response.json()}"
                 )
 
     def download_and_upload_book(self):
