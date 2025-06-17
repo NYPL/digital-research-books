@@ -1,5 +1,6 @@
 from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError
 import os
+import json
 from requests_oauthlib import OAuth2Session
 
 
@@ -26,6 +27,17 @@ class NYPLAPIManager:
 
     def create_client(self):
         self.client = OAuth2Session(self.client_id, token=self.token)
+
+    def post_file_conversion_workflow(self, bucket, mets_key):
+        self.generate_access_token()
+        self.create_client()
+
+        response = self.client.post(
+            self.api_root + "/pdf-pipeline/workflow",
+            data=json.dumps({"bucket": bucket, "mets_key": mets_key}),
+        )
+
+        return response
 
     def query_api(self, request_path):
         if not self.client:

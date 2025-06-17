@@ -35,7 +35,9 @@ class GRINConversion:
             new_books_df = self.transform_scraped_data(data)
             new_barcodes = new_books_df.query('State == "NEW"')
 
-            converting_barcodes = self.convert_barcodes(new_barcodes["Barcode"])
+            converting_barcodes, converted_barcodes = self.convert_barcodes(
+                new_barcodes["Barcode"]
+            )
 
             self.logger.info(f"Acquired and converted {len(converting_barcodes)} books")
 
@@ -108,7 +110,7 @@ class GRINConversion:
         return converting_barcodes["Barcode"], converted_barcodes["Barcode"]
 
     def save_barcodes(self, barcodes, state):
-        if barcodes.empty:
+        if len(barcodes) == 0:
             return
 
         for chunked_barcodes in chunk(iter(barcodes), self.batch_limit):
@@ -159,6 +161,24 @@ class GRINConversion:
 
                 self.logger.info(
                     f"Updated {updated_results.rowcount} converted books in DB"
+                )
+
+                barcodes_in_table = [
+                    grin_status.barcode
+                    for grin_status in self.db_manager.session.query(
+                        GRINStatus.barcode
+                    ).all()
+                ]
+                missing_from_table = [
+                    barcode
+                    for barcode in stripped_barcodes
+                    if barcode not in barcodes_in_table
+                ]
+
+                self.save_barcodes(missing_from_table, GRINState.CONVERTED)
+
+                self.logger.info(
+                    f"Saved {len(missing_from_table)} new converted books in DB"
                 )
             except:
                 self.db_manager.session.rollback()
