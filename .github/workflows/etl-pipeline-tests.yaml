@@ -16,6 +16,7 @@ on:
       - "etl-pipeline/requirements.txt"
       - "etl-pipeline/main.py"
       - "etl-pipeline/Makefile"
+      - "etl-pipeline/Dockerfile"
 
 jobs:
   test:
