@@ -1,6 +1,5 @@
 import os
 import boto3
-from typing import Optional
 
 from logger import create_log
 
@@ -22,7 +21,7 @@ class SSMService:
             else "qa"
         )
 
-    def get_parameter(self, parameter_name: str) -> Optional[dict]:
+    def get_parameter(self, parameter_name: str) -> dict | None:
         try:
             response = self.ssm_client.get_parameter(
                 Name=f"arn:aws:ssm:us-east-1:946183545209:parameter/drb/{self.environment}/{parameter_name}",

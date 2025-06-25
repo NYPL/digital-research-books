@@ -1,7 +1,6 @@
 import json
 import boto3
 from botocore.exceptions import ClientError
-from typing import Union
 import os
 
 from logger import create_log
@@ -45,7 +44,7 @@ class SQSManager:
             "QueueUrl"
         ]
 
-    def send_message_to_queue(self, message: Union[str, dict]):
+    def send_message_to_queue(self, message: str | dict):
         if not self.client:
             self.create_client()
         if isinstance(message, dict):

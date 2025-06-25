@@ -1,7 +1,7 @@
 from datetime import datetime
 import json
 import time
-from typing import Generator, Optional
+from typing import Generator
 import requests
 
 from mappings.loc import map_loc_record
@@ -18,9 +18,9 @@ LOC_ROOT_DIGIT = "https://www.loc.gov/collections/selected-digitized-books/?fo=j
 class LOCService(SourceService):
     def get_records(
         self,
-        start_timestamp: Optional[datetime] = None,
+        start_timestamp: datetime | None = None,
         offset: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> Generator[Record, None, None]:
         yield from self._import_records(
             loc_collection_url=LOC_ROOT_OPEN_ACCESS,
@@ -36,8 +36,8 @@ class LOCService(SourceService):
     def _import_records(
         self,
         loc_collection_url: str,
-        start_timestamp: Optional[datetime] = None,
-        limit: Optional[int] = None,
+        start_timestamp: datetime | None = None,
+        limit: int | None = None,
     ) -> Generator[Record, None, None]:
         record_count = 0
         page_number = 0
@@ -78,7 +78,7 @@ class LOCService(SourceService):
             logger.exception(f"Failed to import LOC records from: {loc_collection_url}")
             return
 
-    def _fetch_page_json_data(self, page_url: str) -> Optional[dict]:
+    def _fetch_page_json_data(self, page_url: str) -> dict | None:
         max_attempts = 3
 
         for attempt in (0, max_attempts):

@@ -1,6 +1,5 @@
 from pymarc import Record as MARCRecord
 import re
-from typing import Optional
 
 from . import utils
 from model import FileFlags, FRBRStatus, Part, Record, Source
@@ -141,7 +140,7 @@ def _get_title(marc_record: MARCRecord):
     return all_titles[0]
 
 
-def _get_publishers(marc_record: MARCRecord, default_publisher: Optional[str] = None):
+def _get_publishers(marc_record: MARCRecord, default_publisher: str | None = None):
     publishers = _get_formatted_field(marc_record, "264", "{b}||")
 
     return publishers or [f"{default_publisher}||"]

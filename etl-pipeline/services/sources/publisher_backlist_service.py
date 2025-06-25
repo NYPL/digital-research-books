@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 import requests
 import urllib.parse
-from typing import Generator, Optional
+from typing import Generator
 
 from logger import create_log
 from mappings.publisher_backlist import PublisherBacklistMapping
@@ -26,8 +26,8 @@ class PublisherBacklistService(SourceService):
     def get_records(
         self,
         start_timestamp: datetime = None,
-        offset: Optional[int] = None,
-        limit: Optional[int] = None,
+        offset: int | None = None,
+        limit: int | None = None,
     ) -> Generator[Record, None, None]:
         filter_by_formula = self._build_filter_by_formula_parameter(start_timestamp)
         url = f"{BASE_URL}&pageSize={PAGE_SIZE}{filter_by_formula}"
@@ -61,7 +61,7 @@ class PublisherBacklistService(SourceService):
             url = f"{BASE_URL}&pageSize={PAGE_SIZE}{filter_by_formula}&offset={response_data['offset']}"
 
     def _build_filter_by_formula_parameter(
-        self, start_timestamp: Optional[datetime] = None
+        self, start_timestamp: datetime | None = None
     ) -> str:
         ready_to_ingest_filter = urllib.parse.quote("{DRB_Ready to ingest} = TRUE()")
 

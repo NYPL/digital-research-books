@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Generator
+from typing import Generator
 import requests
 from io import BytesIO
 from lxml import etree
@@ -35,9 +35,9 @@ class DSpaceService(SourceService):
 
     def get_records(
         self,
-        start_timestamp: Optional[datetime] = None,
+        start_timestamp: datetime | None = None,
         offset: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> Generator[Record, None, None]:
         resumption_token = None
         record_index = 0
@@ -111,7 +111,7 @@ class DSpaceService(SourceService):
             return None
 
     def download_records(
-        self, start_timestamp: Optional[datetime], resumption_token=None
+        self, start_timestamp: datetime | None, resumption_token=None
     ):
         headers = {
             # Pass a user-agent header to prevent 403 unauthorized responses from DSpace

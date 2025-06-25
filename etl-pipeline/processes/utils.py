@@ -2,12 +2,11 @@ from dataclasses import dataclass
 from dateutil import parser
 from datetime import datetime, timedelta, timezone
 import os
-from typing import Optional
 
 
 def get_start_datetime(
-    process_type: Optional[str] = None, ingest_period: Optional[str] = None
-) -> Optional[str]:
+    process_type: str | None = None, ingest_period: str | None = None
+) -> str | None:
     if ingest_period is not None:
         return parser.parse(ingest_period)
 
@@ -23,12 +22,12 @@ def get_start_datetime(
 @dataclass
 class ProcessParams:
     process_type: str = "daily"
-    custom_file: Optional[str] = None
-    ingest_period: Optional[str] = None
-    record_id: Optional[str] = None
-    limit: Optional[int] = None
+    custom_file: str | None = None
+    ingest_period: str | None = None
+    record_id: str | None = None
+    limit: str | None = None
     offset: int = 0
-    source: Optional[str] = None
+    source: str | None = None
 
 
 def parse_process_args(*args) -> ProcessParams:

@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 import os
-from typing import Optional
 from uuid import uuid4
 
 from model import FileFlags, FRBRStatus, Part, Record, Source
@@ -9,7 +8,7 @@ from digital_assets import get_stored_file_url
 
 
 # LOC response model: https://www.loc.gov/apis/json-and-yaml/responses/item-and-resource/
-def map_loc_record(source_record: dict) -> Optional[Record]:
+def map_loc_record(source_record: dict) -> Record | None:
     if not source_record.get("resources"):
         return None
 
@@ -84,7 +83,7 @@ def map_loc_record(source_record: dict) -> Optional[Record]:
     )
 
 
-def _get_medium(source_record: dict) -> Optional[str]:
+def _get_medium(source_record: dict) -> str | None:
     mediums = source_record.get("original_format", [])
 
     if not mediums:
@@ -94,8 +93,8 @@ def _get_medium(source_record: dict) -> Optional[str]:
 
 
 def _parse_publishers(
-    created_published_list: Optional[list[str]],
-) -> Optional[list[str]]:
+    created_published_list: list[str] | None,
+) -> list[str] | None:
     if created_published_list is None:
         return
 

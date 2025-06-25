@@ -1,11 +1,10 @@
 from datetime import datetime, timezone
-from typing import Optional
 from uuid import uuid4
 
 from model import Record, FRBRStatus, FileFlags, Part, Source
 
 
-def map_chicago_isac_record(record: dict) -> Optional[Record]:
+def map_chicago_isac_record(record: dict) -> Record | None:
     isbns = get_isbns(record)
     urls = record.get("url")
 
@@ -39,7 +38,7 @@ def map_chicago_isac_record(record: dict) -> Optional[Record]:
     )
 
 
-def get_isbns(record: dict) -> Optional[list[str]]:
+def get_isbns(record: dict) -> list[str] | None:
     isbn = record.get("isbn")
 
     if not isbn:

@@ -9,7 +9,7 @@ from managers import S3Manager, MUSEManager
 from mappings.marc_record import map_marc_record
 from model import Record, Source
 from logger import create_log
-from typing import Generator, Optional
+from typing import Generator
 from .source_service import SourceService
 
 logger = create_log(__name__)
@@ -28,9 +28,9 @@ class MUSEService(SourceService):
 
     def get_records(
         self,
-        start_timestamp: Optional[datetime] = None,
+        start_timestamp: datetime | None = None,
         offset: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> Generator[Record, None, None]:
         record_updates = self._get_record_updates()
         record_count = 0

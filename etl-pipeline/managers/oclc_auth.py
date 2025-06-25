@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 import os
 import requests
 from requests.exceptions import Timeout, ConnectionError
-from typing import Optional
 
 from logger import create_log
 
@@ -55,8 +54,8 @@ class OCLCAuthManager:
     @classmethod
     def _get_token(
         cls,
-        token: Optional[str],
-        expires_at: Optional[str],
+        token: str | None,
+        expires_at: str | None,
         auth_url: str,
         key_id: str,
         key_secret: str,

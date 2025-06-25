@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from typing import Generator, Optional
+from typing import Generator
 
 from mappings.chicago_isac import map_chicago_isac_record
 from model import Record
@@ -10,9 +10,9 @@ from .source_service import SourceService
 class ChicagoISACService(SourceService):
     def get_records(
         self,
-        start_timestamp: Optional[datetime] = None,
+        start_timestamp: datetime | None = None,
         offset: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> Generator[Record, None, None]:
         record_count = 0
 

@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 from logger import create_log
 from mappings.oclc_bib import map_oclc_record
@@ -88,7 +87,7 @@ class RecordEmbellisher:
             if (owi_number := self._add_bib(oclc_bib))
         }
 
-    def _add_bib(self, oclc_bib: dict) -> Optional[str]:
+    def _add_bib(self, oclc_bib: dict) -> str | None:
         owi_number = oclc_bib.get("work", {}).get("id")
 
         oclc_bib_record = map_oclc_record(oclc_bib=oclc_bib)

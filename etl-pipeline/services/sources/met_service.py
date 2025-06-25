@@ -1,6 +1,6 @@
 from datetime import datetime
 import requests
-from typing import Generator, Optional, Union
+from typing import Generator
 
 from logger import create_log
 from mappings.met import map_met_record
@@ -22,9 +22,9 @@ class METService(SourceService):
 
     def get_records(
         self,
-        start_timestamp: Optional[datetime] = None,
+        start_timestamp: datetime | None = None,
         offset: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> Generator[Record, None, None]:
         current_position = offset
         page_size = 50
@@ -52,7 +52,7 @@ class METService(SourceService):
 
             current_position += page_size
 
-    def query_met_api(self, query: str, method: str = "GET") -> Union[str, dict]:
+    def query_met_api(self, query: str, method: str = "GET") -> str | dict:
         method = method.upper()
 
         response = requests.request(method, query, timeout=30)
@@ -75,7 +75,7 @@ class METService(SourceService):
             logger.exception("Faile to get met records")
             return []
 
-    def _map_met_record(self, record: dict) -> Optional[Record]:
+    def _map_met_record(self, record: dict) -> Record | None:
         try:
             met_record = self.query_met_api(
                 query=self.ITEM_INFO_QUERY.format(record.get("pointer"))

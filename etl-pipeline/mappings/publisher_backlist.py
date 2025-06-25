@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Optional
 import os
 
 from digital_assets import get_stored_file_url
@@ -61,7 +60,7 @@ class PublisherBacklistMapping(JSONMapping):
 
         self.record.rights = self.format_rights()
 
-    def get_hathi_id(self) -> Optional[str]:
+    def get_hathi_id(self) -> str | None:
         hath_identifier = next(
             (
                 identifier
