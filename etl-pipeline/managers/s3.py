@@ -17,6 +17,7 @@ from logger import create_log
 logger = create_log(__name__)
 s3_key: typing.TypeAlias = str | pathlib.Path
 
+
 class S3Manager:
     def __init__(self):
         self.client = boto3.client(
@@ -98,7 +99,7 @@ class S3Manager:
         )
 
         return manifest.toJson()
-    
+
     def upload_file(
         self,
         file: BytesIO,

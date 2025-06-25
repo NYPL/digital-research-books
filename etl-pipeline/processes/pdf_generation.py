@@ -18,6 +18,7 @@ NUMBER_OF_SUBPROCESSES = os.cpu_count() or 12
 
 logger = util.get_logger(__name__)
 
+
 class PDFGenerationProcess:
     def __init__(self, event):
         # TODO: Clean up how this payload is defined in the statemachine
@@ -26,10 +27,12 @@ class PDFGenerationProcess:
         self.bucket = self.ocr_package_info["bucket"]
         self.ocr_dir = self.ocr_package_info["ocr_dir"]
         self.mets = self.ocr_package_info["mets_file"]
-    
+
     def run_process(self):
         mets_file = mets_parser.METSFile.from_mets_str(
-            self.s3_manager.get_object(key=self.mets, bucket=self.bucket)["Body"].read(),
+            self.s3_manager.get_object(key=self.mets, bucket=self.bucket)[
+                "Body"
+            ].read(),
         )
         mets_path = path.METSPath(mets)
 
@@ -54,7 +57,9 @@ class PDFGenerationProcess:
                 subprocess = pdf_page.PDFPageSubprocess(page_generator)
                 for page in pages:
                     pdf_page_location = str(
-                        pathlib.Path(tmpdirname, page.image_file.fid).with_suffix(".pdf"),
+                        pathlib.Path(tmpdirname, page.image_file.fid).with_suffix(
+                            ".pdf"
+                        ),
                     )
                     if not page.ocr_file.location:
                         continue
