@@ -34,7 +34,7 @@ class PDFGenerationProcess:
                 "Body"
             ].read(),
         )
-        mets_path = path.METSPath(mets)
+        mets_path = path.METSPath(self.mets)
 
         metadata = model.get_metadata(self.bucket, mets_path, mets_file)
         model.write_metadata(self.bucket, mets_path, metadata, mets_path.tagged_pdf_key)
@@ -116,7 +116,7 @@ class PDFGenerationProcess:
                     writer.write(merged_pdf)
 
                 with open(f"{tmpdirname}/merged.pdf", "rb") as merged_pdf:
-                    output_key = path.METSPath(mets).tagged_pdf_key
+                    output_key = path.METSPath(self.mets).tagged_pdf_key
                     self.s3_manager.upload_file(merged_pdf, output_key)
 
         logger.info(f"Generated PDF: {output_key}")

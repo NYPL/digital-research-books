@@ -1,6 +1,6 @@
 import logging
 import os
-import typing
+from typing import Iterator
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -10,7 +10,7 @@ def get_logger(name: str) -> logging.Logger:
     return logger
 
 
-def chunk(xs: typing.Iterator, size: int) -> typing.Iterator[list]:
+def chunk(xs: Iterator, size: int) -> Iterator[list]:
     while True:
         chunk = []
         try:
