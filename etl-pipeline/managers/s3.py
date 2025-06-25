@@ -15,7 +15,6 @@ import pathlib
 from logger import create_log
 
 logger = create_log(__name__)
-s3_key: typing.TypeAlias = str | pathlib.Path
 
 
 class S3Manager:
@@ -103,7 +102,7 @@ class S3Manager:
     def upload_file(
         self,
         file: BytesIO,
-        key: s3_key,
+        key: typing.TypeAlias = str | pathlib.Path,
         metadata: dict[str, str] | None = None,
     ):
         extra_args = {}
