@@ -5,7 +5,7 @@ import re
 import requests
 import yaml
 import time
-from typing import Optional, Generator
+from typing import Generator
 
 from constants.get_constants import get_constants
 from mappings.gutenberg import GutenbergMapping
@@ -39,9 +39,9 @@ class GutenbergService(SourceService):
 
     def get_records(
         self,
-        start_timestamp: Optional[datetime] = None,
+        start_timestamp: datetime | None = None,
         offset: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> Generator[Record, None, None]:
         current_position = 0
         page_size = 100
@@ -83,8 +83,8 @@ class GutenbergService(SourceService):
         order: str = "DESC",
         sort_field: str = "PUSHED_AT",
         page_size: int = 100,
-        cursor: Optional[str] = None,
-        start_time: Optional[datetime] = None,
+        cursor: str | None = None,
+        start_time: datetime | None = None,
     ) -> tuple:
         query_order_clauses = f"direction:{order}, field:{sort_field}"
         query_order = "orderBy:{{{}}}".format(query_order_clauses)
@@ -150,7 +150,7 @@ class GutenbergService(SourceService):
 
         return data_files
 
-    def get_repository_data_files(self, work_id: str, repo) -> Optional[tuple]:
+    def get_repository_data_files(self, work_id: str, repo) -> tuple | None:
         rdf_query = """\
             {{\
                 repository(owner:"GITenberg", name:"{name}"){{\
@@ -187,7 +187,7 @@ class GutenbergService(SourceService):
     def parse_rdf(self, rdf_text: str):
         return etree.fromstring(rdf_text.encode("utf-8"))
 
-    def parse_yaml(self, yaml_text: Optional[str]):
+    def parse_yaml(self, yaml_text: str | None):
         if yaml_text is None:
             return None
 

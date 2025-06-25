@@ -1,5 +1,3 @@
-from typing import Optional, Iterable
-
 from managers import DBManager
 from model import Record, FRBRStatus
 
@@ -12,7 +10,7 @@ class RecordBuffer:
         self.ingest_count = 0
         self.deletion_count = 0
 
-    def add(self, record: Record) -> Optional[set[Record]]:
+    def add(self, record: Record) -> set[Record] | None:
         existing_record = (
             self.db_manager.session.query(Record)
             .filter(Record.source_id == record.source_id)

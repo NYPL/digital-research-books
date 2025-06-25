@@ -1,7 +1,5 @@
 from io import BytesIO
 import json
-import os
-from typing import Optional
 from urllib.parse import urlparse, parse_qs
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
@@ -32,7 +30,7 @@ class GoogleDriveService:
         )
         self.drive_service = build("drive", "v3", credentials=credentials)
 
-    def get_drive_file(self, file_id: str) -> Optional[BytesIO]:
+    def get_drive_file(self, file_id: str) -> BytesIO | None:
         request = self.drive_service.files().get_media(fileId=file_id)
         file = BytesIO()
 
@@ -54,12 +52,12 @@ class GoogleDriveService:
 
         return file
 
-    def get_file_metadata(self, file_id: str) -> Optional[str]:
+    def get_file_metadata(self, file_id: str) -> str | None:
         # supportsAllDrives=True required as of 12/24 despite deprecation
         request = self.drive_service.files().get(fileId=file_id, supportsAllDrives=True)
         metadata = request.execute()
         return metadata
 
     @staticmethod
-    def id_from_url(url: str) -> Optional[str]:
+    def id_from_url(url: str) -> str | None:
         return parse_qs(urlparse(url).query)["id"][0]

@@ -1,4 +1,3 @@
-from typing import Optional
 from mappings.clacso import CLACSOMapping
 from mappings.doab import DOABMapping
 from model import Source
@@ -19,7 +18,7 @@ DOAB_BASE_URL = "https://directory.doabooks.org/oai/request?"
 DOAB_IDENTIFIER = "oai:directory.doabooks.org"
 
 
-def get_source_service(source: str) -> Optional[SourceService]:
+def get_source_service(source: str) -> SourceService | None:
     if source == Source.CHICACO_ISAC.value:
         return ChicagoISACService()
     if source == Source.CLACSO.value:

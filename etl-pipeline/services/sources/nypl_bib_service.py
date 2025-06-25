@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 import requests
-from typing import Generator, Optional
+from typing import Generator
 
 from constants.get_constants import get_constants
 from logger import create_log
@@ -39,7 +39,7 @@ class NYPLBibService(SourceService):
         self,
         start_timestamp: datetime = None,
         offset: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> Generator[Record, None, None]:
         nypl_bib_query = "SELECT * FROM bib WHERE publish_year <= 1965"
 
@@ -69,7 +69,7 @@ class NYPLBibService(SourceService):
                 if nypl_bib_record:
                     yield nypl_bib_record.record
 
-    def parse_nypl_bib(self, bib) -> Optional[NYPLMapping]:
+    def parse_nypl_bib(self, bib) -> NYPLMapping | None:
         try:
             if self.is_pd_research_bib(dict(bib)):
                 bib_items = self.fetch_bib_items(dict(bib))

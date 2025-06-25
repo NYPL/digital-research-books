@@ -1,12 +1,11 @@
 from datetime import datetime, timezone
-from typing import Optional
 from uuid import uuid4
 
 from model import Record, RecordState, Source, FileFlags, Part
 
 
 # TOOO: map entire oclc bib record
-def map_oclc_record(oclc_bib) -> Optional[Record]:
+def map_oclc_record(oclc_bib) -> Record | None:
     identifiers = oclc_bib.get("identifier", {})
     oclc_number = identifiers.get("oclcNumber")
     parts = _get_parts(oclc_bib)
@@ -173,7 +172,7 @@ def _map_subjects(oclc_bib) -> list[str]:
     ]
 
 
-def _map_authors(authors) -> Optional[list[str]]:
+def _map_authors(authors) -> list[str] | None:
     if not authors:
         return None
 
@@ -184,7 +183,7 @@ def _map_authors(authors) -> Optional[list[str]]:
     ]
 
 
-def _map_contributors(contributors) -> Optional[list[str]]:
+def _map_contributors(contributors) -> list[str] | None:
     if not contributors:
         return None
 
@@ -195,7 +194,7 @@ def _map_contributors(contributors) -> Optional[list[str]]:
     ]
 
 
-def _get_contributor_name(contributor) -> Optional[str]:
+def _get_contributor_name(contributor) -> str | None:
     first_name = _get_name(contributor.get("firstName"))
     second_name = _get_name(contributor.get("secondName"))
 
@@ -208,7 +207,7 @@ def _get_contributor_name(contributor) -> Optional[str]:
     return f"{first_name or second_name}"
 
 
-def _get_name(name_data) -> Optional[str]:
+def _get_name(name_data) -> str | None:
     if not name_data:
         return None
 

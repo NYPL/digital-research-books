@@ -1,6 +1,4 @@
 from datetime import datetime
-from typing import Optional
-
 
 RIGHTS_STATEMENTS_TO_LICENSES = {
     "Attribution 4.0 International": "https://creativecommons.org/licenses/by/4.0/",
@@ -26,11 +24,11 @@ RIGHTS_LICENSES_TO_STATEMENTS = {
 
 def get_rights_string(
     rights_source: str,
-    license: Optional[str] = None,
-    rights_reason: Optional[str] = None,
-    rights_statement: Optional[str] = None,
-    rights_date: Optional[datetime] = None,
-) -> Optional[str]:
+    license: str | None = None,
+    rights_reason: str | None = None,
+    rights_statement: str | None = None,
+    rights_date: datetime | None = None,
+) -> str | None:
     if not license:
         return None
 

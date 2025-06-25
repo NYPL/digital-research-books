@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 from pymarc import parse_xml_to_array
-from typing import Optional, Generator
+from typing import Generator
 
 from managers import S3Manager
 from mappings.marc_record import map_marc_record
@@ -17,7 +17,7 @@ class GRINService(SourceService):
 
     def get_records(
         self,
-        start_timestamp: Optional[datetime] = None,
+        start_timestamp: datetime | None = None,
         offset: int = 0,
         limit: int = None,
     ) -> Generator[Record, None, None]:

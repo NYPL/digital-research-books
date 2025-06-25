@@ -8,7 +8,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from model.utilities.extractDailyEdition import extract
 from textwrap import shorten
-from typing import Optional
 from urllib.parse import urlparse
 
 from .base import Base, Core
@@ -16,14 +15,14 @@ from .base import Base, Core
 
 @dataclass
 class Part:
-    index: Optional[int]
+    index: int | None
     url: str
     source: str
     file_type: str
     flags: str
-    source_url: Optional[str] = None
+    source_url: str | None = None
 
-    def _parse_file_bucket(self, url: Optional[str]) -> Optional[str]:
+    def _parse_file_bucket(self, url: str | None) -> str | None:
         if url is None:
             return None
 
@@ -40,14 +39,14 @@ class Part:
         return parsed_url.hostname.split(".")[0]
 
     @property
-    def file_bucket(self) -> Optional[str]:
+    def file_bucket(self) -> str | None:
         return self._parse_file_bucket(self.url)
 
     @property
-    def source_file_bucket(self) -> Optional[str]:
+    def source_file_bucket(self) -> str | None:
         return self._parse_file_bucket(self.source_url)
 
-    def _parse_file_key(self, url: Optional[str]) -> Optional[str]:
+    def _parse_file_key(self, url: str | None) -> str | None:
         if url is None:
             return None
 
@@ -64,11 +63,11 @@ class Part:
         return parsed_url.path[1:]
 
     @property
-    def file_key(self) -> Optional[str]:
+    def file_key(self) -> str | None:
         return self._parse_file_key(self.url)
 
     @property
-    def source_file_key(self) -> Optional[str]:
+    def source_file_key(self) -> str | None:
         return self._parse_file_key(self.source_url)
 
     def __str__(self):

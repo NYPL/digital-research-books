@@ -1,6 +1,5 @@
 import re
-from logging import Logger
-from typing import List, Set, Tuple, Optional, Any
+from typing import List, Set, Tuple
 from sqlalchemy.exc import DataError
 from sqlalchemy import or_
 from managers import DBManager, RedisManager

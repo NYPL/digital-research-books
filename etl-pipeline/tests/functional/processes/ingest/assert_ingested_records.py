@@ -1,12 +1,10 @@
 from datetime import datetime, timezone, timedelta
-from typing import Optional
 
-from managers import DBManager
 from model import Record
 
 
 def assert_ingested_records(
-    db_manager, sources: list[str], expected_number_of_records: Optional[int] = None
+    db_manager, sources: list[str], expected_number_of_records: int | None = None
 ) -> list[Record]:
     records = (
         db_manager.session.query(Record)

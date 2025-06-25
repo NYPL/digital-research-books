@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class InteractionType(Enum):
@@ -16,13 +15,13 @@ class UsageType(Enum):
 
 @dataclass(init=True, repr=True)
 class InteractionEvent:
-    country: Optional[str]
+    country: str | None
     title: str
     book_id: str
     authors: str
     isbns: str
-    oclc_numbers: Optional[str]
-    publication_year: Optional[str]
-    disciplines: Optional[str]
+    oclc_numbers: str | None
+    publication_year: str | None
+    disciplines: str | None
     usage_type: str
-    timestamp: Optional[str]
+    timestamp: str | None

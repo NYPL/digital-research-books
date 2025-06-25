@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from typing import Union
 import os
 from redis import Redis
 
@@ -32,7 +31,7 @@ class RedisManager:
     def check_or_set_key(
         self,
         service: str,
-        identifier: Union[int, str],
+        identifier: int | str,
         identifier_type: str,
         expiration_time: int = ONE_WEEK,
     ) -> bool:
@@ -56,10 +55,10 @@ class RedisManager:
     def multi_check_or_set_key(
         self,
         service: str,
-        identifiers: list[Union[int, str]],
+        identifiers: list[int | str],
         identifier_type: str,
         expiration_time: int = ONE_WEEK,
-    ) -> list[tuple[Union[str, int], bool]]:
+    ) -> list[tuple[int | str, bool]]:
         keys_to_check = [
             f"{self.environment}/{service}/{identifier}/{identifier_type}"
             for identifier in identifiers
@@ -90,7 +89,7 @@ class RedisManager:
     def set_key(
         self,
         service: str,
-        identifier: Union[int, str],
+        identifier: int | str,
         identifier_type: str,
         expiration_time: int = ONE_WEEK,
     ):
@@ -108,7 +107,7 @@ class RedisManager:
     def multi_set_key(
         self,
         service: str,
-        identifiers: list[Union[int, str]],
+        identifiers: list[int | str],
         identifier_type: str,
         expiration_time: int = ONE_WEEK,
     ):

@@ -1,7 +1,5 @@
-import os
 import requests
 from requests.exceptions import Timeout, ConnectionError
-from typing import Optional
 
 from logger import create_log
 from managers.oclc_auth import OCLCAuthManager
@@ -217,7 +215,7 @@ class OCLCCatalogManager:
     def generate_title_author_query(self, title, author):
         return f"ti:{title} au:{author}"
 
-    def _get_error_detail(self, oclc_response) -> Optional[str]:
+    def _get_error_detail(self, oclc_response) -> str | None:
         default_error_detail = "unknown"
 
         try:

@@ -4,7 +4,7 @@ from dateutil import parser
 import gzip
 from io import BytesIO
 import requests
-from typing import Optional, Generator
+from typing import Generator
 
 from constants.get_constants import get_constants
 from mappings.hathitrust import HathiMapping
@@ -26,9 +26,9 @@ class HathiTrustService(SourceService):
 
     def get_records(
         self,
-        start_timestamp: Optional[datetime] = None,
+        start_timestamp: datetime | None = None,
         offset: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> Generator[Record, None, None]:
         csv.field_size_limit(self.FIELD_SIZE_LIMIT)
 
@@ -95,7 +95,7 @@ class HathiTrustService(SourceService):
 
         return None
 
-    def _is_ingestable(self, data_row, start_datetime: Optional[datetime]) -> bool:
+    def _is_ingestable(self, data_row, start_datetime: datetime | None) -> bool:
         rights = data_row[2] if len(data_row) > 2 else None
         date_modified = self._get_date_modified(data_row)
 

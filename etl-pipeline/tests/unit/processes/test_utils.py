@@ -1,6 +1,5 @@
 from datetime import datetime, timezone, timedelta
 import pytest
-from typing import Optional
 
 import processes.utils as utils
 
@@ -28,8 +27,8 @@ import processes.utils as utils
 )
 def test_get_start_datetime(
     process_type: str,
-    ingest_period: Optional[str],
-    expected_start_datetime: Optional[datetime],
+    ingest_period: str | None,
+    expected_start_datetime: datetime | None,
 ):
     start_datetime = utils.get_start_datetime(
         process_type=process_type, ingest_period=ingest_period

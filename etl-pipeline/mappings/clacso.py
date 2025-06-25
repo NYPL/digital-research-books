@@ -2,7 +2,6 @@ import requests
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
 from uuid import uuid4
-from typing import Optional
 from model import Record, FRBRStatus, FileFlags, Part, Source
 from .base_mapping import BaseMapping
 from .rights import (
@@ -79,7 +78,7 @@ class CLACSOMapping(BaseMapping):
             )
         ]
 
-    def _get_rights(self, record, namespaces) -> Optional[str]:
+    def _get_rights(self, record, namespaces) -> str | None:
         rights = [
             right for right in record.xpath("./dc:rights/text()", namespaces=namespaces)
         ]
@@ -179,7 +178,7 @@ class CLACSOMapping(BaseMapping):
 
         return clacso_page.find_all("a")
 
-    def _get_pdf_part(self, link: str) -> Optional[Part]:
+    def _get_pdf_part(self, link: str) -> Part | None:
         pdf_link = link.get("href")
         pdf_url = (
             f"{PDF_PART_URL}{pdf_link}" if "bitstream/CLACSO" in pdf_link else pdf_link
