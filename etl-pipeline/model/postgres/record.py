@@ -15,7 +15,7 @@ from .base import Base, Core
 
 @dataclass
 class Part:
-    index: str | None
+    index: int | None
     url: str
     source: str
     file_type: str

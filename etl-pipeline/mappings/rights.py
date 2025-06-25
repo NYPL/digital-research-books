@@ -1,3 +1,5 @@
+from datetime import datetime
+
 RIGHTS_STATEMENTS_TO_LICENSES = {
     "Attribution 4.0 International": "https://creativecommons.org/licenses/by/4.0/",
     "Attribution-ShareAlike 4.0 International": "https://creativecommons.org/licenses/by-sa/4.0/",
@@ -25,7 +27,7 @@ def get_rights_string(
     license: str | None = None,
     rights_reason: str | None = None,
     rights_statement: str | None = None,
-    rights_date: str | None = None,
+    rights_date: datetime | None = None,
 ) -> str | None:
     if not license:
         return None

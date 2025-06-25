@@ -25,7 +25,7 @@ class ProcessParams:
     custom_file: str | None = None
     ingest_period: str | None = None
     record_id: str | None = None
-    limit: str | None = None
+    limit: int | None = None
     offset: int = 0
     source: str | None = None
 
