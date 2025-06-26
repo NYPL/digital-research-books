@@ -14,3 +14,4 @@ from .record_pipeline import RecordPipelineProcess
 from .local_development.seed_local_data import SeedLocalDataProcess
 from .grin.conversion import GRINConversion
 from .grin.download import GRINDownload
+from .pdf_generation.pdf_generate import PDFGenerationProcess

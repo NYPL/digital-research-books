@@ -10,7 +10,7 @@ from typing import List, Iterator
 from managers import DBManager
 from uuid import uuid4
 from logger import create_log
-from .util import chunk
+from ..util.chunk import chunk
 import argparse
 
 
@@ -22,12 +22,13 @@ class GRINConversion:
 
     def runProcess(self, backfill=True):
         with DBManager() as self.db_manager:
-            self.acquire_and_convert_new_books()
+            pass
+            # self.acquire_and_convert_new_books()
 
-            self.process_converted_books()
+            # self.process_converted_books()
 
-            if backfill:
-                self.convert_backfills()
+            # if backfill:
+            #     self.convert_backfills()
 
     def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
