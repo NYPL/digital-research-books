@@ -5,13 +5,13 @@ import tempfile
 
 import pypdf
 
-import mets_parser
+from . import mets_parser
 import model
-import path
-import page_label
-import pdf_page
-import s3
-from util.chunk import chunk
+from . import path
+from . import page_label
+from . import pdf_page
+from . import s3
+from ..util.chunk import chunk
 from logger import create_log
 
 DEFAULT_CHUNK_SIZE = 100
@@ -29,7 +29,7 @@ class PDFGenerationProcess:
         self.ocr_dir = self.ocr_package_info["ocr_dir"]
         self.mets = self.ocr_package_info["mets_file"]
 
-    def run_process(self):
+    def runProcess(self):
         mets_file = mets_parser.METSFile.from_mets_str(
             self.bucket.get(key=self.mets)["Body"].read(),
         )

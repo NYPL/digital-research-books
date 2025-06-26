@@ -7,7 +7,7 @@ import marc
 import mets_parser
 import path
 import pathlib
-import s3
+from . import s3
 
 
 @dataclasses.dataclass

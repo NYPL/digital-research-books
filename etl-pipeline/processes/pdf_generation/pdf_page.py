@@ -5,8 +5,8 @@ import tempfile
 import time
 
 import checksum
-import mets_parser
-import s3
+from . import mets_parser
+from . import s3
 import os
 
 import PIL.Image
