@@ -7,16 +7,16 @@ import time
 import checksum
 import mets_parser
 import s3
-import util
 import os
 
 import PIL.Image
 from ocrmypdf.hocrtransform import HocrTransform
 from lxml import etree
+from logger import create_log
 
 PIL.Image.MAX_IMAGE_PIXELS = None
 
-logger = util.get_logger(__name__)
+logger = create_log(__name__)
 
 
 class PDFPageGenerator:

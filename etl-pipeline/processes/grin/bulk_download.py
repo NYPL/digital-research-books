@@ -6,7 +6,7 @@ from model import GRINState, GRINStatus, Record
 from managers import DBManager, S3Manager
 from logger import create_log
 from sqlalchemy import select, desc
-from .util import chunk
+from util.chunk import chunk
 from .grin_client import GRINClient
 import os
 import argparse

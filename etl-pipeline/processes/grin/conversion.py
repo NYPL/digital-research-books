@@ -10,7 +10,7 @@ from typing import List, Iterator
 from managers import DBManager
 from uuid import uuid4
 from logger import create_log
-from .util import chunk
+from util.chunk import chunk
 import argparse
 
 

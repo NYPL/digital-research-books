@@ -11,12 +11,13 @@ from util import path
 from util import page_label
 from util import pdf_page
 from managers import S3Manager
-import util
+from util.chunk import chunk
+from logger import create_log
 
 DEFAULT_CHUNK_SIZE = 100
 NUMBER_OF_SUBPROCESSES = os.cpu_count() or 12
 
-logger = util.get_logger(__name__)
+logger = create_log(__name__)
 
 
 class PDFGenerationProcess:
@@ -51,7 +52,7 @@ class PDFGenerationProcess:
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             for i, pages in enumerate(
-                util.chunk(mets_file.iter_pages(), size=chunk_size), start=1
+                chunk(mets_file.iter_pages(), size=chunk_size), start=1
             ):
                 logger.info(f"Building chunk {i}")
                 subprocess = pdf_page.PDFPageSubprocess(page_generator)
