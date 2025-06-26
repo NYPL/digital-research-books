@@ -5,12 +5,12 @@ import tempfile
 
 import pypdf
 
-from util import mets_parser
-from util import model
-from util import path
-from util import page_label
-from util import pdf_page
-from util import s3
+import mets_parser
+import model
+import path
+import page_label
+import pdf_page
+import s3
 from util.chunk import chunk
 from logger import create_log
 
@@ -57,7 +57,9 @@ class PDFGenerationProcess:
                 subprocess = pdf_page.PDFPageSubprocess(page_generator)
                 for page in pages:
                     pdf_page_location = str(
-                        pathlib.Path(tmpdirname, page.image_file.fid).with_suffix(".pdf"),
+                        pathlib.Path(tmpdirname, page.image_file.fid).with_suffix(
+                            ".pdf"
+                        ),
                     )
                     if not page.ocr_file.location:
                         continue
