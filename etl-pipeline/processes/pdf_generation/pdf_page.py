@@ -4,7 +4,7 @@ import pathlib
 import tempfile
 import time
 
-import checksum
+from . import checksum
 from . import mets_parser
 from . import s3
 import os
