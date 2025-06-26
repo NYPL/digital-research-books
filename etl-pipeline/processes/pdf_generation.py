@@ -10,7 +10,7 @@ from util import model
 from util import path
 from util import page_label
 from util import pdf_page
-from managers import S3Manager
+from util import s3
 from util.chunk import chunk
 from logger import create_log
 
@@ -23,24 +23,23 @@ logger = create_log(__name__)
 class PDFGenerationProcess:
     def __init__(self, event):
         # TODO: Clean up how this payload is defined in the statemachine
-        self.s3_manager = S3Manager()
         self.ocr_package_info = event["ocr_package"]
-        self.bucket = self.ocr_package_info["bucket"]
+        self.bucket_name = self.ocr_package_info["bucket"]
+        self.bucket = s3.Bucket(self.ocr_package_info["bucket"])
         self.ocr_dir = self.ocr_package_info["ocr_dir"]
         self.mets = self.ocr_package_info["mets_file"]
 
     def run_process(self):
         mets_file = mets_parser.METSFile.from_mets_str(
-            self.s3_manager.get_object(key=self.mets, bucket=self.bucket)[
-                "Body"
-            ].read(),
+            self.bucket.get(key=self.mets)["Body"].read(),
         )
         mets_path = path.METSPath(self.mets)
 
         metadata = model.get_metadata(self.bucket, mets_path, mets_file)
         model.write_metadata(self.bucket, mets_path, metadata, mets_path.tagged_pdf_key)
+
         ordered_page_locations = []
-        page_generator = pdf_page.PDFPageGenerator(self.bucket, self.ocr_dir)
+        page_generator = pdf_page.PDFPageGenerator(self.bucket_name, self.ocr_dir)
         processes = []
 
         page_count = mets_file.page_count
@@ -58,9 +57,7 @@ class PDFGenerationProcess:
                 subprocess = pdf_page.PDFPageSubprocess(page_generator)
                 for page in pages:
                     pdf_page_location = str(
-                        pathlib.Path(tmpdirname, page.image_file.fid).with_suffix(
-                            ".pdf"
-                        ),
+                        pathlib.Path(tmpdirname, page.image_file.fid).with_suffix(".pdf"),
                     )
                     if not page.ocr_file.location:
                         continue
@@ -118,7 +115,7 @@ class PDFGenerationProcess:
 
                 with open(f"{tmpdirname}/merged.pdf", "rb") as merged_pdf:
                     output_key = path.METSPath(self.mets).tagged_pdf_key
-                    self.s3_manager.upload_file(merged_pdf, output_key)
+                    self.bucket.upload_file(merged_pdf, output_key)
 
         logger.info(f"Generated PDF: {output_key}")
 

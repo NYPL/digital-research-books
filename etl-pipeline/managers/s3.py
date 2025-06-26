@@ -9,8 +9,6 @@ from zipfile import ZipFile
 from managers import WebpubManifest
 from digital_assets import get_stored_file_url
 from model import Record, Part, FileFlags
-import typing
-import pathlib
 
 from logger import create_log
 
@@ -98,23 +96,6 @@ class S3Manager:
         )
 
         return manifest.toJson()
-
-    def upload_file(
-        self,
-        file: BytesIO,
-        key: typing.TypeAlias = str | pathlib.Path,
-        metadata: dict[str, str] | None = None,
-    ):
-        extra_args = {}
-        if metadata:
-            extra_args["Metadata"] = metadata
-
-        return self.client.upload_fileobj(
-            file,
-            Bucket=self.bucket,
-            Key=str(key),
-            ExtraArgs=extra_args,
-        )
 
     def put_object(
         self,
