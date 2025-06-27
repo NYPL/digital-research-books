@@ -1,8 +1,6 @@
 name: 'ETL Pipeline CI (Self-Hosted)'
 
 on:
-  pull_request:
-      types: [opened, synchronize]
   workflow_call:
     secrets:
       AWS_ACCESS_KEY_ID:
