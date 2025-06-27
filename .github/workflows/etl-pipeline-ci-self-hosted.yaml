@@ -94,6 +94,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip wheel
           pip install setuptools==58.2.0
+          pip install --upgrade cryptography pyopenssl
           pip install pytest-rerunfailures tenacity
           pip install --prefer-binary -r requirements.txt -r dev-requirements.txt
       - name: Run QA functional tests
