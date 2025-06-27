@@ -99,7 +99,7 @@ class HathiMapping(CSVMapping):
                 url=f"https://babel.hathitrust.org/cgi/pt?id={file_id}",
                 source=Source.HATHI.value,
                 file_type="text/html",
-                flags=str(FileFlags(embed=True))
+                flags=str(FileFlags(embed=True)),
             )
         )
 
@@ -110,13 +110,13 @@ class HathiMapping(CSVMapping):
                 Part(
                     index=1,
                     url=get_stored_file_url(
-                        storage_name=os.environ["FILE_BUCKET"], 
-                        file_path=f"pdfs/{Source.HATHI.value}/{self.source[0]}.pdf"
+                        storage_name=os.environ["FILE_BUCKET"],
+                        file_path=f"pdfs/{Source.HATHI.value}/{self.source[0]}.pdf",
                     ),
                     source=Source.HATHI.value,
                     file_type="application/pdf",
                     flags=str(FileFlags(reader=True, download=True)),
-                    source_url=f"https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id={file_id}"
+                    source_url=f"https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id={file_id}",
                 )
             )
 

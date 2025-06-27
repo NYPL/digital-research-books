@@ -5,7 +5,6 @@ from mappings.hathitrust import HathiMapping
 
 
 class TestHathingMapping:
-
     @classmethod
     def setup_class(cls):
         TestHelpers.setEnvVars()
