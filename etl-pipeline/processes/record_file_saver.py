@@ -49,7 +49,6 @@ class RecordFileSaver:
             elif part.source_file_key and part.source_file_bucket:
                 self._copy_file(part)
             else:
-
                 if part.file_type == "application/pdf":
                     file_permissions = (
                         {}
@@ -60,7 +59,7 @@ class RecordFileSaver:
                         self._stream_part_file_contents(part),
                         part.file_bucket,
                         part.file_key,
-                        file_permissions
+                        file_permissions,
                     )
                 else:
                     file_contents = self._get_part_file_contents(part.source_url)
