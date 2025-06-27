@@ -1,6 +1,4 @@
-import re
 from pottery import Redlock
-from sqlalchemy.exc import DataError
 from time import sleep
 
 from logger import create_log
@@ -23,15 +21,6 @@ logger = create_log(__name__)
 
 
 class RecordClusterer:
-    """Clusters related bibliographic records and transforms them into FRBR model objects.
-
-    This class handles the process of:
-    1. Identifying a candidate pool of related records
-    2. Clustering those records using machine learning
-    3. Creating Work/Edition/Item objects from the clusters
-    4. Managing database updates and search indexing
-    """
-
     CLUSTER_TIMEOUT = 60 * 60  # 1 hour
 
     def __init__(self, db_manager: DBManager, redis_manager: RedisManager):
@@ -51,7 +40,6 @@ class RecordClusterer:
         self.constants = get_constants()
 
     def cluster_record(self, record) -> list[Record]:
-        """Clusters a single record and updates the database and Elasticsearch."""
         try:
             record_lock = Redlock(
                 key=f"{CLUSTER_LOCK_KEY_PREFIX}{record.id}",
@@ -84,19 +72,15 @@ class RecordClusterer:
             raise e
 
     def _get_clustered_work_and_records(self, record: Record):
-        # Identify a candidate pool of related records
         records = self.candidate_finder.find_candidate_records(record)
         record_ids = [r.id for r in records]
 
-        # Group records into edition clusters
         clustered_editions = self._cluster_records(record, records)
 
-        # Build FRBR model - Create Work/Edition/Item objects
         work, stale_work_ids = self._create_work_from_editions(
             clustered_editions, records
         )
 
-        # Update record status
         self._update_cluster_status(record_ids)
 
         return work, stale_work_ids, records
@@ -118,16 +102,6 @@ class RecordClusterer:
         )
 
     def _cluster_records(self, record: Record, records: list[Record]):
-        """Groups records into clusters using KMeans clustering.
-
-        Uses KMeansManager to:
-        1. Create feature vectors from record metadata
-        2. Run KMeans clustering
-        3. Group results by publication year
-
-        Each cluster represents a work, and each group of records for a given publication year
-        in that cluster is assumed to be an edition of that work.
-        """
         kmean_manager = KMeansManager(records)
 
         kmean_manager.createDF()
@@ -161,13 +135,6 @@ class RecordClusterer:
     def _create_work_from_editions(
         self, editions: list, records: list[Record]
     ) -> tuple[Work, set[str]]:
-        """Creates a Work object from clustered editions.
-
-        Uses SFRRecordManager to:
-        1. Build Work data structure from records
-        2. Save Work to database
-        3. Merge with any existing Works
-        """
         record_manager = SFRRecordManager(
             self.db_manager.session, self.constants["iso639"]
         )

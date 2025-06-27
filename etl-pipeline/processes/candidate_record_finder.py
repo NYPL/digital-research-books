@@ -24,10 +24,6 @@ class CandidateRecordFinder:
         self.redis_manager = redis_manager
 
     def find_candidate_records(self, record: Record) -> List[Record]:
-        """Find records that might be related to the input record.
-        Raises:
-            Exception: If the number of candidate records exceeds MAX_NUMBER_OF_CANDIDATE_RECORDS
-        """
         candidate_record_ids = self._find_candidate_record_ids(record)
 
         if record.id:
@@ -38,18 +34,6 @@ class CandidateRecordFinder:
         return self._get_records_by_ids(candidate_record_ids)
 
     def _find_candidate_record_ids(self, record: Record) -> List[str]:
-        """Finds all record IDs that might be related to the input record.
-
-        Uses an iterative process to find potential matches:
-        1. Start with record's identifiers
-        2. Find records matching one of the identifiers
-        3. For each match, check title similarity
-        4. If similar, add their identifiers to check
-        5. Repeat up to MAX_MATCH_DISTANCE times
-
-        Raises:
-            Exception: If the number of candidates exceeds MAX_NUMBER_OF_CANDIDATE_RECORDS
-        """
         tokenized_record_title = self._tokenize_title(record.title)
         ids_to_check = {
             id for id in record.identifiers if re.search(self.IDENTIFIERS_TO_MATCH, id)
@@ -157,13 +141,6 @@ class CandidateRecordFinder:
     def _titles_overlap(
         tokenized_record_title: Set[str], tokenized_matched_record_title: Set[str]
     ) -> bool:
-        """Determines if two titles are similar enough to be considered matching.
-
-        Rules:
-        1. Single word titles must be subset/superset
-        2. Multi-word titles must share at least 2 words
-        """
-        # Single-word title handling
         if (
             len(tokenized_record_title) == 1
             and not tokenized_record_title <= tokenized_matched_record_title
@@ -174,7 +151,6 @@ class CandidateRecordFinder:
             and not tokenized_record_title >= tokenized_matched_record_title
         ):
             return False
-        # Multi-word title handling
         elif (
             len(tokenized_record_title) > 1 and len(tokenized_matched_record_title) > 1
         ) and len(tokenized_record_title & tokenized_matched_record_title) < 2:
@@ -184,22 +160,12 @@ class CandidateRecordFinder:
 
     @staticmethod
     def _tokenize_title(title: str) -> Set[str]:
-        """Converts a title string into a set of normalized "tokens" (words).
-
-        1. Extracts words using regex
-        2. Converts to lowercase
-        3. Removes common stop words
-        """
         title_tokens = re.findall(r"(\w+)", title.lower())
 
         return set(title_tokens) - set(["a", "an", "the", "of"])
 
     @staticmethod
     def _format_identifiers(identifiers: List[str]) -> str:
-        """Formats identifiers for PostgreSQL array overlap query.
-        Returns:
-            Formatted string for Postgres array overlap query
-        """
         formatted_ids = []
 
         for id in identifiers:
