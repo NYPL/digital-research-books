@@ -62,7 +62,7 @@ class RecordFileSaver:
                         file_permissions,
                     )
                 else:
-                    file_contents = self._get_part_file_contents(part.source_url)
+                    file_contents = self._get_part_file_contents(part)
                     self.storage_manager.put_object(
                         file_contents, part.file_key, part.file_bucket
                     )
