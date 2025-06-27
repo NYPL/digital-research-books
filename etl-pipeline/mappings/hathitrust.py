@@ -115,7 +115,7 @@ class HathiMapping(CSVMapping):
                     ),
                     source=Source.HATHI.value,
                     file_type="application/pdf",
-                    flags=str(FileFlags(reader=True, download=True)),
+                    flags=str(FileFlags(download=True)),
                     source_url=f"https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id={file_id}",
                 )
             )
