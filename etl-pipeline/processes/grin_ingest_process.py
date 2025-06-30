@@ -1,6 +1,6 @@
 from logger import create_log
-from pdf_generation.pdf_generate import PDFGenerationProcess
-from grin.download import GRINDownload
+from .pdf_generation.pdf_generate import PDFGenerationProcess
+from .grin.download import GRINDownload
 import os
 
 
