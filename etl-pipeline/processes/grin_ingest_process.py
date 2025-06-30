@@ -5,7 +5,7 @@ import os
 
 
 class GRINIngestProcess:
-    def __init__(self, sqs_message):
+    def __init__(self, *args, sqs_message):
         # TODO: When we start consuming SQS messages, change setup here accordingly.
         self.barcode = sqs_message["barcode"]
 
