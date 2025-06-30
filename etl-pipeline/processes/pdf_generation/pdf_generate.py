@@ -119,6 +119,4 @@ class PDFGenerationProcess:
 
         logger.info(f"Generated PDF: {output_key}")
 
-        return {
-            "pdf_key": str(mets_path.tagged_pdf_key)
-        }
+        return {"pdf_key": str(mets_path.tagged_pdf_key)}

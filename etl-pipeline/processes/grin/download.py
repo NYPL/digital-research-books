@@ -10,6 +10,7 @@ import tarfile
 
 logger = create_log(__name__)
 
+
 class GRINDownload:
     def __init__(self, barcode, bucket):
         self.grin_client = GRINClient()
@@ -26,9 +27,9 @@ class GRINDownload:
             file_content = self.download_and_upload_book()
 
             self.unpack_and_upload_ocr_files(file_content)
-            
+
             mets_file = self.ocr_dir + f"NYPL_{barcode}.xml"
-            
+
             return self.ocr_dir, mets_file
 
     def download_and_upload_book(self):
@@ -78,7 +79,7 @@ class GRINDownload:
                 for file in tar_file:
                     self.s3_manager.put_object(
                         object=tar_file.extractfile(file).read(),
-                        key= self.ocr_dir + f"{file.name}",
+                        key=self.ocr_dir + f"{file.name}",
                         bucket=self.bucket,
                         bucket_permissions=None,
                     )
