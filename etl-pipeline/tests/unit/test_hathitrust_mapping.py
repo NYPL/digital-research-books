@@ -1,9 +1,18 @@
 import pytest
 
+from ..helper import TestHelpers
 from mappings.hathitrust import HathiMapping
 
 
 class TestHathingMapping:
+    @classmethod
+    def setup_class(cls):
+        TestHelpers.setEnvVars()
+
+    @classmethod
+    def teardown_class(cls):
+        TestHelpers.clearEnvVars()
+
     @pytest.fixture
     def testMapping(self, test_constants):
         class TestHathi(HathiMapping):
@@ -87,8 +96,8 @@ class TestHathingMapping:
         assert testMapping.record.contributors == ["Contributor|test"]
         assert testMapping.record.rights == "hathitrust|test|Test Reason|Test License|"
         assert testMapping.record.has_part == [
-            '1|https://babel.hathitrust.org/cgi/pt?id=recordID|hathitrust|text/html|{"reader": false, "download": false, "catalog": false, "embed": true}',
-            '1|https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id=recordID|hathitrust|application/pdf|{"reader": false, "download": true, "catalog": false}',
+            '1|https://babel.hathitrust.org/cgi/pt?id=recordID|hathitrust|text/html|{"embed": true}',
+            '1|https://test_aws_bucket.s3.amazonaws.com/pdfs/hathitrust/recordID.pdf|hathitrust|application/pdf|{"download": true}|https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id=recordID',
         ]
         assert testMapping.record.spatial == "Test Country"
 
@@ -112,5 +121,5 @@ class TestHathingMapping:
 
         assert len(testMapping.record.has_part) == 1
         assert testMapping.record.has_part == [
-            '1|https://babel.hathitrust.org/cgi/pt?id=recordID|hathitrust|text/html|{"reader": false, "download": false, "catalog": false, "embed": true}'
+            '1|https://babel.hathitrust.org/cgi/pt?id=recordID|hathitrust|text/html|{"embed": true}'
         ]

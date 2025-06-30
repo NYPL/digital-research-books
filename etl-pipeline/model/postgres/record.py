@@ -4,6 +4,7 @@ from enum import Enum
 import json
 from sqlalchemy import Column, DateTime, Integer, Unicode, Boolean, Index
 from sqlalchemy.dialects.postgresql import ARRAY, UUID, ENUM
+from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from model.utilities.extractDailyEdition import extract
@@ -192,7 +193,7 @@ class Record(Base, Core):
     extent = Column(Unicode)  # dc:extent, Non-Repeating
     abstract = Column(Unicode)  # dc:abstract, Non-Repeating
     has_part = Column(
-        ARRAY(Unicode, dimensions=1)
+        MutableList.as_mutable(ARRAY(Unicode, dimensions=1))
     )  # dc:hasPart, Repeating, Format "itemNo|uri|source|type|flags" or "itemNo|uri|source|type|flags|sourceUri" if the file was stored
     coverage = Column(
         ARRAY(Unicode, dimensions=1)

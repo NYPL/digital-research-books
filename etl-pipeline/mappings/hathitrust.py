@@ -1,7 +1,9 @@
-import json
+import os
 import re
 
+from digital_assets import get_stored_file_url
 from .csv import CSVMapping
+from model import FileFlags, Part, Source
 
 
 class HathiMapping(CSVMapping):
@@ -90,31 +92,35 @@ class HathiMapping(CSVMapping):
             rightsElements[4],
         )
 
-        # Add Read Online links
-        readOnlineLink = "{}|{}|{}|{}|{}".format(
-            1,
-            "https://babel.hathitrust.org/cgi/pt?id={}".format(self.source[0]),
-            "hathitrust",
-            "text/html",
-            json.dumps(
-                {"reader": False, "download": False, "catalog": False, "embed": True}
-            ),
+        file_id = self.source[0]
+        embed_link = str(
+            Part(
+                index=1,
+                url=f"https://babel.hathitrust.org/cgi/pt?id={file_id}",
+                source=Source.HATHI.value,
+                file_type="text/html",
+                flags=str(FileFlags(embed=True)),
+            )
         )
 
-        self.record.has_part = [readOnlineLink]
+        self.record.has_part = [embed_link]
 
         if self.source[23].lower() != "google":
-            self.record.has_part.append(
-                "{}|{}|{}|{}|{}".format(
-                    1,
-                    "https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id={}".format(
-                        self.source[0]
+            file_link = str(
+                Part(
+                    index=1,
+                    url=get_stored_file_url(
+                        storage_name=os.environ["FILE_BUCKET"],
+                        file_path=f"pdfs/{Source.HATHI.value}/{self.source[0]}.pdf",
                     ),
-                    "hathitrust",
-                    "application/pdf",
-                    json.dumps({"reader": False, "download": True, "catalog": False}),
+                    source=Source.HATHI.value,
+                    file_type="application/pdf",
+                    flags=str(FileFlags(download=True)),
+                    source_url=f"https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id={file_id}",
                 )
             )
+
+            self.record.has_part.append(file_link)
 
         # Parse spatial (pub place) codes
         self.record.spatial = self.record.spatial or ""

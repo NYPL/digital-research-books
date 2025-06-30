@@ -2,6 +2,7 @@ import os
 import requests
 from urllib.parse import quote_plus
 
+from constants.headers import BROWSER_AGENT_HEADER
 from digital_assets import get_stored_file_url
 from logger import create_log
 from managers import DBManager, S3Manager
@@ -48,11 +49,24 @@ class RecordFileSaver:
             elif part.source_file_key and part.source_file_bucket:
                 self._copy_file(part)
             else:
-                file_contents = self.get_file_contents(part.source_url)
-                self.storage_manager.put_object(
-                    file_contents, part.file_key, part.file_bucket
-                )
-                del file_contents
+                if part.file_type == "application/pdf":
+                    file_permissions = (
+                        {}
+                        if part.file_bucket == self.limited_file_bucket
+                        else {"ACL": "public-read"}
+                    )
+                    self.storage_manager.client.upload_fileobj(
+                        self._stream_part_file_contents(part),
+                        part.file_bucket,
+                        part.file_key,
+                        file_permissions,
+                    )
+                else:
+                    file_contents = self._get_part_file_contents(part)
+                    self.storage_manager.put_object(
+                        file_contents, part.file_key, part.file_bucket
+                    )
+                    del file_contents
 
                 if ".epub" in part.file_key:
                     file_root = ".".join(part.file_key.split(".")[:-1])
@@ -98,15 +112,28 @@ class RecordFileSaver:
             source_bucket_key, part.file_bucket, part.file_key, extra_args
         )
 
-    def get_file_contents(self, file_url: str):
+    def _stream_part_file_contents(self, part: Part):
         try:
             file_url_response = requests.get(
-                file_url,
+                part.source_url,
                 stream=True,
                 timeout=15,
-                headers={
-                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5)"
-                },
+                headers=BROWSER_AGENT_HEADER,
+            )
+
+            file_url_response.raise_for_status()
+            return file_url_response.raw
+        except Exception as e:
+            logger.exception(f"Failed to stream file from {part.source_url}")
+            raise e
+
+    def _get_part_file_contents(self, part: Part):
+        try:
+            file_url_response = requests.get(
+                part.source_url,
+                stream=True,
+                timeout=15,
+                headers=BROWSER_AGENT_HEADER,
             )
 
             file_url_response.raise_for_status()
@@ -118,7 +145,7 @@ class RecordFileSaver:
 
             return file_contents
         except Exception as e:
-            logger.exception(f"Failed to get file from {file_url}")
+            logger.exception(f"Failed to get file from {part.source_url}")
             raise e
 
     def generate_webpub(self, file_root: str):
