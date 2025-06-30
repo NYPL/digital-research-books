@@ -14,16 +14,6 @@ services:
       file: docker-compose.yml
       service: elasticsearch
 
-  rabbitmq:
-    extends:
-      file: docker-compose.yml
-      service: rabbitmq
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
-      interval: 2s
-      timeout: 5s
-      retries: 5
-
   redis:
     extends:
       file: docker-compose.yml
@@ -47,8 +37,6 @@ services:
         condition: service_started
       redis:
         condition: service_started
-      rabbitmq:
-        condition: service_healthy
 
     build:
       context: .
