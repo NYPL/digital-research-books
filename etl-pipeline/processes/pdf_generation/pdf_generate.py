@@ -21,15 +21,13 @@ logger = create_log(__name__)
 
 
 class PDFGenerationProcess:
-    def __init__(self, event):
-        # TODO: Clean up how this payload is defined in the statemachine
-        self.ocr_package_info = event["ocr_package"]
-        self.bucket_name = self.ocr_package_info["bucket"]
-        self.bucket = s3.Bucket(self.ocr_package_info["bucket"])
-        self.ocr_dir = self.ocr_package_info["ocr_dir"]
-        self.mets = self.ocr_package_info["mets_file"]
+    def __init__(self, bucket, ocr_dir, mets_file):
+        self.bucket_name = bucket
+        self.bucket = s3.Bucket(self.bucket_name)
+        self.ocr_dir = ocr_dir
+        self.mets = mets_file
 
-    def runProcess(self):
+    def run_process(self):
         mets_file = mets_parser.METSFile.from_mets_str(
             self.bucket.get(key=self.mets)["Body"].read(),
         )
@@ -122,6 +120,5 @@ class PDFGenerationProcess:
         logger.info(f"Generated PDF: {output_key}")
 
         return {
-            "ocr_package": self.ocr_package_info,
-            "pdf_key": str(mets_path.tagged_pdf_key),
+            "pdf_key": str(mets_path.tagged_pdf_key)
         }
