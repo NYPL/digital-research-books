@@ -7,7 +7,7 @@ import pandas as pd
 from sqlalchemy import select, update
 from model import GRINState, GRINStatus, Record, FRBRStatus
 from typing import List, Iterator
-from managers import DBManager
+from managers import DBManager, SQSManager
 from uuid import uuid4
 from logger import create_log
 from ..util.chunk import chunk
@@ -24,7 +24,9 @@ class GRINConversion:
         with DBManager() as self.db_manager:
             self.acquire_and_convert_new_books()
 
-            self.process_converted_books()
+            successfully_converted_books = self.process_converted_books()
+
+            self.send_sqs_messages(successfully_converted_books)
 
             if backfill:
                 self.convert_backfills()
@@ -194,7 +196,14 @@ class GRINConversion:
                 rows.append(row.split("\t"))
 
         return pd.DataFrame(rows, columns=headers)
-
+    
+    def send_sqs_messages(self, converted_books):
+        sqs_manager = SQSManager("drb-grin-ingest-queue-qa-tf")
+        for book in converted_books:
+            message = {
+                "barcode": book.barcode
+            }
+            sqs_manager.send_message_to_queue(message)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
