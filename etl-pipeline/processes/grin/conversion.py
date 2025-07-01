@@ -140,9 +140,10 @@ class GRINConversion:
 
     def process_converted_books(self):
         converted_barcodes = self.client.converted_filenames()
-
         if not converted_barcodes:
             return
+
+        successfully_converted_books = []
 
         for chunked_barcodes in chunk(iter(converted_barcodes), self.batch_limit):
             stripped_barcodes: List[str] = []
@@ -160,7 +161,6 @@ class GRINConversion:
                 )
                 updated_results = self.db_manager.session.execute(update_barcodes)
                 self.db_manager.commit_changes()
-
                 self.logger.info(
                     f"Updated {updated_results.rowcount} converted books in DB"
                 )
@@ -182,11 +182,14 @@ class GRINConversion:
                 self.logger.info(
                     f"Saved {len(missing_from_table)} new converted books in DB"
                 )
+
+                successfully_converted_books.append(stripped_barcodes)
             except:
                 self.db_manager.session.rollback()
                 self.logger.exception(
                     f"Failed to update the following converted records: {chunked_barcodes}"
                 )
+        return successfully_converted_books
 
     def transform_scraped_data(self, data):
         headers = data[0].split("\t")
@@ -196,14 +199,13 @@ class GRINConversion:
                 rows.append(row.split("\t"))
 
         return pd.DataFrame(rows, columns=headers)
-    
+
     def send_sqs_messages(self, converted_books):
         sqs_manager = SQSManager("drb-grin-ingest-queue-qa-tf")
         for book in converted_books:
-            message = {
-                "barcode": book.barcode
-            }
+            message = {"barcode": book.barcode}
             sqs_manager.send_message_to_queue(message)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
