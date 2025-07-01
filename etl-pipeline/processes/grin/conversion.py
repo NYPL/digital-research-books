@@ -22,13 +22,12 @@ class GRINConversion:
 
     def runProcess(self, backfill=True):
         with DBManager() as self.db_manager:
-            pass
-            # self.acquire_and_convert_new_books()
+            self.acquire_and_convert_new_books()
 
-            # self.process_converted_books()
+            self.process_converted_books()
 
-            # if backfill:
-            #     self.convert_backfills()
+            if backfill:
+                self.convert_backfills()
 
     def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
