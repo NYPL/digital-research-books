@@ -16,6 +16,7 @@ def map_marc_record(
     pdf_url: str = None,
 ) -> Record:
     identifiers = _get_identifiers(marc_record, source)
+    source_id = _get_source_id(identifiers, source)
     alternative = _get_formatted_field(marc_record, "240", "{a} {k}")
     has_version = _get_formatted_field(marc_record, "250", "{a} {b}|")
     spatial = _get_formatted_field(marc_record, "264", "{a}")
@@ -30,7 +31,7 @@ def map_marc_record(
         frbr_status=FRBRStatus.TODO.value,
         cluster_status=False,
         source=source.value,
-        source_id=identifiers[0],
+        source_id=source_id,
         identifiers=identifiers,
         authors=_get_authors(marc_record),
         title=_get_title(marc_record),
@@ -121,6 +122,12 @@ def _get_identifiers(marc_record: MARCRecord, source: Source):
     all_identifiers = _get_formatted_fields(marc_record, fields)
 
     return [_cleanup_identifier(identifier) for identifier in all_identifiers]
+
+
+def _get_source_id(identifiers: list[str], source: Source) -> str:
+    if source.value == Source.MUSE.value and identifiers:
+        return identifiers[0].split("|")[0]
+    return identifiers[0] if identifiers else ""
 
 
 def _get_authors(marc_record: MARCRecord):
