@@ -3,7 +3,8 @@ import re
 
 from model import Record
 from managers import DBManager
-from processes import DOABProcess
+from processes import IngestProcess
+from model import Source
 
 
 def main():
@@ -19,7 +20,7 @@ def main():
 
     dbManager.create_session()
 
-    doabProcess = DOABProcess("single", None, None, None, None, None)
+    doabProcess = IngestProcess("single", None, None, None, None, None, Source.DOAB.value)
 
     identRegex = r"intechopen.com\/books\/([\d]+)"
 
