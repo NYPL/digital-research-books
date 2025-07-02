@@ -20,7 +20,9 @@ def main():
 
     dbManager.create_session()
 
-    doabProcess = IngestProcess("single", None, None, None, None, None, Source.DOAB.value)
+    doabProcess = IngestProcess(
+        "single", None, None, None, None, None, Source.DOAB.value
+    )
 
     identRegex = r"intechopen.com\/books\/([\d]+)"
 
