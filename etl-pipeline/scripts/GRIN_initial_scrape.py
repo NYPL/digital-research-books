@@ -5,7 +5,7 @@ from model import GRINState, GRINStatus, Record, FRBRStatus
 from managers import DBManager
 from uuid import uuid4
 from processes.grin.grin_client import GRINClient
-from processes.grin.util import chunk
+from processes.util.chunk import chunk
 import argparse
 
 logger = create_log(__name__)
