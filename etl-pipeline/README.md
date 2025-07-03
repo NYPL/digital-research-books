@@ -42,10 +42,9 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
 
 ### Setup Steps
 
-1. Clone the repository:
+1. Change directory to etl-pipeline
 
    ```bash
-   git clone git@github.com:NYPL/etl-pipeline.git
    cd etl-pipeline
    ```
 
