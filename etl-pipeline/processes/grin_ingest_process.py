@@ -25,7 +25,7 @@ class GRINIngestProcess:
         pdf_generation = PDFGenerationProcess(self.bucket, ocr_dir, mets_file)
         pdf_key = pdf_generation.run_process()
 
-        # pdf_url = f"https://{self.bucket}.s3.amazonaws.com/tagged_pdfs/{pdf_key}"
+        # pdf_url = self.bucket.get_public_url(pdf_key)
         # record_ingestor = RecordIngestor(Source.GRIN.value)
         # record = map_marc_record(mets_file, source=Source.GRIN, pdf_url=pdf_url)
         # record_ingestor.ingest(record)
