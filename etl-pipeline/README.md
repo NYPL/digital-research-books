@@ -45,8 +45,8 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
 1. Clone the repository:
 
    ```bash
-   git clone git@github.com:NYPL/drb-etl-pipeline.git
-   cd drb-etl-pipeline
+   git clone git@github.com:NYPL/etl-pipeline.git
+   cd etl-pipeline
    ```
 
 2. Configure secrets:
@@ -90,9 +90,14 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
      Password: localpsql
      ```
 
+
+ 
 6. Set up local python env:
 
 Create a virtual environment
+   
+
+*Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).* 
 
 ```sh
 python -m venv venv
@@ -109,6 +114,11 @@ Make sure `wheel` is upgraded to avoid installation errors later
 ```sh
 pip install --upgrade wheel
 ```
+Or
+
+```sh
+pip3 install --upgrade pip setuptools wheel
+```
 
 Install requirements
 
@@ -116,9 +126,23 @@ Install requirements
 pip install -r requirements.txt
 ```
 
-You're now ready to run individual processes documented in the following section.
+Or
 
-### Running Individual Processes
+```sh
+pip3 install -r requirements.txt
+```
+
+
+
+## Run the GRIN initial scrape
+
+```sh
+python3 -m scripts.GRIN_initial_scrape
+```
+
+
+### Legacy Section
+#### Running Individual Processes
 
 While Docker handles the main services, you can run individual processes using:
 
