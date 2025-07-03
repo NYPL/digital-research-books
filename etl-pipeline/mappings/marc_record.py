@@ -10,28 +10,28 @@ from .rights import get_rights_string
 
 
 def map_marc_record(
-    marc_record: MARCRecord, source: Source, default_publisher: str = None
+    marc_record: MARCRecord,
+    source: Source,
+    default_publisher: str = None,
+    pdf_url: str = None,
 ) -> Record:
     identifiers = _get_identifiers(marc_record, source)
+    source_id = _get_source_id(identifiers, source)
     alternative = _get_formatted_field(marc_record, "240", "{a} {k}")
     has_version = _get_formatted_field(marc_record, "250", "{a} {b}|")
     spatial = _get_formatted_field(marc_record, "264", "{a}")
     extent = _get_formatted_field(marc_record, "300", "{a}{b}{c}")
     toc = _get_formatted_field(marc_record, "505", "{a}")
 
-    # TODO: get rights from marc record
-    default_rights = get_rights_string(
-        rights_source=source.value,
-        license="https://creativecommons.org/licenses/by-nc/4.0/",
-        rights_statement="Attribution-NonCommercial 4.0 International",
-    )
+    # TODO: only add record if it is out of copyright
+    rights = _get_rights(marc_record, source)
 
     return Record(
         uuid=uuid4(),
         frbr_status=FRBRStatus.TODO.value,
         cluster_status=False,
         source=source.value,
-        source_id=list(identifiers[0].split("|"))[0],
+        source_id=source_id,
         identifiers=identifiers,
         authors=_get_authors(marc_record),
         title=_get_title(marc_record),
@@ -47,8 +47,8 @@ def map_marc_record(
         subjects=_get_subjects(marc_record),
         contributors=_get_contributors(marc_record),
         is_part_of=_get_formatted_field(marc_record, "490", "{a}|{v}|volume"),
-        has_part=_get_has_part(marc_record, source),
-        rights=default_rights,
+        has_part=_get_has_part(marc_record, source, pdf_url),
+        rights=rights,
         date_created=datetime.now(timezone.utc).replace(tzinfo=None),
         date_modified=datetime.now(timezone.utc).replace(tzinfo=None),
     )
@@ -113,7 +113,7 @@ def _get_formatted_fields(
 def _get_identifiers(marc_record: MARCRecord, source: Source):
     fields = [
         ("001", f"{{0}}|{source.value}"),
-        ("010", "{z}|lccn"),
+        ("010", "{a}|lccn"),
         ("020", "{a}{z}|isbn"),
         ("022", "{a}|issn"),
         ("035", "{a}|oclc"),
@@ -122,6 +122,12 @@ def _get_identifiers(marc_record: MARCRecord, source: Source):
     all_identifiers = _get_formatted_fields(marc_record, fields)
 
     return [_cleanup_identifier(identifier) for identifier in all_identifiers]
+
+
+def _get_source_id(identifiers: list[str], source: Source) -> str:
+    if source.value == Source.MUSE.value and identifiers:
+        return identifiers[0].split("|")[0]
+    return identifiers[0] if identifiers else ""
 
 
 def _get_authors(marc_record: MARCRecord):
@@ -141,15 +147,20 @@ def _get_title(marc_record: MARCRecord):
 
 
 def _get_publishers(marc_record: MARCRecord, default_publisher: str | None = None):
-    publishers = _get_formatted_field(marc_record, "264", "{b}||")
+    fields = [("264", "{b}||"), ("260", "{b}||")]
+    publishers = _get_formatted_fields(marc_record, fields)
 
     return publishers or [f"{default_publisher}||"]
 
 
 def _get_dates(marc_record: MARCRecord):
-    dates = _get_formatted_field(marc_record, "264", "{c}|publication_date")
-
-    if not dates and (publication_date := marc_record["008"].data[11:15]):
+    fields = [("264", "{c}|publication_date"), ("260", "{c}|publication_date")]
+    dates = _get_formatted_fields(marc_record, fields)
+    if (
+        not dates
+        and (publication_date := marc_record["008"].data[11:15])
+        and publication_date != "uuuu"
+    ):
         dates.append(f"{publication_date}|publication_date")
 
     return dates
@@ -199,7 +210,7 @@ def _get_contributors(marc_record: MARCRecord):
     return _get_formatted_fields(marc_record, fields)
 
 
-def _get_has_part(marc_record: MARCRecord, source: Source):
+def _get_has_part(marc_record: MARCRecord, source: Source, pdf_url: str):
     has_part = []
     field_data = marc_record.get_fields("856")
 
@@ -218,6 +229,19 @@ def _get_has_part(marc_record: MARCRecord, source: Source):
                     )
                 )
             )
+
+    if pdf_url:
+        has_part.append(
+            str(
+                Part(
+                    index=1,
+                    source=source.value,
+                    url=pdf_url,
+                    file_type="application/pdf",
+                    flags=str(FileFlags(download=True)),
+                )
+            )
+        )
 
     return has_part
 
@@ -261,3 +285,42 @@ def _cleanup_identifier(identifier):
         return f"{id[len(oclc_number_prefix) :]}|{id_type}"
 
     return f"{id}|{id_type}"
+
+
+def _get_rights(marc_record: MARCRecord, source: Source) -> str | None:
+    for tag in ("583", "590"):
+        for field in marc_record.get_fields(tag):
+            for subfield in field.get_subfields("a", "x"):
+                if "public domain" in subfield.lower():
+                    return get_rights_string(
+                        rights_source=source.value,
+                        license="public_domain",
+                        rights_statement="Public Domain",
+                    )
+
+    for field in marc_record.get_fields("542"):
+        rights = field.get_subfields("f")
+        statement = field.get_subfields("d")
+        uri = field.get_subfields("u")
+        return get_rights_string(
+            rights_source=source.value,
+            license=uri[0] if uri else None,
+            rights_statement=statement[0] if statement else None,
+            rights_reason=rights[0] if rights else None,
+        )
+
+    for field in marc_record.get_fields("264"):
+        if field.indicator2 == "4":
+            date = field.get_subfields("c")
+            if date:
+                return get_rights_string(
+                    rights_source=source.value,
+                    rights_statement=f"Copyright date: {date[0]}",
+                    rights_date=date[0],
+                )
+
+    return get_rights_string(
+        rights_source=source.value,
+        license="https://creativecommons.org/licenses/by-nc/4.0/",
+        rights_statement="Attribution-NonCommercial 4.0 International",
+    )
