@@ -63,13 +63,3 @@ jobs:
         env:
           CATALOG_USERNAME: ${{ secrets.CATALOG_USERNAME }}
           CATALOG_USER_PIN: ${{ secrets.CATALOG_USER_PIN }}
-
-      - name: Slack Notification
-        if: ${{ always() }}
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_CHANNEL: test_reports
-          SLACK_MESSAGE: See test results in ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          SLACK_TITLE: DRB Web Playwright Test Results
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_USERNAME: nyplorgBot

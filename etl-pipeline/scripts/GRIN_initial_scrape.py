@@ -5,7 +5,7 @@ from model import GRINState, GRINStatus, Record, FRBRStatus
 from managers import DBManager
 from uuid import uuid4
 from processes.grin.grin_client import GRINClient
-from processes.grin.util import chunk
+from processes.util.chunk import chunk
 import argparse
 
 logger = create_log(__name__)
@@ -65,7 +65,8 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
         except Exception:
             logger.exception(f"Failed to insert barcodes: {chunked_barcodes}")
             raise
-
+        # TODO: Remove this break when we are ready to run this on production.
+        # Will add 600K entries to the database.
         break
     logger.info("Complete.")
 

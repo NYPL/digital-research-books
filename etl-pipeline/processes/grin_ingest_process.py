@@ -1,6 +1,9 @@
 from logger import create_log
 from .pdf_generation.pdf_generate import PDFGenerationProcess
 from .grin.download import GRINDownload
+from .record_ingestor import RecordIngestor
+from model import Source
+from mappings.marc_record import map_marc_record
 import os
 
 
@@ -20,4 +23,9 @@ class GRINIngestProcess:
         ocr_dir, mets_file = grin_download.run_process()
 
         pdf_generation = PDFGenerationProcess(self.bucket, ocr_dir, mets_file)
-        pdf_generation.run_process()
+        pdf_key = pdf_generation.run_process()
+
+        # pdf_url = self.bucket.get_public_url(pdf_key)
+        # record_ingestor = RecordIngestor(Source.GRIN.value)
+        # record = map_marc_record(mets_file, source=Source.GRIN, pdf_url=pdf_url)
+        # record_ingestor.ingest(record)
