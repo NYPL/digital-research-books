@@ -25,7 +25,7 @@ class TestAPIProcess:
             return APIProcess()
 
     def test_run_process_success(self, api_process: APIProcess):
-        with patch("processes.api.FlaskAPI") as MockFlaskAPI:
+        with patch("processes.api.API") as MockFlaskAPI:
             mock_flask_api = MockFlaskAPI.return_value
 
             api_process.runProcess()
@@ -33,7 +33,7 @@ class TestAPIProcess:
             api_process.db_manager.generate_engine.assert_called_once()
             api_process.redis_manager.create_client.assert_called_once()
             api_process.elastic_search_manager.create_elastic_connection.assert_called_once()
-            mock_flask_api.createErrorResponses.assert_called_once()
+            mock_flask_api.create_error_responses.assert_called_once()
             mock_flask_api.run.assert_called_once()
 
     def test_run_process_failure(self, api_process: APIProcess):
