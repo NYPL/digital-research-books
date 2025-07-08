@@ -133,9 +133,14 @@ pip3 install -r requirements.txt
 
 
 
-7. Set AWS Config  
-Confirm your access to AWS. Should you lack access, kindly submit a ticket to ServiceNow. 
-Upon successful AWS login, the creation of individual access credentials may be required. Please initiate a distinct Jira ticket for this purpose. Example ticket here [Add ssm:GetParameter action to IAM policy for "Your name"] (https://newyorkpubliclibrary.atlassian.net/browse/DOPS-1503)
+## Set AWS Config  
+Request AWS credentials,example ticket here (https://newyorkpubliclibrary.atlassian.net/browse/DOPS-1503)
+
+Execute the command in your terminal. You will be prompted to enter your credentials
+
+```
+aws configure 
+```
 
 ### Legacy Section
 #### Running Individual Processes
