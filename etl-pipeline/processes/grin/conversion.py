@@ -183,7 +183,7 @@ class GRINConversion:
                     f"Saved {len(missing_from_table)} new converted books in DB"
                 )
 
-                successfully_converted_books.append(stripped_barcodes)
+                successfully_converted_books.extend(stripped_barcodes)
             except:
                 self.db_manager.session.rollback()
                 self.logger.exception(
@@ -200,12 +200,12 @@ class GRINConversion:
 
         return pd.DataFrame(rows, columns=headers)
 
-    def send_sqs_messages(self, converted_books):
+    def send_sqs_messages(self, converted_barcodes):
         sqs_manager = SQSManager("drb-grin-ingest-queue-qa-tf")
-        for book in converted_books:
-            message = {"barcode": book.barcode}
+        for barcode in converted_barcodes:
+            print(f"Sending message for {barcode}")
+            message = {"barcode": barcode}
             sqs_manager.send_message_to_queue(message)
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
