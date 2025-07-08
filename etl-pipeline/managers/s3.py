@@ -54,7 +54,7 @@ class S3Manager:
                 manifest_json=manifest_json,
                 bucket=bucket_name,
             )
-        elif manifest_part is None and pdf_part is not None:
+        elif manifest_part is None and pdf_part is not None and pdf_part.flags != "{}":
             manifest_path = f"manifests/{record.source}/{record_id}.json"
 
             manifest_url = get_stored_file_url(

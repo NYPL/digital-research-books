@@ -26,6 +26,7 @@ RECORD_PIPELINE_SQS_QUEUE: records
 
 AWS_REGION: us-east-1
 FILE_BUCKET: drb-files-local
+PRIVATE_FILE_BUCKET: drb-files-limited-local
 S3_ENDPOINT_URL: http://localhost:4566
 
 OCLC_QUERY_LIMIT: '390000'

@@ -1,10 +1,7 @@
 from logger import create_log
-from .pdf_generation.pdf_generate import PDFGenerationProcess
+from .pdf_generation.pdf_generate import generate_pdf
 from .grin.download import GRINDownload
-from .record_ingestor import RecordIngestor
-from model import Source
 from managers import SQSManager
-from mappings.marc_record import map_marc_record
 import os
 import json
 
@@ -14,11 +11,7 @@ class GRINIngestProcess:
     def __init__(self, *args):
         self.sqs_manager = SQSManager(queue_name="test-queue", max_receive_count=1)
 
-        self.bucket = (
-            "drb-files-limited-production"
-            if os.environ.get("ENVIRONMENT", "qa") == "production"
-            else "drb-files-limited-qa"
-        )
+        self.bucket = os.environ["PRIVATE_FILE_BUCKET"]
 
     def runProcess(self):
         sqs_messages = self.sqs_manager.get_messages_from_queue(SQS_VISIBILITY_TIMEOUT_SECS)
@@ -31,14 +24,9 @@ class GRINIngestProcess:
         grin_download = GRINDownload(barcode, self.bucket)
         ocr_dir, mets_file = grin_download.run_process()
 
-        pdf_generation = PDFGenerationProcess(self.bucket, ocr_dir, mets_file)
-        pdf_generation.run_process()
+        pdf_key = generate_pdf(self.bucket, self.barcode, ocr_dir, mets_file)
 
         self.sqs_manager.acknowledge_message_processed(receipt_handle)
-        # pdf_url = self.bucket.get_public_url(pdf_key)
-        # record_ingestor = RecordIngestor(Source.GRIN.value)
-        # record = map_marc_record(mets_file, source=Source.GRIN, pdf_url=pdf_url)
-        # record_ingestor.ingest(record)
     
     def _parse_message(self, sqs_message):
         receipt_handle = sqs_message["ReceiptHandle"]
@@ -46,3 +34,4 @@ class GRINIngestProcess:
         barcode = message_body['barcode']
         
         return barcode, receipt_handle
+        

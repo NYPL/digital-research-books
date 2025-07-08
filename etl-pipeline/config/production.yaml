@@ -28,6 +28,7 @@ OCLC_QUERY_LIMIT: '390000'
 # AWS_ACCESS and AWS_SECRET must be configured in secrets file
 AWS_REGION: us-east-1
 FILE_BUCKET: drb-files-production
+PRIVATE_FILE_BUCKET: drb-files-limited-production
 
 # NYPL BIB REPLICA DB CONNECTION
 # NYPL_BIB_USER and NYPL_BIB_PSWD must be configured in secrets file

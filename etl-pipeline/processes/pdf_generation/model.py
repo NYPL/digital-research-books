@@ -3,9 +3,9 @@ from datetime import datetime, timezone
 import io
 import json
 
-import marc
-import mets_parser
-import path
+from . import marc
+from . import mets_parser
+from . import path
 import pathlib
 from . import s3
 
@@ -66,7 +66,7 @@ def get_metadata(
             source=source_identifier.source,
             identifier_type=source_identifier.identifier_type,
             identifier_value=source_identifier.identifier_value,
-        )
+        ), metadata.xml_data
 
     return None
 
