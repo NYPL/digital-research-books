@@ -32,8 +32,7 @@ class GRINConversion:
     def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
         if len(data) > 2:
-            new_books_df = self.transform_scraped_data(data)
-            new_barcodes = new_books_df.query('State == "NEW"')
+            new_barcodes = self.transform_scraped_data(data)
 
             converting_barcodes, converted_barcodes = self.convert_barcodes(
                 new_barcodes["Barcode"]
