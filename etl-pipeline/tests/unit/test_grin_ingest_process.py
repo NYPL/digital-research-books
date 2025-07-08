@@ -11,6 +11,7 @@ def sqs_manager(monkeypatch):
     monkeypatch.setenv("AWS_ACCESS", "test-access-key")
     monkeypatch.setenv("AWS_SECRET", "test-secret-key")
     monkeypatch.setenv("S3_ENDPOINT_URL", "http://localhost:4566")
+    monkeypatch.setenv("PRIVATE_FILE_BUCKET", "drb-files-local")
     manager = SQSManager("test-queue")
     return manager
 
@@ -25,3 +26,4 @@ def test_parse_message(sqs_manager):
     barcode, receipt_handle = grin._parse_message(sqs_message[0])
 
     assert barcode == "1234"
+    assert receipt_handle is not None
