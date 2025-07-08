@@ -16,7 +16,7 @@ from . import s3
 from ..util.chunk import chunk
 from ..record_ingestor import RecordIngestor
 from mappings.marc_record import map_marc_record
-from model import Source
+from model import FileFlags, Part, Source, Record
 from pymarc import parse_xml_to_array
 from xml.etree import ElementTree as ET
 
@@ -28,7 +28,7 @@ NUMBER_OF_SUBPROCESSES = os.cpu_count() or 12
 logger = create_log(__name__)
 
 
-def generate_pdf_process(
+def generate_pdf(
     bucket_name: str, barcode: str, ocr_dir: str, mets_file_key: str
 ) -> dict:
     bucket = s3.Bucket(bucket_name)
@@ -38,15 +38,27 @@ def generate_pdf_process(
             bucket, mets_file_key
         )
 
+        record, is_public_domain = _map_record_and_rights(xml_data)
+        if is_public_domain:
+            upload_bucket_name = os.environ["FILE_BUCKET"]
+        else:
+            upload_bucket_name = os.environ["PRIVATE_FILE_BUCKET"]
+        upload_bucket = s3.Bucket(upload_bucket_name)
+
         ordered_page_locations = _generate_individual_pdf_pages(
-            mets_file, ocr_dir, bucket_name, tmpdirname
+            mets_file, ocr_dir, upload_bucket_name, tmpdirname
         )
 
         pdf_url = _merge_and_upload_pdf(
-            ordered_page_locations, mets_file, metadata, mets_path, bucket, tmpdirname
+            ordered_page_locations,
+            mets_file,
+            metadata,
+            mets_path,
+            upload_bucket,
+            tmpdirname,
         )
 
-        _ingest_record(xml_data, barcode, pdf_url)
+        _ingest_record(record, barcode, pdf_url, is_public_domain)
 
     return {"pdf_key": str(mets_path.tagged_pdf_key)}
 
@@ -155,23 +167,44 @@ def _merge_and_upload_pdf(
     return bucket.get_public_url(output_key)
 
 
-def _ingest_record(xml_data: ET.Element, barcode: str, pdf_url: str):
-    record_ingestor = RecordIngestor(Source.GRIN.value)
-
+def _map_record_and_rights(xml_data: ET.Element) -> tuple:
     xml_bytes = ET.tostring(xml_data, encoding="utf-8")
     xml_file = io.BytesIO(xml_bytes)
-
     marc_records = parse_xml_to_array(xml_file)
-    for marc_record in marc_records:
-        record = map_marc_record(marc_record, source=Source.GRIN, pdf_url=pdf_url)
-        record.source_id = f"{barcode}|grin"
+    marc_record = marc_records[-1]
+    record = map_marc_record(marc_record, source=Source.GRIN)
+    is_public_domain = _is_in_public_domain(record)
+    return record, is_public_domain
 
-        # TODO: use a deterministic method of getting rights status
-        if _is_in_public_domain(record):
-            record_ingestor.ingest([record])
+
+def _ingest_record(record: Record, barcode: str, pdf_url: str, is_public_domain: bool):
+    record_ingestor = RecordIngestor(Source.GRIN.value)
+
+    record.source_id = f"{barcode}|grin"
+    record.has_part.append(
+        str(
+            Part(
+                index=1,
+                source=Source.GRIN.value,
+                url=pdf_url,
+                file_type="application/pdf",
+                flags=str(FileFlags(download=True))
+                if is_public_domain
+                else str(FileFlags()),
+            )
+        )
+    )
+
+    record_ingestor.ingest([record])
 
 
 def _is_in_public_domain(record) -> bool:
+    rights = record.rights.lower() if record.rights else ""
+    is_public_domain = "public_domain" in rights or "public domain" in rights
+
+    if not record.dates:
+        return is_public_domain
+
     year = int(re.search(r"[0-9]{4}", record.dates[0]).group(0))
     publication_date = datetime.date(year, 1, 1)
     current_year = datetime.date.today().year
@@ -179,8 +212,5 @@ def _is_in_public_domain(record) -> bool:
     threshold_year = current_year - 95
 
     public_domain_threshold_date = datetime.date(threshold_year, 1, 1)
-
-    rights = record.rights.lower() if record.rights else ""
-    is_public_domain = "public_domain" in rights or "public domain" in rights
 
     return publication_date < public_domain_threshold_date or is_public_domain
