@@ -203,7 +203,6 @@ class GRINConversion:
     def send_sqs_messages(self, converted_barcodes):
         sqs_manager = SQSManager("drb-grin-ingest-queue-qa-tf")
         for barcode in converted_barcodes:
-            print(f"Sending message for {barcode}")
             message = {"barcode": barcode}
             sqs_manager.send_message_to_queue(message)
 
