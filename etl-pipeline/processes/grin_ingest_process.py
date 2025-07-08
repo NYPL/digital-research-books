@@ -7,6 +7,7 @@ import json
 
 SQS_VISIBILITY_TIMEOUT_SECS = 90 * 60
 
+
 class GRINIngestProcess:
     def __init__(self, *args):
         self.sqs_manager = SQSManager(queue_name="test-queue", max_receive_count=1)
@@ -14,24 +15,25 @@ class GRINIngestProcess:
         self.bucket = os.environ["PRIVATE_FILE_BUCKET"]
 
     def runProcess(self):
-        sqs_messages = self.sqs_manager.get_messages_from_queue(SQS_VISIBILITY_TIMEOUT_SECS)
+        sqs_messages = self.sqs_manager.get_messages_from_queue(
+            SQS_VISIBILITY_TIMEOUT_SECS
+        )
 
         if not sqs_messages:
             return
-        
+
         barcode, receipt_handle = self._parse_message(sqs_messages[0])
 
         grin_download = GRINDownload(barcode, self.bucket)
         ocr_dir, mets_file = grin_download.run_process()
 
-        pdf_key = generate_pdf(self.bucket, self.barcode, ocr_dir, mets_file)
+        generate_pdf(self.bucket, self.barcode, ocr_dir, mets_file)
 
         self.sqs_manager.acknowledge_message_processed(receipt_handle)
-    
+
     def _parse_message(self, sqs_message):
         receipt_handle = sqs_message["ReceiptHandle"]
         message_body = json.loads(sqs_message["Body"])
-        barcode = message_body['barcode']
-        
+        barcode = message_body["barcode"]
+
         return barcode, receipt_handle
-        

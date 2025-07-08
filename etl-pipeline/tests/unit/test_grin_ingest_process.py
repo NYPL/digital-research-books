@@ -3,6 +3,7 @@ import pytest
 from managers import SQSManager
 from processes.grin_ingest_process import GRINIngestProcess
 
+
 @pytest.fixture
 def sqs_manager(monkeypatch):
     """Fixture providing an SQSManager instance configured for LocalStack"""
@@ -13,10 +14,11 @@ def sqs_manager(monkeypatch):
     manager = SQSManager("test-queue")
     return manager
 
+
 def test_parse_message(sqs_manager):
     test_msg = {"barcode": "1234"}
     sqs_manager.send_message_to_queue(test_msg)
-    
+
     sqs_message = sqs_manager.get_messages_from_queue()
 
     grin = GRINIngestProcess()
