@@ -207,6 +207,7 @@ class GRINConversion:
             message = {"barcode": barcode}
             sqs_manager.send_message_to_queue(message)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch_limit")
