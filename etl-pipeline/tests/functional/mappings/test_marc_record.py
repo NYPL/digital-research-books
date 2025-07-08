@@ -8,11 +8,7 @@ def test_map_marc_record():
     with open("tests/fixtures/grin-mets.xml", "rb") as metadata_file:
         marc_records = parse_xml_to_array(metadata_file)
 
-    record = map_marc_record(
-        marc_records[0],
-        source=Source.GRIN,
-        pdf_url="https://drb-files-limited-qa.s3.amazonaws.com/tagged_pdfs/990021264030302486.pdf",
-    )
+    record = map_marc_record(marc_records[0], source=Source.GRIN)
 
     assert record.source == Source.GRIN.value
     assert record.source_id == "990021264030302486|grin"
@@ -28,6 +24,3 @@ def test_map_marc_record():
     ]
     assert record.dates == ["1853|publication_date"]
     assert record.publisher == ["Derby and Miller||"]
-    assert record.has_part == [
-        '1|https://drb-files-limited-qa.s3.amazonaws.com/tagged_pdfs/990021264030302486.pdf|grin|application/pdf|{"download": true}',
-    ]
