@@ -1,6 +1,6 @@
 import pytest
 
-from ..helper import TestHelpers
+from tests.helper import TestHelpers
 from mappings.hathitrust import HathiMapping
 
 
