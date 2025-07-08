@@ -28,7 +28,7 @@ class GRINDownload:
 
             self.unpack_and_upload_ocr_files(file_content)
 
-            mets_file = self.ocr_dir + f"NYPL_{barcode}.xml"
+            mets_file = self.ocr_dir + f"NYPL_{self.barcode}.xml"
 
             return self.ocr_dir, mets_file
 
@@ -39,7 +39,7 @@ class GRINDownload:
 
         try:
             content = self.grin_client.download(file_name)
-            logger.info(f"Downloading {barcode} from GRIN")
+            logger.info(f"Downloading {self.barcode} from GRIN")
         except:
             logger.exception(f"Error downloading content for {self.barcode}")
             grin_status.failed_download += 1
@@ -54,7 +54,7 @@ class GRINDownload:
                 bucket_permissions=None,
                 storage_class="GLACIER_IR",
             )
-            logger.info(f"Uploading {barcode} TAR to s3")
+            logger.info(f"Uploading {self.barcode} TAR to s3")
         except Exception as e:
             logger.exception(f"Error uploading to s3 for {self.barcode}")
             return
@@ -73,7 +73,7 @@ class GRINDownload:
 
         tar_stream_data = io.BytesIO(decrypted_content.data)
 
-        logger.info(f"Unpacking and uploading {barcode} OCR files to s3")
+        logger.info(f"Unpacking and uploading {self.barcode} OCR files to s3")
         try:
             with tarfile.open(fileobj=tar_stream_data, mode="r|*") as tar_file:
                 for file in tar_file:
