@@ -13,7 +13,6 @@ def map_marc_record(
     marc_record: MARCRecord,
     source: Source,
     default_publisher: str = None,
-    pdf_url: str = None,
 ) -> Record:
     identifiers = _get_identifiers(marc_record, source)
     source_id = _get_source_id(identifiers, source)
@@ -47,7 +46,7 @@ def map_marc_record(
         subjects=_get_subjects(marc_record),
         contributors=_get_contributors(marc_record),
         is_part_of=_get_formatted_field(marc_record, "490", "{a}|{v}|volume"),
-        has_part=_get_has_part(marc_record, source, pdf_url),
+        has_part=_get_has_part(marc_record, source),
         rights=rights,
         date_created=datetime.now(timezone.utc).replace(tzinfo=None),
         date_modified=datetime.now(timezone.utc).replace(tzinfo=None),
@@ -210,7 +209,7 @@ def _get_contributors(marc_record: MARCRecord):
     return _get_formatted_fields(marc_record, fields)
 
 
-def _get_has_part(marc_record: MARCRecord, source: Source, pdf_url: str):
+def _get_has_part(marc_record: MARCRecord, source: Source):
     has_part = []
     field_data = marc_record.get_fields("856")
 
@@ -229,19 +228,6 @@ def _get_has_part(marc_record: MARCRecord, source: Source, pdf_url: str):
                     )
                 )
             )
-
-    if pdf_url:
-        has_part.append(
-            str(
-                Part(
-                    index=1,
-                    source=source.value,
-                    url=pdf_url,
-                    file_type="application/pdf",
-                    flags=str(FileFlags(download=True)),
-                )
-            )
-        )
 
     return has_part
 
