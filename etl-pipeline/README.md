@@ -42,7 +42,7 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
 
 ### Setup Steps
 
-1. Change directory to etl-pipeline
+1. After cloning the digital-research-books repository, navigate to the etl-pipeline folder.
 
    ```bash
    cd etl-pipeline
@@ -133,12 +133,9 @@ pip3 install -r requirements.txt
 
 
 
-## Run the GRIN initial scrape
-
-```sh
-python3 -m scripts.GRIN_initial_scrape
-```
-
+7. Set AWS Config  
+Confirm your access to AWS. Should you lack access, kindly submit a ticket to ServiceNow. 
+Upon successful AWS login, the creation of individual access credentials may be required. Please initiate a distinct Jira ticket for this purpose. Example ticket here [Add ssm:GetParameter action to IAM policy for "Your name"] (https://newyorkpubliclibrary.atlassian.net/browse/DOPS-1503)
 
 ### Legacy Section
 #### Running Individual Processes
