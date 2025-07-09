@@ -7,7 +7,8 @@ from . import marc
 from . import mets_parser
 from . import path
 import pathlib
-from . import s3
+from managers import S3Manager
+from digital_assets import get_stored_file_url
 
 
 @dataclasses.dataclass
@@ -27,7 +28,8 @@ class Metadata:
 
 
 def get_metadata(
-    bucket: s3.Bucket,
+    storage_manager: S3Manager,
+    bucket_name: str,
     mets_path: path.METSPath,
     mets_file: mets_parser.METSFile,
 ) -> Metadata | None:
@@ -35,14 +37,18 @@ def get_metadata(
 
     try:
         metadata_file = mets_parser.MetadataFile.from_mets_str(
-            bucket.get(key=metadata_key)["Body"].read(),
+            storage_manager.get_object(key=metadata_key, bucket=bucket_name)[
+                "Body"
+            ].read(),
         )
     except TypeError:
         metadata_file = mets_parser.MetadataFile(mets_file.root)
 
     try:
         root_metadata_file = mets_parser.MetadataFile.from_mets_str(
-            bucket.get(key=mets_path.mets_key)["Body"].read(),
+            storage_manager.get_object(key=mets_path.mets_key, bucket=bucket_name)[
+                "Body"
+            ].read(),
         )
         source_identifier = root_metadata_file.get_source_identifier()
     except AttributeError:
@@ -72,7 +78,8 @@ def get_metadata(
 
 
 def write_metadata(
-    bucket: s3.Bucket,
+    storage_manager: S3Manager,
+    bucket_name: str,
     mets_path: path.METSPath,
     metadata: Metadata,
     key: pathlib.Path,
@@ -86,7 +93,7 @@ def write_metadata(
         "publication_date": metadata.publication_date,
         "publication_place": metadata.publication_place,
         "publisher": metadata.publisher,
-        "pdf_link": bucket.get_public_url(key),
+        "pdf_link": get_stored_file_url(bucket_name, key),
         "process_date": datetime.now(timezone.utc).date().isoformat(),
         "oclc_number": metadata.oclc_number,
         "isbn": metadata.isbn,
@@ -99,4 +106,6 @@ def write_metadata(
         outstream.write(json.dumps(metadata_json).encode())
         outstream.seek(0)
         key = mets_path.get_metadata_file_key(today)
-        bucket.upload_file(outstream, key=key)
+        storage_manager.client.upload_fileobj(
+            outstream, Bucket=bucket_name, Key=str(key), ExtraArgs={}
+        )

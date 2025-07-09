@@ -9,7 +9,7 @@ class TestS3Manager:
     def test_instance(self, mocker):
         class TestS3Manager(S3Manager):
             def __init__(self):
-                self.client = mocker.MagicMock()
+                self._client = mocker.MagicMock()
 
         return TestS3Manager()
 
