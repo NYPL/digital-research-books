@@ -12,9 +12,10 @@ from . import model
 from . import path
 from . import page_label
 from . import pdf_page
-from . import s3
 from ..util.chunk import chunk
 from ..record_ingestor import RecordIngestor
+from digital_assets import get_stored_file_url
+from managers import S3Manager
 from mappings.marc_record import map_marc_record
 from model import FileFlags, Part, Source, Record
 from pymarc import parse_xml_to_array
@@ -29,21 +30,24 @@ logger = create_log(__name__)
 
 
 def generate_pdf(
-    bucket_name: str, barcode: str, ocr_dir: str, mets_file_key: str
+    storage_manager: S3Manager,
+    bucket_name: str,
+    barcode: str,
+    ocr_dir: str,
+    mets_file_key: str,
 ) -> dict:
-    bucket = s3.Bucket(bucket_name)
-
     with tempfile.TemporaryDirectory() as tmpdirname:
         mets_file, mets_path, metadata, xml_data = _read_mets_and_metadata(
-            bucket, mets_file_key
+            storage_manager, bucket_name, mets_file_key
         )
 
         record, is_public_domain = _map_record_and_rights(xml_data)
         if is_public_domain:
             upload_bucket_name = os.environ["FILE_BUCKET"]
+            file_permissions = {"ACL": "public-read"}
         else:
             upload_bucket_name = os.environ["PRIVATE_FILE_BUCKET"]
-        upload_bucket = s3.Bucket(upload_bucket_name)
+            file_permissions = {}
 
         ordered_page_locations = _generate_individual_pdf_pages(
             mets_file, ocr_dir, upload_bucket_name, tmpdirname
@@ -54,7 +58,9 @@ def generate_pdf(
             mets_file,
             metadata,
             mets_path,
-            upload_bucket,
+            storage_manager,
+            upload_bucket_name,
+            file_permissions,
             tmpdirname,
         )
 
@@ -63,14 +69,20 @@ def generate_pdf(
     return {"pdf_key": str(mets_path.tagged_pdf_key)}
 
 
-def _read_mets_and_metadata(bucket: s3.Bucket, mets_file_key: str):
+def _read_mets_and_metadata(
+    storage_manager: S3Manager, bucket_name: str, mets_file_key: str
+):
     mets_file = mets_parser.METSFile.from_mets_str(
-        bucket.get(key=mets_file_key)["Body"].read()
+        storage_manager.get_object(key=mets_file_key, bucket=bucket_name)["Body"].read()
     )
     mets_path = path.METSPath(mets_file_key)
 
-    metadata, xml_data = model.get_metadata(bucket, mets_path, mets_file)
-    model.write_metadata(bucket, mets_path, metadata, mets_path.tagged_pdf_key)
+    metadata, xml_data = model.get_metadata(
+        storage_manager, bucket_name, mets_path, mets_file
+    )
+    model.write_metadata(
+        storage_manager, bucket_name, mets_path, metadata, mets_path.tagged_pdf_key
+    )
 
     return mets_file, mets_path, metadata, xml_data
 
@@ -118,7 +130,9 @@ def _merge_and_upload_pdf(
     mets_file: mets_parser.METSFile,
     metadata: model.Metadata,
     mets_path: path.METSPath,
-    bucket: s3.Bucket,
+    storage_manager: S3Manager,
+    bucket_name: str,
+    file_permissions: dict[str, str],
     tmpdirname: str,
 ) -> str:
     logger.info("Generating PDF")
@@ -161,10 +175,12 @@ def _merge_and_upload_pdf(
 
         with open(merged_pdf_path, "rb") as merged_pdf:
             output_key = mets_path.tagged_pdf_key
-            bucket.upload_file(merged_pdf, output_key)
+            storage_manager.client.upload_fileobj(
+                merged_pdf, bucket_name, str(output_key), file_permissions
+            )
 
     logger.info(f"Generated PDF: {output_key}")
-    return bucket.get_public_url(output_key)
+    return get_stored_file_url(bucket_name, output_key)
 
 
 def _map_record_and_rights(xml_data: ET.Element) -> tuple:

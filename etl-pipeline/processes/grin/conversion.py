@@ -30,13 +30,13 @@ class GRINConversion:
             self.send_sqs_messages(successfully_converted_books)
 
             if backfill:
-                self.convert_backfills()
+                converted_barcodes = self.convert_backfills()
+                self.send_sqs_messages(converted_barcodes)
 
     def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
         if len(data) > 2:
-            new_books_df = self.transform_scraped_data(data)
-            new_barcodes = new_books_df.query('State == "NEW"')
+            new_barcodes = self.transform_scraped_data(data)
 
             converting_barcodes, converted_barcodes = self.convert_barcodes(
                 new_barcodes["Barcode"]
@@ -93,6 +93,7 @@ class GRINConversion:
                     f"Updated {updated_results.rowcount} already converted backfill books"
                 )
 
+                return converted_barcodes
             except:
                 self.db_manager.session.rollback()
                 self.logger.exception(
@@ -109,8 +110,9 @@ class GRINConversion:
         converted_barcodes = converted_df.query(
             "Status=='Already available for download'"
         )
-
-        return converting_barcodes["Barcode"], converted_barcodes["Barcode"]
+        converting_barcodes_list = converting_barcodes["Barcode"].to_list()
+        converted_barcodes_list = converted_barcodes["Barcodes"].to_list()
+        return converting_barcodes_list, converted_barcodes_list
 
     def save_barcodes(self, barcodes, state):
         if len(barcodes) == 0:

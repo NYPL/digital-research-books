@@ -1,9 +1,8 @@
 from logger import create_log
 from .pdf_generation.pdf_generate import generate_pdf
 from .grin.download import GRINDownload
-from managers import SQSManager
+from managers import SQSManager, S3Manager
 from logger import create_log
-from time import sleep
 import os
 import json
 
@@ -18,6 +17,7 @@ class GRINIngestProcess:
         )
 
         self.bucket = os.environ["PRIVATE_FILE_BUCKET"]
+        self.storage_manager = S3Manager()
 
     def runProcess(self):
         try:
@@ -36,7 +36,9 @@ class GRINIngestProcess:
         grin_download = GRINDownload(barcode, self.bucket)
         ocr_dir, mets_file = grin_download.run_process()
 
-        generate_pdf(self.bucket, barcode, ocr_dir, mets_file)
+        generate_pdf(
+            self.storage_manager, self.bucket, self.barcode, ocr_dir, mets_file
+        )
 
         self.sqs_manager.acknowledge_message_processed(receipt_handle)
 
@@ -46,3 +48,4 @@ class GRINIngestProcess:
         barcode = message_body["barcode"]
 
         return barcode, receipt_handle
+
