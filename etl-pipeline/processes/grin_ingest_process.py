@@ -37,7 +37,7 @@ class GRINIngestProcess:
         ocr_dir, mets_file = grin_download.run_process()
 
         generate_pdf(
-            self.storage_manager, self.bucket, self.barcode, ocr_dir, mets_file
+            self.storage_manager, self.bucket, barcode, ocr_dir, mets_file
         )
 
         self.sqs_manager.acknowledge_message_processed(receipt_handle)
