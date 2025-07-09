@@ -10,6 +10,7 @@ import json
 SQS_VISIBILITY_TIMEOUT_SECS = 90 * 60
 logger = create_log(__name__)
 
+
 class GRINIngestProcess:
     def __init__(self, *args):
         self.sqs_manager = SQSManager(
@@ -20,23 +21,13 @@ class GRINIngestProcess:
 
     def runProcess(self):
         try:
-            sqs_messages = []
-            for attempt in range(10):
-                sqs_messages = self.sqs_manager.get_messages_from_queue(
+            sqs_messages = self.sqs_manager.get_messages_from_queue(
                 SQS_VISIBILITY_TIMEOUT_SECS
-                )
-                
-                if wait_time and len(sqs_messages) == 0:
-                    wait_time = 5 * attempt
-                    logger.info(f"Waiting {wait_time}s for grin ingest message")
-                    sleep(wait_time)
-                else:
-                    break
-
+            )
         except Exception:
             logger.exception("Failed to run GRIN Ingest Process")
             return
-        
+
         if not sqs_messages:
             return
 
