@@ -17,4 +17,6 @@ class GRINIngestProcess:
         grin_download = GRINDownload(self.barcode, self.bucket)
         ocr_dir, mets_file = grin_download.run_process()
 
-        pdf_key = generate_pdf(self.storage_manager, self.bucket, self.barcode, ocr_dir, mets_file)
+        pdf_key = generate_pdf(
+            self.storage_manager, self.bucket, self.barcode, ocr_dir, mets_file
+        )

@@ -37,14 +37,18 @@ def get_metadata(
 
     try:
         metadata_file = mets_parser.MetadataFile.from_mets_str(
-            storage_manager.get_object(key=metadata_key, bucket=bucket_name)["Body"].read(),
+            storage_manager.get_object(key=metadata_key, bucket=bucket_name)[
+                "Body"
+            ].read(),
         )
     except TypeError:
         metadata_file = mets_parser.MetadataFile(mets_file.root)
 
     try:
         root_metadata_file = mets_parser.MetadataFile.from_mets_str(
-            storage_manager.get_object(key=mets_path.mets_key, bucket=bucket_name)["Body"].read(),
+            storage_manager.get_object(key=mets_path.mets_key, bucket=bucket_name)[
+                "Body"
+            ].read(),
         )
         source_identifier = root_metadata_file.get_source_identifier()
     except AttributeError:
@@ -102,4 +106,6 @@ def write_metadata(
         outstream.write(json.dumps(metadata_json).encode())
         outstream.seek(0)
         key = mets_path.get_metadata_file_key(today)
-        storage_manager.client.upload_fileobj(outstream, Bucket=bucket_name, Key=str(key), ExtraArgs={})
+        storage_manager.client.upload_fileobj(
+            outstream, Bucket=bucket_name, Key=str(key), ExtraArgs={}
+        )

@@ -30,7 +30,11 @@ logger = create_log(__name__)
 
 
 def generate_pdf(
-    storage_manager: S3Manager, bucket_name: str, barcode: str, ocr_dir: str, mets_file_key: str
+    storage_manager: S3Manager,
+    bucket_name: str,
+    barcode: str,
+    ocr_dir: str,
+    mets_file_key: str,
 ) -> dict:
     with tempfile.TemporaryDirectory() as tmpdirname:
         mets_file, mets_path, metadata, xml_data = _read_mets_and_metadata(
@@ -65,14 +69,20 @@ def generate_pdf(
     return {"pdf_key": str(mets_path.tagged_pdf_key)}
 
 
-def _read_mets_and_metadata(storage_manager: S3Manager, bucket_name: str, mets_file_key: str):
+def _read_mets_and_metadata(
+    storage_manager: S3Manager, bucket_name: str, mets_file_key: str
+):
     mets_file = mets_parser.METSFile.from_mets_str(
         storage_manager.get_object(key=mets_file_key, bucket=bucket_name)["Body"].read()
     )
     mets_path = path.METSPath(mets_file_key)
 
-    metadata, xml_data = model.get_metadata(storage_manager, bucket_name, mets_path, mets_file)
-    model.write_metadata(storage_manager, bucket_name, mets_path, metadata, mets_path.tagged_pdf_key)
+    metadata, xml_data = model.get_metadata(
+        storage_manager, bucket_name, mets_path, mets_file
+    )
+    model.write_metadata(
+        storage_manager, bucket_name, mets_path, metadata, mets_path.tagged_pdf_key
+    )
 
     return mets_file, mets_path, metadata, xml_data
 
@@ -165,7 +175,9 @@ def _merge_and_upload_pdf(
 
         with open(merged_pdf_path, "rb") as merged_pdf:
             output_key = mets_path.tagged_pdf_key
-            storage_manager.client.upload_fileobj(merged_pdf, bucket_name, str(output_key), file_permissions)
+            storage_manager.client.upload_fileobj(
+                merged_pdf, bucket_name, str(output_key), file_permissions
+            )
 
     logger.info(f"Generated PDF: {output_key}")
     return get_stored_file_url(bucket_name, output_key)
