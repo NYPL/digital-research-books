@@ -204,6 +204,8 @@ class GRINConversion:
         return pd.DataFrame(rows, columns=headers)
 
     def send_sqs_messages(self, converted_barcodes):
+        if converted_barcodes is None:
+            return
         sqs_manager = SQSManager(os.environ["GRIN_INGEST_SQS_QUEUE"])
         for barcode in converted_barcodes:
             message = {"barcode": barcode}
