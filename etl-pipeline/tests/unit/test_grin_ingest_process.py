@@ -1,4 +1,3 @@
-import unittest
 import pytest
 from managers import SQSManager
 from processes.grin_ingest_process import GRINIngestProcess
@@ -12,7 +11,7 @@ def sqs_manager(monkeypatch):
     monkeypatch.setenv("AWS_SECRET", "test-secret-key")
     monkeypatch.setenv("S3_ENDPOINT_URL", "http://localhost:4566")
     monkeypatch.setenv("PRIVATE_FILE_BUCKET", "drb-files-local")
-    manager = SQSManager("test-queue")
+    manager = SQSManager("grin-queue")
     return manager
 
 
