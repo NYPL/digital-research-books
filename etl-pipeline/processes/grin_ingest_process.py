@@ -1,6 +1,7 @@
 from logger import create_log
 from .pdf_generation.pdf_generate import generate_pdf
 from .grin.download import GRINDownload
+from managers import S3Manager
 import os
 
 
@@ -10,9 +11,10 @@ class GRINIngestProcess:
         self.barcode = sqs_message["barcode"]
 
         self.bucket = os.environ["PRIVATE_FILE_BUCKET"]
+        self.storage_manager = S3Manager()
 
     def runProcess(self):
         grin_download = GRINDownload(self.barcode, self.bucket)
         ocr_dir, mets_file = grin_download.run_process()
 
-        pdf_key = generate_pdf(self.bucket, self.barcode, ocr_dir, mets_file)
+        pdf_key = generate_pdf(self.storage_manager, self.bucket, self.barcode, ocr_dir, mets_file)

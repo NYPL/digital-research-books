@@ -6,13 +6,13 @@ import time
 
 from . import checksum
 from . import mets_parser
-from . import s3
 import os
 
 import PIL.Image
 from ocrmypdf.hocrtransform import HocrTransform
 from lxml import etree
 from logger import create_log
+from managers import S3Manager
 
 PIL.Image.MAX_IMAGE_PIXELS = None
 
@@ -26,7 +26,8 @@ class PDFPageGenerator:
         ocr_dir: str,
         alto_to_hocr_file: str = "../util/alto_to_hocr.xsl",
     ):
-        self.bucket = s3.Bucket(bucket_name)
+        self.storage_manager = S3Manager()
+        self.bucket_name = bucket_name
         self.ocr_dir = ocr_dir
         self.alto_to_hocr_file = alto_to_hocr_file
 
@@ -83,7 +84,7 @@ class PDFPageGenerator:
 
         for _ in range(0, retries):
             try:
-                self.bucket.download_file(key, out_location)
+                self.storage_manager.client.download_file(self.bucket_name, key, out_location)
 
                 if self._file_downloaded(key, out_location):
                     break
@@ -111,7 +112,7 @@ class PDFPageGenerator:
 
         local_file_size = os.path.getsize(tmp_file)
 
-        response = self.bucket.get_head(key)
+        response = self.storage_manager.client.head_object(Bucket=self.bucket_name, Key=key)
         s3_object_size = response["ContentLength"]
 
         if local_file_size != s3_object_size:
