@@ -93,7 +93,7 @@ class GRINConversion:
                 self.logger.info(
                     f"Updated {updated_results.rowcount} already converted backfill books"
                 )
-                
+
                 return converted_barcodes
             except:
                 self.db_manager.session.rollback()
