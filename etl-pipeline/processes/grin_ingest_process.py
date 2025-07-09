@@ -48,4 +48,3 @@ class GRINIngestProcess:
         barcode = message_body["barcode"]
 
         return barcode, receipt_handle
-
