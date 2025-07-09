@@ -2,11 +2,13 @@ from logger import create_log
 from .pdf_generation.pdf_generate import generate_pdf
 from .grin.download import GRINDownload
 from managers import SQSManager
+from logger import create_log
+from time import sleep
 import os
 import json
 
 SQS_VISIBILITY_TIMEOUT_SECS = 90 * 60
-
+logger = create_log(__name__)
 
 class GRINIngestProcess:
     def __init__(self, *args):
@@ -17,10 +19,24 @@ class GRINIngestProcess:
         self.bucket = os.environ["PRIVATE_FILE_BUCKET"]
 
     def runProcess(self):
-        sqs_messages = self.sqs_manager.get_messages_from_queue(
-            SQS_VISIBILITY_TIMEOUT_SECS
-        )
+        try:
+            sqs_messages = []
+            for attempt in range(10):
+                sqs_messages = self.sqs_manager.get_messages_from_queue(
+                SQS_VISIBILITY_TIMEOUT_SECS
+                )
+                
+                if wait_time and len(sqs_messages) == 0:
+                    wait_time = 5 * attempt
+                    logger.info(f"Waiting {wait_time}s for grin ingest message")
+                    sleep(wait_time)
+                else:
+                    break
 
+        except Exception:
+            logger.exception("Failed to run GRIN Ingest Process")
+            return
+        
         if not sqs_messages:
             return
 
