@@ -23,6 +23,7 @@ ELASTICSEARCH_USER: elastic
 ELASTICSEARCH_PSWD: elastic
 
 RECORD_PIPELINE_SQS_QUEUE: records
+GRIN_INGEST_SQS_QUEUE: grin-queue
 
 AWS_REGION: us-east-1
 FILE_BUCKET: drb-files-local

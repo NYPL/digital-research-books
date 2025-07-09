@@ -12,6 +12,7 @@ from uuid import uuid4
 from logger import create_log
 from ..util.chunk import chunk
 import argparse
+import os
 
 
 class GRINConversion:
@@ -201,7 +202,7 @@ class GRINConversion:
         return pd.DataFrame(rows, columns=headers)
 
     def send_sqs_messages(self, converted_barcodes):
-        sqs_manager = SQSManager("drb-grin-ingest-queue-qa-tf")
+        sqs_manager = SQSManager(os.environ["GRIN_INGEST_SQS_QUEUE"])
         for barcode in converted_barcodes:
             message = {"barcode": barcode}
             sqs_manager.send_message_to_queue(message)
