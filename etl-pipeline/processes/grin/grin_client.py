@@ -79,14 +79,14 @@ class GRINClient(object):
         # For GRIN queries, range start is inclusive but the range end is exclusive.
         # This means you must set the upper range to one day after the desired date
         today = datetime.now()
-        tomorrow = today + timedelta(1)
+        yesterday = today - timedelta(1)
         year = today.strftime("%Y")
         month = today.strftime("%m")
-        range_start = today.strftime("%Y-%m-%d")
-        range_end = tomorrow.strftime("%Y-%m-%d")
+        range_start = yesterday.strftime("%Y-%m-%d")
+        range_end = today.strftime("%Y-%m-%d")
 
         data = self.get(
-            "_monthly_report?execute_query=true&year=%s&month=%s&check_in_date_start=%s&check_in_date_end=%s&format=text"
+            "_monthly_report?execute_query=true&year=%s&month=%s&check_in_date_start=%s&check_in_date_end=%s&book_state=NEW&format=text"
             % (year, month, range_start, range_end)
         )
         data = data.decode("utf8").split("\n")
