@@ -10,7 +10,9 @@ SQS_VISIBILITY_TIMEOUT_SECS = 90 * 60
 
 class GRINIngestProcess:
     def __init__(self, *args):
-        self.sqs_manager = SQSManager(queue_name=os.environ["GRIN_INGEST_SQS_QUEUE"], max_receive_count=1)
+        self.sqs_manager = SQSManager(
+            queue_name=os.environ["GRIN_INGEST_SQS_QUEUE"], max_receive_count=1
+        )
 
         self.bucket = os.environ["PRIVATE_FILE_BUCKET"]
 
