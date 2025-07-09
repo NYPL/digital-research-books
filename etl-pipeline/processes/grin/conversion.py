@@ -7,11 +7,12 @@ import pandas as pd
 from sqlalchemy import select, update
 from model import GRINState, GRINStatus, Record, FRBRStatus
 from typing import List, Iterator
-from managers import DBManager
+from managers import DBManager, SQSManager
 from uuid import uuid4
 from logger import create_log
 from ..util.chunk import chunk
 import argparse
+import os
 
 
 class GRINConversion:
@@ -24,10 +25,13 @@ class GRINConversion:
         with DBManager() as self.db_manager:
             self.acquire_and_convert_new_books()
 
-            self.process_converted_books()
+            successfully_converted_books = self.process_converted_books()
+
+            self.send_sqs_messages(successfully_converted_books)
 
             if backfill:
-                self.convert_backfills()
+                converted_barcodes = self.convert_backfills()
+                self.send_sqs_messages(converted_barcodes)
 
     def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
@@ -89,6 +93,7 @@ class GRINConversion:
                     f"Updated {updated_results.rowcount} already converted backfill books"
                 )
 
+                return converted_barcodes
             except:
                 self.db_manager.session.rollback()
                 self.logger.exception(
@@ -105,8 +110,9 @@ class GRINConversion:
         converted_barcodes = converted_df.query(
             "Status=='Already available for download'"
         )
-
-        return converting_barcodes["Barcode"], converted_barcodes["Barcode"]
+        converting_barcodes_list = converting_barcodes["Barcode"].to_list()
+        converted_barcodes_list = converted_barcodes["Barcodes"].to_list()
+        return converting_barcodes_list, converted_barcodes_list
 
     def save_barcodes(self, barcodes, state):
         if len(barcodes) == 0:
@@ -137,9 +143,10 @@ class GRINConversion:
 
     def process_converted_books(self):
         converted_barcodes = self.client.converted_filenames()
-
         if not converted_barcodes:
             return
+
+        successfully_converted_books = []
 
         for chunked_barcodes in chunk(iter(converted_barcodes), self.batch_limit):
             stripped_barcodes: List[str] = []
@@ -157,7 +164,6 @@ class GRINConversion:
                 )
                 updated_results = self.db_manager.session.execute(update_barcodes)
                 self.db_manager.commit_changes()
-
                 self.logger.info(
                     f"Updated {updated_results.rowcount} converted books in DB"
                 )
@@ -179,11 +185,14 @@ class GRINConversion:
                 self.logger.info(
                     f"Saved {len(missing_from_table)} new converted books in DB"
                 )
+
+                successfully_converted_books.extend(stripped_barcodes)
             except:
                 self.db_manager.session.rollback()
                 self.logger.exception(
                     f"Failed to update the following converted records: {chunked_barcodes}"
                 )
+        return successfully_converted_books
 
     def transform_scraped_data(self, data):
         headers = data[0].split("\t")
@@ -193,6 +202,12 @@ class GRINConversion:
                 rows.append(row.split("\t"))
 
         return pd.DataFrame(rows, columns=headers)
+
+    def send_sqs_messages(self, converted_barcodes):
+        sqs_manager = SQSManager(os.environ["GRIN_INGEST_SQS_QUEUE"])
+        for barcode in converted_barcodes:
+            message = {"barcode": barcode}
+            sqs_manager.send_message_to_queue(message)
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ REDIS_PORT: '6379'
 ELASTICSEARCH_TIMEOUT: '10'
 
 RECORD_PIPELINE_SQS_QUEUE: drb-record-pipeline-queue-qa-tf
+GRIN_INGEST_SQS_QUEUE: drb-grin-ingest-queue-qa-tf
 
   # OCLC CONFIGURATION
 # OCLC API keys must be configured in secrets file

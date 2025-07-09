@@ -79,7 +79,7 @@ class GRINDownload:
                 for file in tar_file:
                     self.s3_manager.put_object(
                         object=tar_file.extractfile(file).read(),
-                        key=self.ocr_dir + f"{file.name}",
+                        key=self.ocr_dir + str(file.name),
                         bucket=self.bucket,
                         bucket_permissions=None,
                     )
