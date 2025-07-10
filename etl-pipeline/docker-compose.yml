@@ -52,8 +52,8 @@ services:
         target: /src
         read_only: true
 
-  s3:
-    container_name: drb-local-s3
+  aws_services:
+    container_name: drb-local-aws
     image: localstack/localstack:latest
     environment:
       - DEBUG=1

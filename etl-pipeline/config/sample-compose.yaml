@@ -30,7 +30,7 @@ AWS_ACCESS: test
 AWS_SECRET: test
 AWS_REGION: us-east-1
 FILE_BUCKET: drb-files-local
-S3_ENDPOINT_URL: http://drb-local-s3:4566
+S3_ENDPOINT_URL: http://drb-local-aws:4566
 
 # OCLC CONFIGURATION
 OCLC_QUERY_LIMIT: '390000'

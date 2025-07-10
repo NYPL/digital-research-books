@@ -19,3 +19,4 @@ awslocal s3api put-bucket-cors --bucket drb-files-local --cors-configuration '{
 # Create SQS queues for testing
 awslocal sqs create-queue --queue-name records
 awslocal sqs create-queue --queue-name test-queue
+awslocal sqs create-queue --queue-name grin-queue
