@@ -84,7 +84,6 @@ class PDFPageGenerator:
 
         for _ in range(0, retries):
             try:
-                logger.info(f"Downloading key: {key}")
                 self.storage_manager.client.download_file(
                     self.bucket_name, key, out_location
                 )
