@@ -72,7 +72,7 @@ services:
     depends_on:
       - database
       - elasticsearch
-      - s3
+      - aws_services
     build:
       context: .
     command: -e local-compose -p LocalDevelopmentSetupProcess

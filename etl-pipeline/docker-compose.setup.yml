@@ -19,10 +19,10 @@ services:
       file: docker-compose.yml
       service: redis
 
-  s3:
+  aws_services:
     extends:
       file: docker-compose.yml
-      service: s3
+      service: aws_services
 
   seeddb:
     container_name: drb_local_seed
@@ -33,7 +33,7 @@ services:
         condition: service_started
       elasticsearch:
         condition: service_started
-      s3:
+      aws_services:
         condition: service_started
       redis:
         condition: service_started
