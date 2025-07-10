@@ -23,15 +23,19 @@ class GRINConversion:
 
     def runProcess(self, backfill=True):
         with DBManager() as self.db_manager:
-            self.acquire_and_convert_new_books()
+            try:
+                self.acquire_and_convert_new_books()
 
-            successfully_converted_books = self.process_converted_books()
+                successfully_converted_books = self.process_converted_books()
 
-            self.send_sqs_messages(successfully_converted_books)
+                self.send_sqs_messages(successfully_converted_books)
 
-            if backfill:
-                converted_barcodes = self.convert_backfills()
-                self.send_sqs_messages(converted_barcodes)
+                if backfill:
+                    converted_barcodes = self.convert_backfills()
+                    self.send_sqs_messages(converted_barcodes)
+            except Exception as e:
+                self.logger.exception(f"GRIN Conversion failed to complete. Error: {e}")
+                return
 
     def acquire_and_convert_new_books(self):
         data = self.client.acquired_today()
@@ -204,6 +208,8 @@ class GRINConversion:
         return pd.DataFrame(rows, columns=headers)
 
     def send_sqs_messages(self, converted_barcodes):
+        if converted_barcodes is None:
+            return
         sqs_manager = SQSManager(os.environ["GRIN_INGEST_SQS_QUEUE"])
         for barcode in converted_barcodes:
             message = {"barcode": barcode}
