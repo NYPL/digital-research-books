@@ -50,7 +50,7 @@ def generate_pdf(
             file_permissions = {}
 
         ordered_page_locations = _generate_individual_pdf_pages(
-            mets_file, ocr_dir, upload_bucket_name, tmpdirname
+            mets_file, ocr_dir, bucket_name, tmpdirname
         )
 
         pdf_url = _merge_and_upload_pdf(
