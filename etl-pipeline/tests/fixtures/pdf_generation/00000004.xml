@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<alto xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/alto/ns-v2# http://www.loc.gov/standards/alto/alto-v2.0.xsd" xmlns="http://www.loc.gov/standards/alto/ns-v2#">
+  <Description>
+    <MeasurementUnit>pixel</MeasurementUnit>
+    <sourceImageInformation>
+      <fileName>00000004.tif</fileName>
+    </sourceImageInformation>
+    <OCRProcessing ID="Processing">
+      <ocrProcessingStep>
+        <processingStepSettings>Image Resolution:600</processingStepSettings>
+        <processingSoftware>
+          <softwareCreator>I2S</softwareCreator>
+          <softwareName>Limb</softwareName>
+          <softwareVersion>1.0</softwareVersion>
+          <applicationDescription>Abbyy10 OCR Engine</applicationDescription>
+        </processingSoftware>
+      </ocrProcessingStep>
+    </OCRProcessing>
+  </Description>
+  <Styles>
+    <TextStyle ID="StyleId-0" FONTSIZE="8" FONTFAMILY="Times New Roman" />
+    <TextStyle ID="StyleId-1" FONTSIZE="15" FONTFAMILY="Times New Roman" />
+    <TextStyle ID="StyleId-2" FONTSIZE="12" FONTFAMILY="Times New Roman" />
+    <TextStyle ID="StyleId-3" FONTSIZE="6" FONTFAMILY="Times New Roman" />
+  </Styles>
+  <Layout>
+    <Page ID="P3" PHYSICAL_IMG_NR="3" HEIGHT="4498" WIDTH="2700" ACCURACY="0.665816367" QUALITY_DETAIL="17 words, 83 chars, 46 with recognition greater than 50% (55.42%)">
+      <TopMargin ID="P3_TM00001" HPOS="0" VPOS="0" WIDTH="2700" HEIGHT="1954" />
+      <LeftMargin ID="P3_LM00001" HPOS="0" VPOS="1954" WIDTH="540" HEIGHT="591" />
+      <RightMargin ID="P3_RM00001" HPOS="2160" VPOS="1954" WIDTH="540" HEIGHT="591" />
+      <BottomMargin ID="P3_BM00001" HPOS="0" VPOS="2545" WIDTH="2700" HEIGHT="1953" />
+      <PrintSpace ID="P3_PS00001" HPOS="540" VPOS="1954" WIDTH="1620" HEIGHT="591">
+        <TextBlock ID="P3_TB00001" HPOS="540" VPOS="1954" WIDTH="1620" HEIGHT="591">
+          <TextLine ID="P3_TL00001" HPOS="919" VPOS="1962" WIDTH="856" HEIGHT="45">
+            <String ID="P3_S00001" HPOS="919" VPOS="1963" WIDTH="90" HEIGHT="52" STYLEREFS="StyleId-0" CONTENT="BY" WC="0.75" CC="50" />
+            <SP ID="P3_SP00001" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00002" HPOS="1044" VPOS="1960" WIDTH="148" HEIGHT="55" STYLEREFS="StyleId-0" CONTENT="THE" WC="0.6533333" CC="315" />
+            <SP ID="P3_SP00002" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00003" HPOS="1228" VPOS="1957" WIDTH="199" HEIGHT="58" STYLEREFS="StyleId-0" CONTENT="SAME" WC="0.835" CC="0005" />
+            <SP ID="P3_SP00003" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00004" HPOS="1462" VPOS="1953" WIDTH="313" HEIGHT="63" STYLEREFS="StyleId-0" CONTENT="AUTHOR" WC="0.72" CC="054006" />
+          </TextLine>
+          <TextLine ID="P3_TL00002" HPOS="555" VPOS="2124" WIDTH="1585" HEIGHT="102">
+            <String ID="P3_S00005" HPOS="555" VPOS="2125" WIDTH="232" HEIGHT="117" STYLEREFS="StyleId-1" CONTENT="The" WC="0.716666639" CC="170" />
+            <SP ID="P3_SP00004" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00006" HPOS="840" VPOS="2116" WIDTH="403" HEIGHT="126" STYLEREFS="StyleId-1" CONTENT="Church" WC="0.6333333" CC="170606" />
+            <SP ID="P3_SP00005" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00007" HPOS="1308" VPOS="2115" WIDTH="196" HEIGHT="127" STYLEREFS="StyleId-1" CONTENT="For" WC="0.8" CC="006" />
+            <SP ID="P3_SP00006" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00008" HPOS="1560" VPOS="2112" WIDTH="580" HEIGHT="130" STYLEREFS="StyleId-1" CONTENT="Americans" WC="0.7977778" CC="500610050" />
+          </TextLine>
+          <TextLine ID="P3_TL00003" HPOS="1206" VPOS="2332" WIDTH="285" HEIGHT="84">
+            <String ID="P3_S00009" HPOS="1206" VPOS="2332" WIDTH="285" HEIGHT="87" STYLEREFS="StyleId-2" CONTENT="$1.25" WC="0.594" CC="05266" />
+          </TextLine>
+          <TextLine ID="P3_TL00004" HPOS="558" VPOS="2502" WIDTH="1590" HEIGHT="31">
+            <String ID="P3_S00010" HPOS="558" VPOS="2506" WIDTH="91" HEIGHT="45" STYLEREFS="StyleId-3" CONTENT="The" WC="0.603333354" CC="470" />
+            <SP ID="P3_SP00007" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00011" HPOS="667" VPOS="2503" WIDTH="256" HEIGHT="48" STYLEREFS="StyleId-3" CONTENT="Seventeenth" WC="0.4709091" CC="75145780467" />
+            <SP ID="P3_SP00008" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00012" HPOS="943" VPOS="2502" WIDTH="154" HEIGHT="49" STYLEREFS="StyleId-3" CONTENT="Edition" WC="0.312857151" CC="7747578" />
+            <SP ID="P3_SP00009" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00013" HPOS="1572" VPOS="2491" WIDTH="94" HEIGHT="60" STYLEREFS="StyleId-3" CONTENT="Five" WC="0.925" CC="3000" />
+            <SP ID="P3_SP00010" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00014" HPOS="1684" VPOS="2490" WIDTH="174" HEIGHT="61" STYLEREFS="StyleId-3" CONTENT="Editions" WC="0.51" CC="77444064" />
+            <SP ID="P3_SP00011" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00015" HPOS="1872" VPOS="2490" WIDTH="39" HEIGHT="61" STYLEREFS="StyleId-3" CONTENT="in" WC="0.86" CC="20" />
+            <SP ID="P3_SP00012" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00016" HPOS="1929" VPOS="2488" WIDTH="96" HEIGHT="63" STYLEREFS="StyleId-3" CONTENT="One" WC="0.836666644" CC="400" />
+            <SP ID="P3_SP00013" WIDTH="0" HPOS="0" VPOS="0" />
+            <String ID="P3_S00017" HPOS="2038" VPOS="2485" WIDTH="109" HEIGHT="66" STYLEREFS="StyleId-3" CONTENT="Year" WC="0.3" CC="55107" />
+          </TextLine>
+        </TextBlock>
+      </PrintSpace>
+    </Page>
+  </Layout>
+</alto>
