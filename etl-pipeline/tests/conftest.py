@@ -451,7 +451,6 @@ def mock_sqs_manager():
         MockSQSManager.return_value = mock_sqs_manager_instance
 
         yield mock_sqs_manager_instance
-    
 
 
 @pytest.fixture(scope="module")
@@ -462,4 +461,3 @@ def grin_client():
     assert client.session is not None
     assert isinstance(client.session, AuthorizedSession)
     yield client
-
