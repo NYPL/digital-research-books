@@ -456,8 +456,10 @@ def mock_sqs_manager():
 @pytest.fixture(scope="module")
 def grin_client():
     client = GRINClient()
+
     assert client is not None
     assert isinstance(client.creds, Credentials)
     assert client.session is not None
     assert isinstance(client.session, AuthorizedSession)
+
     yield client
