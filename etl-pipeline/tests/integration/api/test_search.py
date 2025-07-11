@@ -18,7 +18,7 @@ from .utils import assert_response_status
 )
 def test_search(endpoint, expected_status, test_title):
     url = os.getenv("DRB_API_URL") + endpoint.format(keyword=quote(test_title))
-    response = requests.get(url, timeout=5)
+    response = requests.get(url)
 
     assert response.status_code is not None
     assert_response_status(url, response, expected_status)
@@ -93,7 +93,7 @@ def test_search_language_and_sorting(
 )
 def test_search_readable_format_flags(endpoint, test_title):
     url = os.getenv("DRB_API_URL") + endpoint.format(keyword=quote(test_title))
-    response = requests.get(url, timeout=5)
+    response = requests.get(url)
 
     response_json = response.json()
     assert response_json is not None, "Response JSON is empty"

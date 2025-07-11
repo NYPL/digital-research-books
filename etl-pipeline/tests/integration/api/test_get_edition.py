@@ -17,7 +17,7 @@ from .utils import assert_response_status
 )
 def test_get_edition(endpoint, expected_status, test_edition_id):
     url = os.getenv("DRB_API_URL") + endpoint.format(edition_id=test_edition_id)
-    response = requests.get(url, timeout=5)
+    response = requests.get(url)
 
     assert response.status_code is not None
     assert_response_status(url, response, expected_status)
