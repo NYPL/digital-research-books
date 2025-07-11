@@ -20,6 +20,7 @@ from mappings.marc_record import map_marc_record
 from model import FileFlags, Part, Source, Record
 from pymarc import parse_xml_to_array
 from xml.etree import ElementTree as ET
+from services.monitor import track_time
 
 from logger import create_log
 
@@ -29,6 +30,7 @@ NUMBER_OF_SUBPROCESSES = os.cpu_count() or 12
 logger = create_log(__name__)
 
 
+@track_time(function_name="PDFGeneration", logger=logger)
 def generate_pdf(
     storage_manager: S3Manager,
     bucket_name: str,
