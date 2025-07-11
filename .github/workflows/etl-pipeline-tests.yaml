@@ -78,12 +78,19 @@ jobs:
         run: |
           echo "Waiting for services..." && sleep 90
 
-      - name: Run functional and integration tests
+      - name: Run functional tests
         env:
           ENVIRONMENT: local
         working-directory: ./etl-pipeline
         run: |
-          make functional integration
+          make functional
+
+      - name: Run integration tests
+        env:
+          ENVIRONMENT: local
+        working-directory: ./etl-pipeline
+        run: |
+          make integration
 
       - name: Cleanup
         if: always()
