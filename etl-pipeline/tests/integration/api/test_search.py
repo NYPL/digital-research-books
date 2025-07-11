@@ -59,7 +59,7 @@ def test_search_language_and_sorting(
     url = os.getenv("DRB_API_URL") + endpoint.format(
         keyword=quote(test_title), language=quote(test_language)
     )
-    response = requests.get(url, timeout=5)
+    response = requests.get(url)
 
     response_json = response.json()
     assert response_json is not None, "Response JSON is empty"
