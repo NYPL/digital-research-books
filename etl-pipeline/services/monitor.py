@@ -1,5 +1,8 @@
 import newrelic.agent
 from model import Record
+import functools
+import time
+from logging import Logger
 
 
 def record_event(event_name: str, data: dict):
@@ -84,3 +87,26 @@ def track_records_ingested(number_of_records: int, source: str):
     data = {"number_of_records": number_of_records, "source": source}
 
     record_event(event_name, data)
+
+
+def track_time(function_name: str, logger: Logger | None=None):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            start_time = time.time()
+            result = func(*args, **kwargs)
+            execution_time = time.time() - start_time
+
+            if logger:
+                logger.info(f"{function_name} completed in {execution_time:.2f}s")
+
+            record_event(
+                f"{function_name}:ExecutionTime",
+                {"execution_time_seconds": execution_time},
+            )
+
+            return result
+
+        return wrapper
+
+    return decorator
