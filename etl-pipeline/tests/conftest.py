@@ -7,6 +7,9 @@ import requests_mock
 from sqlalchemy import text, delete
 from uuid import uuid4
 from unittest.mock import patch, MagicMock
+from processes.grin.grin_client import GRINClient
+from google.oauth2.service_account import Credentials
+from google.auth.transport.requests import AuthorizedSession
 
 from processes import RecordClusterer
 from model import (
@@ -448,3 +451,15 @@ def mock_sqs_manager():
         MockSQSManager.return_value = mock_sqs_manager_instance
 
         yield mock_sqs_manager_instance
+    
+
+
+@pytest.fixture(scope="module")
+def grin_client():
+    client = GRINClient()
+    assert client is not None
+    assert isinstance(client.creds, Credentials)
+    assert client.session is not None
+    assert isinstance(client.session, AuthorizedSession)
+    yield client
+
