@@ -13,7 +13,6 @@ class TestGRINClient:
 
     def test_url(self, grin_client, fragment):
         url = grin_client._url(fragment)
-        print(f"URL: {url}")
         assert url is not None
         assert isinstance(url, str)
         assert url.startswith("https://books.google.com/libraries/NYPL/")
