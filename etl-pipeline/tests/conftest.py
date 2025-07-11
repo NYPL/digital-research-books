@@ -448,3 +448,23 @@ def mock_sqs_manager():
         MockSQSManager.return_value = mock_sqs_manager_instance
 
         yield mock_sqs_manager_instance
+
+@pytest.fixture
+def mock_bucket(mocker):
+    buckets: dict[str, mocker.MagicMock] = {}
+
+    def _mock(bucket_name, **object_kwargs):
+        bucket = mocker.MagicMock(bucket=bucket_name)
+
+        def _get(key):
+            return object_kwargs[str(key)]
+
+        bucket.get.side_effect = _get
+        buckets[bucket_name] = bucket
+        return bucket
+
+    def _get_bucket(bucket):
+        return buckets[bucket]
+
+    mocker.patch("managers.s3", side_effect=_get_bucket)
+    return _mock
