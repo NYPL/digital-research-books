@@ -29,6 +29,7 @@ NUMBER_OF_SUBPROCESSES = os.cpu_count() or 12
 
 logger = create_log(__name__)
 
+
 @track_time(function_name="PDFGeneration", logger=logger)
 def generate_pdf(
     storage_manager: S3Manager,

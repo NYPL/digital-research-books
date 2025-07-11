@@ -89,7 +89,7 @@ def track_records_ingested(number_of_records: int, source: str):
     record_event(event_name, data)
 
 
-def track_time(function_name: str, logger: Logger | None=None):
+def track_time(function_name: str, logger: Logger | None = None):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
