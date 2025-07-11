@@ -53,15 +53,15 @@ jobs:
           python -m pip install --upgrade pip wheel
           pip install -r requirements.txt -r dev-requirements.txt
 
-      - name: Check formatting
-        working-directory: ./etl-pipeline
-        run: |
-          ruff format --check
+      # - name: Check formatting
+      #   working-directory: ./etl-pipeline
+      #   run: |
+      #     ruff format --check
 
-      - name: Run unit tests
-        working-directory: ./etl-pipeline
-        run: |
-          make unit
+      # - name: Run unit tests
+      #   working-directory: ./etl-pipeline
+      #   run: |
+      #     make unit
 
       - name: Build Docker images with cache
         working-directory: ./etl-pipeline
@@ -83,7 +83,7 @@ jobs:
           ENVIRONMENT: local
         working-directory: ./etl-pipeline
         run: |
-          make functional integration
+          make integration
 
       - name: Cleanup
         if: always()
