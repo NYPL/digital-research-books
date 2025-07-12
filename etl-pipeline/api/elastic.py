@@ -4,7 +4,6 @@ from hashlib import sha1
 import json
 import os
 import re
-import traceback
 
 from .utils import APIUtils
 from logger import create_log
@@ -201,7 +200,6 @@ class ElasticClient:
     @classmethod
     def generateQueryHash(cls, params, startPos):
         hashDict = deepcopy(params)
-        print(hashDict)
         hashDict["position"] = startPos
 
         hashableDict = cls.makeDictHashable(hashDict)
