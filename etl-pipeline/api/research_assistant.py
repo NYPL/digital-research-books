@@ -1,7 +1,7 @@
 from .elastic import ElasticClient
 from langgraph.prebuilt import create_react_agent
 from langchain.chat_models import init_chat_model
-from langchain.schema.messages import SystemMessage
+from langchain.schema.messages import SystemMessage, ToolMessage
 from langchain_core.messages import convert_to_messages
 from langchain.agents import Tool
 
@@ -26,35 +26,33 @@ class ResearchAssistant:
                     "Valid fields are title, author, and subject. "
                     "Example inputs: "
                     '{"query": [["title", "Giovanni\'s Room"], ["author", "James Baldwin"]] }'
-                )
+                ),
             )
         ]
-        self.model = init_chat_model("gemini-1.5-flash", model_provider="google_genai")
+        self.model = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
         self.agent = create_react_agent(
             model=self.model,
             tools=self.tools,
             prompt=self.system_prompt,
         )
-    
+
     @property
     def system_prompt(self):
         return VRA_SYSTEM_PROMPT_V0
 
     def get_chat_completion(self, messages):
         parsed_messages = self._parse_messages(messages)
-        response = self.agent.invoke({ "messages": parsed_messages })
+        response = self.agent.invoke({"messages": parsed_messages})
+        results = None
 
         for message in response["messages"]:
             message.pretty_print()
 
-            if message.type == "tool_result":
+            if isinstance(message, ToolMessage):
                 results = message.content
 
-        return {
-            "content": response["messages"][-1].content,
-            "results": results
-        }
-    
+        return {"content": response["messages"][-1].content, "results": results}
+
     def _parse_messages(self, messages):
         parsed_messages = convert_to_messages(messages)
 

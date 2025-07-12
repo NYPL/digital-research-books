@@ -41,6 +41,5 @@ newrelic==10.9.0
 geocoder==1.38.1
 langchain
 langgraph
-langchain-google-vertexai
+langchain-google-genai
 google-genai
-openai

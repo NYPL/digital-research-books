@@ -4,6 +4,7 @@ from hashlib import sha1
 import json
 import os
 import re
+import traceback
 
 from .utils import APIUtils
 from logger import create_log
@@ -60,14 +61,14 @@ class ElasticClient:
         return searchES
 
     def searchQuery(self, params, page=0, perPage=10):
+        if isinstance(params, str):
+            params = json.loads(params)
+
         self.generateSearchQuery(params)
 
         return self.executeSearchQuery(params, page, perPage)
 
     def generateSearchQuery(self, params):
-        if isinstance(params, str):
-            params = json.loads(params)
-
         authorityList = [
             "isbn",
             "issn",
@@ -115,9 +116,12 @@ class ElasticClient:
 
         self.query = search.query(Q("bool", must=searchClauses))
 
-        self.createFilterClausesAndAggregations(params["filter"])
+        if "filter" in params:
+            self.createFilterClausesAndAggregations(params["filter"])
 
-        self.addSortClause(params["sort"])
+        if "sort" in params:
+            self.addSortClause(params["sort"])
+
         self.addFiltersAndAggregations(3)
         self.addSearchHighlighting()
 
@@ -197,6 +201,7 @@ class ElasticClient:
     @classmethod
     def generateQueryHash(cls, params, startPos):
         hashDict = deepcopy(params)
+        print(hashDict)
         hashDict["position"] = startPos
 
         hashableDict = cls.makeDictHashable(hashDict)

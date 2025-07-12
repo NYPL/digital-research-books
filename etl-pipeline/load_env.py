@@ -27,7 +27,7 @@ ENV_VAR_TO_SSM_NAME = {
     "POSTGRES_PSWD": "postgres/pswd",
     "POSTGRES_USER": "postgres/user",
     "GOOGLE_API_KEY": "google-ai-api-key",
-    "API_KEY": "api-key"
+    "API_KEY": "api-key",
 }
 
 
