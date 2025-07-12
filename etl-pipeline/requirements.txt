@@ -39,3 +39,8 @@ waitress==3.0.1
 werkzeug==2.2.2
 newrelic==10.9.0
 geocoder==1.38.1
+langchain
+langgraph
+langchain-google-vertexai
+google-genai
+openai

@@ -1,6 +1,7 @@
 from copy import deepcopy
 from elasticsearch_dsl import Search, Q, A
 from hashlib import sha1
+import json
 import os
 import re
 
@@ -64,6 +65,9 @@ class ElasticClient:
         return self.executeSearchQuery(params, page, perPage)
 
     def generateSearchQuery(self, params):
+        if isinstance(params, str):
+            params = json.loads(params)
+
         authorityList = [
             "isbn",
             "issn",
