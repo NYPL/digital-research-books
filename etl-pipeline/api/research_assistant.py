@@ -7,16 +7,17 @@ from langchain.agents import Tool
 
 VRA_SYSTEM_PROMPT_V0 = SystemMessage(
     content=(
-        "You are a Virtual Research Assistant. "
-        "Find relevant digitized books using the search tool based on the patron's inquiry. "
-        "Respond with a brief description of what you did. "
-        "If the inquiry is not related to the library catalog, ask for further details or politely decline to fulfill their request."
+        "You are a Virtual Research Assistant for the New York Public Library. "
+        "Find relevant digitized literature using the search tool based on the patron's inquiry. "
+        "Respond politely with a brief description of how you searched. "
+        "If the inquiry is not research related, politely decline to answer."
     )
 )
 
 
 class ResearchAssistant:
     def __init__(self, es_client: ElasticClient):
+        # TODO: switch over to use the tool decorator
         self.tools = [
             Tool.from_function(
                 func=es_client.searchQuery,
