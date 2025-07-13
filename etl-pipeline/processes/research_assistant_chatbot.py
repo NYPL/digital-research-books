@@ -2,8 +2,7 @@ import requests
 import os
 
 
-class ResearchAssistantChatBot():
-    
+class ResearchAssistantChatBot:
     def __init__(self, *args):
         pass
 
@@ -16,15 +15,17 @@ class ResearchAssistantChatBot():
         while True:
             try:
                 query = input("Patron: ").strip()
-                
+
                 if not query:
                     continue
 
                 history.append({"role": "user", "content": query})
 
-                response = requests.put("http://localhost:5050/chats", json={"messages": history}, headers={
-                    "X-API-KEY": os.environ["API_KEY"]
-                })
+                response = requests.put(
+                    "http://localhost:5050/chats",
+                    json={"messages": history},
+                    headers={"X-API-KEY": os.environ["API_KEY"]},
+                )
 
                 if response.status_code != 201:
                     print(f"Error: {response.status_code} - {response.text}")
