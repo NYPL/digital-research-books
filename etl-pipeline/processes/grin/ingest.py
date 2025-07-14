@@ -1,17 +1,18 @@
 from datetime import datetime
 from logger import create_log
-from .download import GRINDownload
+from .download import GRINDownloadService
 from managers import SQSManager, S3Manager
 from logger import create_log
 import os
 import json
 from xml.etree import ElementTree as ET
-from model import Record, Source, FileFlags, Part
+from model import Record, Source
 from ..record_ingestor import RecordIngestor
 from pymarc import parse_xml_to_array
 import io
 import re
 from mappings.marc_record import map_marc_record
+from time import sleep
 
 SQS_VISIBILITY_TIMEOUT_SECS = 90 * 60
 logger = create_log(__name__)
@@ -19,39 +20,42 @@ logger = create_log(__name__)
 
 class GRINIngestProcess:
     def __init__(self, *args):
-        self.sqs_manager = SQSManager(
-            queue_name=os.environ["GRIN_INGEST_SQS_QUEUE"], max_receive_count=1
-        )
-
         self.bucket = os.environ["PRIVATE_FILE_BUCKET"]
+
+        self.sqs_manager = SQSManager(queue_name=os.environ["GRIN_INGEST_SQS_QUEUE"])
         self.storage_manager = S3Manager()
         self.record_ingestor = RecordIngestor(Source.GRIN.value)
+        self.grin_download_service = GRINDownloadService(bucket_name=self.bucket)
 
-    def runProcess(self):
-        # TODO: continuously get messages from the SQS queue
-
+    def runProcess(self, max_attempts: int = 10):
         try:
-            sqs_messages = self.sqs_manager.get_messages_from_queue(
-                SQS_VISIBILITY_TIMEOUT_SECS
-            )
+            for attempt in range(max_attempts):
+                wait_time = 5 * attempt
+                if wait_time:
+                    logger.info(f"Waiting {wait_time}s for GRIN messages")
+                    sleep(wait_time)
+
+                while messages := self.sqs_manager.get_messages_from_queue(
+                    visibility_timeout=SQS_VISIBILITY_TIMEOUT_SECS
+                ):
+                    for message in messages:
+                        self._process_message(message)
         except Exception:
-            logger.exception("Failed to run GRIN Ingest Process")
-            return
+            logger.exception("Failed to run GRIN ingest process")
 
-        if not sqs_messages:
-            return
+    def _process_message(self, message):
+        try:
+            barcode, receipt_handle = self._parse_message(message)
 
-        barcode, receipt_handle = self._parse_message(sqs_messages[0])
+            _, mets_file = self.grin_download_service.download_barcode(barcode)
+            record = self._map_record(barcode, mets_file)
+            self.record_ingestor.ingest([record])
 
-        grin_download = GRINDownload(barcode, self.bucket)
-        ocr_dir, mets_file = grin_download.run_process()
-
-        # TODO
-        # Convert METs file to record
-        # Ingest record
-
-        self.sqs_manager.acknowledge_message_processed(receipt_handle)
-
+            self.sqs_manager.acknowledge_message_processed(receipt_handle)
+        except Exception as e:
+            logger.exception(f"Failed to process GRIN ingest message: {e}")
+            self.sqs_manager.reject_message(receipt_handle)
+        
     def _parse_message(self, sqs_message):
         receipt_handle = sqs_message["ReceiptHandle"]
         message_body = json.loads(sqs_message["Body"])
@@ -59,36 +63,16 @@ class GRINIngestProcess:
 
         return barcode, receipt_handle
 
-    def _map_record_and_rights(self, xml_data: ET.Element) -> tuple:
+    def _map_record(self, barcode, xml_data: ET.Element) -> Record:
         xml_bytes = ET.tostring(self, xml_data, encoding="utf-8")
         xml_file = io.BytesIO(xml_bytes)
         marc_records = parse_xml_to_array(xml_file)
         marc_record = marc_records[-1]
+        
         record = map_marc_record(marc_record, source=Source.GRIN)
-        is_public_domain = self._is_in_public_domain(record)
-        return record, is_public_domain
-
-    def _ingest_record(
-        record: Record, barcode: str, pdf_url: str, is_public_domain: bool
-    ):
-        record_ingestor = RecordIngestor(Source.GRIN.value)
-
         record.source_id = f"{barcode}|grin"
-        record.has_part.append(
-            str(
-                Part(
-                    index=1,
-                    source=Source.GRIN.value,
-                    url=pdf_url,
-                    file_type="application/pdf",
-                    flags=str(FileFlags(download=True))
-                    if is_public_domain
-                    else str(FileFlags()),
-                )
-            )
-        )
 
-        record_ingestor.ingest([record])
+        return record
 
     def _is_in_public_domain(record) -> bool:
         rights = record.rights.lower() if record.rights else ""

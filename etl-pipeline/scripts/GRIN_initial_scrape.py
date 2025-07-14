@@ -1,7 +1,7 @@
 from datetime import datetime
 from logger import create_log
 from typing import List
-from model import GRINState, GRINStatus, Record, FRBRStatus
+from model import GRINState, GRINStatus, Record, FRBRStatus, Source
 from managers import DBManager
 from uuid import uuid4
 from processes.grin.grin_client import GRINClient
@@ -48,7 +48,7 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
                         uuid=uuid4(),
                         frbr_status=FRBRStatus.TODO.value,
                         source_id=f"{barcode}|grin",
-                        source="grin",
+                        source=Source.GRIN.value,
                         grin_status=GRINStatus(
                             barcode=barcode,
                             failed_download=0,
