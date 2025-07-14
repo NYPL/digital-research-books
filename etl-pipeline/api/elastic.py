@@ -13,6 +13,7 @@ from logger import create_log
 
 logger = create_log(__name__)
 
+
 class IdentifierType(Enum):
     isbn = "isbn"
     issn = "issn"
@@ -26,7 +27,9 @@ class IdentifierType(Enum):
     doab = "doab"
     doi = "doi"
 
+
 IDENTIFIER_TYPES = {item.value for item in IdentifierType}
+
 
 class SearchParams(BaseModel):
     title: Optional[str] = None
@@ -45,9 +48,17 @@ class SearchParams(BaseModel):
             ("author", self.author) if self.author else None,
         ]
         filters = [
-            ("startYear", self.publication_year_start) if self.publication_year_start else None,
-            ("endYear", self.publication_year_end) if self.publication_year_end else None,
-            *([("language", languages) for languages in self.languages] if self.languages else []),
+            ("startYear", self.publication_year_start)
+            if self.publication_year_start
+            else None,
+            ("endYear", self.publication_year_end)
+            if self.publication_year_end
+            else None,
+            *(
+                [("language", languages) for languages in self.languages]
+                if self.languages
+                else []
+            ),
         ]
 
         return {

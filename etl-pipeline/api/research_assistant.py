@@ -21,8 +21,11 @@ logger = create_log(__name__)
 
 class ResearchAssistant:
     def __init__(self, es_client: ElasticClient):
-
-        @tool("search-tool", description="Search the Digital Research Books catalog.", args_schema=SearchParams)
+        @tool(
+            "search-tool",
+            description="Search the Digital Research Books catalog.",
+            args_schema=SearchParams,
+        )
         def search_catalog(
             title: Optional[str] = None,
             keyword: Optional[str] = None,
@@ -45,7 +48,7 @@ class ResearchAssistant:
             logger.info(f"Calling search-tool with params: {params}")
 
             return es_client.search_catalog(params)
-        
+
         self.model = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
         self.agent = create_react_agent(
             model=self.model,
@@ -69,9 +72,9 @@ class ResearchAssistant:
                 results = message.content
 
         return {
-            "answer": response["messages"][-1].content, 
+            "answer": response["messages"][-1].content,
             "results": results,
-            "messages": messages_to_dict(parsed_messages)
+            "messages": messages_to_dict(parsed_messages),
         }
 
     def _parse_messages(self, messages):
