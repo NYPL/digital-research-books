@@ -1,10 +1,7 @@
-import datetime
-import io
 import math
 import os
 import pathlib
 import pypdf
-import re
 import tempfile
 
 from . import mets_parser
@@ -12,14 +9,9 @@ from . import model
 from . import path
 from . import page_label
 from . import pdf_page
-from ..util.chunk import chunk
-from ..record_ingestor import RecordIngestor
+from chunker import chunk
 from digital_assets import get_stored_file_url
 from managers import S3Manager
-from mappings.marc_record import map_marc_record
-from model import FileFlags, Part, Source, Record
-from pymarc import parse_xml_to_array
-from xml.etree import ElementTree as ET
 from services.monitor import track_time
 
 from logger import create_log
@@ -34,22 +26,23 @@ logger = create_log(__name__)
 def generate_pdf(
     storage_manager: S3Manager,
     bucket_name: str,
+    upload_bucket_name: str,
+    file_permissions: dict,
     barcode: str,
     ocr_dir: str,
     mets_file_key: str,
-) -> dict:
+) -> str:
     with tempfile.TemporaryDirectory() as tmpdirname:
-        mets_file, mets_path, metadata, xml_data = _read_mets_and_metadata(
-            storage_manager, bucket_name, mets_file_key
+        mets_file = mets_parser.METSFile.from_mets_str(
+            storage_manager.get_object(key=mets_file_key, bucket=bucket_name)[
+                "Body"
+            ].read()
         )
+        mets_path = path.METSPath(mets_file_key)
 
-        record, is_public_domain = _map_record_and_rights(xml_data)
-        if is_public_domain:
-            upload_bucket_name = os.environ["FILE_BUCKET"]
-            file_permissions = {"ACL": "public-read"}
-        else:
-            upload_bucket_name = os.environ["PRIVATE_FILE_BUCKET"]
-            file_permissions = {}
+        metadata = model.get_metadata(
+            storage_manager, bucket_name, mets_path, mets_file
+        )
 
         ordered_page_locations = _generate_individual_pdf_pages(
             mets_file, ocr_dir, bucket_name, tmpdirname
@@ -57,36 +50,16 @@ def generate_pdf(
 
         pdf_url = _merge_and_upload_pdf(
             ordered_page_locations,
+            barcode,
             mets_file,
             metadata,
-            mets_path,
             storage_manager,
             upload_bucket_name,
             file_permissions,
             tmpdirname,
         )
 
-        _ingest_record(record, barcode, pdf_url, is_public_domain)
-
-    return {"pdf_key": str(mets_path.tagged_pdf_key)}
-
-
-def _read_mets_and_metadata(
-    storage_manager: S3Manager, bucket_name: str, mets_file_key: str
-):
-    mets_file = mets_parser.METSFile.from_mets_str(
-        storage_manager.get_object(key=mets_file_key, bucket=bucket_name)["Body"].read()
-    )
-    mets_path = path.METSPath(mets_file_key)
-
-    metadata, xml_data = model.get_metadata(
-        storage_manager, bucket_name, mets_path, mets_file
-    )
-    model.write_metadata(
-        storage_manager, bucket_name, mets_path, metadata, mets_path.tagged_pdf_key
-    )
-
-    return mets_file, mets_path, metadata, xml_data
+    return pdf_url
 
 
 def _generate_individual_pdf_pages(
@@ -106,12 +79,15 @@ def _generate_individual_pdf_pages(
     for i, pages in enumerate(chunk(mets_file.iter_pages(), size=chunk_size), start=1):
         logger.info(f"Building chunk {i}")
         subprocess = pdf_page.PDFPageSubprocess(page_generator)
+
         for page in pages:
             pdf_page_location = str(
                 pathlib.Path(tmpdirname, page.image_file.fid).with_suffix(".pdf"),
             )
+
             if not page.ocr_file.location:
                 continue
+
             ordered_page_locations.append(pdf_page_location)
             subprocess.add_page(page, pdf_page_location)
 
@@ -129,16 +105,14 @@ def _generate_individual_pdf_pages(
 
 def _merge_and_upload_pdf(
     ordered_page_locations: list[str],
+    barcode: str,
     mets_file: mets_parser.METSFile,
     metadata: model.Metadata,
-    mets_path: path.METSPath,
     storage_manager: S3Manager,
     bucket_name: str,
     file_permissions: dict[str, str],
     tmpdirname: str,
 ) -> str:
-    logger.info("Generating PDF")
-
     with pypdf.PdfWriter() as writer:
         if metadata:
             writer.add_metadata(
@@ -176,59 +150,10 @@ def _merge_and_upload_pdf(
             writer.write(merged_pdf)
 
         with open(merged_pdf_path, "rb") as merged_pdf:
-            output_key = mets_path.tagged_pdf_key
+            output_key = f"pdfs/{barcode}.pdf"
             storage_manager.client.upload_fileobj(
                 merged_pdf, bucket_name, str(output_key), file_permissions
             )
 
     logger.info(f"Generated PDF: {output_key}")
     return get_stored_file_url(bucket_name, output_key)
-
-
-def _map_record_and_rights(xml_data: ET.Element) -> tuple:
-    xml_bytes = ET.tostring(xml_data, encoding="utf-8")
-    xml_file = io.BytesIO(xml_bytes)
-    marc_records = parse_xml_to_array(xml_file)
-    marc_record = marc_records[-1]
-    record = map_marc_record(marc_record, source=Source.GRIN)
-    is_public_domain = _is_in_public_domain(record)
-    return record, is_public_domain
-
-
-def _ingest_record(record: Record, barcode: str, pdf_url: str, is_public_domain: bool):
-    record_ingestor = RecordIngestor(Source.GRIN.value)
-
-    record.source_id = f"{barcode}|grin"
-    record.has_part.append(
-        str(
-            Part(
-                index=1,
-                source=Source.GRIN.value,
-                url=pdf_url,
-                file_type="application/pdf",
-                flags=str(FileFlags(download=True))
-                if is_public_domain
-                else str(FileFlags()),
-            )
-        )
-    )
-
-    record_ingestor.ingest([record])
-
-
-def _is_in_public_domain(record) -> bool:
-    rights = record.rights.lower() if record.rights else ""
-    is_public_domain = "public_domain" in rights or "public domain" in rights
-
-    if not record.dates:
-        return is_public_domain
-
-    year = int(re.search(r"[0-9]{4}", record.dates[0]).group(0))
-    publication_date = datetime.date(year, 1, 1)
-    current_year = datetime.date.today().year
-
-    threshold_year = current_year - 95
-
-    public_domain_threshold_date = datetime.date(threshold_year, 1, 1)
-
-    return publication_date < public_domain_threshold_date or is_public_domain

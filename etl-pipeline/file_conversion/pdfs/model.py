@@ -72,40 +72,6 @@ def get_metadata(
             source=source_identifier.source,
             identifier_type=source_identifier.identifier_type,
             identifier_value=source_identifier.identifier_value,
-        ), metadata.xml_data
+        )
 
     return None
-
-
-def write_metadata(
-    storage_manager: S3Manager,
-    bucket_name: str,
-    mets_path: path.METSPath,
-    metadata: Metadata,
-    key: pathlib.Path,
-) -> None:
-    today = datetime.now(timezone.utc).date()
-
-    metadata_json = {
-        "author": metadata.author,
-        "subject": metadata.subject,
-        "title": metadata.title,
-        "publication_date": metadata.publication_date,
-        "publication_place": metadata.publication_place,
-        "publisher": metadata.publisher,
-        "pdf_link": get_stored_file_url(bucket_name, key),
-        "process_date": datetime.now(timezone.utc).date().isoformat(),
-        "oclc_number": metadata.oclc_number,
-        "isbn": metadata.isbn,
-        "source": metadata.source,
-        "identifier_type": metadata.identifier_type,
-        "identifier_value": metadata.identifier_value,
-    }
-
-    with io.BytesIO() as outstream:
-        outstream.write(json.dumps(metadata_json).encode())
-        outstream.seek(0)
-        key = mets_path.get_metadata_file_key(today)
-        storage_manager.client.upload_fileobj(
-            outstream, Bucket=bucket_name, Key=str(key), ExtraArgs={}
-        )

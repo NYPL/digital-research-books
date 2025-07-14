@@ -1,5 +1,5 @@
 from .grin_client import GRINClient
-from managers import DBManager, S3Manager, NYPLAPIManager
+from managers import DBManager, S3Manager
 from model import GRINStatus, GRINState
 from services.ssm_service import SSMService
 import gnupg
@@ -19,8 +19,6 @@ class GRINDownload:
         self.bucket = bucket
         self.barcode = str(barcode)
         self.ocr_dir = f"grin/{self.barcode}/"
-
-        self.nypl_api_manager = NYPLAPIManager()
 
     def run_process(self):
         with DBManager() as self.db_manager:
