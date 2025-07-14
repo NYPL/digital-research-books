@@ -6,11 +6,11 @@ from .grin_client import GRINClient
 import pandas as pd
 from sqlalchemy import select, update
 from model import GRINState, GRINStatus, Record, FRBRStatus
-from typing import List, Iterator
+from typing import List
 from managers import DBManager, SQSManager
 from uuid import uuid4
 from logger import create_log
-from ..util.chunk import chunk
+from utils import chunk
 import argparse
 import os
 

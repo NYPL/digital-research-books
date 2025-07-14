@@ -1,6 +1,6 @@
 from datetime import datetime
 from logger import create_log
-from download import GRINDownload
+from .download import GRINDownload
 from managers import SQSManager, S3Manager
 from logger import create_log
 import os
@@ -46,6 +46,7 @@ class GRINIngestProcess:
         grin_download = GRINDownload(barcode, self.bucket)
         ocr_dir, mets_file = grin_download.run_process()
 
+        # TODO
         # Convert METs file to record
         # Ingest record
 
