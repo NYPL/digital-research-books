@@ -64,7 +64,9 @@ class GRINIngestProcess:
         return barcode, receipt_handle
 
     def _map_record(self, barcode, mets_file: str) -> Record:
-        xml_metadata = self.storage_manager.get_object(key=mets_file, bucket=self.bucket)["Body"].read()
+        xml_metadata = self.storage_manager.get_object(
+            key=mets_file, bucket=self.bucket
+        )["Body"].read()
         xml_file = io.BytesIO(xml_metadata)
 
         marc_records = parse_xml_to_array(xml_file)
