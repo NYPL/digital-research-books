@@ -4,11 +4,56 @@ from hashlib import sha1
 import json
 import os
 import re
+from enum import Enum
+from pydantic import BaseModel, ValidationError
+from typing import Optional
 
 from .utils import APIUtils
 from logger import create_log
 
 logger = create_log(__name__)
+
+class IdentifierType(Enum):
+    isbn = "isbn"
+    issn = "issn"
+    lcc = "lcc"
+    lccn = "lccn"
+    oclc = "oclc"
+    owi = "owi"
+    nypl = "nypl"
+    hathi = "hathi"
+    gutenberg = "gutenberg"
+    doab = "doab"
+    doi = "doi"
+
+IDENTIFIER_TYPES = {item.value for item in IdentifierType}
+
+class SearchParams(BaseModel):
+    title: Optional[str] = None
+    keyword: Optional[str] = None
+    subject: Optional[str] = None
+    author: Optional[str] = None
+    publication_year_start: Optional[str] = None
+    publication_year_end: Optional[str] = None
+    languages: Optional[list[str]] = None
+
+    def to_query_filters(self):
+        query = [
+            ("title", self.title) if self.title else None,
+            ("keyword", self.keyword) if self.keyword else None,
+            ("subject", self.subject) if self.subject else None,
+            ("author", self.author) if self.author else None,
+        ]
+        filters = [
+            ("startYear", self.publication_year_start) if self.publication_year_start else None,
+            ("endYear", self.publication_year_end) if self.publication_year_end else None,
+            *([("language", languages) for languages in self.languages] if self.languages else []),
+        ]
+
+        return {
+            "query": [q for q in query if q],
+            "filters": [filter for filter in filters if filter],
+        }
 
 
 class ElasticClient:
@@ -54,6 +99,9 @@ class ElasticClient:
         self.appliedAggregations = []
         self.searchedFields = []
 
+    def search_catalog(self, params: SearchParams) -> dict:
+        return self.searchQuery(params.to_query_filters())
+
     def createSearch(self):
         s = Search(index=os.environ["ELASTICSEARCH_INDEX"])
         searchES = s.params(track_total_hits=True)
@@ -68,20 +116,6 @@ class ElasticClient:
         return self.executeSearchQuery(params, page, perPage)
 
     def generateSearchQuery(self, params):
-        authorityList = [
-            "isbn",
-            "issn",
-            "lcc",
-            "lccn",
-            "oclc",
-            "owi",
-            "nypl",
-            "hathi",
-            "gutenberg",
-            "doab",
-            "doi",
-        ]
-
         search = self.createSearch()
         search.source(["uuid", "editions"])
 
@@ -109,7 +143,7 @@ class ElasticClient:
             elif field == "viaf" or field == "lcnaf":
                 searchClauses.append(self.authorityQuery(field, query))
             elif field == "identifier":
-                searchClauses.append(self.identifierQuery(authorityList, query))
+                searchClauses.append(self.identifierQuery(query))
             else:
                 searchClauses.append(Q("match", **{field: escapedQuery}))
 
@@ -268,7 +302,7 @@ class ElasticClient:
         )
 
     # Query for the identifier authority followed up with the identifier value
-    def identifierQuery(self, authorityList, authIdentText):
+    def identifierQuery(self, authIdentText):
         self.searchedFields.extend(
             [
                 "identifiers.identifier",
@@ -307,7 +341,7 @@ class ElasticClient:
             authority = authIdentList[0]
             identifier = authIdentList[1]
 
-            if authority in authorityList:
+            if authority in IDENTIFIER_TYPES:
                 workIdentAuthQuery = Q(
                     "bool",
                     must=[

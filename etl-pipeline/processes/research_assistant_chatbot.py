@@ -1,5 +1,6 @@
 import requests
 import os
+from langchain_core.messages import messages_to_dict, HumanMessage
 
 
 class ResearchAssistantChatBot:
@@ -10,7 +11,7 @@ class ResearchAssistantChatBot:
         print("Chat Interface")
         print("Type a question and hit Enter. Ctrl+C to exit.\n")
 
-        history = []
+        messages = []
 
         while True:
             try:
@@ -19,11 +20,11 @@ class ResearchAssistantChatBot:
                 if not query:
                     continue
 
-                history.append({"role": "user", "content": query})
+                messages.append(messages_to_dict([HumanMessage(content=query)])[0])
 
                 response = requests.put(
                     "http://localhost:5050/chats",
-                    json={"messages": history},
+                    json={"messages": messages},
                     headers={"X-API-KEY": os.environ["API_KEY"]},
                 )
 
@@ -32,8 +33,8 @@ class ResearchAssistantChatBot:
                     continue
 
                 response_json = response.json()
-                answer = response_json["data"]["content"]
-                history.append(answer)
+                messages = response_json["data"]["messages"]
+                answer = response_json["data"]["answer"]
                 print(f"Research Assistant: {answer}\n")
             except KeyboardInterrupt:
                 print("\nExiting.")
