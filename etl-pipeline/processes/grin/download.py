@@ -22,9 +22,9 @@ class GRINDownloadService:
         ocr_dir = f"grin/{barcode}/"
 
         with DBManager() as self.db_manager:
-            file_content = self.download_and_upload_book()
+            file_content = self.download_and_upload_book(barcode, ocr_dir)
 
-            self.unpack_and_upload_ocr_files(barcode, file_content)
+            self.unpack_and_upload_ocr_files(ocr_dir, barcode, file_content)
 
             mets_file = ocr_dir + f"NYPL_{barcode}.xml"
 
@@ -59,10 +59,10 @@ class GRINDownloadService:
 
         grin_status.state = GRINState.DOWNLOADED.value
         self.db_manager.commit_changes()
-        
+
         return content
 
-    def unpack_and_upload_ocr_files(self, barcode, file_content):
+    def unpack_and_upload_ocr_files(self, ocr_dir, barcode, file_content):
         gpg = gnupg.GPG()
         decrypted_content = gpg.decrypt(
             file_content,
@@ -78,7 +78,7 @@ class GRINDownloadService:
                 for file in tar_file:
                     self.s3_manager.put_object(
                         object=tar_file.extractfile(file).read(),
-                        key=barcode + str(file.name),
+                        key=ocr_dir + str(file.name),
                         bucket=self.bucket,
                         bucket_permissions=None,
                     )

@@ -5,7 +5,6 @@ from managers import SQSManager, S3Manager
 from logger import create_log
 import os
 import json
-from xml.etree import ElementTree as ET
 from model import Record, Source
 from ..record_ingestor import RecordIngestor
 from pymarc import parse_xml_to_array
@@ -25,7 +24,7 @@ class GRINIngestProcess:
         self.sqs_manager = SQSManager(queue_name=os.environ["GRIN_INGEST_SQS_QUEUE"])
         self.storage_manager = S3Manager()
         self.record_ingestor = RecordIngestor(Source.GRIN.value)
-        self.grin_download_service = GRINDownloadService(bucket_name=self.bucket)
+        self.grin_download_service = GRINDownloadService(bucket=self.bucket)
 
     def runProcess(self, max_attempts: int = 10):
         try:
@@ -48,14 +47,15 @@ class GRINIngestProcess:
             barcode, receipt_handle = self._parse_message(message)
 
             _, mets_file = self.grin_download_service.download_barcode(barcode)
+
             record = self._map_record(barcode, mets_file)
             self.record_ingestor.ingest([record])
 
             self.sqs_manager.acknowledge_message_processed(receipt_handle)
-        except Exception as e:
-            logger.exception(f"Failed to process GRIN ingest message: {e}")
+        except Exception:
+            logger.exception(f"Failed to process GRIN ingest message")
             self.sqs_manager.reject_message(receipt_handle)
-        
+
     def _parse_message(self, sqs_message):
         receipt_handle = sqs_message["ReceiptHandle"]
         message_body = json.loads(sqs_message["Body"])
@@ -63,12 +63,13 @@ class GRINIngestProcess:
 
         return barcode, receipt_handle
 
-    def _map_record(self, barcode, xml_data: ET.Element) -> Record:
-        xml_bytes = ET.tostring(self, xml_data, encoding="utf-8")
-        xml_file = io.BytesIO(xml_bytes)
+    def _map_record(self, barcode, mets_file: str) -> Record:
+        xml_metadata = self.storage_manager.get_object(key=mets_file, bucket=self.bucket)["Body"].read()
+        xml_file = io.BytesIO(xml_metadata)
+
         marc_records = parse_xml_to_array(xml_file)
         marc_record = marc_records[-1]
-        
+
         record = map_marc_record(marc_record, source=Source.GRIN)
         record.source_id = f"{barcode}|grin"
 

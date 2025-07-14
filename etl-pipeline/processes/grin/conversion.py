@@ -10,7 +10,7 @@ from typing import List
 from managers import DBManager, SQSManager
 from uuid import uuid4
 from logger import create_log
-from utils import chunk
+from utils.chunker import chunk
 import argparse
 import os
 
@@ -115,7 +115,7 @@ class GRINConversion:
             "Status=='Already available for download'"
         )
         converting_barcodes_list = converting_barcodes["Barcode"].to_list()
-        converted_barcodes_list = converted_barcodes["Barcodes"].to_list()
+        converted_barcodes_list = converted_barcodes["Barcode"].to_list()
         return converting_barcodes_list, converted_barcodes_list
 
     def save_barcodes(self, barcodes, state):
