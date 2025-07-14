@@ -14,3 +14,4 @@ from .record_pipeline import RecordPipelineProcess
 from .local_development.seed_local_data import SeedLocalDataProcess
 from .grin.conversion import GRINConversion
 from .grin_ingest_process import GRINIngestProcess
+from .research_assistant_chatbot import ResearchAssistantChatBot
