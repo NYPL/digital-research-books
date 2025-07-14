@@ -1,6 +1,6 @@
 import pytest
 
-import processes.pdf_generation.mets_parser as mets_parser
+import file_conversion.pdfs.mets_parser as mets_parser
 
 
 TEST_METADATA_FILES_SOURCE_IDENTIFIERS = [

@@ -92,6 +92,7 @@ class FRBRStatus(Enum):
 
 
 class RecordState(Enum):
+    STAGED = "staged"
     INGESTED = "ingested"
     FILES_SAVED = "files_saved"
     EMBELLISHED = "embellished"

@@ -1,13 +1,10 @@
 # An API interface to https://books.google.com/libraries/NYPL/
 
 from datetime import datetime, timedelta
-from google.auth.transport.requests import (
-    AuthorizedSession,
-)
+from google.auth.transport.requests import AuthorizedSession
 from google.oauth2.service_account import Credentials
 import json
 from services.ssm_service import SSMService
-from pdb import set_trace
 
 BATCH_LIMIT = 100
 
