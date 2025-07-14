@@ -1,11 +1,11 @@
 from datetime import datetime
 from logger import create_log
-from typing import List, Iterator
+from typing import List
 from model import GRINState, GRINStatus, Record, FRBRStatus
 from managers import DBManager
 from uuid import uuid4
 from processes.grin.grin_client import GRINClient
-from processes.util.chunk import chunk
+from utils.chunker import chunk
 import argparse
 
 logger = create_log(__name__)

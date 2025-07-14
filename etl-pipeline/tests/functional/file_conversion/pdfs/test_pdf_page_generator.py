@@ -2,7 +2,7 @@ import io
 from unittest.mock import patch
 import pypdf
 import pytest
-from processes.pdf_generation.pdf_page import PDFPageGenerator
+from file_conversion.pdfs.pdf_page import PDFPageGenerator
 from botocore.exceptions import ClientError
 
 OCR_DIR = "0000011245674"
@@ -27,7 +27,7 @@ def test_generate_pdf_page(s3_manager, tmp_path):
     pdf_page_generator = PDFPageGenerator(
         bucket_name="drb-files-limited-local",
         ocr_dir=OCR_DIR,
-        alto_to_hocr_file="processes/util/alto_to_hocr.xsl",
+        alto_to_hocr_file="file_conversion/pdfs/alto_to_hocr.xsl",
     )
 
     pdf_page_generator.generate(
@@ -67,7 +67,7 @@ def test_generate_pdf_page_missing_image(s3_manager, tmp_path):
         pdf_page_generator = PDFPageGenerator(
             bucket_name="drb-files-limited-local",
             ocr_dir=OCR_DIR,
-            alto_to_hocr_file="processes/util/alto_to_hocr.xsl",
+            alto_to_hocr_file="file_conversion/pdfs/alto_to_hocr.xsl",
         )
         with pytest.raises(ClientError) as exception:
             pdf_page_generator.generate(

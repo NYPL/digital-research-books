@@ -24,7 +24,7 @@ class PDFPageGenerator:
         self,
         bucket_name: str,
         ocr_dir: str,
-        alto_to_hocr_file: str = "../util/alto_to_hocr.xsl",
+        alto_to_hocr_file: str = "alto_to_hocr.xsl",
     ):
         self.storage_manager = S3Manager()
         self.bucket_name = bucket_name
