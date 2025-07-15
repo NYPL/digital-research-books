@@ -18,7 +18,7 @@ RESPONSE_TYPE = "chats"
 def update_chat():
     research_assistant = ResearchAssistant(
         ElasticClient(current_app.config["REDIS_CLIENT"]),
-        DBClient(current_app.config["DB_CLIENT"])
+        DBClient(current_app.config["DB_CLIENT"]),
     )
     messages = request.json.get("messages")
 

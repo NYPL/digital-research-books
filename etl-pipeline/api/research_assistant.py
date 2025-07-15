@@ -24,6 +24,7 @@ VRA_SYSTEM_PROMPT_V0 = SystemMessage(
 
 logger = create_log(__name__)
 
+
 def json_serial_uuid(obj):
     if isinstance(obj, UUID):
         return str(obj)
@@ -63,7 +64,9 @@ class ResearchAssistant:
                 db_client.createSession()
                 results = []
                 for res in search_result.hits:
-                    edition_ids = [e.edition_id for e in res.meta.inner_hits.editions.hits]
+                    edition_ids = [
+                        e.edition_id for e in res.meta.inner_hits.editions.hits
+                    ]
 
                     try:
                         highlights = {
@@ -74,7 +77,6 @@ class ResearchAssistant:
                         highlights = {}
 
                     results.append((res.uuid, edition_ids, highlights))
-
 
                 if es_client.sortReversed is True:
                     results = [r for r in reversed(results)]
@@ -88,7 +90,9 @@ class ResearchAssistant:
                     else search_result.hits.total.value
                 )
 
-                facets = APIUtils.formatAggregationResult(search_result.aggregations.to_dict())
+                facets = APIUtils.formatAggregationResult(
+                    search_result.aggregations.to_dict()
+                )
 
                 data_block = {
                     "totalWorks": total_hits,
@@ -108,6 +112,7 @@ class ResearchAssistant:
                 return json.dumps(data_block, default=json_serial_uuid)
             except Exception as e:
                 import traceback
+
                 traceback.print_exc()
 
         self.model = init_chat_model("gemini-2.5-flash", model_provider="google_genai")

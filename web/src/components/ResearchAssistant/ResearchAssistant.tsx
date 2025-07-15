@@ -46,7 +46,7 @@ const ResearchAssistant: React.FC = () => {
 
       <section className={styles.chatPanel}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Heading level="h2" size="heading3" color="ui.white">
+          <Heading level="h2" size="heading3" color="ui.white" margin="0">
             Virtual Research Assistant
           </Heading>
           <Button onClick={clearHistory} className={styles.clearButton} id="clear-history-button">
