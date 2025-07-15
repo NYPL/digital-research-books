@@ -68,7 +68,7 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
         except Exception:
             logger.exception(f"Failed to insert barcodes: {chunked_barcodes}")
             raise
-    
+
     logger.info("Completed initial scrape.")
 
 

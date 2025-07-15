@@ -29,9 +29,13 @@ class GRINDownloadService:
             grin_status = self.db_manager.session.get(GRINStatus, barcode)
 
             if grin_status.state != GRINState.DOWNLOADED.value:
-                tmp_ocr_package = self.download_ocr_package(barcode, grin_status, tmp_dir)
+                tmp_ocr_package = self.download_ocr_package(
+                    barcode, grin_status, tmp_dir
+                )
                 self.upload_ocr_package(barcode, ocr_dir, tmp_ocr_package, grin_status)
-                self.upload_unpacked_ocr_files(barcode, ocr_dir, tmp_ocr_package, tmp_dir)
+                self.upload_unpacked_ocr_files(
+                    barcode, ocr_dir, tmp_ocr_package, tmp_dir
+                )
             else:
                 logger.info(f"Skipping download for {barcode}, already downloaded")
 

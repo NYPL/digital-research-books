@@ -13,15 +13,20 @@ def determine_rights(barcode) -> str | None:
 
     if catalog_response.status_code != 200:
         return None
-    
+
     catalog_data = catalog_response.json()
-    
+
     for item in catalog_data.get("items", []):
         if item.get("htid") == htid:
             rights_code = item.get("rightsCode")
-            rights = hathi_constansts["rightsValues"].get(rights_code, {"license": "und", "statement": "Copyright undetermined"})
+            rights = hathi_constansts["rightsValues"].get(
+                rights_code, {"license": "und", "statement": "Copyright undetermined"}
+            )
 
-            return get_rights_string(rights_source=Source.HATHI.value, license=rights["license"], rights_statement=rights["statement"])
-                
+            return get_rights_string(
+                rights_source=Source.HATHI.value,
+                license=rights["license"],
+                rights_statement=rights["statement"],
+            )
 
     return None

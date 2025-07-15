@@ -76,10 +76,13 @@ class GRINIngestProcess:
         record = map_marc_record(marc_record, source=Source.GRIN)
         record.source_id = f"{barcode}|grin"
 
-        rights = determine_rights(barcode)
+        try:
+            rights = determine_rights(barcode)
 
-        if rights:
-            record.rights = rights
+            if rights:
+                record.rights = rights
+        except Exception:
+            logger.exception(f"Failed to determine rights for barcode: {barcode}")
 
         return record
 
