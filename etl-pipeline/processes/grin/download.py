@@ -56,7 +56,9 @@ class GRINDownloadService:
             self.db_manager.commit_changes()
             raise Exception(f"Failed to download OCR package for {barcode}")
 
-    def upload_ocr_package(self, barcode, ocr_dir, tmp_ocr_package, grin_status: GRINStatus):
+    def upload_ocr_package(
+        self, barcode, ocr_dir, tmp_ocr_package, grin_status: GRINStatus
+    ):
         ocr_package_key = ocr_dir + f"{barcode}.tar.gz.gpg"
 
         try:
