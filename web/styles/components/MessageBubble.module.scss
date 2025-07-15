@@ -1,0 +1,56 @@
+.messageWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.userMessageWrapper {
+  align-items: flex-end;
+}
+
+.assistantHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.messageBubble {
+  max-width: 80%;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.userBubble {
+  background-color: #006166;
+  color: #ffffff;
+  border-radius: 8px;
+  border-bottom-right-radius: 0;
+}
+
+.assistantBubble {
+  background-color: #ffffff;
+  border-radius: 8px;
+  border-top-left-radius: 0;
+}
+
+.statusIndicator {
+  font-size: 0.75rem;
+  margin-left: 8px;
+}
+
+.statusSending {
+  color: #9ca3af;
+}
+
+.statusError {
+  color: #ef4444;
+}

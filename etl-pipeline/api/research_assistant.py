@@ -1,11 +1,17 @@
 from typing import Optional
+
 from .elastic import ElasticClient, SearchParams
 from langgraph.prebuilt import create_react_agent
 from langchain.chat_models import init_chat_model
-from langchain.schema.messages import SystemMessage, ToolMessage, HumanMessage
+from langchain.schema.messages import SystemMessage, ToolMessage
 from langchain_core.messages import messages_to_dict, messages_from_dict
 from langchain.agents import tool
 from logger import create_log
+from .utils import APIUtils
+from .db import DBClient
+from uuid import UUID
+
+import json
 
 VRA_SYSTEM_PROMPT_V0 = SystemMessage(
     content=(
@@ -18,9 +24,14 @@ VRA_SYSTEM_PROMPT_V0 = SystemMessage(
 
 logger = create_log(__name__)
 
+def json_serial_uuid(obj):
+    if isinstance(obj, UUID):
+        return str(obj)
+    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
+
 
 class ResearchAssistant:
-    def __init__(self, es_client: ElasticClient):
+    def __init__(self, es_client: ElasticClient, db_client: DBClient):
         @tool(
             "search-tool",
             description="Search the Digital Research Books catalog.",
@@ -35,19 +46,69 @@ class ResearchAssistant:
             publication_year_end: Optional[str] = None,
             languages: Optional[list[str]] = None,
         ):
-            params = SearchParams(
-                title=title,
-                keyword=keyword,
-                subject=subject,
-                author=author,
-                publication_year_start=publication_year_start,
-                publication_year_end=publication_year_end,
-                languages=languages,
-            )
+            try:
+                params = SearchParams(
+                    title=title,
+                    keyword=keyword,
+                    subject=subject,
+                    author=author,
+                    publication_year_start=publication_year_start,
+                    publication_year_end=publication_year_end,
+                    languages=languages,
+                )
 
-            logger.info(f"Calling search-tool with params: {params}")
+                logger.info(f"Calling search-tool with params: {params}")
 
-            return es_client.search_catalog(params)
+                search_result = es_client.search_catalog(params)
+                db_client.createSession()
+                results = []
+                for res in search_result.hits:
+                    edition_ids = [e.edition_id for e in res.meta.inner_hits.editions.hits]
+
+                    try:
+                        highlights = {
+                            key: list(set(res.meta.highlight[key]))
+                            for key in res.meta.highlight
+                        }
+                    except AttributeError:
+                        highlights = {}
+
+                    results.append((res.uuid, edition_ids, highlights))
+
+
+                if es_client.sortReversed is True:
+                    results = [r for r in reversed(results)]
+
+                works = db_client.fetchSearchedWorks(results)
+
+                # Depending on the version of elastic search, hits will either be an integer or a dictionary
+                total_hits = (
+                    search_result.hits.total
+                    if isinstance(search_result.hits.total, int)
+                    else search_result.hits.total.value
+                )
+
+                facets = APIUtils.formatAggregationResult(search_result.aggregations.to_dict())
+
+                data_block = {
+                    "totalWorks": total_hits,
+                    "works": APIUtils.formatWorkOutput(
+                        works,
+                        results,
+                        request=None,
+                        dbClient=db_client,
+                        formats=None,
+                        reader=None,
+                    ),
+                    "facets": facets,
+                }
+
+                db_client.closeSession()
+
+                return json.dumps(data_block, default=json_serial_uuid)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
 
         self.model = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
         self.agent = create_react_agent(
@@ -69,7 +130,7 @@ class ResearchAssistant:
             message.pretty_print()
 
             if isinstance(message, ToolMessage):
-                results = message.content
+                results = json.loads(message.content)
 
         return {
             "answer": response["messages"][-1].content,
