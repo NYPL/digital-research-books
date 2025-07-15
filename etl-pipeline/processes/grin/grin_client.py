@@ -33,12 +33,15 @@ class GRINClient(object):
     def _url(self, fragment):
         return "https://books.google.com/libraries/NYPL/" + fragment
 
-    def get(self, fragment):
+    def get(self, fragment, stream=False, **kwargs):
         url = self._url(fragment)
-        response = self.session.request("GET", url)
+        
+        response = self.session.request("GET", url, stream=stream, **kwargs)
+        
         if response.status_code != 200:
             raise IOError("%s got %s unexpectedly" % (url, response.status_code))
-        return response.content
+        
+        return response if stream else response.contentnt
 
     def convert(self, barcodes):
         # Ask Google to move some barcodes from the "Available" state to "In-Process"
