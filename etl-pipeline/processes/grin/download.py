@@ -43,10 +43,9 @@ class GRINDownloadService:
             response = self.grin_client.download(ocr_package_name, stream=True)
             logger.info(f"Downloading {barcode} OCR package from GRIN")
 
-            
             with response:
                 response.raise_for_status()
-                
+
                 with open(tmp_ocr_package, "wb") as ocr_package:
                     shutil.copyfileobj(response.raw, ocr_package)
 
@@ -91,7 +90,9 @@ class GRINDownloadService:
             )
 
         if not decrypt_result.ok:
-            logger.error(f"GPG decryption failed for {barcode}: {decrypt_result.status}")
+            logger.error(
+                f"GPG decryption failed for {barcode}: {decrypt_result.status}"
+            )
             raise Exception(f"Failed to decrypt OCR package for {barcode}")
 
         logger.info(f"Unpacking and uploading {barcode} OCR files to s3")
@@ -99,7 +100,7 @@ class GRINDownloadService:
             with tarfile.open(decrypted_ocr_package, mode="r|*") as tar_file:
                 for file in tar_file:
                     file_obj = tar_file.extractfile(file)
-                    
+
                     if file_obj:
                         self.s3_manager.client.upload_fileobj(
                             io.BytesIO(file_obj.read()),

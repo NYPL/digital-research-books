@@ -35,12 +35,12 @@ class GRINClient(object):
 
     def get(self, fragment, stream=False, **kwargs):
         url = self._url(fragment)
-        
+
         response = self.session.request("GET", url, stream=stream, **kwargs)
-        
+
         if response.status_code != 200:
             raise IOError("%s got %s unexpectedly" % (url, response.status_code))
-        
+
         return response if stream else response.contentnt
 
     def convert(self, barcodes):
