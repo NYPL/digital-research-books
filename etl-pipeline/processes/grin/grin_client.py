@@ -41,7 +41,7 @@ class GRINClient(object):
         if response.status_code != 200:
             raise IOError("%s got %s unexpectedly" % (url, response.status_code))
 
-        return response if stream else response.contentnt
+        return response if stream else response.content
 
     def convert(self, barcodes):
         # Ask Google to move some barcodes from the "Available" state to "In-Process"
