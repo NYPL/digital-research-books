@@ -7,6 +7,7 @@ import os
 import json
 from model import Record, Source
 from ..record_ingestor import RecordIngestor
+from services.rights_determiner import determine_rights
 from pymarc import parse_xml_to_array
 import io
 import re
@@ -74,6 +75,11 @@ class GRINIngestProcess:
 
         record = map_marc_record(marc_record, source=Source.GRIN)
         record.source_id = f"{barcode}|grin"
+
+        rights = determine_rights(barcode)
+
+        if rights:
+            record.rights = rights
 
         return record
 
