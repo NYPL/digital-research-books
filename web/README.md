@@ -49,7 +49,7 @@ Add this line to your `etc/hosts` file:
 #### Running the app locally with Docker
 
 1. Download and install Docker.
-2. `cd` into `sfr-bookfinder-front-end` repo
+2. `cd` into `web` repo
 3. To build and run the application, run:
 
 ```

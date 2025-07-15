@@ -46,7 +46,7 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
 
    ```bash
    git clone git@github.com:NYPL/drb-etl-pipeline.git
-   cd drb-etl-pipeline
+   cd etl-pipeline
    ```
 
 2. Configure secrets:
@@ -90,9 +90,13 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
      Password: localpsql
      ```
 
+
+ 
 6. Set up local python env:
 
 Create a virtual environment
+
+*Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).* 
 
 ```sh
 python -m venv venv
@@ -110,13 +114,34 @@ Make sure `wheel` is upgraded to avoid installation errors later
 pip install --upgrade wheel
 ```
 
+Or
+
+```sh
+pip3 install --upgrade pip setuptools wheel
+```
+
 Install requirements
 
 ```sh
 pip install -r requirements.txt
 ```
 
-You're now ready to run individual processes documented in the following section.
+Or
+
+```sh
+pip3 install -r requirements.txt
+```
+
+
+
+## Set AWS Config  
+Request AWS credentials, example ticket here (https://newyorkpubliclibrary.atlassian.net/browse/DOPS-1503)
+
+Execute the command in your terminal. You will be prompted to enter your credentials
+
+```
+aws configure 
+```
 
 ### Running Individual Processes
 
@@ -129,11 +154,8 @@ python main.py -p ProcessName -e local [options]
 For example:
 
 ```bash
-# Import HathiTrust records
-python main.py -p HathiTrustProcess -e local -i daily
-
-# Run the clustering process
-python main.py -p ClusterProcess -e local
+python main.py -p IngestProcess -e local -i daily --source hathitrust
+python main.py -p RecordPipelineProcess -e local
 ```
 
 See `python main.py --help` for all available options.
@@ -149,15 +171,11 @@ Core Setup:
 - `APIProcess`: Run the DRB API
 
 Data Ingestion:
-All data ingestion processes can be found in the [`processes/ingest`](processes/ingest) directory. These processes import data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more. Each process follows a similar pattern but is tailored to its specific data source.
+All data ingestion can be done via `IngestProcess`. This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
 
 Processing:
 
-- `CatalogProcess`: Retrieve OCLC Catalog records
-- `ClassifyProcess`: FRBRize records
-- `ClusterProcess`: Group records into editions
-- `S3Process`: Fetch associated files (ePubs, covers)
-- `CoverProcess`: Fetch edition covers
+- `RecordPipelineProcess`: Process records.
 
 ## Testing
 
