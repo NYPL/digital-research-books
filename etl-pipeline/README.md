@@ -171,7 +171,7 @@ Core Setup:
 - `APIProcess`: Run the DRB API
 
 Data Ingestion:
-All data ingestion processes can be done via the via `IngestProcess`. This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
+All data ingestion can be done via `IngestProcess`. This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
 
 Processing:
 
