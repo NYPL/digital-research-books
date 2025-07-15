@@ -22,7 +22,7 @@ def grin_status(db_manager):
         grin_status=GRINStatus(
             barcode=barcode,
             failed_download=0,
-            state=GRINState.PENDING_CONVERSION.value,
+            state=GRINState.CONVERTED.value,
             date_created=datetime(1991, 8, 25),
         ),
     )
