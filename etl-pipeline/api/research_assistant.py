@@ -63,9 +63,7 @@ class ResearchAssistant:
             db_client.createSession()
             results = []
             for res in search_result.hits:
-                edition_ids = [
-                    e.edition_id for e in res.meta.inner_hits.editions.hits
-                ]
+                edition_ids = [e.edition_id for e in res.meta.inner_hits.editions.hits]
 
                 try:
                     highlights = {
