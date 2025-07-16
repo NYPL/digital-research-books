@@ -35,7 +35,7 @@ const ResearchAssistant: React.FC = () => {
       {results && (
         <section className={styles.resultsPanel}>
           {results.totalWorks ? (
-            <Heading level="h3" className={styles.resultsHeader}>
+            <Heading level="h3" size="heading5" className={styles.resultsHeader}>
               <>{results.totalWorks} results matching your research criteria</>
             </Heading>
           ) : null}
@@ -71,6 +71,7 @@ const ResearchAssistant: React.FC = () => {
     <TemplateAppContainer
       breakout={breakoutElement}
       contentPrimary={contentPrimaryElement}
+      gridTemplateColumns="1fr 100% 1fr"
     />
   );
 };

@@ -3,19 +3,16 @@
   flex-direction: row;
   overflow: hidden;
   padding: 20px;
-  max-width: 1200px;
   margin: 20px auto;
   gap: 20px;
 }
 
 .resultsPanel {
-  background-color: light-gray;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
   padding: 20px;
   flex: 1;
-  min-width: 300px;
   max-height: 70vh;
   overflow-y: auto;
 }
@@ -43,6 +40,5 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
   padding: 16px;
-  min-width: 300px;
   max-height: 70vh;
 }
