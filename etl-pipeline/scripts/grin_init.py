@@ -1,11 +1,11 @@
 from datetime import datetime
 from logger import create_log
-from typing import List, Iterator
-from model import GRINState, GRINStatus, Record, FRBRStatus
+from typing import List
+from model import GRINState, GRINStatus, Record, FRBRStatus, RecordState, Source
 from managers import DBManager
 from uuid import uuid4
 from processes.grin.grin_client import GRINClient
-from processes.util.chunk import chunk
+from utils.chunker import chunk
 import argparse
 
 logger = create_log(__name__)
@@ -13,6 +13,7 @@ logger = create_log(__name__)
 
 def main(batch_limit=1000):
     grin_client = GRINClient()
+
     with DBManager() as db_manager:
         url = grin_client._url(
             f"_all_books?book_state=NEW&book_state=PREVIOUSLY_DOWNLOADED&format=text"
@@ -47,8 +48,10 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
                     Record(
                         uuid=uuid4(),
                         frbr_status=FRBRStatus.TODO.value,
+                        cluster_status=False,
+                        state=RecordState.STAGED.value,
                         source_id=f"{barcode}|grin",
-                        source="grin",
+                        source=Source.GRIN.value,
                         grin_status=GRINStatus(
                             barcode=barcode,
                             failed_download=0,
@@ -57,7 +60,7 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
                         ),
                     )
                 )
-        logger.info(f"Inserting {len(new_records)} barcodes into Record")
+        logger.info(f"Inserting {len(new_records)} barcodes as new records")
 
         try:
             db_manager.session.add_all(new_records)
@@ -68,7 +71,7 @@ def insert_into_db(barcodes: List[str], db_manager: DBManager, chunk_size: int):
         # TODO: Remove this break when we are ready to run this on production.
         # Will add 600K entries to the database.
         break
-    logger.info("Complete.")
+    logger.info("Completed initial scrape.")
 
 
 if __name__ == "__main__":

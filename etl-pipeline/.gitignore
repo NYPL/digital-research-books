@@ -25,6 +25,10 @@ service-account.json
 !test-doab-deleted.xml
 !test-clacso.xml
 !grin-mets.xml
+!UCAL_C3263821.xml
+!NYPL_33333211223819.xml
+!c3263821.mets.xml
+!00000004.xml
 
 #mise local version manager config
 mise.local.toml

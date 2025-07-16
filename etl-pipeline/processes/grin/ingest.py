@@ -1,0 +1,95 @@
+from datetime import datetime
+from logger import create_log
+from .download import GRINDownloadService
+from managers import SQSManager, S3Manager
+from logger import create_log
+import os
+import json
+from model import Record, Source
+from ..record_ingestor import RecordIngestor
+from pymarc import parse_xml_to_array
+import io
+import re
+from mappings.marc_record import map_marc_record
+from time import sleep
+
+SQS_VISIBILITY_TIMEOUT_SECS = 90 * 60
+logger = create_log(__name__)
+
+
+class GRINIngestProcess:
+    def __init__(self, *args):
+        self.bucket = os.environ["PRIVATE_FILE_BUCKET"]
+
+        self.sqs_manager = SQSManager(queue_name=os.environ["GRIN_INGEST_SQS_QUEUE"])
+        self.storage_manager = S3Manager()
+        self.record_ingestor = RecordIngestor(Source.GRIN.value)
+        self.grin_download_service = GRINDownloadService(bucket=self.bucket)
+
+    def runProcess(self, max_attempts: int = 10):
+        try:
+            for attempt in range(max_attempts):
+                wait_time = 5 * attempt
+                if wait_time:
+                    logger.info(f"Waiting {wait_time}s for GRIN messages")
+                    sleep(wait_time)
+
+                while messages := self.sqs_manager.get_messages_from_queue(
+                    visibility_timeout=SQS_VISIBILITY_TIMEOUT_SECS
+                ):
+                    for message in messages:
+                        self._process_message(message)
+        except Exception:
+            logger.exception("Failed to run GRIN ingest process")
+
+    def _process_message(self, message):
+        try:
+            barcode, receipt_handle = self._parse_message(message)
+
+            _, mets_file = self.grin_download_service.download_barcode(barcode)
+
+            record = self._map_record(barcode, mets_file)
+            self.record_ingestor.ingest([record])
+
+            self.sqs_manager.acknowledge_message_processed(receipt_handle)
+        except Exception:
+            logger.exception(f"Failed to process GRIN ingest message")
+            self.sqs_manager.reject_message(receipt_handle)
+
+    def _parse_message(self, sqs_message):
+        receipt_handle = sqs_message["ReceiptHandle"]
+        message_body = json.loads(sqs_message["Body"])
+        barcode = message_body["barcode"]
+
+        return barcode, receipt_handle
+
+    def _map_record(self, barcode, mets_file: str) -> Record:
+        xml_metadata = self.storage_manager.get_object(
+            key=mets_file, bucket=self.bucket
+        )["Body"].read()
+        xml_file = io.BytesIO(xml_metadata)
+
+        marc_records = parse_xml_to_array(xml_file)
+        marc_record = marc_records[-1]
+
+        record = map_marc_record(marc_record, source=Source.GRIN)
+        record.source_id = f"{barcode}|grin"
+
+        return record
+
+    def _is_in_public_domain(record) -> bool:
+        rights = record.rights.lower() if record.rights else ""
+        is_public_domain = "public_domain" in rights or "public domain" in rights
+
+        if not record.dates:
+            return is_public_domain
+
+        year = int(re.search(r"[0-9]{4}", record.dates[0]).group(0))
+        publication_date = datetime.date(year, 1, 1)
+        current_year = datetime.date.today().year
+
+        threshold_year = current_year - 95
+
+        public_domain_threshold_date = datetime.date(threshold_year, 1, 1)
+
+        return publication_date < public_domain_threshold_date or is_public_domain

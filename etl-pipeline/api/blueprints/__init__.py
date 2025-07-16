@@ -1,3 +1,4 @@
+from .drb_chats import chats
 from .drbCitation import citation
 from .drbCollection import collection, collections
 from .drbEdition import edition, editions

@@ -1,6 +1,6 @@
 import os
 
-from api.app import FlaskAPI
+from api.app import API
 from logger import create_log
 from managers import DBManager, ElasticsearchManager, RedisManager
 
@@ -22,9 +22,9 @@ class APIProcess:
             redis_client = self.redis_manager.create_client()
             self.elastic_search_manager.create_elastic_connection()
 
-            api = FlaskAPI(db_engine, redis_client)
+            api = API(db_engine, redis_client)
 
-            api.createErrorResponses()
+            api.create_error_responses()
             api.run()
         except Exception as e:
             logger.exception("Failed to start API")

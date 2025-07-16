@@ -9,6 +9,7 @@ from waitress import serve
 
 from logger import create_log
 from .blueprints import (
+    chats,
     search,
     work,
     works,
@@ -28,32 +29,41 @@ from .utils import APIUtils
 
 logger = create_log(__name__)
 
+BLUEPRINTS = [
+    chats,
+    search,
+    work,
+    works,
+    info,
+    edition,
+    editions,
+    utils,
+    link,
+    links,
+    opds,
+    collection,
+    collections,
+    citation,
+    fulfill,
+]
 
-class FlaskAPI:
-    def __init__(self, dbEngine, redisClient):
+
+class API:
+    def __init__(self, db_engine, redis_client):
         self.app = Flask(__name__)
+
         CORS(self.app)
         Swagger(self.app, template=json.load(open("swagger.v4.json", "r")))
 
-        self.app.config["DB_CLIENT"] = dbEngine
-        self.app.config["REDIS_CLIENT"] = redisClient
-
+        self.app.config["DB_CLIENT"] = db_engine
+        self.app.config["REDIS_CLIENT"] = redis_client
         self.app.config["READER_VERSION"] = os.environ["READER_VERSION"]
 
-        self.app.register_blueprint(info)
-        self.app.register_blueprint(search)
-        self.app.register_blueprint(work)
-        self.app.register_blueprint(works)
-        self.app.register_blueprint(edition)
-        self.app.register_blueprint(editions)
-        self.app.register_blueprint(utils)
-        self.app.register_blueprint(link)
-        self.app.register_blueprint(links)
-        self.app.register_blueprint(opds)
-        self.app.register_blueprint(collection)
-        self.app.register_blueprint(collections)
-        self.app.register_blueprint(citation)
-        self.app.register_blueprint(fulfill)
+        self._register_blueprints()
+
+    def _register_blueprints(self):
+        for blueprint in BLUEPRINTS:
+            self.app.register_blueprint(blueprint)
 
     def run(self):
         if os.environ.get("STAGE") == "development":
@@ -63,27 +73,25 @@ class FlaskAPI:
         else:
             serve(self.app, host="0.0.0.0", port=80)
 
-    def createErrorResponses(self):
+    def create_error_responses(self):
         @self.app.errorhandler(404)
-        def pageNotFound(error):
-            logger.warning("Page not found")
-            logger.debug(error)
+        def page_not_found(error):
+            logger.exception("Page not found")
             return APIUtils.formatResponseObject(
-                404, "pageNotFound", {"message": "Request page does not exist"}
+                404, "pageNotFound", {"message": "Requested page does not exist"}
             )
 
+        # TODO: we should be handling ElasticSearch and SQLAlchemy errors upstream
         @self.app.errorhandler(DataError)
-        def dataError(error):
-            logger.warning("Internal SQLAlchemy error")
-            logger.debug(error)
+        def sql_alchemy_data_error(error):
+            logger.exception("Internal SQLAlchemy error")
             return APIUtils.formatResponseObject(
                 500, "dataError", {"message": "Encountered fatal database error"}
             )
 
         @self.app.errorhandler(RequestError)
-        def requestError(error):
-            logger.warning("Invalid parameter passed to ElasticSearch")
-            logger.debug(error)
+        def es_request_error(error):
+            logger.exception("Invalid parameter passed to ElasticSearch")
             return APIUtils.formatResponseObject(
                 400,
                 "requestError",
