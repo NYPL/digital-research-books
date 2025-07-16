@@ -47,73 +47,68 @@ class ResearchAssistant:
             publication_year_end: Optional[str] = None,
             languages: Optional[list[str]] = None,
         ):
-            try:
-                params = SearchParams(
-                    title=title,
-                    keyword=keyword,
-                    subject=subject,
-                    author=author,
-                    publication_year_start=publication_year_start,
-                    publication_year_end=publication_year_end,
-                    languages=languages,
-                )
+            params = SearchParams(
+                title=title,
+                keyword=keyword,
+                subject=subject,
+                author=author,
+                publication_year_start=publication_year_start,
+                publication_year_end=publication_year_end,
+                languages=languages,
+            )
 
-                logger.info(f"Calling search-tool with params: {params}")
+            logger.info(f"Calling search-tool with params: {params}")
 
-                search_result = es_client.search_catalog(params)
-                db_client.createSession()
-                results = []
-                for res in search_result.hits:
-                    edition_ids = [
-                        e.edition_id for e in res.meta.inner_hits.editions.hits
-                    ]
+            search_result = es_client.search_catalog(params)
+            db_client.createSession()
+            results = []
+            for res in search_result.hits:
+                edition_ids = [
+                    e.edition_id for e in res.meta.inner_hits.editions.hits
+                ]
 
-                    try:
-                        highlights = {
-                            key: list(set(res.meta.highlight[key]))
-                            for key in res.meta.highlight
-                        }
-                    except AttributeError:
-                        highlights = {}
+                try:
+                    highlights = {
+                        key: list(set(res.meta.highlight[key]))
+                        for key in res.meta.highlight
+                    }
+                except AttributeError:
+                    highlights = {}
 
-                    results.append((res.uuid, edition_ids, highlights))
+                results.append((res.uuid, edition_ids, highlights))
 
-                if es_client.sortReversed is True:
-                    results = [r for r in reversed(results)]
+            if es_client.sortReversed is True:
+                results = [r for r in reversed(results)]
 
-                works = db_client.fetchSearchedWorks(results)
+            works = db_client.fetchSearchedWorks(results)
 
-                # Depending on the version of elastic search, hits will either be an integer or a dictionary
-                total_hits = (
-                    search_result.hits.total
-                    if isinstance(search_result.hits.total, int)
-                    else search_result.hits.total.value
-                )
+            # Depending on the version of elastic search, hits will either be an integer or a dictionary
+            total_hits = (
+                search_result.hits.total
+                if isinstance(search_result.hits.total, int)
+                else search_result.hits.total.value
+            )
 
-                facets = APIUtils.formatAggregationResult(
-                    search_result.aggregations.to_dict()
-                )
+            facets = APIUtils.formatAggregationResult(
+                search_result.aggregations.to_dict()
+            )
 
-                data_block = {
-                    "totalWorks": total_hits,
-                    "works": APIUtils.formatWorkOutput(
-                        works,
-                        results,
-                        request=None,
-                        dbClient=db_client,
-                        formats=None,
-                        reader=None,
-                    ),
-                    "facets": facets,
-                }
+            data_block = {
+                "totalWorks": total_hits,
+                "works": APIUtils.formatWorkOutput(
+                    works,
+                    results,
+                    request=None,
+                    dbClient=db_client,
+                    formats=None,
+                    reader=None,
+                ),
+                "facets": facets,
+            }
 
-                db_client.closeSession()
+            db_client.closeSession()
 
-                return json.dumps(data_block, default=json_serial_uuid)
-            except Exception as e:
-                import traceback
-
-                traceback.print_exc()
+            return json.dumps(data_block, default=json_serial_uuid)
 
         self.model = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
         self.agent = create_react_agent(
