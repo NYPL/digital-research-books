@@ -5,7 +5,7 @@ import {
   Form,
   TextInput,
 } from "@nypl/design-system-react-components";
-import { Message } from "./useResearchAssistant";
+import { Message } from "~/src/types/ResearchAssistant";
 
 interface ResearchAssistantInputProps {
   onSendMessage: (text: string) => void;

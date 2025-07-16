@@ -1,41 +1,11 @@
 import { useState, useCallback } from "react";
-import { FacetItem } from "~/src/types/DataModel";
-import { ApiWork } from "~/src/types/WorkQuery";
-
-export interface Message {
-  id: string;
-  status?: MessageStatus;
-  type: MessageType;
-  data: { content: string };
-}
-
-export enum MessageType {
-  Human = "human",
-  Ai = "ai",
-  System = "system",
-  Tool = "tool",
-}
-
-export enum MessageStatus {
-  Sending = "sending",
-  Sent = "sent",
-  Error = "error",
-}
-
-interface ChatResults {
-  facets: { formats: FacetItem[]; languages: FacetItem[] };
-  totalWorks?: number;
-  works: ApiWork[];
-}
-
-interface UseResearchAssistantResult {
-  messages: Message[];
-  sendMessage: (text: string) => Promise<void>;
-  results: ChatResults;
-  isLoading: boolean;
-  error: string | null;
-  clearHistory: () => void;
-}
+import {
+  UseResearchAssistantResult,
+  Message,
+  ChatResults,
+  MessageStatus,
+  MessageType,
+} from "~/src/types/ResearchAssistant";
 
 export const useResearchAssistant = (): UseResearchAssistantResult => {
   const [messages, setMessages] = useState<Message[]>([]);

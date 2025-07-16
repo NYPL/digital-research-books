@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "../../../styles/components/MessageBubble.module.scss";
-import { Message } from "./useResearchAssistant";
 import { Box, Text } from "@nypl/design-system-react-components";
+import { Message } from "~/src/types/ResearchAssistant";
 
 interface MessageBubbleProps {
   message: Message;
