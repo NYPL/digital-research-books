@@ -8,7 +8,7 @@
     "start": "next start",
     "start:newrelic": "NODE_OPTIONS='-r @newrelic/next' next start",
     "test": "jest",
-    "test:watch": "jest src/components/ResearchAssistant/ResearchAssistant.test.tsx --watch",
+    "test:watch": "jest --watch",
     "lint": "next lint --fix",
     "playwright": "playwright test"
   },
