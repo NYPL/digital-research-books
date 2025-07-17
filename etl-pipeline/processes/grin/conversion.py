@@ -132,7 +132,7 @@ class GRINConversion:
                         cluster_status=False,
                         source_id=f"{barcode}|grin",
                         state=RecordState.STAGED.value,
-                        source=Source.GRIN,
+                        source=Source.GRIN.value,
                         grin_status=GRINStatus(
                             barcode=barcode, failed_download=0, state=state.value
                         ),
