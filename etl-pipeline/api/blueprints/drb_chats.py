@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, request
 from ..elastic import ElasticClient
+from ..db import DBClient
 
 from ..utils import APIUtils
 from logger import create_log
@@ -16,7 +17,8 @@ RESPONSE_TYPE = "chats"
 @require_api_key
 def update_chat():
     research_assistant = ResearchAssistant(
-        ElasticClient(current_app.config["REDIS_CLIENT"])
+        ElasticClient(current_app.config["REDIS_CLIENT"]),
+        DBClient(current_app.config["DB_CLIENT"]),
     )
     messages = request.json.get("messages")
 
