@@ -43,3 +43,4 @@ langchain
 langgraph
 langchain-google-genai
 google-genai
+psutil

@@ -5,7 +5,7 @@ from sqlalchemy import update
 from .grin_client import GRINClient
 import pandas as pd
 from sqlalchemy import select, update
-from model import GRINState, GRINStatus, Record, FRBRStatus
+from model import GRINState, GRINStatus, Record, RecordState, FRBRStatus, Source
 from typing import List
 from managers import DBManager, SQSManager
 from uuid import uuid4
@@ -129,8 +129,10 @@ class GRINConversion:
                     Record(
                         uuid=uuid4(),
                         frbr_status=FRBRStatus.TODO.value,
+                        cluster_status=False,
                         source_id=f"{barcode}|grin",
-                        source="grin",
+                        state=RecordState.STAGED.value,
+                        source=Source.GRIN.value,
                         grin_status=GRINStatus(
                             barcode=barcode, failed_download=0, state=state.value
                         ),
