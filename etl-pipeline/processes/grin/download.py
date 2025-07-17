@@ -10,6 +10,7 @@ from managers import DBManager, S3Manager
 from model import GRINStatus, GRINState
 from services.ssm_service import SSMService
 from logger import create_log
+from utils.profiler import profile
 
 logger = create_log(__name__)
 
@@ -21,6 +22,7 @@ class GRINDownloadService:
         self.ssm_service = SSMService()
         self.bucket = bucket
 
+    @profile(logger=logger)
     def download_barcode(self, barcode):
         barcode = str(barcode)
         ocr_dir = f"grin/{barcode}/"
