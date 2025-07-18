@@ -23,12 +23,13 @@ class RecordIngestor:
         sqs_records_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
         self.sqs_manager = SQSManager(queue_name=sqs_records_queue)
 
-    def ingest(self, records: Iterator[Record]) -> int:
+    def ingest(self, records: Iterator[Record], skip_next: bool = False) -> int:
         try:
             for record in self._persisted_records(records):
                 message = {"source_id": record.source_id, "source": record.source}
-                self.sqs_manager.send_message_to_queue(message)
 
+                if not skip_next:
+                    self.sqs_manager.send_message_to_queue(message)
         except Exception:
             logger.exception(f"Failed to ingest {self.source} records")
 

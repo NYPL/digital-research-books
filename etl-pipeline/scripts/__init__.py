@@ -18,3 +18,4 @@ from .deleteProblemWorks import main as deleteWorks
 from .report_missing_files import main as ReportMissingFiles
 from .create_collection import main as createCollection
 from .grin_init import main as GRINInitialScrape
+from .grin_ingest_redrive import main as GRINIngestRedrive
