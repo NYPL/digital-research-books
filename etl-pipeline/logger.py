@@ -22,10 +22,14 @@ def create_log(module):
     logger.setLevel(levels[log_level])
     console_log_handler.setLevel(levels[log_level])
 
-    formatter = NewRelicContextFormatter(
-        "%(asctime)s | %(name)s | %(levelname)s: %(message)s"
-    )  # noqa: E501
-    console_log_handler.setFormatter(formatter)
+    if "development" == os.environ.get("STAGE"):
+        formatter = logging.Formatter("[%(name)s] %(message)s")
+        console_log_handler.setFormatter(formatter)
+    else:
+        formatter = NewRelicContextFormatter(
+            "%(asctime)s | %(name)s | %(levelname)s: %(message)s"
+        )  # noqa: E501
+        console_log_handler.setFormatter(formatter)
 
     logger.addHandler(console_log_handler)
 
