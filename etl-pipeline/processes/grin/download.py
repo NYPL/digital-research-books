@@ -35,7 +35,7 @@ class GRINDownloadService:
             tmp_ocr_package = os.path.join(tmp_dir, ocr_package_name)
 
             if grin_status.state != GRINState.DOWNLOADED.value:
-                self.download_ocr_package(barcode, grin_status, tmp_dir)
+                self.download_ocr_package(barcode, grin_status, tmp_ocr_package)
                 self.upload_ocr_package(barcode, ocr_dir, tmp_ocr_package, grin_status)
             else:
                 logger.info(
