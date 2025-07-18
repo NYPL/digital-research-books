@@ -24,7 +24,6 @@ def test_convert(grin_client):
     barcodes = ["33433116084322", "33433116012059", "33433116012034"]
     response = grin_client.convert(barcodes)
 
-   
     filtered = [item for item in response if item and not item.startswith("Barcode")]
     assert response is not None
     assert len(filtered) == len(barcodes)
@@ -32,4 +31,4 @@ def test_convert(grin_client):
     assert all(isinstance(item, str) for item in filtered)
     for item in filtered:
         if "Success" not in item:
-            print(f"Warning: Barcode conversion not successful: {item}")            
+            print(f"Warning: Barcode conversion not successful: {item}")
