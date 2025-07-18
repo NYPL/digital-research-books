@@ -7,11 +7,14 @@ import os
 import json
 from model import Record, Source
 from ..record_ingestor import RecordIngestor
+from services.rights_determiner import determine_rights
 from pymarc import parse_xml_to_array
 import io
 import re
 from mappings.marc_record import map_marc_record
 from time import sleep
+from .. import utils
+from utils.timer import timer
 
 SQS_VISIBILITY_TIMEOUT_SECS = 90 * 60
 logger = create_log(__name__)
@@ -19,6 +22,7 @@ logger = create_log(__name__)
 
 class GRINIngestProcess:
     def __init__(self, *args):
+        self.params = utils.parse_process_args(*args)
         self.bucket = os.environ["PRIVATE_FILE_BUCKET"]
 
         self.sqs_manager = SQSManager(queue_name=os.environ["GRIN_INGEST_SQS_QUEUE"])
@@ -28,6 +32,8 @@ class GRINIngestProcess:
 
     def runProcess(self, max_attempts: int = 10):
         try:
+            processed_count = 0
+
             for attempt in range(max_attempts):
                 wait_time = 5 * attempt
                 if wait_time:
@@ -39,9 +45,20 @@ class GRINIngestProcess:
                 ):
                     for message in messages:
                         self._process_message(message)
+                        processed_count += 1
+
+                        if (
+                            self.params.limit is not None
+                            and processed_count >= self.params.limit
+                        ):
+                            logger.info(
+                                f"Reached GRIN ingest limit: {self.params.limit}"
+                            )
+                            return
         except Exception:
             logger.exception("Failed to run GRIN ingest process")
 
+    @timer(logger)
     def _process_message(self, message):
         try:
             barcode, receipt_handle = self._parse_message(message)
@@ -49,7 +66,11 @@ class GRINIngestProcess:
             _, mets_file = self.grin_download_service.download_barcode(barcode)
 
             record = self._map_record(barcode, mets_file)
-            self.record_ingestor.ingest([record])
+            self.record_ingestor.ingest(
+                [record],
+                skip_next=self.params.options.get("skip_next", "false").lower()
+                == "true",
+            )
 
             self.sqs_manager.acknowledge_message_processed(receipt_handle)
         except Exception:
@@ -74,6 +95,14 @@ class GRINIngestProcess:
 
         record = map_marc_record(marc_record, source=Source.GRIN)
         record.source_id = f"{barcode}|grin"
+
+        try:
+            rights = determine_rights(barcode)
+
+            if rights:
+                record.rights = rights
+        except Exception:
+            logger.exception(f"Failed to determine rights for barcode: {barcode}")
 
         return record
 

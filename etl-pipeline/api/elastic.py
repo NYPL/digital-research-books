@@ -200,6 +200,8 @@ class ElasticClient:
                 self.setPageResultCache(queryHash, lastSort)
             except IndexError:
                 logger.debug("Empty result set, skipping paging cache")
+            except AttributeError:
+                logger.debug("No last sort, skipping paging cache")
 
         return res
 

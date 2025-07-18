@@ -18,6 +18,7 @@ const appConfig = {
     readPath: "/links",
     languagesPath: "/utils/languages",
     collectionPath: "/collections",
+    chatsPath: "/chats"
   },
   booksCount: {
     apiUrl: "/utils/counts",

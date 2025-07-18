@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from dateutil import parser
 from datetime import datetime, timedelta, timezone
 import os
@@ -28,13 +28,18 @@ class ProcessParams:
     limit: int | None = None
     offset: int = 0
     source: str | None = None
+    options: dict[str, str] = field(default_factory=dict)
 
 
 def parse_process_args(*args) -> ProcessParams:
-    default_limit = None
+    default_limit = 10 if os.environ.get("ENVIRONMENT") == "qa" else None
+    raw_options = args[7] if len(args) > 7 and isinstance(args[7], list) else []
+    options = {}
 
-    if os.environ.get("ENVIRONMENT") == "qa":
-        default_limit = 10
+    for option in raw_options:
+        if "=" in option:
+            key, value = option.split("=", 1)
+            options[key] = value
 
     return ProcessParams(
         process_type=args[0] if (len(args) > 0 and args[0]) else "daily",
@@ -44,4 +49,5 @@ def parse_process_args(*args) -> ProcessParams:
         limit=int(args[4]) if len(args) > 4 and args[4] is not None else default_limit,
         offset=int(args[5]) if len(args) > 5 and args[5] is not None else 0,
         source=args[6] if len(args) > 6 else None,
+        options=options,
     )
