@@ -1,7 +1,7 @@
-import io
 import os
 import tarfile
 import tempfile
+import gc
 import gnupg
 import shutil
 
@@ -20,6 +20,7 @@ class GRINDownloadService:
         self.grin_client = GRINClient()
         self.s3_manager = S3Manager()
         self.ssm_service = SSMService()
+        self.gpg = gnupg.GPG()
         self.bucket = bucket
 
         self.grin_pass_key = self.ssm_service.get_parameter("grin-access-key")
@@ -54,8 +55,10 @@ class GRINDownloadService:
             )
             self.upload_unpacked_ocr_files(barcode, ocr_dir, decrypted_ocr_package)
 
-            mets_file = ocr_dir + f"NYPL_{barcode}.xml"
-            return ocr_dir, mets_file
+        gc.collect()
+
+        mets_file = ocr_dir + f"NYPL_{barcode}.xml"
+        return ocr_dir, mets_file
 
     def download_ocr_package(
         self, barcode, grin_status: GRINStatus, ocr_package_name, tmp_ocr_package
@@ -102,10 +105,9 @@ class GRINDownloadService:
     def decrypt_ocr_package(self, barcode, tmp_ocr_package, tmp_dir):
         logger.info(f"Decrypting {barcode} OCR package")
         decrypted_ocr_package = os.path.join(tmp_dir, f"{barcode}.tar.gz")
-        gpg = gnupg.GPG()
 
         with open(tmp_ocr_package, "rb") as encrypted_file:
-            decrypt_result = gpg.decrypt_file(
+            decrypt_result = self.gpg.decrypt_file(
                 encrypted_file,
                 passphrase=self.grin_pass_key,
                 output=decrypted_ocr_package,
@@ -127,12 +129,24 @@ class GRINDownloadService:
                 for file in tar_file:
                     file_obj = tar_file.extractfile(file)
 
-                    if file_obj:
-                        self.s3_manager.client.upload_fileobj(
-                            io.BytesIO(file_obj.read()),
-                            Bucket=self.bucket,
-                            Key=ocr_dir + file.name,
-                        )
+                    if not file_obj:
+                        continue
+
+                    try:
+                        with tempfile.SpooledTemporaryFile(
+                            max_size=1 * 1024 * 1024
+                        ) as spooled_file:
+                            shutil.copyfileobj(file_obj, spooled_file)
+                            spooled_file.seek(0)
+
+                            self.s3_manager.client.upload_fileobj(
+                                Fileobj=spooled_file,
+                                Bucket=self.bucket,
+                                Key=ocr_dir + file.name,
+                            )
+                    finally:
+                        file_obj.close()
+                        del file_obj
         except tarfile.TarError:
             logger.exception(f"Error unpacking OCR package for {barcode}")
             raise Exception(f"Failed to unpack OCR package for {barcode}")
