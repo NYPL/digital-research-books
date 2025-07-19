@@ -19,7 +19,7 @@ def profile(logger):
             mem_after = get_process_memory()
 
             logger.info(
-                f"{func.__name__} memory usage (before {mem_before:.2f}: MB, after: {mem_after:.2f} MB, delta {(mem_after - mem_before):+.2f} MB)"
+                f"{func.__name__} memory usage - before {mem_before:.2f}: MB, after: {mem_after:.2f} MB, delta: {(mem_after - mem_before):+.2f} MB"
             )
 
             return result
