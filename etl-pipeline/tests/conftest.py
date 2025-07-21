@@ -455,5 +455,5 @@ def mock_sqs_manager():
 @pytest.fixture(scope="module")
 def grin_client():
     client = GRINClient()
-    
+
     yield client
