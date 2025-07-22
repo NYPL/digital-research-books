@@ -16,7 +16,7 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
 }) => {
   
   return (
-    <div className={styles.windowContainer}>
+    <Box className={styles.windowContainer}>
       {messages.length === 0 && !isLoading && (
         <Box color="white" margin="0 auto">What research topic would you like to explore?</Box>
       )}
@@ -28,10 +28,10 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
       {isLoading && (
         <Box className={styles.loadingSpinnerContainer}>
           <Box className={styles.loadingSpinner}></Box>
-          <Text as="span" className={styles.loadingText}>Assistant thinking...</Text>
+          <Text className={styles.loadingText} noSpace>Assistant thinking...</Text>
         </Box>
       )}
-    </div>
+    </Box>
   );
 };
 
