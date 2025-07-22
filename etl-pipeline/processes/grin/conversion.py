@@ -56,15 +56,15 @@ class GRINConversion:
                 GRINStatus.state == GRINState.PENDING_CONVERSION.value,
             )
             .where(GRINStatus.date_created <= GRINStatus.backfill_timestamp())
-            .limit(self.batch_limit)
         )
 
         backfilled_barcodes = (
             self.db_manager.session.execute(backfill_query).scalars().all()
         )
-        if len(backfilled_barcodes) > 0:
+        
+        for chunked_barcodes in chunk(iter(backfilled_barcodes), self.batch_limit):
             converting_barcodes, converted_barcodes = self.convert_barcodes(
-                backfilled_barcodes
+                chunked_barcodes
             )
             try:
                 update_converting_barcodes = (
