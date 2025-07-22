@@ -31,8 +31,7 @@ class GRINConversion:
                 self.send_sqs_messages(successfully_converted_books)
 
                 if backfill:
-                    converted_barcodes = self.convert_backfills()
-                    self.send_sqs_messages(converted_barcodes)
+                    self.convert_backfills()
             except Exception as e:
                 self.logger.exception(f"GRIN Conversion failed to complete. Error: {e}")
                 return
@@ -208,14 +207,6 @@ class GRINConversion:
                 rows.append(row.split("\t"))
 
         return pd.DataFrame(rows, columns=headers)
-
-    def send_sqs_messages(self, converted_barcodes):
-        if converted_barcodes is None:
-            return
-        sqs_manager = SQSManager(os.environ["GRIN_INGEST_SQS_QUEUE"])
-        for barcode in converted_barcodes:
-            message = {"barcode": barcode}
-            sqs_manager.send_message_to_queue(message)
 
 
 if __name__ == "__main__":
