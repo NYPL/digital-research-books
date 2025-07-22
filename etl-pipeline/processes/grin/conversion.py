@@ -28,8 +28,6 @@ class GRINConversion:
 
                 successfully_converted_books = self.process_converted_books()
 
-                self.send_sqs_messages(successfully_converted_books)
-
                 if backfill:
                     self.convert_backfills()
             except Exception as e:
