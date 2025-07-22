@@ -16,7 +16,7 @@ import os
 
 
 class GRINConversion:
-    def __init__(self, *args, batch_limit=1000):
+    def __init__(self, *args, batch_limit=5000):
         self.client = GRINClient()
         self.logger = create_log(__name__)
         self.batch_limit = batch_limit
