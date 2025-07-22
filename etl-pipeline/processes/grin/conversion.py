@@ -61,7 +61,7 @@ class GRINConversion:
         backfilled_barcodes = (
             self.db_manager.session.execute(backfill_query).scalars().all()
         )
-        
+
         for chunked_barcodes in chunk(iter(backfilled_barcodes), self.batch_limit):
             converting_barcodes, converted_barcodes = self.convert_barcodes(
                 chunked_barcodes
