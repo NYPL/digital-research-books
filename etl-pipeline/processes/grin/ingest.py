@@ -30,10 +30,10 @@ class GRINIngestProcess:
         self.record_ingestor = RecordIngestor(Source.GRIN.value)
         self.grin_download_service = GRINDownloadService(bucket=self.bucket)
 
+        self.processed_count = 0
+
     def runProcess(self, max_attempts: int = 10):
         try:
-            processed_count = 0
-
             for attempt in range(max_attempts):
                 wait_time = 5 * attempt
                 if wait_time:
@@ -45,24 +45,34 @@ class GRINIngestProcess:
                 ):
                     for message in messages:
                         self._process_message(message)
-                        processed_count += 1
 
                         if (
                             self.params.limit is not None
-                            and processed_count >= self.params.limit
+                            and self.processed_count >= self.params.limit
                         ):
                             logger.info(
                                 f"Reached GRIN ingest limit: {self.params.limit}"
                             )
-                            return
+                            break
         except Exception:
             logger.exception("Failed to run GRIN ingest process")
 
     @timer(logger)
     def _process_message(self, message):
         try:
-            barcode, receipt_handle = self._parse_message(message)
+            barcodes, receipt_handle = self._parse_message(message)
 
+            for barcode in barcodes:
+                self._process_barcode(barcode)
+                self.processed_count += 1
+
+            self.sqs_manager.acknowledge_message_processed(receipt_handle)
+        except Exception:
+            logger.exception(f"Failed to process GRIN ingest message")
+            self.sqs_manager.reject_message(receipt_handle)
+
+    def _process_barcode(self, barcode):
+        try:
             _, mets_file = self.grin_download_service.download_barcode(barcode)
 
             record = self._map_record(barcode, mets_file)
@@ -71,18 +81,15 @@ class GRINIngestProcess:
                 skip_next=self.params.options.get("skip_next", "false").lower()
                 == "true",
             )
-
-            self.sqs_manager.acknowledge_message_processed(receipt_handle)
         except Exception:
-            logger.exception(f"Failed to process GRIN ingest message")
-            self.sqs_manager.reject_message(receipt_handle)
+            logger.exception(f"Failed to process barcode: {barcode}")
 
     def _parse_message(self, sqs_message):
         receipt_handle = sqs_message["ReceiptHandle"]
         message_body = json.loads(sqs_message["Body"])
-        barcode = message_body["barcode"]
+        barcodes = message_body["barcodes"]
 
-        return barcode, receipt_handle
+        return barcodes, receipt_handle
 
     def _map_record(self, barcode, mets_file: str) -> Record:
         xml_metadata = self.storage_manager.get_object(
