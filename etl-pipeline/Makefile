@@ -6,6 +6,9 @@ compose_command = docker-compose --file $(compose_file)
 help:
 	@echo "make help"
 
+format:
+	ruff format
+
 unit:
 	python -m pytest --cov-report term-missing --cov=. tests/unit
 

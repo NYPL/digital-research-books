@@ -44,3 +44,4 @@ langgraph
 langchain-google-genai
 google-genai
 psutil
+pre-commit
