@@ -110,8 +110,8 @@ class GRINConversion:
                 )
 
             existing_barcodes = {
-                barcode[0]
-                for barcode in self.db_manager.session.query(GRINStatus.barcode)
+                grin_status.barcode
+                for grin_status in self.db_manager.session.query(GRINStatus.barcode)
                 .filter(GRINStatus.barcode.in_(converted_barcodes))
                 .all()
             }
