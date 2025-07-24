@@ -37,7 +37,7 @@ class GRINConversion:
     def convert_new_barcodes(self):
         new_barcodes = self.client.acquired_today()
 
-        if len(new_barcodes) != 2:
+        if len(new_barcodes) <= 2:
             self.logger.info("No new barcodes")
             return
 
