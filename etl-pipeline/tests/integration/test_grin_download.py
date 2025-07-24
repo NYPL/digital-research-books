@@ -4,7 +4,9 @@ from processes.grin.download import GRINDownloadService
 import boto3
 from botocore.exceptions import ClientError
 import pytest
-from managers import DBManager
+from logger import create_log
+
+logger = create_log(__name__)
 
 TEST_BUCKET = "drb-grin-files-test"
 TEST_BARCODE = "33433000009799"  # barcode with converted status in local test db
@@ -21,30 +23,31 @@ def test_s3_bucket():
     assert test_s3_bucket_read_access(s3, TEST_BUCKET), (
         f"Bucket {TEST_BUCKET} is not readable"
     )
-    # assert test_s3_bucket_write_access(s3, TEST_BUCKET), f"Bucket {TEST_BUCKET} is not writable" # uncomment to test write access
+    assert test_s3_bucket_write_access(s3, TEST_BUCKET), (
+        f"Bucket {TEST_BUCKET} is not writable"
+    )
 
 
 def test_s3_bucket_read_access(s3, bucket_name):
     try:
         s3.head_bucket(Bucket=bucket_name)
-        print(f"Confirmed read access to bucket '{bucket_name}'.")
+        logger.info(f"Confirmed read access to bucket '{bucket_name}'.")
         return True
     except ClientError as e:
-        print(f"No read access to bucket '{bucket_name}': {e}")
+        logger.error(f"No read access to bucket '{bucket_name}': {e}")
         return False
 
 
-# uncomment to test write access
-# def test_s3_bucket_write_access(s3, bucket_name):
-#     test_key = "test-write-access.txt"
-#     try:
-#         s3.put_object(Bucket=bucket_name, Key=test_key, Body=b"test")
-#         print(f"Confirmed write access to bucket '{bucket_name}'.")
-#         # s3.delete_object(Bucket=bucket_name, Key=test_key) # uncomment to delete the test file
-#         return True
-#     except ClientError as e:
-#         print(f"No write access to bucket '{bucket_name}': {e}")
-#         return False
+def test_s3_bucket_write_access(s3, bucket_name):
+    test_key = "test-write-access.txt"
+    try:
+        s3.put_object(Bucket=bucket_name, Key=test_key, Body=b"test")
+        logger.info(f"Confirmed write access to bucket '{bucket_name}'.")
+        # s3.delete_object(Bucket=bucket_name, Key=test_key) # uncomment to delete the test file
+        return True
+    except ClientError as e:
+        logger.error(f"No write access to bucket '{bucket_name}': {e}")
+        return False
 
 
 def test_download_barcode(db_manager):
@@ -58,8 +61,8 @@ def test_download_barcode(db_manager):
     # confirm bucket exists
     service = GRINDownloadService(TEST_BUCKET)
     assert service.bucket == TEST_BUCKET, (
-        f"Expected bucket name '{TEST_BUCKET}', but got {service.bucket}"
+        f"Expected bucket name '{TEST_BUCKET}', but received {service.bucket}"
     )
 
     download_result = service.download_barcode(TEST_BARCODE)
-    print(f"Download result: {download_result}")
+    logger.info(f"Download result: {download_result}")
