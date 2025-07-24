@@ -20,13 +20,14 @@ class GRINConversion:
         self.batch_limit = batch_limit
 
     def runProcess(self):
-        while True:
+        if self.params.process_type == "daily":
+            with DBManager() as self.db_manager:
+                self.convert_new_barcodes()
+                return
+
+        while self._get_unconverted_barcode_count > 0:
             with DBManager() as self.db_manager:
                 try:
-                    if self.params.process_type == "daily":
-                        self.convert_new_barcodes()
-                        return
-
                     self.convert_barcodes_pending_conversion()
                     self.sync_converted_books()
                 except Exception:
@@ -173,6 +174,15 @@ class GRINConversion:
                 rows.append(row.split("\t"))
 
         return pd.DataFrame(rows, columns=headers)
+
+    def _get_unconverted_barcode_count(self) -> int:
+        with DBManager() as db_manager:
+            return (
+                db_manager.session.query(GRINStatus)
+                .filter(GRINStatus.state != GRINState.DOWNLOADED)
+                .filter(GRINStatus.state != GRINState.CONVERTED)
+                .count()
+            )
 
     def _update_grin_state(self, barcodes, old_state: GRINState, new_state: GRINState):
         try:
