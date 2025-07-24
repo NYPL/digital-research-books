@@ -53,7 +53,7 @@ class GRINIngestProcess:
                             logger.info(
                                 f"Reached GRIN ingest limit: {self.params.limit}"
                             )
-                            break
+                            return
         except Exception:
             logger.exception("Failed to run GRIN ingest process")
 
