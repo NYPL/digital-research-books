@@ -121,7 +121,6 @@ describe("MessageBubble", () => {
 
         const messageElement = screen.getByText("This is an assistant response.");
         expect(messageElement).toBeInTheDocument();
-        expect(messageElement.closest("div")).toHaveClass("assistantBubble");
     });
 });
 

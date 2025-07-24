@@ -13,22 +13,22 @@ import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
 
 interface ResearchAssistantLandingProps {
-    onSearchSubmit: (query: string) => void;
+    onSubmit: (query: string) => void;
 }
 
 const ResearchAssistantLanding: React.FC<ResearchAssistantLandingProps> = ({
-    onSearchSubmit,
+    onSubmit,
 }) => {
     const [searchInput, setSearchInput] = useState("");
 
     const handleLocalSearchSubmit = () => {
         if (searchInput.trim()) {
-            onSearchSubmit(searchInput.trim());
+            onSubmit(searchInput.trim());
         }
     };
 
     const handleSuggestionClick = (suggestion: string) => {
-        onSearchSubmit(suggestion);
+        onSubmit(suggestion);
     };
 
     const featuredSuggestions = [

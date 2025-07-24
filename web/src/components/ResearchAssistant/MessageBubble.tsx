@@ -20,27 +20,23 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     >
       <Box className={bubbleClasses}>
         {isUser ? (
-          <Text className={styles.messageContent} as="div">
+          <Text className={styles.messageContent} noSpace>
             <b>You: </b>
             {message.data.content}
           </Text>
         ) : (
-          <Text className={styles.messageContent} as="div">
-            <Box display="flex" gap="xs">
-              <ResearchAssistantIcon />
-              <Box display="flex" flexDir="column" gap="1.5rem">
-                <Box>
-                  <b>
-                    <Text color="section.research.primary" noSpace>
-                      Virtual Research Assistant:{" "}
-                    </Text>
-                  </b>
-                  {message.data.content}
-                </Box>
-                <Text color="ui.gray.semi-dark" as="div">AI-generated. Verify results.</Text>
+          <Box className={styles.messageContent} display="flex" gap="xs">
+            <ResearchAssistantIcon />
+            <Box display="flex" flexDir="column" gap="m">
+              <Box>
+                <Text color="section.research.primary" isBold noSpace>
+                  Virtual Research Assistant:
+                </Text>
+                {message.data.content}
               </Box>
+              <Text color="ui.gray.semi-dark" noSpace>AI-generated. Verify results.</Text>
             </Box>
-          </Text>
+          </Box>
         )}
       </Box>
     </Box>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { useResearchAssistant } from "./useResearchAssistant";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import ResearchAssistantInput from "./ResearchAssistantInput";
@@ -13,7 +13,6 @@ import {
 } from "@nypl/design-system-react-components";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
-import ResearchAssistantLanding from "./ResearchAssistantLanding";
 
 const ResearchAssistant: React.FC = () => {
   const {
@@ -25,12 +24,16 @@ const ResearchAssistant: React.FC = () => {
     clearHistory,
   } = useResearchAssistant();
 
-  const [showChat, setShowChat] = useState(false);
 
-  const handleLandingSubmit = (query: string) => {
-    setShowChat(true);
-    sendMessage(query);
-  }
+  useEffect(() => {
+    const initialMessage = sessionStorage.getItem(
+      "researchAssistantInitialMessage"
+    );
+    if (initialMessage) {
+      sendMessage(initialMessage);
+      sessionStorage.removeItem("researchAssitantInitialMessage");
+    }
+  }, [sendMessage]);
 
   const breakoutElement = (
     <DrbBreakout
@@ -61,8 +64,14 @@ const ResearchAssistant: React.FC = () => {
       )}
 
       <section className={styles.chatPanel}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" paddingX="l" paddingY="s"
-          borderBottom="1px white solid">
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          paddingX="l"
+          paddingY="s"
+          borderBottom="1px white solid"
+        >
           <Heading level="h2" size="heading3" color="ui.white" margin="0">
             Virtual Research Assistant
           </Heading>
@@ -88,18 +97,13 @@ const ResearchAssistant: React.FC = () => {
     </Box>
   );
 
-  // TODO: have separate page/endpoint for landing and chat ui
-  if (showChat) {
-    return (
-        <TemplateAppContainer
-          breakout = { breakoutElement }
-          contentPrimary = { contentPrimaryElement }
-          gridTemplateColumns = "1fr 100% 1fr"
-        />
-      )
-  } else {
-    return <ResearchAssistantLanding onSearchSubmit={handleLandingSubmit} />
-  }
+  return (
+    <TemplateAppContainer
+      breakout={breakoutElement}
+      contentPrimary={contentPrimaryElement}
+      gridTemplateColumns="1fr 100% 1fr"
+    />
+  );
 };
 
 export default ResearchAssistant;
