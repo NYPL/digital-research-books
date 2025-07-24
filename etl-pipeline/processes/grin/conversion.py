@@ -13,7 +13,7 @@ from .. import utils
 
 
 class GRINConversion:
-    def __init__(self, *args, batch_limit=5000):
+    def __init__(self, *args, batch_limit=1000):
         self.params = utils.parse_process_args(*args)
         self.client = GRINClient()
         self.logger = create_log(__name__)
@@ -33,7 +33,7 @@ class GRINConversion:
                 except Exception:
                     self.logger.exception("Failed to run GRIN conversion process")
 
-            time.sleep(seconds=120)
+            time.sleep(120)
 
     def convert_new_barcodes(self):
         new_barcodes = self.client.acquired_today()
@@ -89,7 +89,7 @@ class GRINConversion:
         if not converted_filenames:
             return
 
-        for chunked_filenames in chunk(iter(converted_filenames), 100):
+        for chunked_filenames in chunk(iter(converted_filenames), self.batch_limit):
             # converted file name has the following pattern 1234.tar.gz.gpg
             converted_barcodes = {
                 barcode.split(".", 1)[0] for barcode in chunked_filenames
@@ -100,10 +100,13 @@ class GRINConversion:
                     update(GRINStatus)
                     .filter(GRINStatus.barcode.in_(list(converted_barcodes)))
                     .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
+                    .filter(GRINStatus.state != GRINState.CONVERTED.value)
                     .values(state=GRINState.CONVERTED.value)
                 )
                 self.db_manager.commit_changes()
-                self.logger.info(f"Converted {update_results.rowcount} barcodes")
+
+                if update_results.rowcount:
+                    self.logger.info(f"Converted {update_results.rowcount} barcodes")
             except Exception:
                 self.db_manager.session.rollback()
                 self.logger.exception(
@@ -135,7 +138,7 @@ class GRINConversion:
         return converting_barcodes_list, converted_barcodes_list
 
     def _save_barcodes(self, barcodes, state: GRINState):
-        if len(barcodes) == 0:
+        if not barcodes:
             return
 
         records: List[Record] = []
@@ -179,8 +182,8 @@ class GRINConversion:
         with DBManager() as db_manager:
             return (
                 db_manager.session.query(GRINStatus)
-                .filter(GRINStatus.state != GRINState.DOWNLOADED)
-                .filter(GRINStatus.state != GRINState.CONVERTED)
+                .filter(GRINStatus.state == GRINState.PENDING_CONVERSION.value)
+                .filter(GRINStatus.state == GRINState.CONVERTING.value)
                 .count()
             )
 
