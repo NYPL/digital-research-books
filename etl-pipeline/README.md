@@ -177,6 +177,11 @@ Processing:
 
 - `RecordPipelineProcess`: Process records.
 
+## Formatting
+We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` to format the files. 
+
+We also check formatting before committing. From the root directory, run `pre-commit install` to setup the pre-commit hooks. 
+
 ## Testing
 
 This project uses [pytest](https://docs.pytest.org/) for testing. You can run tests using make commands or pytest directly:

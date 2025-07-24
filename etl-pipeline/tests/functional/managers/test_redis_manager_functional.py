@@ -9,7 +9,7 @@ def test_any_lock():
     redis_manager = RedisManager()
     redis_manager.create_client()
 
-    lock = Redlock(key=test_key, masters= { redis_manager.client}         )
+    lock = Redlock(key=test_key, masters={redis_manager.client})
 
     with lock:
         assert redis_manager.any_locked([test_key]) is True
