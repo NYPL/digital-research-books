@@ -44,7 +44,6 @@ class GRINConversion:
         new_barcodes = self._transform_scraped_data(new_barcodes)
         converting_barcodes, _ = self._convert_barcodes(new_barcodes["Barcode"])
 
-        self.logger.info(f"Acquired and converted {len(converting_barcodes)} books")
         self._save_barcodes(converting_barcodes, GRINState.CONVERTING)
 
     def convert_barcodes_pending_conversion(self):
@@ -158,6 +157,7 @@ class GRINConversion:
         try:
             self.db_manager.session.add_all(records)
             self.db_manager.commit_changes()
+            self.logger.info(f"Saved {len(records)} barcodes in state: {state.value}")
         except Exception:
             self.db_manager.session.rollback()
             self.logger.exception(
