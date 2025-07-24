@@ -3,6 +3,7 @@ import os
 from managers import DBManager, SQSManager
 from sqlalchemy import select
 from model import Record, GRINStatus
+from utils.chunker import chunk
 
 
 def main():
@@ -18,8 +19,8 @@ def main():
 
         barcodes = db_manager.session.execute(query).scalars().all()
 
-        for barcode in barcodes:
-            sqs_manager.send_message_to_queue({"barcode": barcode})
+        for chunked_barcodes in chunk(barcodes, 10):
+            sqs_manager.send_message_to_queue({"barcodes": chunked_barcodes})
 
 
 if __name__ == "__main__":
