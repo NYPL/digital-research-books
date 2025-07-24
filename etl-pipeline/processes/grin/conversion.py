@@ -16,7 +16,7 @@ import os
 
 
 class GRINConversion:
-    def __init__(self, *args, batch_limit=1000):
+    def __init__(self, *args, batch_limit=5000):
         self.client = GRINClient()
         self.logger = create_log(__name__)
         self.batch_limit = batch_limit
@@ -28,11 +28,8 @@ class GRINConversion:
 
                 successfully_converted_books = self.process_converted_books()
 
-                self.send_sqs_messages(successfully_converted_books)
-
                 if backfill:
-                    converted_barcodes = self.convert_backfills()
-                    self.send_sqs_messages(converted_barcodes)
+                    self.convert_backfills()
             except Exception as e:
                 self.logger.exception(f"GRIN Conversion failed to complete. Error: {e}")
                 return
@@ -57,15 +54,15 @@ class GRINConversion:
                 GRINStatus.state == GRINState.PENDING_CONVERSION.value,
             )
             .where(GRINStatus.date_created <= GRINStatus.backfill_timestamp())
-            .limit(self.batch_limit)
         )
 
         backfilled_barcodes = (
             self.db_manager.session.execute(backfill_query).scalars().all()
         )
-        if len(backfilled_barcodes) > 0:
+
+        for chunked_barcodes in chunk(iter(backfilled_barcodes), self.batch_limit):
             converting_barcodes, converted_barcodes = self.convert_barcodes(
-                backfilled_barcodes
+                chunked_barcodes
             )
             try:
                 update_converting_barcodes = (
@@ -208,14 +205,6 @@ class GRINConversion:
                 rows.append(row.split("\t"))
 
         return pd.DataFrame(rows, columns=headers)
-
-    def send_sqs_messages(self, converted_barcodes):
-        if converted_barcodes is None:
-            return
-        sqs_manager = SQSManager(os.environ["GRIN_INGEST_SQS_QUEUE"])
-        for barcode in converted_barcodes:
-            message = {"barcode": barcode}
-            sqs_manager.send_message_to_queue(message)
 
 
 if __name__ == "__main__":
