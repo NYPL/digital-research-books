@@ -7,7 +7,7 @@ class ResearchAssistantChatBot:
     def __init__(self, *args):
         pass
 
-    def runProcess(self):
+    def run(self):
         print("Chat Interface")
         print("Type a question and hit Enter. Ctrl+C to exit.\n")
 

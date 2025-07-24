@@ -14,7 +14,7 @@ class APIProcess:
         self.elastic_search_manager = ElasticsearchManager()
         self.redis_manager = RedisManager()
 
-    def runProcess(self):
+    def run(self):
         try:
             logger.info("Starting API...")
 

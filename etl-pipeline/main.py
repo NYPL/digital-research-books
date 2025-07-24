@@ -52,17 +52,17 @@ def main(args):
             source,
             options,
         )
-    except:
+    except Exception:
         logger.exception(f"Failed to initialize process {process} in {environment}")
         return
 
     if process in ("APIProcess", "DevelopmentSetupProcess", "MigrationProcess"):
-        process_instance.runProcess()
+        process_instance.run()
     else:
         app = newrelic.agent.register_application(timeout=10.0)
 
         with newrelic.agent.BackgroundTask(app, name=process_instance):
-            process_instance.runProcess()
+            process_instance.run()
 
 
 def register_processes():

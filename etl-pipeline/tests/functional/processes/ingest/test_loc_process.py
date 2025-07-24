@@ -7,7 +7,7 @@ from .assert_uploaded_epubs import assert_uploaded_epubs
 
 def test_loc_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager):
     loc_process = IngestProcess("complete", None, None, None, 5, None, Source.LOC.value)
-    number_of_records_ingested = loc_process.runProcess()
+    number_of_records_ingested = loc_process.run()
 
     records = assert_ingested_records(
         db_manager,

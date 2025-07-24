@@ -19,7 +19,7 @@ class GRINConversion:
         self.logger = create_log(__name__)
         self.batch_limit = batch_limit
 
-    def runProcess(self):
+    def run(self):
         if self.params.process_type == "daily":
             with DBManager() as self.db_manager:
                 self.convert_new_barcodes()
