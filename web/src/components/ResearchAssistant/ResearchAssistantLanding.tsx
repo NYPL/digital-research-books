@@ -11,15 +11,16 @@ import {
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
+import { useRouter } from "next/router";
 
-interface ResearchAssistantLandingProps {
-    onSubmit: (query: string) => void;
-}
-
-const ResearchAssistantLanding: React.FC<ResearchAssistantLandingProps> = ({
-    onSubmit,
-}) => {
+const ResearchAssistantLanding: React.FC = () => {
+    const router = useRouter();
     const [searchInput, setSearchInput] = useState("");
+
+    const onSubmit = (query: string) => {
+        sessionStorage.setItem("researchAssistantInitialMessage", query.trim());
+        router.push("/research-assistant");
+    };
 
     const handleLocalSearchSubmit = () => {
         if (searchInput.trim()) {
@@ -69,10 +70,32 @@ const ResearchAssistantLanding: React.FC<ResearchAssistantLandingProps> = ({
                 ]}
             >
                 <DrbHero />
-                <Box height="l" paddingY="xs" display="flex" maxWidth="1280px" alignItems="center" margin="auto" gap="s">
-                    <Box display="flex" alignItems="center" paddingX="s" paddingY="xxs" backgroundColor="section.research.primary-05" borderRadius="6px">
+                <Box
+                    height="l"
+                    paddingY="xs"
+                    display="flex"
+                    maxWidth="1280px"
+                    alignItems="center"
+                    margin="auto"
+                    gap="s"
+                >
+                    <Box
+                        display="flex"
+                        alignItems="center"
+                        paddingX="s"
+                        paddingY="xxs"
+                        backgroundColor="section.research.primary-05"
+                        borderRadius="6px"
+                    >
                         <ResearchAssistantIcon />
-                        <Text size="body1" color="section.research.secondary" isBold noSpace>Virtual Research Assistant</Text>
+                        <Text
+                            size="body1"
+                            color="section.research.secondary"
+                            isBold
+                            noSpace
+                        >
+                            Virtual Research Assistant
+                        </Text>
                     </Box>
                     <Box display="flex" alignItems="center">
                         <Icon name="search" align="left" size="large" />
