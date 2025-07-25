@@ -35,7 +35,7 @@ class GRINConversion:
                 except Exception:
                     self.logger.exception("Failed to run GRIN conversion process")
 
-            break
+            time.sleep(120)
 
     def convert_new_barcodes(self):
         new_barcodes = self.client.acquired_today()
