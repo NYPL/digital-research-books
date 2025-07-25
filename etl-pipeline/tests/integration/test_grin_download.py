@@ -18,8 +18,16 @@ def db_manager():
         yield manager
 
 
-def test_s3_bucket():
+@pytest.fixture
+def grin_download_service():
+    return GRINDownloadService(TEST_BUCKET)
+
+
+def test_s3_bucket(grin_download_service):
     s3 = boto3.client("s3")
+    assert grin_download_service.bucket == TEST_BUCKET, (
+        f"Bucket '{TEST_BUCKET}' does not exist and instead received {grin_download_service.bucket}"
+    )
     assert test_s3_bucket_read_access(s3, TEST_BUCKET), (
         f"Bucket {TEST_BUCKET} is not readable"
     )
@@ -43,21 +51,22 @@ def test_s3_bucket_read_access(s3, bucket_name):
 #     try:
 #         s3.put_object(Bucket=bucket_name, Key=test_key, Body=b"test")
 #         logger.info(f"Confirmed write access to bucket '{bucket_name}'.")
-#         # s3.delete_object(Bucket=bucket_name, Key=test_key) # uncomment to delete the test file
+#         # s3.delete_object(Bucket=bucket_name, Key=test_key) # deletes the test file
 #         return True
 #     except ClientError as e:
 #         logger.error(f"No write access to bucket '{bucket_name}': {e}")
 #         return False
 
 
-def test_download_barcode(db_manager):
+def test_barcode_converted(db_manager):
     # insert test record if not present
     grin_status = db_manager.session.get(GRINStatus, TEST_BARCODE)
     if grin_status is None:
         grin_status = GRINStatus(
             barcode=TEST_BARCODE,
             state=GRINState.CONVERTED.value,
-            # add any other required fields here
+            source="grin",
+            source_id=f"{TEST_BARCODE}|grin",
         )
         db_manager.session.add(grin_status)
         db_manager.session.commit()
@@ -69,15 +78,7 @@ def test_download_barcode(db_manager):
         f"Barcode {TEST_BARCODE} does not have CONVERTED status. Actual status: {grin_status.state}"
     )
 
-    import os
 
-    print("DB connection string:", os.environ.get("DATABASE_URL"))
-
-    # confirm bucket exists
-    service = GRINDownloadService(TEST_BUCKET)
-    assert service.bucket == TEST_BUCKET, (
-        f"Expected bucket name '{TEST_BUCKET}', but received {service.bucket}"
-    )
-
-    download_result = service.download_barcode(TEST_BARCODE)
+def test_barcode_downloaded(grin_download_service):
+    download_result = grin_download_service.download_barcode(TEST_BARCODE)
     logger.info(f"Download result: {download_result}")
