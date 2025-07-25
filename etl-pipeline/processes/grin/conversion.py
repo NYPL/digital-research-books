@@ -25,7 +25,7 @@ class GRINConversion:
                 self.convert_new_barcodes()
                 return
 
-        while self._get_unconverted_barcode_count > 0:
+        while self._get_unconverted_barcode_count() > 0:
             with DBManager() as self.db_manager:
                 try:
                     self.convert_barcodes_pending_conversion()
