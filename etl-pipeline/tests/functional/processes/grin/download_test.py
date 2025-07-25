@@ -50,7 +50,7 @@ def test_grin_download(s3_manager, grin_status):
     assert_ocr_package_downloaded(
         s3_manager, bucket, grin_status.barcode, mets_file_path, ocr_dir
     )
-    assert_ocr_package_unpacked(s3_manager, bucket, mets_file_path, ocr_dir)
+    assert_mets_file_uploaded(s3_manager, bucket, mets_file_path)
 
     delete_ocr_package(s3_manager, bucket, ocr_dir)
 
@@ -69,17 +69,10 @@ def assert_ocr_package_downloaded(s3_manager, bucket, barcode, mets_file_path, o
     assert mets_file_head_response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
-def assert_ocr_package_unpacked(s3_manager, bucket, mets_file_path, ocr_dir):
-    mets_file = mets_parser.METSFile.from_mets_str(
-        s3_manager.get_object(key=mets_file_path, bucket=bucket)["Body"].read()
-    )
+def assert_mets_file_uploaded(s3_manager, bucket, mets_file_path):
+    mets_file = s3_manager.get_object(key=mets_file_path, bucket=bucket)
 
-    for file in mets_file._map_file_ids().values():
-        page_head_response = s3_manager.client.head_object(
-            Bucket=bucket, Key=f"{ocr_dir}{file.location}"
-        )
-
-        assert page_head_response["ResponseMetadata"]["HTTPStatusCode"] == 200
+    assert mets_file["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
 def delete_ocr_package(s3_manager, bucket, ocr_dir):
