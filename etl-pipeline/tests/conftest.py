@@ -7,6 +7,8 @@ import requests_mock
 from sqlalchemy import text, delete
 from uuid import uuid4
 from unittest.mock import patch, MagicMock
+from processes.grin.grin_client import GRINClient
+
 
 from processes import RecordClusterer
 from model import (
@@ -448,3 +450,10 @@ def mock_sqs_manager():
         MockSQSManager.return_value = mock_sqs_manager_instance
 
         yield mock_sqs_manager_instance
+
+
+@pytest.fixture(scope="module")
+def grin_client():
+    client = GRINClient()
+
+    yield client
