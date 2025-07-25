@@ -31,7 +31,7 @@ const ResearchAssistant: React.FC = () => {
     );
     if (initialMessage) {
       sendMessage(initialMessage);
-      sessionStorage.removeItem("researchAssitantInitialMessage");
+      sessionStorage.removeItem("researchAssistantInitialMessage");
     }
   }, [sendMessage]);
 
