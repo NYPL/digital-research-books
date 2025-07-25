@@ -28,15 +28,15 @@ def test_s3_bucket(grin_download_service):
     assert grin_download_service.bucket == TEST_BUCKET, (
         f"Bucket '{TEST_BUCKET}' does not exist and instead received {grin_download_service.bucket}"
     )
-    assert test_s3_bucket_read_access(s3, TEST_BUCKET), (
+    assert s3_bucket_read_access(s3, TEST_BUCKET), (
         f"Bucket {TEST_BUCKET} is not readable"
     )
-    # assert test_s3_bucket_write_access(s3, TEST_BUCKET), (
+    # assert s3_bucket_write_access(s3, TEST_BUCKET), (
     #     f"Bucket {TEST_BUCKET} is not writable"
     # )
 
 
-def test_s3_bucket_read_access(s3, bucket_name):
+def s3_bucket_read_access(s3, bucket_name):
     try:
         s3.head_bucket(Bucket=bucket_name)
         logger.info(f"Confirmed read access to bucket '{bucket_name}'.")
@@ -46,7 +46,7 @@ def test_s3_bucket_read_access(s3, bucket_name):
         return False
 
 
-# def test_s3_bucket_write_access(s3, bucket_name):
+# def s3_bucket_write_access(s3, bucket_name):
 #     test_key = "test-write-access.txt"
 #     try:
 #         s3.put_object(Bucket=bucket_name, Key=test_key, Body=b"test")
@@ -79,6 +79,15 @@ def test_barcode_converted(db_manager):
     )
 
 
-def test_barcode_downloaded(grin_download_service):
+def test_download_process(grin_download_service):
     download_result = grin_download_service.download_barcode(TEST_BARCODE)
     logger.info(f"Download result: {download_result}")
+
+
+def test_barcode_downloaded(db_manager):
+    # confirm barcode exists and has downloaded status in db
+    grin_status = db_manager.session.get(GRINStatus, TEST_BARCODE)
+    assert grin_status is not None, f"Barcode {TEST_BARCODE} not found in database."
+    assert grin_status.state == GRINState.DOWNLOADED.value, (
+        f"Barcode {TEST_BARCODE} does not have DOWNLOADED status. Actual status: {grin_status.state}"
+    )
