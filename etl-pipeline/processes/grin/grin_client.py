@@ -4,9 +4,13 @@ from datetime import datetime, timedelta
 from google.auth.transport.requests import AuthorizedSession
 from google.oauth2.service_account import Credentials
 import json
+from requests import HTTPError
 from services.ssm_service import SSMService
+from logger import create_log
 
 BATCH_LIMIT = 100
+
+logger = create_log(__name__)
 
 
 class GRINClient(object):
@@ -63,6 +67,13 @@ class GRINClient(object):
             raw_response = self.session.request(
                 "POST", self._url("_process"), data=barcodes
             )
+
+            try:
+                raw_response.raise_for_status()
+            except HTTPError:
+                logger.exception(f"Failed to convert barcodes")
+                return response
+
             sanitized_response = raw_response.content.decode("utf8").split("\n")
             if len(response) > 0:
                 # Remove headers if this is not the first request
@@ -110,3 +121,7 @@ class GRINClient(object):
 
     def all_books(self, *args, **kwargs):
         return self._for_state("all_books", *args, **kwargs)
+
+
+class GRINRateLimitError(Exception):
+    pass
