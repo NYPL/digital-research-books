@@ -127,7 +127,7 @@ class GRINDownloadService:
                 for file in tar_file:
                     file_obj = tar_file.extractfile(file)
                     _, extension = os.path.splitext(file.name)
-                    
+
                     # Only upload METs file
                     if extension == ".xml":
                         self.s3_manager.client.upload_fileobj(
