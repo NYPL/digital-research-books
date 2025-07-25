@@ -151,7 +151,6 @@ const ResearchAssistantLanding: React.FC = () => {
                             />
                             <Button
                                 onClick={handleLocalSearchSubmit}
-                                aria-label="Start research"
                                 id="research-landing-submit"
                             >
                                 Send
