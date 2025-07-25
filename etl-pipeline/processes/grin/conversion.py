@@ -127,6 +127,10 @@ class GRINConversion:
 
     def _convert_barcodes(self, barcodes):
         converted_data = self.client.convert(barcodes)
+
+        if not converted_data:
+            return [], []
+
         converted_df = self._transform_scraped_data(converted_data)
 
         converting_barcodes = converted_df.query(
