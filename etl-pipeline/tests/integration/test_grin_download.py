@@ -1,3 +1,4 @@
+import os
 from managers import DBManager
 from model import GRINStatus, GRINState
 from processes.grin.download import GRINDownloadService
@@ -21,6 +22,21 @@ def db_manager():
 @pytest.fixture
 def grin_download_service():
     return GRINDownloadService(TEST_BUCKET)
+
+# def set_grin_status(db_manager, barcode, state):
+#     grin_status = db_manager.session.get(GRINStatus, barcode)
+#     if grin_status is None:
+#         grin_status = GRINStatus(
+#             barcode=barcode,
+#             state=state.value,
+#             source="grin",
+#             source_id=f"{barcode}|grin",
+#         )
+#         db_manager.session.add(grin_status)
+#     else:
+#         grin_status.state = state.value
+#     db_manager.session.commit()
+#     return grin_status
 
 
 def test_s3_bucket(grin_download_service):
@@ -80,8 +96,12 @@ def test_barcode_converted(db_manager):
 
 
 def test_download_process(grin_download_service):
-    download_result = grin_download_service.download_barcode(TEST_BARCODE)
-    logger.info(f"Download result: {download_result}")
+    bucket = os.environ["PRIVATE_FILE_BUCKET"]
+    grin_download_service = GRINDownloadService(bucket=bucket)
+    ocr_dir, mets_file_path = grin_download_service.download_barcode(
+        TEST_BARCODE
+    )
+    logger.info(f"OCR dir: {ocr_dir}, METS file: {mets_file_path}")
 
 
 def test_barcode_downloaded(db_manager):
