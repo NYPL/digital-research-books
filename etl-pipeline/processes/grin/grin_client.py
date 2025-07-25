@@ -121,7 +121,3 @@ class GRINClient(object):
 
     def all_books(self, *args, **kwargs):
         return self._for_state("all_books", *args, **kwargs)
-
-
-class GRINRateLimitError(Exception):
-    pass
