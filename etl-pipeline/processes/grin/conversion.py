@@ -25,7 +25,9 @@ class GRINConversion:
                 self.convert_new_barcodes()
                 return
 
-        while self._get_unconverted_barcode_count() > 0:
+        while (barcodes_remaining := self._get_unconverted_barcode_count()) > 0:
+            self.logger.info(f"{barcodes_remaining} barcodes need to be converted")
+
             with DBManager() as self.db_manager:
                 try:
                     self.convert_barcodes_pending_conversion()
@@ -33,7 +35,7 @@ class GRINConversion:
                 except Exception:
                     self.logger.exception("Failed to run GRIN conversion process")
 
-            time.sleep(120)
+            break
 
     def convert_new_barcodes(self):
         new_barcodes = self.client.acquired_today()
@@ -182,8 +184,8 @@ class GRINConversion:
         with DBManager() as db_manager:
             return (
                 db_manager.session.query(GRINStatus)
-                .filter(GRINStatus.state == GRINState.PENDING_CONVERSION.value)
-                .filter(GRINStatus.state == GRINState.CONVERTING.value)
+                .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
+                .filter(GRINStatus.state != GRINState.CONVERTED.value)
                 .count()
             )
 
