@@ -87,7 +87,7 @@ jobs:
 
       - name: Run integration tests
         env:
-          ENVIRONMENT: local
+          ENVIRONMENT: qa
         working-directory: ./etl-pipeline
         run: |
           make integration
