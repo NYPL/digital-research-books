@@ -23,6 +23,7 @@ def db_manager():
 def grin_download_service():
     return GRINDownloadService(TEST_BUCKET)
 
+
 # def set_grin_status(db_manager, barcode, state):
 #     grin_status = db_manager.session.get(GRINStatus, barcode)
 #     if grin_status is None:
@@ -98,9 +99,7 @@ def test_barcode_converted(db_manager):
 def test_download_process(grin_download_service):
     bucket = os.environ["PRIVATE_FILE_BUCKET"]
     grin_download_service = GRINDownloadService(bucket=bucket)
-    ocr_dir, mets_file_path = grin_download_service.download_barcode(
-        TEST_BARCODE
-    )
+    ocr_dir, mets_file_path = grin_download_service.download_barcode(TEST_BARCODE)
     logger.info(f"OCR dir: {ocr_dir}, METS file: {mets_file_path}")
 
 
