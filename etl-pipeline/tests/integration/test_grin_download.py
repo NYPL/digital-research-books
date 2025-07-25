@@ -70,6 +70,7 @@ def test_download_barcode(db_manager):
     )
 
     import os
+
     print("DB connection string:", os.environ.get("DATABASE_URL"))
 
     # confirm bucket exists
