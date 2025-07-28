@@ -13,21 +13,21 @@ def test_convert_new_barcodes(barcodes, grin_client, db_manager):
             for barcode in barcodes:
                 conversion_process.runProcess()
 
-
-            assert db_manager.session.query(GRINStatus
-            ).filter(GRINStatus.barcode.in_(barcodes)).count() > 0
+            assert (
+                db_manager.session.query(GRINStatus)
+                .filter(GRINStatus.barcode.in_(barcodes))
+                .count()
+                > 0
+            )
             assert (
                 status.state == GRINState.CONVERTING.value
-                for status in db_manager.session.query(GRINStatus)
-                .filter(GRINStatus.barcode.in_(barcodes))
-                
+                for status in db_manager.session.query(GRINStatus).filter(
+                    GRINStatus.barcode.in_(barcodes)
+                )
             )
-            assert db_manager.session.query(GRINStatus
-            ).filter(GRINStatus.state == GRINState.PENDING_CONVERSION.value).count() > 0   
-
-          
-        
-
-
-    
-
+            assert (
+                db_manager.session.query(GRINStatus)
+                .filter(GRINStatus.state == GRINState.PENDING_CONVERSION.value)
+                .count()
+                > 0
+            )
