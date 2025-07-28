@@ -52,7 +52,7 @@ class GRINDownloadService:
             decrypted_ocr_package = self.decrypt_ocr_package(
                 barcode, tmp_ocr_package, tmp_dir
             )
-            self.upload_unpacked_ocr_files(barcode, ocr_dir, decrypted_ocr_package)
+            self.unpack_and_upload_mets_file(barcode, ocr_dir, decrypted_ocr_package)
 
             mets_file = ocr_dir + f"NYPL_{barcode}.xml"
             return ocr_dir, mets_file
@@ -119,15 +119,17 @@ class GRINDownloadService:
 
         return decrypted_ocr_package
 
-    def upload_unpacked_ocr_files(self, barcode, ocr_dir, decrypted_ocr_package):
-        logger.info(f"Unpacking and uploading {barcode} OCR files to s3")
+    def unpack_and_upload_mets_file(self, barcode, ocr_dir, decrypted_ocr_package):
+        logger.info(f"Unpacking and uploading {barcode} METs file to s3")
 
         try:
             with tarfile.open(decrypted_ocr_package, mode="r|*") as tar_file:
                 for file in tar_file:
                     file_obj = tar_file.extractfile(file)
+                    _, extension = os.path.splitext(file.name)
 
-                    if file_obj:
+                    # Only upload METs file
+                    if extension == ".xml":
                         self.s3_manager.client.upload_fileobj(
                             io.BytesIO(file_obj.read()),
                             Bucket=self.bucket,
