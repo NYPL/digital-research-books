@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
   Form,
   TextInput,
+  TextInputRefType,
 } from "@nypl/design-system-react-components";
 import { Message } from "~/src/types/ResearchAssistant";
 
@@ -19,20 +20,48 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
   messages,
 }) => {
   const [inputText, setInputText] = useState("");
+  const inputRef = useRef<TextInputRefType>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputText.trim() && !isDisabled) {
       onSendMessage(inputText);
       setInputText("");
+
+      if (inputRef.current && !isDisabled) {
+        inputRef.current.focus();
+      }
     }
   };
 
-  const placeholderValue = isDisabled ? "Assistant is thinking..." : messages.length === 0 ? "Ask your question..." : "Enter your response here"
+  useEffect(() => {
+    if (inputRef.current && !isDisabled) {
+      inputRef.current.focus();
+    }
+  }, [isDisabled]);
+
+  const placeholderValue = isDisabled
+    ? "Assistant is thinking..."
+    : messages.length === 0
+      ? "Ask your question..."
+      : "Type your response here";
 
   return (
-    <Form onSubmit={handleSubmit} id="research-assistant-form">
-      <Box display="flex" flexDir="row">
+    <Form
+      onSubmit={handleSubmit}
+      id="research-assistant-form"
+      borderTop="1px white solid"
+      paddingX="l"
+      paddingY="s"
+      sx={{
+        "#research-assistant-form-parent": {
+          gap: 0,
+        },
+      }}
+      // @ts-expect-error: Override gap value type
+      gap="0"
+    >
+      <Box display="flex" flexDir="row" gap="0">
         <TextInput
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
@@ -41,6 +70,7 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
           id="chat-input"
           autoComplete="off"
           labelText={""}
+          ref={inputRef}
           flex="1"
         />
         <Button
