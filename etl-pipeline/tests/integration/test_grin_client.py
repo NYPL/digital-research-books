@@ -4,32 +4,6 @@ from google.oauth2.service_account import Credentials
 from google.auth.transport.requests import AuthorizedSession
 
 
-@pytest.fixture()
-def barcodes(grin_client):
-    available_barcodes_scrape_fragment = "_all_books?&book_state=NEW&format=text"
-    byte_response = grin_client.get(available_barcodes_scrape_fragment)
-    lines = byte_response.decode("utf8").strip().split("\n")
-    filtered_barcodes = [
-        b.strip() for b in lines if b.strip().isdigit() and len(b.strip()) == 14
-    ]
-
-    return (
-        random.sample(filtered_barcodes, 5)
-        if len(filtered_barcodes) >= 5
-        else filtered_barcodes
-    )
-
-
-@pytest.fixture()
-def expected_barcodes_statuses():
-    return [
-        "Success",
-        "Already being converted",
-        "Not allowed to be downloaded",
-        "Other error",
-    ]
-
-
 def test_grin_client_initialization(grin_client):
     assert grin_client is not None
     assert isinstance(grin_client.creds, Credentials)

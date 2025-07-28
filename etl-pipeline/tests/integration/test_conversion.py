@@ -4,46 +4,25 @@ from processes.grin.conversion import GRINConversion
 import random 
 
 
+def test_convert_new_barcodes(barcodes, grin_client):
+     
+     for barcode in barcodes:
+        if not barcode:
+            pytest.skip("No barcodes provided for testing.")
+        else:
+            conversion_process = GRINConversion(grin_client)    
+            converting_barcodes, converted_barcodes = conversion_process._convert_barcodes(barcodes)
 
-@pytest.fixture()
-def barcodes(grin_client):
-    available_barcodes_scrape_fragment = "_all_books?&book_state=NEW&format=text"
-    byte_response = grin_client.get(available_barcodes_scrape_fragment)
-    lines = byte_response.decode("utf8").strip().split("\n")
-    filtered_barcodes = [
-        b.strip() for b in lines if b.strip().isdigit() and len(b.strip()) == 14
-    ]
-
-    return (
-        random.sample(filtered_barcodes, 5)
-        if len(filtered_barcodes) >= 5
-        else filtered_barcodes
-    )
+            assert isinstance(converting_barcodes, list)
+            assert isinstance(converted_barcodes, list)
+            assert barcode in barcodes
+            assert set(converting_barcodes).issubset(set(barcodes)), "Converting barcodes should be a subset of provided barcodes"
+            assert set(converted_barcodes).issubset(set(barcodes)), "Converted barcodes should be a subset of provided barcodes"
+            assert not set(converting_barcodes).intersection(set(converted_barcodes)), "Converting and converted barcodes should not overlap"
+            assert len(converting_barcodes) + len(converted_barcodes) <= len(barcodes), "Total converting and converted barcodes should not exceed provided barcodes"
 
 
-@pytest.fixture()
-def expected_barcodes_statuses():
-    return [
-        "Success",
-        "Already being converted",
-        "Not allowed to be downloaded",
-        "Other error",
-    ]
 
-def test_convert_new_barcodes(barcodes, expected_barcodes_statuses, grin_client):
-    conversion_process = GRINConversion(grin_client)
-    converting_barcodes, converted_barcodes = conversion_process._convert_barcodes(barcodes)
-
-    assert isinstance(converting_barcodes, list)
-    assert isinstance(converted_barcodes, list)
-
-    for barcode in converting_barcodes:
-        assert barcode in barcodes
-        assert any(status in expected_barcodes_statuses for status in ["Success", "Already being converted"])
-
-    for barcode in converted_barcodes:
-        assert barcode in barcodes
-        assert "Already available for download" in expected_barcodes_statuses
 
 
     
