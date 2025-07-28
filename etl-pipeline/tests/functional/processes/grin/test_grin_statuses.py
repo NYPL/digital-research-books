@@ -3,9 +3,9 @@ import logging
 import pandas as pd
 import numpy as np
 from numpy import nan
-from .model.postgres.grin_status import GRINStatus
-from .model.postgres.grin_status import GRINState
-from .managers.db import DBManager
+from model.postgres.grin_status import GRINStatus
+from model.postgres.grin_status import GRINState
+from managers.db import DBManager
 
 @pytest.fixture(scope="session")
 def db_manager():
