@@ -30,8 +30,6 @@ def grin_download_service():
 #         grin_status = GRINStatus(
 #             barcode=barcode,
 #             state=state.value,
-#             source="grin",
-#             source_id=f"{barcode}|grin",
 #         )
 #         db_manager.session.add(grin_status)
 #     else:
@@ -82,8 +80,6 @@ def test_barcode_converted(db_manager):
         grin_status = GRINStatus(
             barcode=TEST_BARCODE,
             state=GRINState.CONVERTED.value,
-            source="grin",
-            source_id=f"{TEST_BARCODE}|grin",
         )
         db_manager.session.add(grin_status)
         db_manager.session.commit()
