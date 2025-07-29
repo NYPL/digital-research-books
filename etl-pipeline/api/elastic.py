@@ -39,6 +39,8 @@ class SearchParams(BaseModel):
     publication_year_start: Optional[str] = None
     publication_year_end: Optional[str] = None
     languages: Optional[list[str]] = None
+    page: int = 0
+    size: int = 10
 
     def to_query_filters(self):
         query = [
@@ -111,7 +113,7 @@ class ElasticClient:
         self.searchedFields = []
 
     def search_catalog(self, params: SearchParams) -> dict:
-        return self.searchQuery(params.to_query_filters())
+        return self.searchQuery(params.to_query_filters(), params.page, params.size)
 
     def createSearch(self):
         s = Search(index=os.environ["ELASTICSEARCH_INDEX"])

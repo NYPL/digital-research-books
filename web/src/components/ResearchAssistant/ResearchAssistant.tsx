@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useResearchAssistant } from "./useResearchAssistant";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import ResearchAssistantInput from "./ResearchAssistantInput";
@@ -8,22 +8,27 @@ import {
   Box,
   Button,
   Heading,
+  Pagination,
   TemplateAppContainer,
   Text,
 } from "@nypl/design-system-react-components";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
+import { SearchQuery } from "~/src/types/SearchQuery";
+import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
+import { SearchField } from "~/src/types/DataModel";
+import { toApiQuery } from "~/src/util/apiConversion";
 
 const ResearchAssistant: React.FC = () => {
   const {
     messages,
     sendMessage,
     results,
+    setResults,
     isLoading,
     error,
     clearHistory,
   } = useResearchAssistant();
-
 
   useEffect(() => {
     const initialMessage = sessionStorage.getItem(
@@ -34,6 +39,28 @@ const ResearchAssistant: React.FC = () => {
       sessionStorage.removeItem("researchAssistantInitialMessage");
     }
   }, [sendMessage]);
+
+  const onPageChange = async (select: number) => {
+    const searchQuery: SearchQuery = {
+      queries:  [],
+      page: select,
+    }
+    searchQuery.queries = results.searchParams.query.map(([field, queryStr]) => ({
+      query: queryStr,
+      field: field as SearchField,
+    }));
+
+    searchQuery.filters = results.searchParams.filters.map(([field, value]) => ({
+      field: field,
+      value: value,
+    }));
+
+    const newSearchResult = await searchResultsFetcher(toApiQuery(searchQuery));
+    const chatResult = Object.assign({}, newSearchResult.data, {
+      searchParams: results.searchParams
+    });
+    setResults(chatResult)
+  };
 
   const breakoutElement = (
     <DrbBreakout
@@ -47,7 +74,7 @@ const ResearchAssistant: React.FC = () => {
 
   const contentPrimaryElement = (
     <Box className={styles.pageContainer}>
-      {results && (
+      {results && Object.keys(results).length > 0 && (
         <Box className={styles.resultsPanel}>
           {results.totalWorks ? (
             <Heading
@@ -60,6 +87,12 @@ const ResearchAssistant: React.FC = () => {
           ) : null}
 
           <ResultsList works={results.works} />
+          <Pagination
+            pageCount={results.paging.lastPage ? results.paging.lastPage : 1}
+            initialPage={results.paging.currentPage}
+            onPageChange={(e) => onPageChange(e)}
+            __css={{ paddingTop: "m" }}
+          />
         </Box>
       )}
 

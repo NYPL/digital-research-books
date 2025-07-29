@@ -46,6 +46,8 @@ class ResearchAssistant:
             publication_year_start: Optional[str] = None,
             publication_year_end: Optional[str] = None,
             languages: Optional[list[str]] = None,
+            page: int = 0,
+            size: int = 10,
         ):
             params = SearchParams(
                 title=title,
@@ -55,6 +57,8 @@ class ResearchAssistant:
                 publication_year_start=publication_year_start,
                 publication_year_end=publication_year_end,
                 languages=languages,
+                page=page,
+                size=size
             )
 
             logger.info(f"Calling search-tool with params: {params}")
@@ -90,6 +94,9 @@ class ResearchAssistant:
             facets = APIUtils.formatAggregationResult(
                 search_result.aggregations.to_dict()
             )
+            paging = APIUtils.formatPagingOptions(
+                params.page + 1, params.size, total_hits
+            )
 
             data_block = {
                 "totalWorks": total_hits,
@@ -101,7 +108,9 @@ class ResearchAssistant:
                     formats=None,
                     reader=None,
                 ),
+                "paging": paging,
                 "facets": facets,
+                "searchParams": params.to_query_filters()
             }
 
             db_client.closeSession()
