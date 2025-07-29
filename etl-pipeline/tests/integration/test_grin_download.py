@@ -47,7 +47,7 @@ def _set_grin_status(db_manager, barcode, state):
         grin_status = GRINStatus(
             barcode=barcode,
             failed_download=0,
-            state=state.value,
+            state=GRINState.CONVERTED.value,
             date_created=datetime(1991, 8, 25),
         )
         db_manager.session.add(grin_status)
@@ -84,7 +84,7 @@ def _localstack_bucket_write_access(s3, bucket_name):
     try:
         s3.put_object(Bucket=bucket_name, Key=test_key, Body=b"test")
         logger.info(f"Confirmed write access to bucket '{bucket_name}'.")
-        # s3.delete_object(Bucket=bucket_name, Key=test_key) # deletes the test file
+        s3.delete_object(Bucket=bucket_name, Key=test_key) # deletes the test file
         return True
     except ClientError as e:
         logger.error(f"No write access to bucket '{bucket_name}': {e}")
@@ -107,8 +107,6 @@ def test_download_process(grin_download_service, db_manager, test_bucket, s3_cli
     ocr_path = ocr_path + f"{TEST_BARCODE}.tar.gz.gpg"
     try:
         s3_client.head_object(Bucket=test_bucket, Key=ocr_key)
-        print(f"OCR key {ocr_key} exists in S3.")
-        print(f"ocr_path: {ocr_path}, mets_path: {mets_file}")
         assert ocr_path == ocr_key, (
             f"OCR package path mismatch: expected {ocr_key}, got {ocr_path}"
         )
