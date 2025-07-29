@@ -2,7 +2,6 @@ import pytest
 import logging
 import pandas as pd
 import numpy as np
-from numpy import nan
 from sqlalchemy import inspect
 from model.postgres.grin_status import GRINStatus
 from model.postgres.grin_status import GRINState
@@ -90,7 +89,7 @@ def test_grin_statuses_foreign_keys(df, db_manager):
     assert fk_constraints[0]["constrained_columns"] == ["record_id"]
 
 
-""" Not seeing all the values in the enum in database, so this test is commented out. Could be defect or test logic. 
+""" Not seeing all the values in the enum in database, so this test is commented out. Could be a defect or test logic issue. 
 def test_grin_statuses_enum_values(df):
     expected_enum_values = {state.value for state in GRINState}
     actual_enum_values = set(df["state"].unique())
