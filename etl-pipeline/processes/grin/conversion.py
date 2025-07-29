@@ -188,7 +188,7 @@ class GRINConversion:
         converting_barcodes_list = []
         converted_barcodes_list = []
         unavailable_barcodes_list = []
-        breakpoint()
+
         for _, row in converted_df.iterrows():
             status = row["Status"]
             barcode = row["Barcode"]
