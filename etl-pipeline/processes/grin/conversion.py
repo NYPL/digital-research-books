@@ -1,8 +1,7 @@
 import os
-from sqlalchemy import update
 from .grin_client import GRINClient
 import pandas as pd
-from sqlalchemy import select
+from sqlalchemy import select, or_, update
 from model import GRINState, GRINStatus, Record, RecordState, FRBRStatus, Source
 from typing import List
 import time
@@ -121,8 +120,8 @@ class GRINConversion:
                     self.db_manager.session.execute(
                         select(GRINStatus.barcode)
                         .filter(GRINStatus.barcode.in_(list(converted_barcodes)))
-                        .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
-                        .filter(GRINStatus.state != GRINState.CONVERTED.value)
+                        .filter(or_(GRINStatus.state == GRINState.PENDING_CONVERSION.value,
+                             GRINStatus.state == GRINState.CONVERTING.value))
                     )
                     .scalars()
                     .all()
@@ -231,8 +230,8 @@ class GRINConversion:
         with DBManager() as db_manager:
             return (
                 db_manager.session.query(GRINStatus)
-                .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
-                .filter(GRINStatus.state != GRINState.CONVERTED.value)
+                .filter(or_(GRINStatus.state == GRINState.PENDING_CONVERSION.value,
+                             GRINStatus.state == GRINState.CONVERTING.value))
                 .count()
             )
 
