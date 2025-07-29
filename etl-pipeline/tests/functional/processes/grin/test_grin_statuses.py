@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 import numpy as np
 from numpy import nan
+from sqlalchemy import inspect
 from model.postgres.grin_status import GRINStatus
 from model.postgres.grin_status import GRINState
 from managers.db import DBManager
@@ -18,18 +19,19 @@ def db_manager():
 
 @pytest.fixture(scope="session")
 def df(db_manager):
-    df = pd.read_sql_table("grin_statuses", con=db_manager.engine)
+    df = pd.read_sql_query("SELECT * FROM grin_statuses", con=db_manager.engine)
 
     return df
 
 
 def test_grin_statuses_table_exists(db_manager, df):
+    inspector = inspect(db_manager.engine)
     barcode_column = "barcode"
     record_id_column = "record_id"
     failed_download_column = "failed_download"
     state_column = "state"
 
-    assert "grin_statuses" in db_manager.engine.table_names()
+    assert "grin_statuses" in inspector.get_table_names()
     assert not df.empty
     assert barcode_column in df.columns
     assert record_id_column in df.columns
@@ -39,24 +41,66 @@ def test_grin_statuses_table_exists(db_manager, df):
 
 def test_grin_statuses_data_types(df):
     assert df["barcode"].dtype == "object"
-    assert df["record_id"].dtype == "Int64"
-    assert df["failed_download"].dtype == "Int64"
+    assert df["record_id"].dtype == "int64"
+    assert df["failed_download"].dtype == "int64"
     assert df["state"].dtype == "object"
+
+
+def test_grin_statuses_unique(df):
+    df_nunique_cols_with_nan = df.nunique(dropna=False)
+
+    assert df_nunique_cols_with_nan["barcode"] == len(df["barcode"]), (
+        "Duplicate barcodes found in grin_statuses table!"
+    )
+    assert df["barcode"].nunique() == len(df["barcode"]), (
+        "Duplicate barcodes found in grin_statuses table!"
+    )
+
+    assert df_nunique_cols_with_nan["record_id"] == len(df["record_id"]), (
+        "Duplicate record_ids found in grin_statuses table!"
+    )
+    assert df["record_id"].nunique() == len(df["record_id"]), (
+        "Duplicate record_ids found in grin_statuses table!"
+    )
+
+
+def test_grin_statuses_primary_keys(df, db_manager):
+    inspector = inspect(db_manager.engine)
+    pk_constraints = inspector.get_pk_constraint("grin_statuses")
+
+    assert pk_constraints is not None
+    assert ["barcode"] == pk_constraints["constrained_columns"]
+
+
+def test_grin_statuses_foreign_keys(df, db_manager):
+    inspector = inspect(db_manager.engine)
+    fk_constraints = inspector.get_foreign_keys("grin_statuses")
+    find_fk = False
+
+    for fk in fk_constraints:
+        if ["record_id"] == fk["constrained_columns"]:
+            find_fk = True
+            break
+    assert find_fk, (
+        "Foreign key constraint on record_id not found in grin_statuses table"
+    )
+    assert fk_constraints is not None
+    assert len(fk_constraints) == 1
+    assert fk_constraints[0]["referred_table"] == "records"
+    assert fk_constraints[0]["constrained_columns"] == ["record_id"]
+
+
+def test_grin_statuses_enum_values(df):
+    expected_enum_values = {state.value for state in GRINState}
+    actual_enum_values = set(df["state"].unique())
+
+    assert actual_enum_values == expected_enum_values, (
+        f"Expected enum values {expected_enum_values}, but got {actual_enum_values}"
+    )
 
 
 def test_not_null_constraints(df):
     assert df["barcode"].notnull().all()
-    if df["barcode"].isnull().sum() > 0:
-        logging.warning("Null values found in barcode column")
-
     assert df["state"].notnull().all()
-    if df["state"].isnull().sum() > 0:
-        logging.warning("Null values found in state column")
-
     assert df["record_id"].notnull().all()
-    if df["record_id"].isnull().sum() > 0:
-        logging.warning("Null values found in record_id column")
-
     assert df["failed_download"].notnull().all()
-    if df["failed_download"].isnull().sum() > 0:
-        logging.warning("Null values found in failed_download column")
