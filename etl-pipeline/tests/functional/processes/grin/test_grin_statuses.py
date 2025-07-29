@@ -89,17 +89,6 @@ def test_grin_statuses_foreign_keys(df, db_manager):
     assert fk_constraints[0]["constrained_columns"] == ["record_id"]
 
 
-""" Not seeing all the values in the enum in database, so this test is commented out. Could be a defect or test logic issue. 
-def test_grin_statuses_enum_values(df):
-    expected_enum_values = {state.value for state in GRINState}
-    actual_enum_values = set(df["state"].unique())
-
-    assert actual_enum_values == expected_enum_values, (
-        f"Expected enum values {expected_enum_values}, but got {actual_enum_values}"
-    )
-"""
-
-
 def test_not_null_constraints(df):
     assert df["barcode"].notnull().all()
     assert df["state"].notnull().all()
