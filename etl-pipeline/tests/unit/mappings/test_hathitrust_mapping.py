@@ -97,7 +97,7 @@ class TestHathingMapping:
         assert testMapping.record.rights == "hathitrust|test|Test Reason|Test License|"
         assert testMapping.record.has_part == [
             '1|https://babel.hathitrust.org/cgi/pt?id=recordID|hathitrust|text/html|{"embed": true}',
-            '1|https://test_aws_bucket.s3.amazonaws.com/pdfs/hathitrust/recordID.pdf|hathitrust|application/pdf|{"download": true}|https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id=recordID',
+            '1|https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id=recordID|hathitrust|application/pdf|{"download": true}',
         ]
         assert testMapping.record.spatial == "Test Country"
 
