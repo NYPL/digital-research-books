@@ -1,8 +1,7 @@
 import os
-from sqlalchemy import update
 from .grin_client import GRINClient
 import pandas as pd
-from sqlalchemy import select
+from sqlalchemy import select, or_, update
 from model import GRINState, GRINStatus, Record, RecordState, FRBRStatus, Source
 from typing import List
 import time
@@ -13,7 +12,7 @@ from utils.chunker import chunk
 from .. import utils
 
 IN_PROCESS_LIMIT = 50000
-DELAY_IN_SECONDS = 120
+DELAY_IN_SECONDS = 60
 
 
 class GRINConversion:
@@ -87,8 +86,8 @@ class GRINConversion:
             self.logger.info("No barcodes pending conversion.")
             return
 
-        converting_barcodes, converted_barcodes = self._convert_barcodes(
-            barcodes_pending_conversion
+        converting_barcodes, converted_barcodes, unavailable_barcodes = (
+            self._convert_barcodes(barcodes_pending_conversion)
         )
 
         self._update_grin_state(
@@ -101,6 +100,12 @@ class GRINConversion:
             converted_barcodes,
             old_state=GRINState.PENDING_CONVERSION,
             new_state=GRINState.CONVERTED,
+        )
+
+        self._update_grin_state(
+            unavailable_barcodes,
+            old_state=GRINState.PENDING_CONVERSION,
+            new_state=GRINState.UNAVAILABLE,
         )
 
     def sync_converted_books(self) -> set:
@@ -121,8 +126,12 @@ class GRINConversion:
                     self.db_manager.session.execute(
                         select(GRINStatus.barcode)
                         .filter(GRINStatus.barcode.in_(list(converted_barcodes)))
-                        .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
-                        .filter(GRINStatus.state != GRINState.CONVERTED.value)
+                        .filter(
+                            or_(
+                                GRINStatus.state == GRINState.PENDING_CONVERSION.value,
+                                GRINStatus.state == GRINState.CONVERTING.value,
+                            )
+                        )
                     )
                     .scalars()
                     .all()
@@ -172,19 +181,30 @@ class GRINConversion:
         converted_data = self.client.convert(barcodes)
 
         if not converted_data:
-            return [], []
+            return [], [], []
 
         converted_df = self._transform_scraped_data(converted_data)
 
-        converting_barcodes = converted_df.query(
-            "Status in ('Success', 'Already being converted')"
+        converting_barcodes_list = []
+        converted_barcodes_list = []
+        unavailable_barcodes_list = []
+
+        for _, row in converted_df.iterrows():
+            status = row["Status"]
+            barcode = row["Barcode"]
+
+            if status in ("Success", "Already being converted"):
+                converting_barcodes_list.append(barcode)
+            elif status == "Already available for download":
+                converted_barcodes_list.append(barcode)
+            elif status == "Not allowed to be downloaded":
+                unavailable_barcodes_list.append(barcode)
+
+        return (
+            converting_barcodes_list,
+            converted_barcodes_list,
+            unavailable_barcodes_list,
         )
-        converted_barcodes = converted_df.query(
-            "Status=='Already available for download'"
-        )
-        converting_barcodes_list = converting_barcodes["Barcode"].to_list()
-        converted_barcodes_list = converted_barcodes["Barcode"].to_list()
-        return converting_barcodes_list, converted_barcodes_list
 
     def _save_barcodes(self, barcodes, state: GRINState):
         if not barcodes:
@@ -231,8 +251,12 @@ class GRINConversion:
         with DBManager() as db_manager:
             return (
                 db_manager.session.query(GRINStatus)
-                .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
-                .filter(GRINStatus.state != GRINState.CONVERTED.value)
+                .filter(
+                    or_(
+                        GRINStatus.state == GRINState.PENDING_CONVERSION.value,
+                        GRINStatus.state == GRINState.CONVERTING.value,
+                    )
+                )
                 .count()
             )
 
