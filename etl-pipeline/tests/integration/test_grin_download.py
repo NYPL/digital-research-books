@@ -84,7 +84,7 @@ def _localstack_bucket_write_access(s3, bucket_name):
     try:
         s3.put_object(Bucket=bucket_name, Key=test_key, Body=b"test")
         logger.info(f"Confirmed write access to bucket '{bucket_name}'.")
-        s3.delete_object(Bucket=bucket_name, Key=test_key) # deletes the test file
+        s3.delete_object(Bucket=bucket_name, Key=test_key)  # deletes the test file
         return True
     except ClientError as e:
         logger.error(f"No write access to bucket '{bucket_name}': {e}")
