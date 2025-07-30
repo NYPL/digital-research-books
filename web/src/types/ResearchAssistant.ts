@@ -1,5 +1,5 @@
-import { FacetItem, Query } from "./DataModel";
-import { ApiSearchPaging, Filter, SearchQuery } from "./SearchQuery";
+import { FacetItem } from "./DataModel";
+import { ApiSearchPaging } from "./SearchQuery";
 import { ApiWork } from "./WorkQuery";
 
 export interface Message {

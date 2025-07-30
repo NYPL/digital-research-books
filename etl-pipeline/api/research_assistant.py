@@ -58,7 +58,7 @@ class ResearchAssistant:
                 publication_year_end=publication_year_end,
                 languages=languages,
                 page=page,
-                size=size
+                size=size,
             )
 
             logger.info(f"Calling search-tool with params: {params}")
@@ -110,7 +110,7 @@ class ResearchAssistant:
                 ),
                 "paging": paging,
                 "facets": facets,
-                "searchParams": params.to_query_filters()
+                "searchParams": params.to_query_filters(),
             }
 
             db_client.closeSession()
