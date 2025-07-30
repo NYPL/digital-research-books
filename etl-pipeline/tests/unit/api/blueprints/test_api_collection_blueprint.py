@@ -28,13 +28,25 @@ class TestCollectionBlueprint:
             formatOPDS2Object=mocker.DEFAULT,
             validatePassword=mocker.DEFAULT,
         )
-    
+
     @pytest.fixture
     def mock_db_and_client(self, mocker):
         mock_db = mocker.MagicMock(session=mocker.MagicMock())
+        mock_db.fetchUser.return_value = mocker.MagicMock(
+            user="testUser", password="testPswd", salt="testSalt"
+        )
+
         mock_db_client = mocker.patch("api.blueprints.drbCollection.DBClient")
         mock_db_client.return_value = mock_db
+
         return mock_db, mock_db_client
+
+    # @pytest.fixture
+    # def get_collection(self, mocker, mock_db_and_client):
+    #     mock_db = mock_db_and_client[0]
+    #     collection = mocker.MagicMock(uuid="testUUID")
+    #     mock_db.fetchSingleCollection.return_value = collection
+    #     return collection
 
     @pytest.fixture
     def test_app(self):
@@ -43,12 +55,14 @@ class TestCollectionBlueprint:
 
         return flask_app
 
-    def test_collection_replace_success(self, test_app, mock_utils, mocker, mock_db_and_client):
+    def test_collection_replace_success(
+        self,
+        test_app,
+        mock_utils,
+        mocker,
+        mock_db_and_client,
+    ):
         mock_db, mock_db_client = mock_db_and_client
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
 
         collection = mocker.MagicMock(uuid="testUUID")
         mock_db.fetchSingleCollection.return_value = collection
@@ -96,8 +110,10 @@ class TestCollectionBlueprint:
                 201, "testOPDS2Feed"
             )
 
-    def test_collection_replace_fail(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
+    def test_collection_replace_fail(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
+        mock_db = mock_db_and_client[0]
 
         mock_db.fetchUser.return_value = mocker.MagicMock(
             user="testUser", password="testPswd", salt="testSalt"
@@ -138,12 +154,10 @@ class TestCollectionBlueprint:
                 },
             )
 
-    def test_collection_update_success(self, test_app, mock_utils, mocker, mock_db_and_client):
+    def test_collection_update_success(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
         mock_db, mock_db_client = mock_db_and_client
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
 
         collection = mocker.MagicMock(uuid="testUUID")
         mock_db.fetchSingleCollection.return_value = collection
@@ -179,12 +193,10 @@ class TestCollectionBlueprint:
                 200, "testOPDS2Feed"
             )
 
-    def test_collection_update_error(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
+    def test_collection_update_error(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
+        mock_db = mock_db_and_client[0]
 
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
@@ -210,12 +222,10 @@ class TestCollectionBlueprint:
                 },
             )
 
-    def test_static_collection_createsuccess(self, test_app, mock_utils, mocker, mock_db_and_client):
+    def test_static_collection_create_success(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
         mock_db, mock_db_client = mock_db_and_client
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
 
         collection = mocker.MagicMock(uuid="testUUID")
         mock_db.createStaticCollection.return_value = collection
@@ -269,12 +279,10 @@ class TestCollectionBlueprint:
                 201, "testOPDS2Feed"
             )
 
-    def test_automatic_collection_create_success(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
+    def test_automatic_collection_create_success(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
+        mock_db = mock_db_and_client[0]
 
         mock_db.createAutomaticCollection.return_value = mocker.MagicMock(
             uuid="testUUID"
@@ -338,12 +346,10 @@ class TestCollectionBlueprint:
                 201, "testOPDS2Feed"
             )
 
-    def test_automatic_collection_create_invalid(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
+    def test_automatic_collection_create_invalid(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
+        mock_db = mock_db_and_client[0]
 
         test_request_body = {
             "title": "Test Collection",
@@ -380,12 +386,10 @@ class TestCollectionBlueprint:
 
             mock_base_64.assert_called_once_with(b"testAuth")
 
-    def test_collection_create_invalid(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
+    def test_collection_create_invalid(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
+        mock_db = mock_db_and_client[0]
 
         test_request_body = {
             "title": "Test Collection",
@@ -428,8 +432,10 @@ class TestCollectionBlueprint:
 
             mock_base_64.assert_called_once_with(b"testAuth")
 
-    def test_collection_create_error(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
+    def test_collection_create_error(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
+        mock_db = mock_db_and_client[0]
 
         mock_db.fetchUser.return_value = mocker.MagicMock(
             user="testUser", password="testPswd", salt="testSalt"
@@ -466,8 +472,10 @@ class TestCollectionBlueprint:
                 },
             )
 
-    def test_get_collection_success(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
+    def test_get_collection_success(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
+        mock_db = mock_db_and_client[0]
 
         collection = mocker.MagicMock(uuid="d902fd44-7cbe-4401-b50c-5b1bda8b1059")
         mock_db.fetchSingleCollection.return_value = collection
@@ -494,8 +502,8 @@ class TestCollectionBlueprint:
                 200, "testOPDS2Feed"
             )
 
-    def test_get_collection_not_found(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
+    def test_get_collection_not_found(self, test_app, mock_utils, mock_db_and_client):
+        mock_db = mock_db_and_client[0]
 
         mock_db.fetchSingleCollection.side_effect = NoResultFound
 
@@ -516,8 +524,8 @@ class TestCollectionBlueprint:
                 },
             )
 
-    def test_get_collection_error(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
+    def test_get_collection_error(self, test_app, mock_utils, mock_db_and_client):
+        mock_db = mock_db_and_client[0]
 
         mock_db.fetchSingleCollection.side_effect = Exception("Database error")
 
@@ -550,14 +558,10 @@ class TestCollectionBlueprint:
                 400, "fetchCollection", {"message": "Collection id testUUID is invalid"}
             )
 
-    def test_collection_delete_success(self, test_app, mock_utils, mocker):
-        mock_db = mocker.MagicMock(session=mocker.MagicMock())
-        mock_db_client = mocker.patch("api.blueprints.drbCollection.DBClient")
-        mock_db_client.return_value = mock_db
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
+    def test_collection_delete_success(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
+        mock_db = mock_db_and_client[0]
 
         mock_db.deleteCollection.return_value = 1
 
@@ -580,12 +584,10 @@ class TestCollectionBlueprint:
             mock_db.deleteCollection.assert_called_once_with("testUUID")
             mock_db.session.commit.assert_called_once()
 
-    def test_collection_delete_error(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
+    def test_collection_delete_error(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
+        mock_db = mock_db_and_client[0]
 
         mock_db.deleteCollection.return_value = 0
 
@@ -614,12 +616,10 @@ class TestCollectionBlueprint:
                 {"message": "No collection with UUID testUUID exists"},
             )
 
-    def test_collection_delete_work_edition_success(self, test_app, mock_utils, mocker, mock_db_and_client):
+    def test_collection_delete_work_edition_success(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
         mock_db, mock_db_client = mock_db_and_client
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
 
         collection = mocker.MagicMock(uuid="testUUID")
         mock_db.fetchSingleCollection.return_value = collection
@@ -662,12 +662,10 @@ class TestCollectionBlueprint:
                 200, "testOPDS2Feed"
             )
 
-    def test_collection_delete_work_edition_error(self, test_app, mock_utils, mocker, mock_db_and_client):
+    def test_collection_delete_work_edition_error(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
         mock_db, mock_db_client = mock_db_and_client
-
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
 
         mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
 
@@ -698,8 +696,10 @@ class TestCollectionBlueprint:
                 },
             )
 
-    def test_get_collections_success(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
+    def test_get_collections_success(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
+        mock_db = mock_db_and_client[0]
 
         collection1 = mocker.MagicMock(uuid="uuid1")
         collection2 = mocker.MagicMock(uuid="uuid2")
@@ -763,8 +763,8 @@ class TestCollectionBlueprint:
 
             mock_utils["formatOPDS2Object"].assert_called_once_with(200, mock_feed)
 
-    def test_get_collections_error(self, test_app, mock_utils, mocker, mock_db_and_client):
-        mock_db, mock_db_client = mock_db_and_client
+    def test_get_collections_error(self, test_app, mock_utils, mock_db_and_client):
+        mock_db = mock_db_and_client[0]
 
         mock_db.fetchCollections.side_effect = Exception("Database error")
 
@@ -822,7 +822,7 @@ class TestCollectionBlueprint:
 
         assert [x.metadata.id for x in sorted_list] == [1, 3, 2]
 
-    def test_construct_opds_feed_success(self, test_app, mock_utils, mocker):
+    def test_construct_opds_feed_success(self, test_app, mocker):
         mock_feed = mocker.MagicMock()
         mock_feed_init = mocker.patch("api.blueprints.drbCollection.Feed")
         mock_feed_init.return_value = mock_feed
@@ -897,9 +897,7 @@ class TestCollectionBlueprint:
                 mock_feed, "/collection/testUUID", 2, page=1, perPage=10
             )
 
-    def test_construct_opds_Feed_success_auto_collection(
-        self, test_app, mock_utils, mocker
-    ):
+    def test_construct_opds_Feed_success_auto_collection(self, test_app, mocker):
         mock_feed = mocker.MagicMock()
         mock_feed_init = mocker.patch("api.blueprints.drbCollection.Feed")
         mock_feed_init.return_value = mock_feed
@@ -985,14 +983,14 @@ class TestCollectionBlueprint:
                 perPage=10,
             )
 
-    def test_validate_token_success(self, test_app, mock_utils, mocker, mock_db_and_client):
+    def test_validate_token_success(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
         mock_func = mocker.MagicMock()
 
         decorated_function = validateToken(mock_func)
 
-        mock_db, mock_db_client = mock_db_and_client
-        mock_db_client = mocker.patch("api.blueprints.drbCollection.DBClient")
-        mock_db_client.return_value = mock_db
+        mock_db = mock_db_and_client[0]
 
         mock_db.fetchUser.return_value = mocker.MagicMock(
             user="testUser", password="testPswd", salt="testSalt"
@@ -1028,14 +1026,14 @@ class TestCollectionBlueprint:
                 403, "authResponse", {"message": "user/password not provided"}
             )
 
-    def test_validate_token_error_auth(self, test_app, mock_utils, mocker, mock_db_and_client):
+    def test_validate_token_error_auth(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
         mock_func = mocker.MagicMock()
 
         decorated_function = validateToken(mock_func)
 
-        mock_db, mock_db_client = mock_db_and_client
-        mock_db_client = mocker.patch("api.blueprints.drbCollection.DBClient")
-        mock_db_client.return_value = mock_db
+        mock_db = mock_db_and_client[0]
 
         mock_db.fetchUser.return_value = mocker.MagicMock(
             user="testUser", password="testPswd", salt="testSalt"
