@@ -2,6 +2,7 @@ import React from "react";
 import styles from "../../../styles/components/MessageBubble.module.scss";
 import { Box, Text } from "@nypl/design-system-react-components";
 import { Message } from "~/src/types/ResearchAssistant";
+import ResearchAssistantIcon from "./ResearchAssistantIcon";
 
 interface MessageBubbleProps {
   message: Message;
@@ -14,14 +15,29 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     : `${styles.messageBubble} ${styles.assistantBubble}`;
 
   return (
-    <Box className={`${styles.messageWrapper} ${isUser ? styles.userMessageWrapper : ''}`}>
+    <Box
+      className={`${styles.messageWrapper} ${isUser ? styles.userMessageWrapper : ""}`}
+    >
       <Box className={bubbleClasses}>
-        {!isUser && (
-          <Box className={styles.assistantHeader}>
-            <span className={styles.assistantIcon}>✨</span> Virtual Research Assistant
+        {isUser ? (
+          <Text className={styles.messageContent} noSpace>
+            <b>You: </b>
+            {message.data.content}
+          </Text>
+        ) : (
+          <Box className={styles.messageContent} display="flex" gap="xs">
+            <ResearchAssistantIcon />
+            <Box display="flex" flexDir="column" gap="m">
+              <Box>
+                <Text color="section.research.primary" isBold noSpace>
+                  Virtual Research Assistant:
+                </Text>
+                {message.data.content}
+              </Box>
+              <Text color="ui.gray.semi-dark" noSpace>AI-generated. Verify results.</Text>
+            </Box>
           </Box>
         )}
-        <Text className={styles.messageContent}>{message.data.content}</Text>
       </Box>
     </Box>
   );

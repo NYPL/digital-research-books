@@ -109,14 +109,10 @@ class HathiMapping(CSVMapping):
             file_link = str(
                 Part(
                     index=1,
-                    url=get_stored_file_url(
-                        storage_name=os.environ["FILE_BUCKET"],
-                        file_path=f"pdfs/{Source.HATHI.value}/{self.source[0]}.pdf",
-                    ),
+                    url=f"https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id={file_id}",
                     source=Source.HATHI.value,
                     file_type="application/pdf",
                     flags=str(FileFlags(download=True)),
-                    source_url=f"https://babel.hathitrust.org/cgi/imgsrv/download/pdf?id={file_id}",
                 )
             )
 
