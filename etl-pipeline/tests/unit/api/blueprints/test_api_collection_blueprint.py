@@ -47,10 +47,10 @@ class TestCollectionBlueprint:
 
         collection = mocker.MagicMock(uuid="testUUID")
         mock_db.fetchSingleCollection.return_value = collection
-        mock_feed_contstruct = mocker.patch(
+        mock_feed_construct = mocker.patch(
             "api.blueprints.drbCollection.constructOPDSFeed"
         )
-        mock_feed_contstruct.return_value = "testOPDS2Feed"
+        mock_feed_construct.return_value = "testOPDS2Feed"
 
         test_updated_collection = {
             "title": "Updated Test Collection",
@@ -83,7 +83,7 @@ class TestCollectionBlueprint:
             mock_db.fetchSingleCollection.assert_called_once_with("testUUID")
             mock_db.session.commit.assert_called_once()
 
-            mock_feed_contstruct.assert_called_once_with(collection, mock_db)
+            mock_feed_construct.assert_called_once_with(collection, mock_db)
 
             mock_base_64.assert_called_once_with(b"testAuth")
 
