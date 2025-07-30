@@ -8,7 +8,6 @@ from uuid import uuid4
 import json
 
 
-
 @pytest.fixture(scope="function")
 def setup_barcodes_conversion(db_manager):
     hardcoded_barcodes_list = [
@@ -16,11 +15,12 @@ def setup_barcodes_conversion(db_manager):
         "3433124920797",
         "3433124920803",
         "3433124920810",
-        "3433124920827"
+        "3433124920827",
     ]
 
     initial_state_map = {
-       barcode: GRINState.PENDING_CONVERSION.value for barcode in hardcoded_barcodes_list
+        barcode: GRINState.PENDING_CONVERSION.value
+        for barcode in hardcoded_barcodes_list
     }
 
     hardcoded_record_id_map = {
@@ -28,21 +28,27 @@ def setup_barcodes_conversion(db_manager):
         "3433124920797": 8888002,
         "3433124920803": 8888003,
         "3433124920810": 8888004,
-        "3433124920827": 8888005
+        "3433124920827": 8888005,
     }
-    
+
     for barcode_str in hardcoded_barcodes_list:
-        existing_status_record = db_manager.session.query(GRINStatus).filter_by(barcode=barcode_str).first()
+        existing_status_record = (
+            db_manager.session.query(GRINStatus).filter_by(barcode=barcode_str).first()
+        )
         if existing_status_record:
             if existing_status_record.record_id:
-                existing_main_record = db_manager.session.query(Record).filter_by(id=existing_status_record.record_id).first()
+                existing_main_record = (
+                    db_manager.session.query(Record)
+                    .filter_by(id=existing_status_record.record_id)
+                    .first()
+                )
                 if existing_main_record:
                     db_manager.session.delete(existing_main_record)
             db_manager.session.delete(existing_status_record)
             db_manager.session.commit()
 
         record_id_for_this_barcode = hardcoded_record_id_map[barcode_str]
-        record_uuid_for_record_table = str(uuid4()) 
+        record_uuid_for_record_table = str(uuid4())
         main_record = Record(
             id=record_id_for_this_barcode,
             uuid=record_uuid_for_record_table,
@@ -50,7 +56,7 @@ def setup_barcodes_conversion(db_manager):
             source="test_fixture",
             source_id=f"{barcode_str}|grin",
             state=RecordState.STAGED.value,
-            frbr_status=FRBRStatus.TODO.value
+            frbr_status=FRBRStatus.TODO.value,
         )
         db_manager.session.add(main_record)
 
@@ -58,32 +64,36 @@ def setup_barcodes_conversion(db_manager):
             barcode=barcode_str,
             state=initial_state_map[barcode_str],
             record_id=record_id_for_this_barcode,
-            failed_download=0
+            failed_download=0,
         )
         db_manager.session.add(status_record)
-    
+
     db_manager.session.commit()
 
     yield hardcoded_barcodes_list
 
     for barcode_to_delete in hardcoded_barcodes_list:
-        status_record_to_delete = db_manager.session.query(GRINStatus).filter_by(barcode=barcode_to_delete).first()
+        status_record_to_delete = (
+            db_manager.session.query(GRINStatus)
+            .filter_by(barcode=barcode_to_delete)
+            .first()
+        )
         if status_record_to_delete:
             record_id_to_delete = status_record_to_delete.record_id
             db_manager.session.delete(status_record_to_delete)
             if record_id_to_delete:
-                main_record_to_delete = db_manager.session.query(Record).filter_by(id=record_id_to_delete).first()
+                main_record_to_delete = (
+                    db_manager.session.query(Record)
+                    .filter_by(id=record_id_to_delete)
+                    .first()
+                )
                 if main_record_to_delete:
                     db_manager.session.delete(main_record_to_delete)
     db_manager.session.commit()
 
 
-def test_run_process_orchestration(
-    db_manager,
-    grin_client,
-    setup_barcodes_conversion
-):
-    test_barcodes = setup_barcodes_conversion 
+def test_run_process_orchestration(db_manager, grin_client, setup_barcodes_conversion):
+    test_barcodes = setup_barcodes_conversion
 
     mock_convert_responses_for_pending = [
         "Barcode\tStatus",
@@ -91,33 +101,45 @@ def test_run_process_orchestration(
         f"{test_barcodes[1]}\tAlready being converted",
         f"{test_barcodes[2]}\tAlready available for download",
         f"{test_barcodes[3]}\tNot allowed to be downloaded",
-        f"{test_barcodes[4]}\tSome Other Unknown Status"
+        f"{test_barcodes[4]}\tSome Other Unknown Status",
     ]
 
     mock_converted_filenames_response = [
         f"{test_barcodes[1]}.tar.gz.gpg",
-        "some_other_file.tar.gz.gpg"
+        "some_other_file.tar.gz.gpg",
     ]
 
-    with patch.dict(os.environ, {"GRIN_INGEST_SQS_QUEUE": "mock_queue", "SSM_PARAM_NAME": "/test/service/account/key"}):
-        with patch.object(grin_client, 'convert') as mock_convert_method:
+    with patch.dict(
+        os.environ,
+        {
+            "GRIN_INGEST_SQS_QUEUE": "mock_queue",
+            "SSM_PARAM_NAME": "/test/service/account/key",
+        },
+    ):
+        with patch.object(grin_client, "convert") as mock_convert_method:
             mock_convert_method.return_value = mock_convert_responses_for_pending
-            
-            with patch.object(grin_client, 'converted_filenames') as mock_converted_filenames_method:
-                mock_converted_filenames_method.return_value = mock_converted_filenames_response
 
-                with patch('boto3.client') as mock_boto_client:
+            with patch.object(
+                grin_client, "converted_filenames"
+            ) as mock_converted_filenames_method:
+                mock_converted_filenames_method.return_value = (
+                    mock_converted_filenames_response
+                )
+
+                with patch("boto3.client") as mock_boto_client:
+
                     def boto_client_side_effect(service_name, *args, **kwargs):
-                        if service_name == 'sqs':
+                        if service_name == "sqs":
                             mock_sqs_client_instance = MagicMock()
-                            mock_sqs_client_instance.get_queue_url.return_value = {'QueueUrl': 'mock-sqs-url'}
+                            mock_sqs_client_instance.get_queue_url.return_value = {
+                                "QueueUrl": "mock-sqs-url"
+                            }
                             mock_sqs_client_instance.send_message_to_queue.return_value = {}
                             return mock_sqs_client_instance
-                        elif service_name == 'ssm':
+                        elif service_name == "ssm":
                             mock_ssm_client_instance = MagicMock()
-                            
-                            dummy_private_key_pem = (
-                               """-----BEGIN PRIVATE KEY-----
+
+                            dummy_private_key_pem = """-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDCgEIxp53FVl7T
 jDZEIdx4QCaEy6uztyYKSnLB+n9/s2h/94tiplsFPnLH+pIhoZBG1JhBDMnEzMYY
 G66X4xSkGta2JBrkHvVkQTMnvnrKxjDtoquOogSF+s4PHak67+ZtFPCylqYFdU+w
@@ -144,76 +166,110 @@ ZslA4mr8eVxvxEVcIYJaw7P+e5o2ITz4Jt7zNdhu7PMQHcfM8oGa/qyKrFe2Rs37
 Q7jM1fhr9F8YHqN9Md1J80jeaJytNZz7r8k8LT77ZsV1GxKiuHPi8qoRLZdA0L+e
 lQ413Mru1N5u/nVpXDyvgoARAU4FA7vF8hFZHfGlLsjIL8GeYrRtWKwGyrotPCQp
 tnxtH4Z7SsJgM0cuobL/UXY=
------END PRIVATE KEY-----""") 
+-----END PRIVATE KEY-----"""
 
-                            dummy_google_creds_json_str = json.dumps({
-                                "type": "service_account",
-                                "project_id": "mock-project-id",
-                                "private_key_id": "mock_private_key_id",
-                                "private_key": "-----BEGIN PRIVATE KEY-----\nMIICJQIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAoGB\n-----END PRIVATE KEY-----\n",
-                                "client_email": "mock-service-account@mock-project-id.iam.gserviceaccount.com",
-                                "client_id": "12345678901234567890",
-                                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                                "token_uri": "https://oauth2.googleapis.com/token",
-                                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mock-service-account%40mock-project-id.iam.gserviceaccount.com"
-                            })
-                            
+                            dummy_google_creds_json_str = json.dumps(
+                                {
+                                    "type": "service_account",
+                                    "project_id": "mock-project-id",
+                                    "private_key_id": "mock_private_key_id",
+                                    "private_key": "-----BEGIN PRIVATE KEY-----\nMIICJQIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAoGB\n-----END PRIVATE KEY-----\n",
+                                    "client_email": "mock-service-account@mock-project-id.iam.gserviceaccount.com",
+                                    "client_id": "12345678901234567890",
+                                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                                    "token_uri": "https://oauth2.googleapis.com/token",
+                                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                                    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mock-service-account%40mock-project-id.iam.gserviceaccount.com",
+                                }
+                            )
+
                             mock_ssm_client_instance.get_parameter.return_value = {
-                                'Parameter': {
-                                    'Name': os.environ["SSM_PARAM_NAME"],
-                                    'Type': 'String',
-                                    'Value': dummy_google_creds_json_str,
-                                    'Version': 1,
-                                    'LastModifiedDate': datetime(2025, 1, 1),
-                                    'ARN': 'arn:aws:ssm:us-east-1:123456789012:parameter/test/service/account/key',
-                                    'DataType': 'text'
+                                "Parameter": {
+                                    "Name": os.environ["SSM_PARAM_NAME"],
+                                    "Type": "String",
+                                    "Value": dummy_google_creds_json_str,
+                                    "Version": 1,
+                                    "LastModifiedDate": datetime(2025, 1, 1),
+                                    "ARN": "arn:aws:ssm:us-east-1:123456789012:parameter/test/service/account/key",
+                                    "DataType": "text",
                                 }
                             }
                             return mock_ssm_client_instance
                         else:
-                            return MagicMock() 
+                            return MagicMock()
 
                     mock_boto_client.side_effect = boto_client_side_effect
-                    
-                    with patch('time.sleep', MagicMock()):
+
+                    with patch("time.sleep", MagicMock()):
                         mock_params = MagicMock(process_type="looping_test")
-                        with patch('processes.grin.conversion.utils.parse_process_args') as mock_parse_args:
+                        with patch(
+                            "processes.grin.conversion.utils.parse_process_args"
+                        ) as mock_parse_args:
                             mock_parse_args.return_value = mock_params
 
-                            with patch.object(GRINConversion, '_get_unconverted_barcode_count') as mock_get_count:
+                            with patch.object(
+                                GRINConversion, "_get_unconverted_barcode_count"
+                            ) as mock_get_count:
                                 mock_get_count.side_effect = [1, 0]
 
+                                conversion_process = GRINConversion(grin_client)
 
-                                conversion_process = GRINConversion(grin_client) 
-                                
-                                conversion_process.runProcess() 
+                                conversion_process.runProcess()
 
-                                status_0 = db_manager.session.query(GRINStatus).filter_by(barcode=test_barcodes[0]).first()
+                                status_0 = (
+                                    db_manager.session.query(GRINStatus)
+                                    .filter_by(barcode=test_barcodes[0])
+                                    .first()
+                                )
                                 assert status_0 is not None
-                                assert status_0.state == GRINState.CONVERTING.value, \
+                                assert status_0.state == GRINState.CONVERTING.value, (
                                     f"Barcode {test_barcodes[0]} (PENDING->CONVERTING) failed. Got: {status_0.state}"
+                                )
 
-                                status_1 = db_manager.session.query(GRINStatus).filter_by(barcode=test_barcodes[1]).first()
+                                status_1 = (
+                                    db_manager.session.query(GRINStatus)
+                                    .filter_by(barcode=test_barcodes[1])
+                                    .first()
+                                )
                                 assert status_1 is not None
-                                assert status_1.state == GRINState.CONVERTED.value, \
+                                assert status_1.state == GRINState.CONVERTED.value, (
                                     f"Barcode {test_barcodes[1]} (CONVERTING->CONVERTED) failed. Got: {status_1.state}"
+                                )
 
-                                status_2 = db_manager.session.query(GRINStatus).filter_by(barcode=test_barcodes[2]).first()
+                                status_2 = (
+                                    db_manager.session.query(GRINStatus)
+                                    .filter_by(barcode=test_barcodes[2])
+                                    .first()
+                                )
                                 assert status_2 is not None
-                                assert status_2.state == GRINState.CONVERTED.value, \
+                                assert status_2.state == GRINState.CONVERTED.value, (
                                     f"Barcode {test_barcodes[2]} (CONVERTED) changed unexpectedly. Got: {status_2.state}"
+                                )
 
-                                status_3 = db_manager.session.query(GRINStatus).filter_by(barcode=test_barcodes[3]).first()
+                                status_3 = (
+                                    db_manager.session.query(GRINStatus)
+                                    .filter_by(barcode=test_barcodes[3])
+                                    .first()
+                                )
                                 assert status_3 is not None
-                                assert status_3.state == GRINState.DOWNLOADED.value, \
+                                assert status_3.state == GRINState.DOWNLOADED.value, (
                                     f"Barcode {test_barcodes[3]} (DOWNLOADED) changed unexpectedly. Got: {status_3.state}"
+                                )
 
-                                status_4 = db_manager.session.query(GRINStatus).filter_by(barcode=test_barcodes[4]).first()
+                                status_4 = (
+                                    db_manager.session.query(GRINStatus)
+                                    .filter_by(barcode=test_barcodes[4])
+                                    .first()
+                                )
                                 assert status_4 is not None
-                                assert status_4.state == GRINState.UNAVAILABLE.value, \
+                                assert status_4.state == GRINState.UNAVAILABLE.value, (
                                     f"Barcode {test_barcodes[4]} (UNAVAILABLE) changed unexpectedly. Got: {status_4.state}"
+                                )
 
-                                mock_sqs_client_instance_from_call = mock_boto_client.side_effect('sqs') 
-                                expected_sqs_message = {"barcodes": [test_barcodes[1]]} 
-                                mock_sqs_client_instance_from_call.send_message_to_queue.assert_called_once_with(expected_sqs_message)
+                                mock_sqs_client_instance_from_call = (
+                                    mock_boto_client.side_effect("sqs")
+                                )
+                                expected_sqs_message = {"barcodes": [test_barcodes[1]]}
+                                mock_sqs_client_instance_from_call.send_message_to_queue.assert_called_once_with(
+                                    expected_sqs_message
+                                )
