@@ -49,6 +49,23 @@ class TestCollectionBlueprint:
     #     return collection
 
     @pytest.fixture
+    def mock_b64decode(mocker):
+        mock = mocker.patch("api.blueprints.drbCollection.b64decode")
+        mock.return_value = b"testUser:testPswd"
+        return mock
+
+    @pytest.fixture(autouse=True)
+    def set_env(self, mocker):
+        mocker.patch.dict(
+            os.environ,
+            {
+                "NYPL_API_CLIENT_PUBLIC_KEY": "test",
+                "ENVIRONMENT": "test",
+                "ELASTICSEARCH_INDEX": "test_es_index",
+            },
+        )
+
+    @pytest.fixture
     def test_app(self):
         flask_app = Flask("test")
         flask_app.config["DB_CLIENT"] = "testDBClient"
@@ -77,8 +94,6 @@ class TestCollectionBlueprint:
             "description": "Updated Test Description",
             "editionIDs": ["ed11", "ed22"],
         }
-
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
 
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
@@ -115,9 +130,9 @@ class TestCollectionBlueprint:
     ):
         mock_db = mock_db_and_client[0]
 
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
+        # mock_db.fetchUser.return_value = mocker.MagicMock(
+        #     user="testUser", password="testPswd", salt="testSalt"
+        # )
 
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
@@ -127,8 +142,6 @@ class TestCollectionBlueprint:
             "title": "Updated Test Collection",
             "creator": "Updated Test Creator",
         }
-
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
 
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
@@ -169,8 +182,6 @@ class TestCollectionBlueprint:
 
         mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
 
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
-
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
 
@@ -201,8 +212,6 @@ class TestCollectionBlueprint:
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
         mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
-
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
 
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
@@ -242,8 +251,6 @@ class TestCollectionBlueprint:
             "workUUIDs": ["uuid1", "uuid2"],
             "editionIDs": ["ed1", "ed2", "ed3"],
         }
-
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
 
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
@@ -304,8 +311,6 @@ class TestCollectionBlueprint:
             },
         }
 
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
-
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
 
@@ -361,8 +366,6 @@ class TestCollectionBlueprint:
             },
         }
 
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
-
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
 
@@ -402,8 +405,6 @@ class TestCollectionBlueprint:
             },
         }
 
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
-
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
 
@@ -437,9 +438,9 @@ class TestCollectionBlueprint:
     ):
         mock_db = mock_db_and_client[0]
 
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
+        # mock_db.fetchUser.return_value = mocker.MagicMock(
+        #     user="testUser", password="testPswd", salt="testSalt"
+        # )
 
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
@@ -449,8 +450,6 @@ class TestCollectionBlueprint:
             "workUUIDs": ["uuid1", "uuid2"],
             "editionIDs": ["ed1", "ed2", "ed3"],
         }
-
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
 
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
@@ -565,8 +564,6 @@ class TestCollectionBlueprint:
 
         mock_db.deleteCollection.return_value = 1
 
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
-
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
 
@@ -592,8 +589,6 @@ class TestCollectionBlueprint:
         mock_db.deleteCollection.return_value = 0
 
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
-
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
 
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
@@ -635,8 +630,6 @@ class TestCollectionBlueprint:
 
         mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
 
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
-
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
 
@@ -670,8 +663,6 @@ class TestCollectionBlueprint:
         mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
 
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
-
-        mocker.patch.dict(os.environ, {"NYPL_API_CLIENT_PUBLIC_KEY": "test"})
 
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
@@ -841,8 +832,6 @@ class TestCollectionBlueprint:
             type="static",
         )
 
-        mocker.patch.dict(os.environ, {"ENVIRONMENT": "test"})
-
         mock_paging = mocker.patch.object(OPDSUtils, "addPagingOptions")
 
         mock_sort_con = mocker.patch("api.blueprints.drbCollection.constructSortMethod")
@@ -924,10 +913,6 @@ class TestCollectionBlueprint:
             ),
         )
 
-        mocker.patch.dict(
-            os.environ,
-            {"ENVIRONMENT": "test", "ELASTICSEARCH_INDEX": "test_es_index"},
-        )
         test_app.config["REDIS_CLIENT"] = "test_redis_client"
 
         mock_paging = mocker.patch.object(OPDSUtils, "addPagingOptions")
@@ -992,9 +977,9 @@ class TestCollectionBlueprint:
 
         mock_db = mock_db_and_client[0]
 
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
+        # mock_db.fetchUser.return_value = mocker.MagicMock(
+        #     user="testUser", password="testPswd", salt="testSalt"
+        # )
 
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
@@ -1035,9 +1020,9 @@ class TestCollectionBlueprint:
 
         mock_db = mock_db_and_client[0]
 
-        mock_db.fetchUser.return_value = mocker.MagicMock(
-            user="testUser", password="testPswd", salt="testSalt"
-        )
+        # mock_db.fetchUser.return_value = mocker.MagicMock(
+        #     user="testUser", password="testPswd", salt="testSalt"
+        # )
 
         mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock_base_64.return_value = b"testUser:testPswd"
