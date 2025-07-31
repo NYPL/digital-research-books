@@ -48,11 +48,11 @@ class TestCollectionBlueprint:
     #     mock_db.fetchSingleCollection.return_value = collection
     #     return collection
 
-    @pytest.fixture
-    def mock_b64decode(mocker):
+    @pytest.fixture(autouse=True)
+    def mock_b64decode(self, mocker):
         mock = mocker.patch("api.blueprints.drbCollection.b64decode")
         mock.return_value = b"testUser:testPswd"
-        return mock
+        self.mock_b64decode = mock
 
     @pytest.fixture(autouse=True)
     def set_env(self, mocker):
@@ -95,9 +95,6 @@ class TestCollectionBlueprint:
             "editionIDs": ["ed11", "ed22"],
         }
 
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
-
         mock_utils["validatePassword"].return_value = True
 
         mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
@@ -119,7 +116,7 @@ class TestCollectionBlueprint:
 
             mock_feed_construct.assert_called_once_with(collection, mock_db)
 
-            mock_base_64.assert_called_once_with(b"testAuth")
+            self.mock_b64decode.assert_called_once_with(b"testAuth")
 
             mock_utils["formatOPDS2Object"].assert_called_once_with(
                 201, "testOPDS2Feed"
@@ -142,9 +139,6 @@ class TestCollectionBlueprint:
             "title": "Updated Test Collection",
             "creator": "Updated Test Creator",
         }
-
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
 
         mock_utils["validatePassword"].return_value = True
 
@@ -182,9 +176,6 @@ class TestCollectionBlueprint:
 
         mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
 
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
-
         with test_app.test_request_context(
             "/update/testUUID?title=newTitle",
             headers={"Authorization": "Basic testAuth"},
@@ -212,9 +203,6 @@ class TestCollectionBlueprint:
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
         mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
-
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
 
         with test_app.test_request_context(
             "/update/testUUID", headers={"Authorization": "Basic testAuth"}
@@ -252,9 +240,6 @@ class TestCollectionBlueprint:
             "editionIDs": ["ed1", "ed2", "ed3"],
         }
 
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
-
         mock_utils["validatePassword"].return_value = True
 
         mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
@@ -280,7 +265,7 @@ class TestCollectionBlueprint:
 
             mock_feed_construct.assert_called_once_with(collection, mock_db)
 
-            mock_base_64.assert_called_once_with(b"testAuth")
+            self.mock_b64decode.assert_called_once_with(b"testAuth")
 
             mock_utils["formatOPDS2Object"].assert_called_once_with(
                 201, "testOPDS2Feed"
@@ -310,9 +295,6 @@ class TestCollectionBlueprint:
                 "keywordQuery": "bikes",
             },
         }
-
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
 
         mock_utils["validatePassword"].return_value = True
 
@@ -345,7 +327,7 @@ class TestCollectionBlueprint:
                 mock_db,
             )
 
-            mock_base_64.assert_called_once_with(b"testAuth")
+            self.mock_b64decode.assert_called_once_with(b"testAuth")
 
             mock_utils["formatOPDS2Object"].assert_called_once_with(
                 201, "testOPDS2Feed"
@@ -366,9 +348,6 @@ class TestCollectionBlueprint:
             },
         }
 
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
-
         mock_utils["validatePassword"].return_value = True
 
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
@@ -387,7 +366,7 @@ class TestCollectionBlueprint:
                 {"message": "Invalid sort field bad_sort_field"},
             )
 
-            mock_base_64.assert_called_once_with(b"testAuth")
+            self.mock_b64decode.assert_called_once_with(b"testAuth")
 
     def test_collection_create_invalid(
         self, test_app, mock_utils, mocker, mock_db_and_client
@@ -404,9 +383,6 @@ class TestCollectionBlueprint:
                 "keywordQuery": "bikes",
             },
         }
-
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
 
         mock_utils["validatePassword"].return_value = True
 
@@ -431,12 +407,12 @@ class TestCollectionBlueprint:
                 },
             )
 
-            mock_base_64.assert_called_once_with(b"testAuth")
+            self.mock_b64decode.assert_called_once_with(b"testAuth")
 
     def test_collection_create_error(
         self, test_app, mock_utils, mocker, mock_db_and_client
     ):
-        mock_db = mock_db_and_client[0]
+        # mock_db = mock_db_and_client[0]
 
         # mock_db.fetchUser.return_value = mocker.MagicMock(
         #     user="testUser", password="testPswd", salt="testSalt"
@@ -450,9 +426,6 @@ class TestCollectionBlueprint:
             "workUUIDs": ["uuid1", "uuid2"],
             "editionIDs": ["ed1", "ed2", "ed3"],
         }
-
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
 
         mock_utils["validatePassword"].return_value = True
 
@@ -564,9 +537,6 @@ class TestCollectionBlueprint:
 
         mock_db.deleteCollection.return_value = 1
 
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
-
         mock_utils["validatePassword"].return_value = True
 
         with test_app.test_request_context(
@@ -589,9 +559,6 @@ class TestCollectionBlueprint:
         mock_db.deleteCollection.return_value = 0
 
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
-
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
 
         mock_utils["validatePassword"].return_value = True
 
@@ -630,9 +597,6 @@ class TestCollectionBlueprint:
 
         mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
 
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
-
         mock_utils["validatePassword"].return_value = True
 
         with test_app.test_request_context(
@@ -663,9 +627,6 @@ class TestCollectionBlueprint:
         mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
 
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
-
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
 
         mock_utils["validatePassword"].return_value = True
 
@@ -975,15 +936,6 @@ class TestCollectionBlueprint:
 
         decorated_function = validateToken(mock_func)
 
-        mock_db = mock_db_and_client[0]
-
-        # mock_db.fetchUser.return_value = mocker.MagicMock(
-        #     user="testUser", password="testPswd", salt="testSalt"
-        # )
-
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
-
         mock_utils["validatePassword"].return_value = True
 
         with test_app.test_request_context(
@@ -991,7 +943,7 @@ class TestCollectionBlueprint:
         ):
             decorated_function()
 
-            mock_base_64.assert_called_once_with(b"testAuth")
+            self.mock_b64decode.assert_called_once_with(b"testAuth")
 
             mock_func.assert_called_once_with(user="testUser")
 
@@ -1017,15 +969,6 @@ class TestCollectionBlueprint:
         mock_func = mocker.MagicMock()
 
         decorated_function = validateToken(mock_func)
-
-        mock_db = mock_db_and_client[0]
-
-        # mock_db.fetchUser.return_value = mocker.MagicMock(
-        #     user="testUser", password="testPswd", salt="testSalt"
-        # )
-
-        mock_base_64 = mocker.patch("api.blueprints.drbCollection.b64decode")
-        mock_base_64.return_value = b"testUser:testPswd"
 
         mock_utils["validatePassword"].return_value = False
 
