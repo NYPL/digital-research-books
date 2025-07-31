@@ -66,6 +66,29 @@ class TestCollectionBlueprint:
         )
 
     @pytest.fixture
+    def collection_request_body(self):
+        def _make(exclude=None, **overrides):
+            base = {
+                "title": "Test Collection",
+                "creator": "Test Creator",
+                "description": "Test Description",
+                "workUUIDs": ["uuid1", "uuid2"],
+                "editionIDs": ["ed1", "ed2", "ed3"],
+                "autoDef": {
+                    "sortField": "date",
+                    "sortDirection": "ASC",
+                    "keywordQuery": "bikes",
+                },
+            }
+            if exclude:
+                for key in exclude:
+                    base.pop(key, None)
+            base.update(overrides)
+            return base
+
+        return _make
+
+    @pytest.fixture
     def test_app(self):
         flask_app = Flask("test")
         flask_app.config["DB_CLIENT"] = "testDBClient"
@@ -73,11 +96,7 @@ class TestCollectionBlueprint:
         return flask_app
 
     def test_collection_replace_success(
-        self,
-        test_app,
-        mock_utils,
-        mocker,
-        mock_db_and_client,
+        self, test_app, mock_utils, mocker, mock_db_and_client, collection_request_body
     ):
         mock_db, mock_db_client = mock_db_and_client
 
@@ -88,12 +107,12 @@ class TestCollectionBlueprint:
         )
         mock_feed_construct.return_value = "testOPDS2Feed"
 
-        test_updated_collection = {
-            "title": "Updated Test Collection",
-            "creator": "Updated Test Creator",
-            "description": "Updated Test Description",
-            "editionIDs": ["ed11", "ed22"],
-        }
+        test_updated_collection = collection_request_body(
+            exclude=["description", "workUUIDs", "autoDef"],
+            title="Updated Test Collection",
+            creator="Updated Test Creator",
+            description="Updated Test Description",
+        )
 
         mock_utils["validatePassword"].return_value = True
 
@@ -123,7 +142,7 @@ class TestCollectionBlueprint:
             )
 
     def test_collection_replace_fail(
-        self, test_app, mock_utils, mocker, mock_db_and_client
+        self, test_app, mock_utils, mocker, mock_db_and_client, collection_request_body
     ):
         mock_db = mock_db_and_client[0]
 
@@ -131,10 +150,11 @@ class TestCollectionBlueprint:
 
         mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
 
-        test_fail_collection = {
-            "title": "Updated Test Collection",
-            "creator": "Updated Test Creator",
-        }
+        test_fail_collection = collection_request_body(
+            exclude=["description", "workUUIDs", "editionIDs", "autoDef"],
+            title="Updated Test Collection",
+            creator="Updated Test Creator",
+        )
 
         mock_utils["validatePassword"].return_value = True
 
@@ -216,7 +236,7 @@ class TestCollectionBlueprint:
             )
 
     def test_static_collection_create_success(
-        self, test_app, mock_utils, mocker, mock_db_and_client
+        self, test_app, mock_utils, mocker, mock_db_and_client, collection_request_body
     ):
         mock_db, mock_db_client = mock_db_and_client
 
@@ -228,13 +248,7 @@ class TestCollectionBlueprint:
         )
         mock_feed_construct.return_value = "testOPDS2Feed"
 
-        test_request_body = {
-            "title": "Test Collection",
-            "creator": "Test Creator",
-            "description": "Test Description",
-            "workUUIDs": ["uuid1", "uuid2"],
-            "editionIDs": ["ed1", "ed2", "ed3"],
-        }
+        test_request_body = collection_request_body(exclude=["autoDef"])
 
         mock_utils["validatePassword"].return_value = True
 
@@ -268,7 +282,7 @@ class TestCollectionBlueprint:
             )
 
     def test_automatic_collection_create_success(
-        self, test_app, mock_utils, mocker, mock_db_and_client
+        self, test_app, mock_utils, mocker, mock_db_and_client, collection_request_body
     ):
         mock_db = mock_db_and_client[0]
 
@@ -281,16 +295,7 @@ class TestCollectionBlueprint:
         )
         mock_feed_construct.return_value = "testOPDS2Feed"
 
-        test_request_body = {
-            "title": "Test Collection",
-            "creator": "Test Creator",
-            "description": "Test Description",
-            "autoDef": {
-                "sortField": "date",
-                "sortDirection": "ASC",
-                "keywordQuery": "bikes",
-            },
-        }
+        test_request_body = collection_request_body(exclude=["editionIDs", "workUUIDs"])
 
         mock_utils["validatePassword"].return_value = True
 
@@ -330,19 +335,14 @@ class TestCollectionBlueprint:
             )
 
     def test_automatic_collection_create_invalid(
-        self, test_app, mock_utils, mock_db_and_client
+        self, test_app, mock_utils, mock_db_and_client, collection_request_body
     ):
         mock_db = mock_db_and_client[0]
 
-        test_request_body = {
-            "title": "Test Collection",
-            "creator": "Test Creator",
-            "description": "Test Description",
-            "autoDef": {
-                "sortField": "bad_sort_field",
-                "keywordQuery": "bikes",
-            },
-        }
+        test_request_body = collection_request_body(
+            exclude=["editionIDs", "workUUIDs"],
+            autoDef={"sortField": "bad_sort_field"},
+        )
 
         mock_utils["validatePassword"].return_value = True
 
@@ -364,19 +364,16 @@ class TestCollectionBlueprint:
 
             self.mock_b64decode.assert_called_once_with(b"testAuth")
 
-    def test_collection_create_invalid(self, test_app, mock_utils, mock_db_and_client):
+    def test_collection_create_invalid(
+        self, test_app, mock_utils, mock_db_and_client, collection_request_body
+    ):
         mock_db = mock_db_and_client[0]
 
-        test_request_body = {
-            "title": "Test Collection",
-            "creator": "Test Creator",
-            "description": "Test Description",
-            "editionIDs": [1, 2, 3],
-            "autoDef": {
-                "sortField": "bad_sort_field",
-                "keywordQuery": "bikes",
-            },
-        }
+        test_request_body = collection_request_body(
+            exclude=["workUUIDs"],
+            editionIDs=[1, 2, 3],
+            autoDef={"sortField": "bad_sort_field"},
+        )
 
         mock_utils["validatePassword"].return_value = True
 
@@ -403,15 +400,12 @@ class TestCollectionBlueprint:
 
             self.mock_b64decode.assert_called_once_with(b"testAuth")
 
-    def test_collection_create_error(self, test_app, mock_utils):
+    def test_collection_create_error(
+        self, test_app, mocker, mock_db_and_client, mock_utils, collection_request_body
+    ):
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
-        test_request_body = {
-            "creator": "Test Creator",
-            "description": "Test Description",
-            "workUUIDs": ["uuid1", "uuid2"],
-            "editionIDs": ["ed1", "ed2", "ed3"],
-        }
+        test_request_body = collection_request_body(exclude=["title", "autoDef"])
 
         mock_utils["validatePassword"].return_value = True
 
@@ -911,7 +905,9 @@ class TestCollectionBlueprint:
                 perPage=10,
             )
 
-    def test_validate_token_success(self, test_app, mock_utils, mocker):
+    def test_validate_token_success(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
         mock_func = mocker.MagicMock()
 
         decorated_function = validateToken(mock_func)
@@ -943,7 +939,9 @@ class TestCollectionBlueprint:
                 403, "authResponse", {"message": "user/password not provided"}
             )
 
-    def test_validate_token_error_auth(self, test_app, mock_utils, mocker):
+    def test_validate_token_error_auth(
+        self, test_app, mock_utils, mocker, mock_db_and_client
+    ):
         mock_func = mocker.MagicMock()
 
         decorated_function = validateToken(mock_func)
