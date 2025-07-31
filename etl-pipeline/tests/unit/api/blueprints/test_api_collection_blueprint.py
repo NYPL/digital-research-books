@@ -127,10 +127,6 @@ class TestCollectionBlueprint:
     ):
         mock_db = mock_db_and_client[0]
 
-        # mock_db.fetchUser.return_value = mocker.MagicMock(
-        #     user="testUser", password="testPswd", salt="testSalt"
-        # )
-
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
         mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
@@ -334,7 +330,7 @@ class TestCollectionBlueprint:
             )
 
     def test_automatic_collection_create_invalid(
-        self, test_app, mock_utils, mocker, mock_db_and_client
+        self, test_app, mock_utils, mock_db_and_client
     ):
         mock_db = mock_db_and_client[0]
 
@@ -368,9 +364,7 @@ class TestCollectionBlueprint:
 
             self.mock_b64decode.assert_called_once_with(b"testAuth")
 
-    def test_collection_create_invalid(
-        self, test_app, mock_utils, mocker, mock_db_and_client
-    ):
+    def test_collection_create_invalid(self, test_app, mock_utils, mock_db_and_client):
         mock_db = mock_db_and_client[0]
 
         test_request_body = {
@@ -409,15 +403,7 @@ class TestCollectionBlueprint:
 
             self.mock_b64decode.assert_called_once_with(b"testAuth")
 
-    def test_collection_create_error(
-        self, test_app, mock_utils, mocker, mock_db_and_client
-    ):
-        # mock_db = mock_db_and_client[0]
-
-        # mock_db.fetchUser.return_value = mocker.MagicMock(
-        #     user="testUser", password="testPswd", salt="testSalt"
-        # )
-
+    def test_collection_create_error(self, test_app, mock_utils):
         mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
         test_request_body = {
@@ -530,9 +516,7 @@ class TestCollectionBlueprint:
                 400, "fetchCollection", {"message": "Collection id testUUID is invalid"}
             )
 
-    def test_collection_delete_success(
-        self, test_app, mock_utils, mocker, mock_db_and_client
-    ):
+    def test_collection_delete_success(self, test_app, mock_utils, mock_db_and_client):
         mock_db = mock_db_and_client[0]
 
         mock_db.deleteCollection.return_value = 1
@@ -551,9 +535,7 @@ class TestCollectionBlueprint:
             mock_db.deleteCollection.assert_called_once_with("testUUID")
             mock_db.session.commit.assert_called_once()
 
-    def test_collection_delete_error(
-        self, test_app, mock_utils, mocker, mock_db_and_client
-    ):
+    def test_collection_delete_error(self, test_app, mock_utils, mock_db_and_client):
         mock_db = mock_db_and_client[0]
 
         mock_db.deleteCollection.return_value = 0
@@ -929,9 +911,7 @@ class TestCollectionBlueprint:
                 perPage=10,
             )
 
-    def test_validate_token_success(
-        self, test_app, mock_utils, mocker, mock_db_and_client
-    ):
+    def test_validate_token_success(self, test_app, mock_utils, mocker):
         mock_func = mocker.MagicMock()
 
         decorated_function = validateToken(mock_func)
@@ -963,9 +943,7 @@ class TestCollectionBlueprint:
                 403, "authResponse", {"message": "user/password not provided"}
             )
 
-    def test_validate_token_error_auth(
-        self, test_app, mock_utils, mocker, mock_db_and_client
-    ):
+    def test_validate_token_error_auth(self, test_app, mock_utils, mocker):
         mock_func = mocker.MagicMock()
 
         decorated_function = validateToken(mock_func)
