@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 import pytest
+import random
 from sqlalchemy import delete
 from uuid import uuid4
 
@@ -11,7 +12,17 @@ from model import Record, FRBRStatus, RecordState, Source, GRINStatus, GRINState
 
 @pytest.fixture
 def grin_status(db_manager):
-    barcode = "33433124920780"
+ 
+    barcode = "33433011009234"
+
+    # Setup: Ensure a clean state before creating the new record
+    db_manager.session.execute(
+        delete(GRINStatus).where(GRINStatus.barcode == barcode)
+    )
+    db_manager.session.execute(
+        delete(Record).where(Record.source_id == f"{barcode}|grin")
+    )
+    db_manager.commit_changes()
     grin_record = Record(
         uuid=uuid4(),
         frbr_status=FRBRStatus.TODO.value,
