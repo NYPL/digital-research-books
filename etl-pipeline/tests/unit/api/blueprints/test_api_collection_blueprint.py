@@ -42,9 +42,8 @@ def mock_db_and_client(mocker):
 # @pytest.fixture
 # def fetch_collection(mocker, mock_db_and_client):
 #     mock_db = mock_db_and_client[0]
-#     collection = mocker.MagicMock(uuid="testUUID")
-#     mock_db.fetchSingleCollection.return_value = collection
-#     return collection
+#     mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
+#     return mock_db.fetchSingleCollection.return_value
 
 
 @pytest.fixture(autouse=True)
@@ -68,7 +67,7 @@ def set_env(mocker):
 
 @pytest.fixture
 def collection_request_body():
-    def _make(exclude=None, nested_exclude=None, **overrides):
+    def _make(exclude=None, **overrides):
         base = {
             "title": "Test Collection",
             "creator": "Test Creator",
@@ -84,9 +83,6 @@ def collection_request_body():
         if exclude:
             for key in exclude:
                 base.pop(key, None)
-        if nested_exclude and "autoDef" in base:  # need?
-            for key in nested_exclude:
-                base["autoDef"].pop(key, None)
         base.update(overrides)
         return base
 
@@ -127,6 +123,7 @@ def test_collection_replace_success(
         headers={"Authorization": "Basic testAuth"},
     ):
         test_api_response = collectionReplace("testUUID")
+
         assert test_api_response == "testOPDS2Response"
         assert mock_db_client.call_count == 2
         assert mock_db.createSession.call_count == 2
@@ -150,12 +147,14 @@ def test_collection_replace_fail(
         creator="Updated Test Creator",
     )
     mock_utils["validatePassword"].return_value = True
+
     with test_app.test_request_context(
         "/replace/testUUID",
         json=test_fail_collection,
         headers={"Authorization": "Basic testAuth"},
     ):
         test_api_response = collectionReplace("testUUID")
+
         assert test_api_response == "testErrorResponse"
         mock_utils["formatResponseObject"].assert_called_once_with(
             400,
@@ -168,13 +167,10 @@ def test_collection_replace_fail(
 
 def test_collection_update_success(test_app, mock_utils, mocker, mock_db_and_client):
     mock_db, mock_db_client = mock_db_and_client
-
     collection = mocker.MagicMock(uuid="testUUID")
     mock_db.fetchSingleCollection.return_value = collection
-
     mock_feed_construct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")
     mock_feed_construct.return_value = "testOPDS2Feed"
-
     mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
 
     with test_app.test_request_context(
@@ -184,22 +180,17 @@ def test_collection_update_success(test_app, mock_utils, mocker, mock_db_and_cli
         test_api_response = collectionUpdate("testUUID")
 
         assert test_api_response == "testOPDS2Response"
-
         assert mock_db_client.call_count == 2
         assert mock_db.createSession.call_count == 2
         mock_db.fetchSingleCollection.assert_called_once_with("testUUID")
         mock_db.session.commit.assert_called_once()
-
         mock_feed_construct.assert_called_once_with(collection, mock_db)
-
         mock_utils["formatOPDS2Object"].assert_called_once_with(200, "testOPDS2Feed")
 
 
 def test_collection_update_error(test_app, mock_utils, mocker, mock_db_and_client):
     mock_db = mock_db_and_client[0]
-
     mock_utils["formatResponseObject"].return_value = "testErrorResponse"
-
     mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
 
     with test_app.test_request_context(
@@ -208,7 +199,6 @@ def test_collection_update_error(test_app, mock_utils, mocker, mock_db_and_clien
         test_api_response = collectionUpdate("testUUID")
 
         assert test_api_response == "testErrorResponse"
-
         mock_utils["formatResponseObject"].assert_called_once_with(
             400,
             "updateCollection",
@@ -227,17 +217,12 @@ def test_static_collection_create_success(
     mock_b64decode,
 ):
     mock_db, mock_db_client = mock_db_and_client
-
     collection = mocker.MagicMock(uuid="testUUID")
     mock_db.createStaticCollection.return_value = collection
-
     mock_feed_construct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")
     mock_feed_construct.return_value = "testOPDS2Feed"
-
     test_request_body = collection_request_body(exclude=["autoDef"])
-
     mock_utils["validatePassword"].return_value = True
-
     mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
 
     with test_app.test_request_context(
@@ -271,16 +256,11 @@ def test_automatic_collection_create_success(
     mock_b64decode,
 ):
     mock_db = mock_db_and_client[0]
-
     mock_db.createAutomaticCollection.return_value = mocker.MagicMock(uuid="testUUID")
-
     mock_feed_construct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")
     mock_feed_construct.return_value = "testOPDS2Feed"
-
     test_request_body = collection_request_body(exclude=["editionIDs", "workUUIDs"])
-
     mock_utils["validatePassword"].return_value = True
-
     mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
 
     with test_app.test_request_context(
@@ -289,7 +269,6 @@ def test_automatic_collection_create_success(
         test_api_response = collectionCreate()
 
         assert test_api_response == "testOPDS2Response"
-
         mock_db.createAutomaticCollection.assert_called_once_with(
             "Test Collection",
             "Test Creator",
@@ -304,14 +283,11 @@ def test_automatic_collection_create_success(
             subjectQuery=None,
         )
         mock_db.session.commit.assert_called_once()
-
         mock_feed_construct.assert_called_once_with(
             mock_db.createAutomaticCollection.return_value,
             mock_db,
         )
-
         mock_b64decode.assert_called_once_with(b"testAuth")
-
         mock_utils["formatOPDS2Object"].assert_called_once_with(201, "testOPDS2Feed")
 
 
@@ -319,14 +295,11 @@ def test_automatic_collection_create_invalid(
     test_app, mock_utils, mock_db_and_client, collection_request_body, mock_b64decode
 ):
     mock_db = mock_db_and_client[0]
-
     test_request_body = collection_request_body(
         exclude=["editionIDs", "workUUIDs"],
         autoDef={"sortField": "bad_sort_field"},
     )
-
     mock_utils["validatePassword"].return_value = True
-
     mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
     with test_app.test_request_context(
@@ -335,14 +308,12 @@ def test_automatic_collection_create_invalid(
         test_api_response = collectionCreate()
 
         assert test_api_response == "testErrorResponse"
-
         mock_db.createAutomaticCollection.assert_not_called()
         mock_utils["formatResponseObject"].assert_called_once_with(
             400,
             "createCollection",
             {"message": "Invalid sort field bad_sort_field"},
         )
-
         mock_b64decode.assert_called_once_with(b"testAuth")
 
 
@@ -350,15 +321,12 @@ def test_collection_create_invalid(
     test_app, mock_utils, mock_db_and_client, collection_request_body, mock_b64decode
 ):
     mock_db = mock_db_and_client[0]
-
     test_request_body = collection_request_body(
         exclude=["workUUIDs"],
         editionIDs=[1, 2, 3],
         autoDef={"sortField": "bad_sort_field"},
     )
-
     mock_utils["validatePassword"].return_value = True
-
     mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
     with test_app.test_request_context(
@@ -367,7 +335,6 @@ def test_collection_create_invalid(
         test_api_response = collectionCreate()
 
         assert test_api_response == "testErrorResponse"
-
         mock_db.createAutomaticCollection.assert_not_called()
         mock_utils["formatResponseObject"].assert_called_once_with(
             400,
@@ -379,7 +346,6 @@ def test_collection_create_invalid(
                 ),
             },
         )
-
         mock_b64decode.assert_called_once_with(b"testAuth")
 
 
@@ -387,9 +353,7 @@ def test_collection_create_error(
     test_app, mocker, mock_db_and_client, mock_utils, collection_request_body
 ):
     mock_utils["formatResponseObject"].return_value = "testErrorResponse"
-
     test_request_body = collection_request_body(exclude=["title", "autoDef"])
-
     mock_utils["validatePassword"].return_value = True
 
     with test_app.test_request_context(
@@ -398,7 +362,6 @@ def test_collection_create_error(
         test_api_response = collectionCreate()
 
         assert test_api_response == "testErrorResponse"
-
         mock_utils["formatResponseObject"].assert_called_once_with(
             400,
             "createCollection",
@@ -410,43 +373,33 @@ def test_collection_create_error(
 
 def test_get_collection_success(test_app, mock_utils, mocker, mock_db_and_client):
     mock_db = mock_db_and_client[0]
-
     collection = mocker.MagicMock(uuid="d902fd44-7cbe-4401-b50c-5b1bda8b1059")
     mock_db.fetchSingleCollection.return_value = collection
-
     mock_feed_construct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")
     mock_feed_construct.return_value = "testOPDS2Feed"
-
     mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
 
     with test_app.test_request_context("/?sort=title&page=3"):
         test_api_response = get_collection("d902fd44-7cbe-4401-b50c-5b1bda8b1059")
 
         assert test_api_response == "testOPDS2Response"
-
         mock_db.createSession.assert_called_once()
-
         mock_feed_construct.assert_called_once_with(
             collection, mock_db, sort="title", page=3, perPage=10
         )
-
         mock_utils["formatOPDS2Object"].assert_called_once_with(200, "testOPDS2Feed")
 
 
 def test_get_collection_not_found(test_app, mock_utils, mock_db_and_client):
     mock_db = mock_db_and_client[0]
-
     mock_db.fetchSingleCollection.side_effect = NoResultFound
-
     mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
     with test_app.test_request_context("/?sort=title&page=3"):
         test_api_response = get_collection("d902fd44-7cbe-4401-b50c-5b1bda8b1059")
 
         assert test_api_response == "testErrorResponse"
-
         mock_db.createSession.assert_called_once()
-
         mock_utils["formatResponseObject"].assert_called_once_with(
             404,
             "fetchCollection",
@@ -460,8 +413,10 @@ def test_get_collection_error(test_app, mock_utils, mock_db_and_client):
     mock_db = mock_db_and_client[0]
     mock_db.fetchSingleCollection.side_effect = Exception("Database error")
     mock_utils["formatResponseObject"].return_value = "testErrorResponse"
+
     with test_app.test_request_context("/?sort=title&page=3"):
         test_api_response = get_collection("d902fd44-7cbe-4401-b50c-5b1bda8b1059")
+
         assert test_api_response == "testErrorResponse"
         mock_db.createSession.assert_called_once()
         mock_utils["formatResponseObject"].assert_called_once_with(
@@ -475,8 +430,10 @@ def test_get_collection_error(test_app, mock_utils, mock_db_and_client):
 
 def test_get_collection_invalid_id(test_app, mock_utils):
     mock_utils["formatResponseObject"].return_value = "400response"
+
     with test_app.test_request_context("/?sort=title&page=3"):
         test_api_response = get_collection("testUUID")
+
         assert test_api_response == "400response"
         mock_utils["formatResponseObject"].assert_called_once_with(
             400, "fetchCollection", {"message": "Collection id testUUID is invalid"}
@@ -485,9 +442,7 @@ def test_get_collection_invalid_id(test_app, mock_utils):
 
 def test_collection_delete_success(test_app, mock_utils, mock_db_and_client):
     mock_db = mock_db_and_client[0]
-
     mock_db.deleteCollection.return_value = 1
-
     mock_utils["validatePassword"].return_value = True
 
     with test_app.test_request_context(
@@ -497,7 +452,6 @@ def test_collection_delete_success(test_app, mock_utils, mock_db_and_client):
 
         assert test_api_response[0].status_code == 200
         assert test_api_response[0].json == {"message": "Deleted testUUID"}
-
         assert mock_db.createSession.call_count == 2
         mock_db.deleteCollection.assert_called_once_with("testUUID")
         mock_db.session.commit.assert_called_once()
@@ -505,11 +459,8 @@ def test_collection_delete_success(test_app, mock_utils, mock_db_and_client):
 
 def test_collection_delete_error(test_app, mock_utils, mock_db_and_client):
     mock_db = mock_db_and_client[0]
-
     mock_db.deleteCollection.return_value = 0
-
     mock_utils["formatResponseObject"].return_value = "testErrorResponse"
-
     mock_utils["validatePassword"].return_value = True
 
     with test_app.test_request_context(
@@ -518,10 +469,8 @@ def test_collection_delete_error(test_app, mock_utils, mock_db_and_client):
         test_api_response = collectionDelete("testUUID")
 
         assert test_api_response == "testErrorResponse"
-
         assert mock_db.createSession.call_count == 2
         mock_db.deleteCollection.assert_called_once_with("testUUID")
-
         mock_utils["formatResponseObject"].assert_called_once_with(
             404,
             "deleteCollection",
@@ -533,19 +482,14 @@ def test_collection_delete_work_edition_success(
     test_app, mock_utils, mocker, mock_db_and_client
 ):
     mock_db, mock_db_client = mock_db_and_client
-
     collection = mocker.MagicMock(uuid="testUUID")
     mock_db.fetchSingleCollection.return_value = collection
-
     mock_feed_construct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")
     mock_feed_construct.return_value = "testOPDS2Feed"
-
     mockRemoveEdition = mocker.patch(
         "api.blueprints.drbCollection.removeWorkEditionsFromCollection"
     )
-
     mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
-
     mock_utils["validatePassword"].return_value = True
 
     with test_app.test_request_context(
@@ -555,15 +499,12 @@ def test_collection_delete_work_edition_success(
         test_api_response = collectionDeleteWorkEdition("testUUID")
 
         assert test_api_response == "testOPDS2Response"
-
         assert mock_db_client.call_count == 2
         assert mock_db.createSession.call_count == 2
         assert mockRemoveEdition.call_count == 1
         mock_db.fetchSingleCollection.assert_called_once_with("testUUID")
         mock_db.session.commit.assert_called_once()
-
         mock_feed_construct.assert_called_once_with(collection, mock_db)
-
         mock_utils["formatOPDS2Object"].assert_called_once_with(200, "testOPDS2Feed")
 
 
@@ -571,11 +512,8 @@ def test_collection_delete_work_edition_error(
     test_app, mock_utils, mocker, mock_db_and_client
 ):
     mock_db, mock_db_client = mock_db_and_client
-
     mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
-
     mock_utils["formatResponseObject"].return_value = "testErrorResponse"
-
     mock_utils["validatePassword"].return_value = True
 
     with test_app.test_request_context(
@@ -584,10 +522,8 @@ def test_collection_delete_work_edition_error(
         test_api_response = collectionDeleteWorkEdition("testUUID")
 
         assert test_api_response == "testErrorResponse"
-
         assert mock_db_client.call_count == 1
         assert mock_db.createSession.call_count == 1
-
         mock_utils["formatResponseObject"].assert_called_once_with(
             400,
             "deleteCollectionWorkEdition",
@@ -599,32 +535,25 @@ def test_collection_delete_work_edition_error(
 
 def test_get_collections_success(test_app, mock_utils, mocker, mock_db_and_client):
     mock_db = mock_db_and_client[0]
-
     collection1 = mocker.MagicMock(uuid="uuid1")
     collection2 = mocker.MagicMock(uuid="uuid2")
     mock_db.fetchCollections.return_value = [collection1, collection2]
-
     mock_feed = mocker.MagicMock()
     mock_feed_init = mocker.patch("api.blueprints.drbCollection.Feed")
     mock_feed_init.return_value = mock_feed
-
     mock_paging = mocker.patch.object(OPDSUtils, "addPagingOptions")
-
     mockConstruct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")
     mockConstruct.side_effect = ["group1", "group2"]
-
     mock_utils["formatOPDS2Object"].return_value = "testOPDSResponse"
 
     with test_app.test_request_context("/list"):
         test_response = get_collections()
 
         assert test_response == "testOPDSResponse"
-
         mock_db.createSession.assert_called_once()
         mock_db.fetchCollections.assert_called_once_with(
             sort="title", page=1, perPage=10
         )
-
         mock_feed_init.assert_called_once()
         mock_feed.addMetadata.assert_called_once_with(
             {"title": "Digital Research Books Collections"}
@@ -632,9 +561,7 @@ def test_get_collections_success(test_app, mock_utils, mocker, mock_db_and_clien
         mock_feed.addLink.assert_called_once_with(
             {"rel": "self", "href": "/list", "type": "application/opds+json"}
         )
-
         mock_paging.assert_called_once_with(mock_feed, "/list?", 2, page=1, perPage=10)
-
         mockConstruct.assert_has_calls(
             [
                 mocker.call(
@@ -653,31 +580,25 @@ def test_get_collections_success(test_app, mock_utils, mocker, mock_db_and_clien
                 ),
             ]
         )
-
         mock_feed.addGroup.assert_has_calls(
             [mocker.call("group1"), mocker.call("group2")]
         )
-
         mock_utils["formatOPDS2Object"].assert_called_once_with(200, mock_feed)
 
 
 def test_get_collections_error(test_app, mock_utils, mock_db_and_client):
     mock_db = mock_db_and_client[0]
-
     mock_db.fetchCollections.side_effect = Exception("Database error")
-
     mock_utils["formatResponseObject"].return_value = "testErrorResponse"
 
     with test_app.test_request_context("/list"):
         test_response = get_collections()
 
         assert test_response == "testErrorResponse"
-
         mock_db.createSession.assert_called_once()
         mock_db.fetchCollections.assert_called_once_with(
             sort="title", page=1, perPage=10
         )
-
         mock_utils["formatResponseObject"].assert_called_once_with(
             500, "collectionList", {"message": "Unable to get collections"}
         )
@@ -690,7 +611,6 @@ def test_get_collections_sort_error(test_app, mock_utils):
         test_response = get_collections()
 
         assert test_response == "testErrorResponse"
-
         mock_utils["formatResponseObject"].assert_called_once_with(
             400, "collectionList", {"message": "Sort fields are invalid"}
         )
@@ -698,13 +618,11 @@ def test_get_collections_sort_error(test_app, mock_utils):
 
 def test_construct_sort_method_string(mocker):
     sort_method, reversed = constructSortMethod("test")
-
     test_sorts = [
         mocker.MagicMock(metadata=mocker.MagicMock(id=1, test="b")),
         mocker.MagicMock(metadata=mocker.MagicMock(id=2, test="A")),
         mocker.MagicMock(metadata=mocker.MagicMock(id=3, test="c")),
     ]
-
     sorted_list = sorted(test_sorts, key=sort_method, reverse=reversed)
 
     assert [x.metadata.id for x in sorted_list] == [2, 1, 3]
@@ -712,13 +630,11 @@ def test_construct_sort_method_string(mocker):
 
 def test_construct_sort_methodint_reversed(mocker):
     sort_method, reversed = constructSortMethod("test:desc")
-
     test_sorts = [
         mocker.MagicMock(metadata=mocker.MagicMock(id=1, test=3)),
         mocker.MagicMock(metadata=mocker.MagicMock(id=2, test=1)),
         mocker.MagicMock(metadata=mocker.MagicMock(id=3, test=2)),
     ]
-
     sorted_list = sorted(test_sorts, key=sort_method, reverse=reversed)
 
     assert [x.metadata.id for x in sorted_list] == [1, 3, 2]
@@ -728,11 +644,9 @@ def test_construct_opds_feed_success(test_app, mocker):
     mock_feed = mocker.MagicMock()
     mock_feed_init = mocker.patch("api.blueprints.drbCollection.Feed")
     mock_feed_init.return_value = mock_feed
-
     mock_pub = mocker.MagicMock()
     mock_pub_init = mocker.patch("api.blueprints.drbCollection.Publication")
     mock_pub_init.return_value = mock_pub
-
     mock_db = mocker.MagicMock()
     collection = mocker.MagicMock(
         uuid="testUUID",
@@ -742,9 +656,7 @@ def test_construct_opds_feed_success(test_app, mocker):
         editions=[mocker.MagicMock(id=1), mocker.MagicMock(id=2)],
         type="static",
     )
-
     mock_paging = mocker.patch.object(OPDSUtils, "addPagingOptions")
-
     mock_sort_con = mocker.patch("api.blueprints.drbCollection.constructSortMethod")
     mock_sort_con.return_value = (lambda x: str(x), False)
 
@@ -752,7 +664,6 @@ def test_construct_opds_feed_success(test_app, mocker):
         test_opds_feed = constructOPDSFeed(collection, mock_db, sort="test")
 
         assert test_opds_feed == mock_feed
-
         mock_feed.addMetadata.assert_called_once_with(
             {
                 "title": "Test Collection",
@@ -768,7 +679,6 @@ def test_construct_opds_feed_success(test_app, mocker):
             }
         )
         mock_feed.addPublications.assert_called_once()
-
         assert mock_pub.parseEditionToPublication.call_count == 2
         mock_pub.addLink.assert_has_calls(
             [
@@ -790,9 +700,7 @@ def test_construct_opds_feed_success(test_app, mocker):
                 ),
             ]
         )
-
         mock_sort_con.assert_called_once_with("test")
-
         mock_paging.assert_called_once_with(
             mock_feed, "/collection/testUUID", 2, page=1, perPage=10
         )
@@ -802,11 +710,9 @@ def test_construct_opds_Feed_success_auto_collection(test_app, mocker):
     mock_feed = mocker.MagicMock()
     mock_feed_init = mocker.patch("api.blueprints.drbCollection.Feed")
     mock_feed_init.return_value = mock_feed
-
     mock_pub = mocker.MagicMock()
     mock_pub_init = mocker.patch("api.blueprints.drbCollection.Publication")
     mock_pub_init.return_value = mock_pub
-
     mock_db = mocker.MagicMock()
     collection = mocker.MagicMock(
         uuid="testUUID",
@@ -816,7 +722,6 @@ def test_construct_opds_Feed_success_auto_collection(test_app, mocker):
         type="automatic",
     )
     mock_db.fetchSingleCollection.return_value = collection
-
     mocker.patch(
         "api.blueprints.drbCollection.fetchAutomaticCollectionEditions",
         return_value=(
@@ -824,16 +729,13 @@ def test_construct_opds_Feed_success_auto_collection(test_app, mocker):
             [mocker.MagicMock(id=1), mocker.MagicMock(id=2)],
         ),
     )
-
     test_app.config["REDIS_CLIENT"] = "test_redis_client"
-
     mock_paging = mocker.patch.object(OPDSUtils, "addPagingOptions")
 
     with test_app.test_request_context("/collections/test"):
         test_opds_feed = constructOPDSFeed(collection, mock_db, sort="test")
 
         assert test_opds_feed == mock_feed
-
         mock_feed.addMetadata.assert_called_once_with(
             {
                 "title": "Test Collection",
@@ -849,7 +751,6 @@ def test_construct_opds_Feed_success_auto_collection(test_app, mocker):
             }
         )
         mock_feed.addPublications.assert_called_once()
-
         assert mock_pub.parseEditionToPublication.call_count == 2
         mock_pub.addLink.assert_has_calls(
             [
@@ -871,7 +772,6 @@ def test_construct_opds_Feed_success_auto_collection(test_app, mocker):
                 ),
             ]
         )
-
         mock_paging.assert_called_once_with(
             mock_feed,
             "/collection/testUUID",
@@ -887,10 +787,12 @@ def test_validate_token_success(
     mock_func = mocker.MagicMock()
     decorated_function = validateToken(mock_func)
     mock_utils["validatePassword"].return_value = True
+
     with test_app.test_request_context(
         "/", headers={"Authorization": "Basic testAuth"}
     ):
         decorated_function()
+
         mock_b64decode.assert_called_once_with(b"testAuth")
         mock_func.assert_called_once_with(user="testUser")
 
@@ -899,8 +801,10 @@ def test_validate_token_error_no_header(test_app, mock_utils, mocker):
     mock_func = mocker.MagicMock()
     decorated_function = validateToken(mock_func)
     mock_utils["formatResponseObject"].return_value = "testError"
+
     with test_app.test_request_context("/"):
         test_response = decorated_function()
+
         assert test_response == "testError"
         mock_utils["formatResponseObject"].assert_called_once_with(
             403, "authResponse", {"message": "user/password not provided"}
@@ -914,10 +818,12 @@ def test_validate_token_error_auth(
     decorated_function = validateToken(mock_func)
     mock_utils["validatePassword"].return_value = False
     mock_utils["formatResponseObject"].return_value = "testError"
+
     with test_app.test_request_context(
         "/", headers={"Authorization": "Basic testAuth"}
     ):
         test_response = decorated_function()
+
         assert test_response == "testError"
         mock_utils["formatResponseObject"].assert_called_once_with(
             401, "authResponse", {"message": "invalid user/password"}
