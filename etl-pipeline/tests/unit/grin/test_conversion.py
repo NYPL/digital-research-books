@@ -48,7 +48,7 @@ def mocked_conversion_process():
 def test_convert_barcodes_pending_conversion_fix(mocked_conversion_process):
     conversion_process_instance, mock_db_manager_instance = mocked_conversion_process
 
-    mocked_in_process_data = ["3433124920780", "3433124920781", "3433124920782"]
+    mocked_in_process_data = ["3433124920790", "3433124920791", "3433124920792"]
     conversion_process_instance.client.in_process.return_value = mocked_in_process_data
 
     mocked_pending_barcodes = ["PENDING001", "PENDING002", "PENDING003"]
