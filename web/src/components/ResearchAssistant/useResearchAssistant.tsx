@@ -106,5 +106,5 @@ export const useResearchAssistant = (): UseResearchAssistantResult => {
     setError(null);
   }, []);
 
-  return { messages, sendMessage, results, isLoading, error, clearHistory };
+  return { messages, sendMessage, results, setResults, isLoading, error, clearHistory };
 };

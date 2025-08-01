@@ -51,15 +51,17 @@ export type ApiSearchResult = {
   data?: {
     facets: { formats: FacetItem[]; languages: FacetItem[] };
     message?: string;
-    paging: {
-      currentPage: number;
-      firstPage: number;
-      lastPage: number;
-      nextPage: number;
-      previousPage: number;
-      recordsPerPage: number;
-    };
+    paging: ApiSearchPaging;
     totalWorks?: number;
     works: ApiWork[];
   };
 };
+
+export type ApiSearchPaging = {
+  currentPage: number;
+  firstPage: number;
+  lastPage: number;
+  nextPage: number;
+  previousPage: number;
+  recordsPerPage: number;
+}
