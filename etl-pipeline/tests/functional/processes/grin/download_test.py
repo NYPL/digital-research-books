@@ -1,7 +1,6 @@
 from datetime import datetime
 import os
 import pytest
-import random
 from sqlalchemy import delete
 from uuid import uuid4
 
