@@ -128,3 +128,6 @@ def test_download_process(grin_download_service, db_manager, test_bucket, s3_cli
     assert grin_status.state == GRINState.DOWNLOADED.value, (
         f"Barcode {TEST_BARCODE} does not have DOWNLOADED status. Actual status: {grin_status.state}"
     )
+
+    # reset the barcode state to CONVERTED for future tests
+    _set_grin_status(db_manager, TEST_BARCODE, GRINState.CONVERTED)
