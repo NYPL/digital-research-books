@@ -142,12 +142,7 @@ const ResearchAssistant: React.FC = () => {
                 </Box>
               )
             ) : (
-              <Box 
-                padding="s"
-                border="1px solid #e5e7eb"
-                overflowY="auto"
-                maxHeight="70vh"
-                flex="1">
+              <Box>
                 <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
                   {numberOfWorks > 0
                     ? `${firstElement.toLocaleString()} - ${
