@@ -35,6 +35,7 @@ class FileDef:
 class Page:
     image_file: FileDef
     ocr_file: FileDef
+    text_file: FileDef
     label: str | None
     order_label: str
     order: str
@@ -142,10 +143,16 @@ class METSFile:
             for fptr in page_elem.findall("METS:fptr", namespaces=NSMAP)
             if file_mapping[fptr.get("FILEID")].use == "coordOCR"
         )
+        text_file = next(
+            file_mapping[fptr.get("FILEID")]
+            for fptr in page_elem.findall("METS:fptr", namespaces=NSMAP)
+            if file_mapping[fptr.get("FILEID")].use == "OCR"
+        )
 
         return Page(
             image_file=image_file,
             ocr_file=ocr_file,
+            text_file=text_file,
             # HathiTrust uses LABEL. GRIN uses ADMID.
             label=page_elem.get("LABEL")
             if page_elem.get("LABEL")

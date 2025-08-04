@@ -15,6 +15,7 @@ from .elasticsearch.agent import Agent as ESAgent
 from .elasticsearch.edition import Edition as ESEdition
 from .elasticsearch.identifier import Identifier as ESIdentifier
 from .elasticsearch.language import Language as ESLanguage
+from .elasticsearch.page import Page as ESPage
 from .elasticsearch.rights import Rights as ESRights
 from .elasticsearch.subject import Subject as ESSubject
 from .elasticsearch.work import Work as ESWork
