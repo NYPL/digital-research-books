@@ -2,7 +2,6 @@ from datetime import datetime
 from logger import create_log
 from .download import GRINDownloadService
 from managers import SQSManager, S3Manager
-from logger import create_log
 import os
 import json
 from model import Record, Source
@@ -32,7 +31,7 @@ class GRINIngestProcess:
 
         self.processed_count = 0
 
-    def runProcess(self, max_attempts: int = 10):
+    def run(self, max_attempts: int = 10):
         try:
             for attempt in range(max_attempts):
                 wait_time = 5 * attempt
@@ -68,7 +67,7 @@ class GRINIngestProcess:
 
             self.sqs_manager.acknowledge_message_processed(receipt_handle)
         except Exception:
-            logger.exception(f"Failed to process GRIN ingest message")
+            logger.exception("Failed to process GRIN ingest message")
             self.sqs_manager.reject_message(receipt_handle)
 
     def _process_barcode(self, barcode):

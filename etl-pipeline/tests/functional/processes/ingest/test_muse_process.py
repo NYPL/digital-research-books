@@ -8,7 +8,7 @@ def test_muse_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_mana
     muse_process = IngestProcess(
         "complete", None, None, None, 5, None, Source.MUSE.value
     )
-    number_of_records_ingested = muse_process.runProcess()
+    number_of_records_ingested = muse_process.run()
 
     records = assert_ingested_records(
         db_manager,

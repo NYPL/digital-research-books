@@ -20,7 +20,7 @@ class DatabaseMaintenanceProcess:
     def __init__(self, *args):
         self.db_manager = DBManager()
 
-    def runProcess(self):
+    def run(self):
         try:
             self.db_manager.create_session()
 

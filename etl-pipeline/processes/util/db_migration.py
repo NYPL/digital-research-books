@@ -8,7 +8,7 @@ class MigrationProcess:
     def __init__(self, *args):
         self.options = args[6]
 
-    def runProcess(self):
+    def run(self):
         try:
             logger.info("Running database migration")
 

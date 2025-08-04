@@ -16,6 +16,6 @@ def test_record_pipeline(db_manager, unclustered_record_uuid, mock_epub_to_webpu
         message={"source_id": record.source_id, "source": record.source}
     )
 
-    record_pipeline.runProcess(max_attempts=1)
+    record_pipeline.run(max_attempts=1)
 
     assert_record_clustered(record_uuid=unclustered_record_uuid, db_manager=db_manager)
