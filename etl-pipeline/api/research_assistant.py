@@ -64,9 +64,7 @@ class ResearchAssistant:
             logger.info(f"Calling search-tool with params: {params}")
 
             search_result = es_client.search_catalog(params)
-            reader_version = (
-                current_app.config["READER_VERSION"]
-            )
+            reader_version = current_app.config["READER_VERSION"]
             db_client.createSession()
             results = []
             for res in search_result.hits:
