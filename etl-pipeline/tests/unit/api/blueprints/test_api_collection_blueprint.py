@@ -39,13 +39,6 @@ def mock_db_and_client(mocker):
     return mock_db, mock_db_client
 
 
-# @pytest.fixture
-# def fetch_collection(mocker, mock_db_and_client):
-#     mock_db = mock_db_and_client[0]
-#     mock_db.fetchSingleCollection.return_value = mocker.MagicMock(uuid="testUUID")
-#     return mock_db.fetchSingleCollection.return_value
-
-
 @pytest.fixture(autouse=True)
 def mock_b64decode(mocker):
     mock = mocker.patch("api.blueprints.drbCollection.b64decode")
@@ -117,7 +110,7 @@ def test_collection_replace_success(
     )
     mock_utils["validatePassword"].return_value = True
     mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
-    
+
     with test_app.test_request_context(
         "/replace/testUUID",
         json=test_updated_collection,
