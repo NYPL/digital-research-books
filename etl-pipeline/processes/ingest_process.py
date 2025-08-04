@@ -12,7 +12,7 @@ class IngestProcess:
         self.source_service = get_source_service(source=self.params.source)
         self.record_ingestor = RecordIngestor(source=self.params.source)
 
-    def runProcess(self) -> int:
+    def run(self) -> int:
         if self.params.record_id:
             return self.record_ingestor.ingest(
                 [self.source_service.get_record(record_id=self.params.record_id)]

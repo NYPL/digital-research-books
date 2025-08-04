@@ -1,5 +1,5 @@
-import json
 import os
+from sqlalchemy import false
 
 from logger import create_log
 from managers import DBManager, SQSManager
@@ -19,12 +19,12 @@ class RedriveRecordsProcess:
         record_pipeline_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
         self.sqs_manager = SQSManager(record_pipeline_queue)
 
-    def runProcess(self):
+    def run(self):
         try:
             query_filters = [Record.source == self.params.source]
 
             if self.params.process_type != "complete":
-                query_filters.append(Record.cluster_status == False)
+                query_filters.append(Record.cluster_status == false())
 
             records = (
                 self.db_manager.session.query(Record)
@@ -45,7 +45,7 @@ class RedriveRecordsProcess:
                     break
 
             logger.info(f"Redrove {redrive_count} {self.params.source} records")
-        except Exception as e:
+        except Exception:
             logger.info(f"Failed to redrive {self.params.source} records for source")
         finally:
             self.db_manager.close_connection()

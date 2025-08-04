@@ -9,7 +9,7 @@ def test_doab_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_mana
     doab_process = IngestProcess(
         "complete", None, None, None, 1, None, Source.DOAB.value
     )
-    number_of_records_ingested = doab_process.runProcess()
+    number_of_records_ingested = doab_process.run()
 
     records = assert_ingested_records(
         db_manager,

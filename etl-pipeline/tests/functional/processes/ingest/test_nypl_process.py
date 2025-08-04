@@ -8,7 +8,7 @@ def test_nypl_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_mana
     nypl_process = IngestProcess(
         "complete", None, None, None, 5, None, Source.NYPL.value
     )
-    number_of_records_ingested = nypl_process.runProcess()
+    number_of_records_ingested = nypl_process.run()
 
     records = assert_ingested_records(
         db_manager,

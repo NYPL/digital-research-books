@@ -16,7 +16,7 @@ class LocalDevelopmentSetupProcess:
         self.elastic_search_manager = ElasticsearchManager()
         self.db_manager = DBManager()
 
-    def runProcess(self):
+    def run(self):
         try:
             self.initialize_db()
 
