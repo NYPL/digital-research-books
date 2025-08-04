@@ -461,7 +461,7 @@ def grin_client():
 
 
 @pytest.fixture()
-def barcodes(grin_client):
+def generate_test_barcodes(grin_client):
     available_barcodes_scrape_fragment = "_all_books?&book_state=NEW&format=text"
     byte_response = grin_client.get(available_barcodes_scrape_fragment)
     lines = byte_response.decode("utf8").strip().split("\n")
