@@ -6,7 +6,7 @@ from .assert_uploaded_manifests import assert_uploaded_manifests
 
 def test_met_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager):
     met_process = IngestProcess("complete", None, None, None, 5, None, Source.MET.value)
-    number_of_records_ingested = met_process.runProcess()
+    number_of_records_ingested = met_process.run()
 
     records = assert_ingested_records(
         db_manager,

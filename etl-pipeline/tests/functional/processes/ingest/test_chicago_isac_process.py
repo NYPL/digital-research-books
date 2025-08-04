@@ -10,7 +10,7 @@ def test_chicago_isac_process(
     isac_process = IngestProcess(
         "complete", None, None, None, 5, None, Source.CHICACO_ISAC.value
     )
-    number_of_records_ingested = isac_process.runProcess()
+    number_of_records_ingested = isac_process.run()
 
     records = assert_ingested_records(
         db_manager,

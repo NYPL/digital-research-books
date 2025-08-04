@@ -13,7 +13,7 @@ def test_publisher_backlist_process(
     publisher_backlist_process = IngestProcess(
         "complete", None, None, None, 1, None, Source.PUBLISHER_BACKLIST.value
     )
-    number_of_records_ingested = publisher_backlist_process.runProcess()
+    number_of_records_ingested = publisher_backlist_process.run()
 
     records = assert_ingested_records(
         db_manager,
