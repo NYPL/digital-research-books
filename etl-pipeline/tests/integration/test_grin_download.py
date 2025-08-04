@@ -18,10 +18,12 @@ def db_manager():
     with DBManager() as manager:
         yield manager
 
+
 @pytest.fixture(autouse=True)
 def set_env():
     os.environ.get("AWS_ACCESS", None)
     os.environ.get("AWS_SECRET", None)
+
 
 @pytest.fixture
 def test_bucket():
