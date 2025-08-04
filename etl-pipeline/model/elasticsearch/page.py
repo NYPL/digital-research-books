@@ -1,9 +1,10 @@
-from elasticsearch_dsl import Document, Text, Object, DenseVector
+from elasticsearch_dsl import Document, Text, Integer, Keyword, DenseVector
 
 
 class Page(Document):
     text = Text()
-    metadata = Object()
+    record_id = Integer()
+    page_id = Keyword()
     embedding = DenseVector(dims=768)
 
     class Index:

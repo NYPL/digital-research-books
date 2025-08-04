@@ -33,6 +33,7 @@ class FileDef:
 
 @dataclasses.dataclass
 class Page:
+    id: str
     image_file: FileDef
     ocr_file: FileDef
     text_file: FileDef
@@ -148,8 +149,10 @@ class METSFile:
             for fptr in page_elem.findall("METS:fptr", namespaces=NSMAP)
             if file_mapping[fptr.get("FILEID")].use == "OCR"
         )
+        id = text_file.fid.removeprefix("TXT")
 
         return Page(
+            id=id,
             image_file=image_file,
             ocr_file=ocr_file,
             text_file=text_file,

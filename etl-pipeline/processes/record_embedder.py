@@ -45,15 +45,14 @@ class RecordEmbedder:
                 .text
             )
 
-            if not cleaned_text:
+            if not cleaned_text or len(cleaned_text) < 100:
                 continue
 
             document = Document(
                 page_content=cleaned_text,
                 metadata={
-                    "record_id": record.id,
-                    "title": record.title,
-                    "file_id": page.text_file.fid,
+                    "pageId": page.id,
+                    "recordId": record.id,
                 },
             )
             document_buffer.append(document)
@@ -75,13 +74,11 @@ class RecordEmbedder:
         for document, embedding in zip(document_batch, embeddings):
             page = ESPage(
                 text=document.page_content,
-                metadata=document.metadata,
+                record_id=document.metadata["recordId"],
+                page_id=document.metadata["pageId"],
                 embedding=embedding,
             )
-
-            page.meta.id = f"{page.metadata['record_id']}_{page.metadata['file_id']}"
-
-            print(page.to_action())
+            page.meta.id = f"{page.record_id}_{page.page_id}"
 
             actions.append(page.to_action())
 
