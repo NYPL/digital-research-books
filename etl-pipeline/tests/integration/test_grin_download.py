@@ -102,7 +102,20 @@ def test_download_process(grin_download_service, db_manager, test_bucket, s3_cli
 
     ocr_path, mets_file = grin_download_service.download_barcode(TEST_BARCODE)
 
-    # confirm the OCR package exists
+    assert_ocr_package_uploaded(s3_client, test_bucket, ocr_path)
+
+    assert_mets_file_uploaded(s3_client, test_bucket, mets_file)
+
+    db_manager.session.refresh(grin_status)
+    assert grin_status.state == GRINState.DOWNLOADED.value, (
+        f"Barcode {TEST_BARCODE} does not have DOWNLOADED status. Actual status: {grin_status.state}"
+    )
+
+    # reset the barcode state to CONVERTED for future tests
+    _set_grin_status(db_manager, TEST_BARCODE, GRINState.CONVERTED)
+
+
+def assert_ocr_package_uploaded(s3_client, test_bucket, ocr_path):
     ocr_key = f"grin/{TEST_BARCODE}/{TEST_BARCODE}.tar.gz.gpg"
     ocr_path = ocr_path + f"{TEST_BARCODE}.tar.gz.gpg"
     try:
@@ -113,7 +126,8 @@ def test_download_process(grin_download_service, db_manager, test_bucket, s3_cli
     except ClientError as e:
         assert False, f"OCR package {ocr_key} does not exist in S3: {e}"
 
-    # confirm the METS file exists
+
+def assert_mets_file_uploaded(s3_client, test_bucket, mets_file):
     mets_key = f"grin/{TEST_BARCODE}/NYPL_{TEST_BARCODE}.xml"
     try:
         s3_client.head_object(Bucket=test_bucket, Key=mets_key)
@@ -122,12 +136,3 @@ def test_download_process(grin_download_service, db_manager, test_bucket, s3_cli
         )
     except ClientError as e:
         assert False, f"METS file {mets_key} does not exist in S3: {e}"
-
-    # confirm barcode has DOWNLOADED state
-    db_manager.session.refresh(grin_status)
-    assert grin_status.state == GRINState.DOWNLOADED.value, (
-        f"Barcode {TEST_BARCODE} does not have DOWNLOADED status. Actual status: {grin_status.state}"
-    )
-
-    # reset the barcode state to CONVERTED for future tests
-    _set_grin_status(db_manager, TEST_BARCODE, GRINState.CONVERTED)
