@@ -20,6 +20,7 @@ import { useRouter } from "next/router";
 
 const WebReader = dynamic(() => import("@nypl/web-reader"), { ssr: false });
 import ErrorComponent from "~/src/pages/_error";
+import { useResultPageContext } from "~/src/context/ResultPageContext";
 
 const origin =
   typeof window !== "undefined" && window.location?.origin
@@ -69,6 +70,8 @@ const ReaderLayout: React.FC<{
   const router = useRouter();
 
   const pdfWorkerSrc = `${origin}/pdf-worker/pdf.worker.min.js`;
+
+  const { page } = useResultPageContext();
 
   /**
    * This is a function we will use to get the resource through a given proxy url.
@@ -137,8 +140,10 @@ const ReaderLayout: React.FC<{
       fetchAndModifyManifest(url);
 
       // hides header and footer components when web reader is displayed
-      document.getElementById("nypl-header").style.display = "none";
-      document.getElementById("nypl-footer").style.display = "none";
+      if (page !== "researchAssistant") {
+        document.getElementById("nypl-header").style.display = "none";
+        document.getElementById("nypl-footer").style.display = "none";
+      }
     }
   }, [isLimitedAccess, isRead, pdfWorkerSrc, proxyUrl, url]);
 

@@ -109,18 +109,15 @@ const ResearchAssistant: React.FC = () => {
             padding="s"
             border="1px solid #e5e7eb"
             overflowY="auto"
-            maxHeight="70vh"
+            maxHeight="100vh"
             flex="1"
           >
             {showWebReader ? (
               linkResults && (
-                <Box position="relative">
+                <>
                   <Button
                     onClick={() => setShowWebReader(false)}
                     id="close-reader-button"
-                    position="absolute"
-                    right="s"
-                    top="s"
                   >
                     Close reader
                   </Button>
@@ -129,7 +126,7 @@ const ResearchAssistant: React.FC = () => {
                     proxyUrl={proxyUrl}
                     backUrl={backUrl}
                   />
-                </Box>
+                </>
               )
             ) : (
               <Box>
@@ -162,7 +159,7 @@ const ResearchAssistant: React.FC = () => {
           flexDirection="column"
           bgColor="section.research.primary"
           border="1px solid #e5e7eb"
-          maxHeight="70vh"
+          maxHeight="100vh"
         >
           <Box
             display="flex"

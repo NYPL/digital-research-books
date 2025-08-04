@@ -1,5 +1,5 @@
 from typing import Optional
-
+from flask import current_app
 from .elastic import ElasticClient, SearchParams
 from langgraph.prebuilt import create_react_agent
 from langchain.chat_models import init_chat_model
@@ -64,6 +64,9 @@ class ResearchAssistant:
             logger.info(f"Calling search-tool with params: {params}")
 
             search_result = es_client.search_catalog(params)
+            reader_version = (
+                current_app.config["READER_VERSION"]
+            )
             db_client.createSession()
             results = []
             for res in search_result.hits:
@@ -106,7 +109,7 @@ class ResearchAssistant:
                     request=None,
                     dbClient=db_client,
                     formats=None,
-                    reader=None,
+                    reader=reader_version,
                 ),
                 "paging": paging,
                 "facets": facets,
