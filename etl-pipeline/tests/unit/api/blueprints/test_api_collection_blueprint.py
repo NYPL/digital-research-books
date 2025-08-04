@@ -117,6 +117,7 @@ def test_collection_replace_success(
     )
     mock_utils["validatePassword"].return_value = True
     mock_utils["formatOPDS2Object"].return_value = "testOPDS2Response"
+    
     with test_app.test_request_context(
         "/replace/testUUID",
         json=test_updated_collection,
