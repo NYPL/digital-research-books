@@ -10,7 +10,7 @@ def test_hathi_trust_process(
     hathi_trust_process = IngestProcess(
         "weekly", None, None, None, 5, None, Source.HATHI.value
     )
-    number_of_records_ingested = hathi_trust_process.runProcess()
+    number_of_records_ingested = hathi_trust_process.run()
 
     records = assert_ingested_records(
         db_manager,

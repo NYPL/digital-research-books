@@ -10,7 +10,7 @@ def test_gutenberg_process(
     gutenberg_process = IngestProcess(
         "complete", None, None, None, 5, None, Source.GUTENBERG.value
     )
-    number_of_records_ingested = gutenberg_process.runProcess()
+    number_of_records_ingested = gutenberg_process.run()
 
     records = assert_ingested_records(
         db_manager,
