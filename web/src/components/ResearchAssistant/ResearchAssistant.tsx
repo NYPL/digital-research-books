@@ -90,17 +90,7 @@ const ResearchAssistant: React.FC = () => {
     });
     setResults(chatResult);
   };
-
-  const breakoutElement = (
-    <DrbBreakout
-      breadcrumbsData={[
-        { url: "/research-assistant", text: "Virtual Research Assistant" },
-      ]}
-    >
-      <DrbHero />
-    </DrbBreakout>
-  );
-
+  
   return (
     <ResultPageProvider
       value={{ onReadOnline: handleReadOnline, page: "researchAssistant" }}
