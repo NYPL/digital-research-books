@@ -1,228 +1,282 @@
-# Script run daily to scrape and initialize conversion for GRIN books acquired in the previous day
-# as well as to initialize conversion for a portion of backfilled books
-
-from sqlalchemy import update
+import os
 from .grin_client import GRINClient
 import pandas as pd
-from sqlalchemy import select, update
+from sqlalchemy import select, or_, update
 from model import GRINState, GRINStatus, Record, RecordState, FRBRStatus, Source
 from typing import List
+import time
 from managers import DBManager, SQSManager
 from uuid import uuid4
 from logger import create_log
 from utils.chunker import chunk
-import argparse
-import os
+from .. import utils
+
+IN_PROCESS_LIMIT = 50000
+DELAY_IN_SECONDS = 60
+CONVERSION_LIMIT = 5000
 
 
 class GRINConversion:
     def __init__(self, *args, batch_limit=1000):
+        self.params = utils.parse_process_args(*args)
         self.client = GRINClient()
+        self.sqs_manager = SQSManager(queue_name=os.environ["GRIN_INGEST_SQS_QUEUE"])
         self.logger = create_log(__name__)
         self.batch_limit = batch_limit
 
-    def runProcess(self, backfill=True):
-        with DBManager() as self.db_manager:
-            try:
-                self.acquire_and_convert_new_books()
-
-                successfully_converted_books = self.process_converted_books()
-
-                self.send_sqs_messages(successfully_converted_books)
-
-                if backfill:
-                    converted_barcodes = self.convert_backfills()
-                    self.send_sqs_messages(converted_barcodes)
-            except Exception as e:
-                self.logger.exception(f"GRIN Conversion failed to complete. Error: {e}")
+    def run(self):
+        if self.params.process_type == "daily":
+            with DBManager() as self.db_manager:
+                self.convert_new_barcodes()
                 return
 
-    def acquire_and_convert_new_books(self):
-        data = self.client.acquired_today()
-        if len(data) > 2:
-            new_barcodes = self.transform_scraped_data(data)
+        while (barcodes_remaining := self._get_unconverted_barcode_count()) > 0:
+            self.logger.info(f"{barcodes_remaining} barcodes need to be converted")
 
-            converting_barcodes, converted_barcodes = self.convert_barcodes(
-                new_barcodes["Barcode"]
+            with DBManager() as self.db_manager:
+                try:
+                    self.convert_barcodes_pending_conversion()
+                    converted_barcodes = self.sync_converted_books()
+                    self.send_converted_barcodes_for_download(converted_barcodes)
+                except Exception:
+                    self.logger.exception("Failed to run GRIN conversion process")
+
+            self.logger.info(f"Polling in {DELAY_IN_SECONDS} seconds")
+            time.sleep(DELAY_IN_SECONDS)
+
+    def convert_new_barcodes(self):
+        new_barcodes = self.client.acquired_today()
+
+        if len(new_barcodes) <= 2:
+            self.logger.info("No new barcodes")
+            return
+
+        new_barcodes = self._transform_scraped_data(new_barcodes)
+        converting_barcodes, _ = self._convert_barcodes(new_barcodes["Barcode"])
+
+        self._save_barcodes(converting_barcodes, GRINState.CONVERTING)
+
+    def convert_barcodes_pending_conversion(self):
+        in_process_data = self.client.in_process()
+        in_process_count = len(in_process_data)
+
+        available_to_process_count = IN_PROCESS_LIMIT - in_process_count
+
+        if available_to_process_count == 0:
+            self.logger.info(f"Hit in process limit of {IN_PROCESS_LIMIT} barcodes.")
+            return
+
+        conversion_limit = min(available_to_process_count, CONVERSION_LIMIT)
+
+        self.logger.info(f"Converting {conversion_limit} pending conversion")
+
+        barcodes_pending_conversion = (
+            self.db_manager.session.execute(
+                (
+                    select(GRINStatus.barcode)
+                    .where(
+                        GRINStatus.state == GRINState.PENDING_CONVERSION.value,
+                    )
+                    .where(GRINStatus.date_created <= GRINStatus.backfill_timestamp())
+                    .limit(conversion_limit)
+                )
             )
-
-            self.logger.info(f"Acquired and converted {len(converting_barcodes)} books")
-
-            self.save_barcodes(converting_barcodes, GRINState.CONVERTING)
-
-    def convert_backfills(self):
-        backfill_query = (
-            select(GRINStatus.barcode)
-            .where(
-                GRINStatus.state == GRINState.PENDING_CONVERSION.value,
-            )
-            .where(GRINStatus.date_created <= GRINStatus.backfill_timestamp())
-            .limit(self.batch_limit)
+            .scalars()
+            .all()
         )
 
-        backfilled_barcodes = (
-            self.db_manager.session.execute(backfill_query).scalars().all()
+        if not barcodes_pending_conversion:
+            self.logger.info("No barcodes pending conversion.")
+            return
+
+        converting_barcodes, converted_barcodes, unavailable_barcodes = (
+            self._convert_barcodes(barcodes_pending_conversion)
         )
-        if len(backfilled_barcodes) > 0:
-            converting_barcodes, converted_barcodes = self.convert_barcodes(
-                backfilled_barcodes
-            )
+
+        self._update_grin_state(
+            converting_barcodes,
+            old_state=GRINState.PENDING_CONVERSION,
+            new_state=GRINState.CONVERTING,
+        )
+
+        self._update_grin_state(
+            converted_barcodes,
+            old_state=GRINState.PENDING_CONVERSION,
+            new_state=GRINState.CONVERTED,
+        )
+
+        self._update_grin_state(
+            unavailable_barcodes,
+            old_state=GRINState.PENDING_CONVERSION,
+            new_state=GRINState.UNAVAILABLE,
+        )
+
+    def sync_converted_books(self) -> set:
+        converted_filenames = self.client.converted_filenames()
+        newly_converted_barcodes = set()
+
+        if not converted_filenames:
+            return
+
+        for chunked_filenames in chunk(iter(converted_filenames), self.batch_limit):
+            # converted file name has the following pattern 1234.tar.gz.gpg
+            converted_barcodes = {
+                barcode.split(".", 1)[0] for barcode in chunked_filenames
+            }
+
             try:
-                update_converting_barcodes = (
-                    update(GRINStatus)
-                    .filter(GRINStatus.barcode.in_(converting_barcodes))
-                    .values(state=GRINState.CONVERTING.value)
+                barcodes_to_update = (
+                    self.db_manager.session.execute(
+                        select(GRINStatus.barcode)
+                        .filter(GRINStatus.barcode.in_(list(converted_barcodes)))
+                        .filter(
+                            or_(
+                                GRINStatus.state == GRINState.PENDING_CONVERSION.value,
+                                GRINStatus.state == GRINState.CONVERTING.value,
+                            )
+                        )
+                    )
+                    .scalars()
+                    .all()
                 )
-                updated_results = self.db_manager.session.execute(
-                    update_converting_barcodes
-                )
-                self.db_manager.commit_changes()
 
-                self.logger.info(
-                    f"Converted + updated {updated_results.rowcount} backfill books"
-                )
+                if not barcodes_to_update:
+                    continue
 
-                update_converted_barcodes = (
+                update_results = self.db_manager.session.execute(
                     update(GRINStatus)
-                    .filter(GRINStatus.barcode.in_(converted_barcodes))
+                    .filter(GRINStatus.barcode.in_(barcodes_to_update))
                     .values(state=GRINState.CONVERTED.value)
                 )
 
-                updated_results = self.db_manager.session.execute(
-                    update_converted_barcodes
-                )
                 self.db_manager.commit_changes()
 
-                self.logger.info(
-                    f"Updated {updated_results.rowcount} already converted backfill books"
-                )
-
-                return converted_barcodes
-            except:
+                self.logger.info(f"Converted {update_results.rowcount} barcodes")
+                newly_converted_barcodes.update(barcodes_to_update)
+            except Exception:
                 self.db_manager.session.rollback()
                 self.logger.exception(
-                    f"Failed to update the following backfilled records: {converting_barcodes}"
+                    f"Failed to update the following converted records: {converted_filenames}"
                 )
 
-    def convert_barcodes(self, barcodes):
+            existing_barcodes = {
+                grin_status.barcode
+                for grin_status in self.db_manager.session.query(GRINStatus.barcode)
+                .filter(GRINStatus.barcode.in_(converted_barcodes))
+                .all()
+            }
+
+            missing_from_table = converted_barcodes - existing_barcodes
+            self._save_barcodes(missing_from_table, GRINState.CONVERTED)
+            newly_converted_barcodes.update(missing_from_table)
+
+        return newly_converted_barcodes
+
+    def send_converted_barcodes_for_download(self, converted_barcodes):
+        for chunked_barcodes in chunk(iter(converted_barcodes), 10):
+            self.sqs_manager.send_message_to_queue({"barcodes": chunked_barcodes})
+
+        self.logger.info(
+            f"Sent {len(converted_barcodes)} converted barcodes for download"
+        )
+
+    def _convert_barcodes(self, barcodes):
         converted_data = self.client.convert(barcodes)
-        converted_df = self.transform_scraped_data(converted_data)
 
-        converting_barcodes = converted_df.query(
-            "Status in ('Success', 'Already being converted')"
-        )
-        converted_barcodes = converted_df.query(
-            "Status=='Already available for download'"
-        )
-        converting_barcodes_list = converting_barcodes["Barcode"].to_list()
-        converted_barcodes_list = converted_barcodes["Barcode"].to_list()
-        return converting_barcodes_list, converted_barcodes_list
+        if not converted_data:
+            return [], [], []
 
-    def save_barcodes(self, barcodes, state):
-        if len(barcodes) == 0:
+        converted_df = self._transform_scraped_data(converted_data)
+
+        converting_barcodes_list = []
+        converted_barcodes_list = []
+        unavailable_barcodes_list = []
+
+        for _, row in converted_df.iterrows():
+            status = row["Status"]
+            barcode = row["Barcode"]
+
+            if status in ("Success", "Already being converted"):
+                converting_barcodes_list.append(barcode)
+            elif status == "Already available for download":
+                converted_barcodes_list.append(barcode)
+            elif status == "Not allowed to be downloaded":
+                unavailable_barcodes_list.append(barcode)
+
+        return (
+            converting_barcodes_list,
+            converted_barcodes_list,
+            unavailable_barcodes_list,
+        )
+
+    def _save_barcodes(self, barcodes, state: GRINState):
+        if not barcodes:
             return
 
-        for chunked_barcodes in chunk(iter(barcodes), self.batch_limit):
-            records: List[Record] = []
-            for barcode in chunked_barcodes:
-                records.append(
-                    Record(
-                        uuid=uuid4(),
-                        frbr_status=FRBRStatus.TODO.value,
-                        cluster_status=False,
-                        source_id=f"{barcode}|grin",
-                        state=RecordState.STAGED.value,
-                        source=Source.GRIN.value,
-                        grin_status=GRINStatus(
-                            barcode=barcode, failed_download=0, state=state.value
-                        ),
-                    )
+        records: List[Record] = []
+
+        for barcode in barcodes:
+            records.append(
+                Record(
+                    uuid=uuid4(),
+                    frbr_status=FRBRStatus.TODO.value,
+                    cluster_status=False,
+                    source_id=f"{barcode}|grin",
+                    state=RecordState.STAGED.value,
+                    source=Source.GRIN.value,
+                    grin_status=GRINStatus(
+                        barcode=barcode, failed_download=0, state=state.value
+                    ),
                 )
+            )
+
         try:
             self.db_manager.session.add_all(records)
             self.db_manager.commit_changes()
+            self.logger.info(f"Saved {len(records)} barcodes in state: {state.value}")
         except Exception:
             self.db_manager.session.rollback()
             self.logger.exception(
-                f"Failed to update the following records: {chunked_barcodes}"
+                f"Failed to save {len(barcodes)} barcodes in state: {state.value}"
             )
 
-    def process_converted_books(self):
-        converted_barcodes = self.client.converted_filenames()
-        if not converted_barcodes:
-            return
-
-        successfully_converted_books = []
-
-        for chunked_barcodes in chunk(iter(converted_barcodes), self.batch_limit):
-            stripped_barcodes: List[str] = []
-            for barcode in chunked_barcodes:
-                # converted file name has the following pattern 1234.tar.gz.gpg
-                barcode = barcode.split(".", 1)[0]
-                stripped_barcodes.append(barcode)
-
-            try:
-                update_barcodes = (
-                    update(GRINStatus)
-                    .filter(GRINStatus.barcode.in_(stripped_barcodes))
-                    .filter(GRINStatus.state != GRINState.DOWNLOADED.value)
-                    .values(state=GRINState.CONVERTED.value)
-                )
-                updated_results = self.db_manager.session.execute(update_barcodes)
-                self.db_manager.commit_changes()
-                self.logger.info(
-                    f"Updated {updated_results.rowcount} converted books in DB"
-                )
-
-                barcodes_in_table = [
-                    grin_status.barcode
-                    for grin_status in self.db_manager.session.query(
-                        GRINStatus.barcode
-                    ).all()
-                ]
-                missing_from_table = [
-                    barcode
-                    for barcode in stripped_barcodes
-                    if barcode not in barcodes_in_table
-                ]
-
-                self.save_barcodes(missing_from_table, GRINState.CONVERTED)
-
-                self.logger.info(
-                    f"Saved {len(missing_from_table)} new converted books in DB"
-                )
-
-                successfully_converted_books.extend(stripped_barcodes)
-            except:
-                self.db_manager.session.rollback()
-                self.logger.exception(
-                    f"Failed to update the following converted records: {chunked_barcodes}"
-                )
-        return successfully_converted_books
-
-    def transform_scraped_data(self, data):
+    def _transform_scraped_data(self, data):
         headers = data[0].split("\t")
         rows = []
+
         for row in data[1:]:
             if row != "":
                 rows.append(row.split("\t"))
 
         return pd.DataFrame(rows, columns=headers)
 
-    def send_sqs_messages(self, converted_barcodes):
-        if converted_barcodes is None:
-            return
-        sqs_manager = SQSManager(os.environ["GRIN_INGEST_SQS_QUEUE"])
-        for barcode in converted_barcodes:
-            message = {"barcode": barcode}
-            sqs_manager.send_message_to_queue(message)
+    def _get_unconverted_barcode_count(self) -> int:
+        with DBManager() as db_manager:
+            return (
+                db_manager.session.query(GRINStatus)
+                .filter(
+                    or_(
+                        GRINStatus.state == GRINState.PENDING_CONVERSION.value,
+                        GRINStatus.state == GRINState.CONVERTING.value,
+                    )
+                )
+                .count()
+            )
 
+    def _update_grin_state(self, barcodes, old_state: GRINState, new_state: GRINState):
+        try:
+            state_results = self.db_manager.session.execute(
+                update(GRINStatus)
+                .filter(GRINStatus.barcode.in_(barcodes))
+                .values(state=new_state.value)
+            )
+            self.db_manager.commit_changes()
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_limit")
-    args = parser.parse_args()
-    batch_limit = int(args.batch_limit)
-
-    grin_conversion = GRINConversion(batch_limit=batch_limit)
-    grin_conversion.runProcess()
+            self.logger.info(
+                f"Updated {state_results.rowcount} barcodes state from {old_state.value} to {new_state.value}"
+            )
+        except Exception:
+            self.db_manager.session.rollback()
+            self.logger.exception(
+                f"Failed to update {len(barcodes)} barcodes from {old_state.value} to {new_state.value}"
+            )

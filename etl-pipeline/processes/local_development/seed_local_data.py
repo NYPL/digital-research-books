@@ -12,10 +12,10 @@ class SeedLocalDataProcess:
         )
         self.record_pipeline_process = RecordPipelineProcess()
 
-    def runProcess(self):
+    def run(self):
         try:
-            self.hath_trust_process.runProcess()
-            self.record_pipeline_process.runProcess(max_attempts=2)
+            self.hath_trust_process.run()
+            self.record_pipeline_process.run(max_attempts=2)
         except Exception as e:
-            logger.exception(f"Failed to seed local data")
+            logger.exception("Failed to seed local data")
             raise e

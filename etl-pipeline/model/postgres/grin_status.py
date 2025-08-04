@@ -12,6 +12,7 @@ class GRINState(Enum):
     CONVERTING = "converting"
     CONVERTED = "converted"
     DOWNLOADED = "downloaded"
+    UNAVAILABLE = "unavailable"
 
 
 class GRINStatus(Base, Core):
@@ -28,6 +29,7 @@ class GRINStatus(Base, Core):
             "converting",
             "converted",
             "downloaded",
+            "unavailable",
             name="state",
             create_type=False,
         ),
