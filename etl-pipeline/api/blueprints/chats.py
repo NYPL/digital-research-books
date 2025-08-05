@@ -9,11 +9,11 @@ from ..auth import require_api_key
 
 logger = create_log(__name__)
 
-chats = Blueprint("chats", __name__, url_prefix="/chats")
+chats_blueprint = Blueprint("chats", __name__, url_prefix="/chats")
 RESPONSE_TYPE = "chats"
 
 
-@chats.route("", methods=["PUT"])
+@chats_blueprint.route("", methods=["PUT"])
 @require_api_key
 def update_chat():
     research_assistant = ResearchAssistant(
