@@ -1,21 +1,11 @@
 import os
 import pytest
 from flask import Flask
-from sqlalchemy.orm.exc import NoResultFound
 from api.blueprints.drbCollection import (
-    collectionCreate,
-    get_collection,
-    collectionReplace,
-    collectionUpdate,
     collectionDelete,
     collectionDeleteWorkEdition,
-    get_collections,
-    constructSortMethod,
-    constructOPDSFeed,
-    validateToken,
 )
 from api.utils import APIUtils
-from api.opdsUtils import OPDSUtils
 
 
 @pytest.fixture
@@ -56,30 +46,6 @@ def set_env(mocker):
             "ELASTICSEARCH_INDEX": "test_es_index",
         },
     )
-
-
-@pytest.fixture
-def collection_request_body():
-    def _make(exclude=None, **overrides):
-        base = {
-            "title": "Test Collection",
-            "creator": "Test Creator",
-            "description": "Test Description",
-            "workUUIDs": ["uuid1", "uuid2"],
-            "editionIDs": ["ed1", "ed2", "ed3"],
-            "autoDef": {
-                "sortField": "date",
-                "sortDirection": "ASC",
-                "keywordQuery": "bikes",
-            },
-        }
-        if exclude:
-            for key in exclude:
-                base.pop(key, None)
-        base.update(overrides)
-        return base
-
-    return _make
 
 
 @pytest.fixture
