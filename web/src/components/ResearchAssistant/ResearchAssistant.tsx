@@ -14,13 +14,16 @@ import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
 import ResearchAssistantNav from "./ResearchAssistantNav";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
-import ReaderLayout from "../ReaderLayout/ReaderLayout";
-import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
+// import ReaderLayout from "../ReaderLayout/ReaderLayout";
+// import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
 import { LinkResult } from "~/src/types/LinkQuery";
 import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
 import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
 import { toApiQuery } from "~/src/util/apiConversion";
+import ResearchAssistantViewer from "./ResearchAssistantViewer";
+import { itemsReadFetcher } from "~/src/lib/api/ResearchAssistantApi";
+import { ApiItemsRead } from "~/src/types/ResearchAssistant";
 
 const ResearchAssistant: React.FC = () => {
   const {
@@ -33,9 +36,10 @@ const ResearchAssistant: React.FC = () => {
     clearHistory,
   } = useResearchAssistant();
   const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
-
   const [showWebReader, setShowWebReader] = useState(false);
   const [linkResults, setLinkResults] = useState<LinkResult>();
+  const [pdfData, setPdfData] = useState<ApiItemsRead>();
+
   const numberOfWorks = results?.totalWorks;
   const resultsPaging = results?.paging;
   const firstElement =
@@ -56,13 +60,15 @@ const ResearchAssistant: React.FC = () => {
   }, [sendMessage]);
 
   const handleReadOnline = async (linkId: number) => {
+    const itemsReadResults = await itemsReadFetcher("00000065");
+    setPdfData(itemsReadResults.data);
     setShowWebReader(true);
-    const linkResult: LinkResult = await readFetcher(linkId);
-    setLinkResults(linkResult);
+    // const linkResult: LinkResult = await readFetcher(linkId);
+    // setLinkResults(linkResult);
   };
 
-  const proxyUrl: string = proxyUrlConstructor();
-  const backUrl = "/research-assistant";
+  // const proxyUrl: string = proxyUrlConstructor();
+  // const backUrl = "/research-assistant";
   const onPageChange = async (select: number) => {
     const newSearchQuery: SearchQuery = {
       queries: [],
@@ -90,7 +96,7 @@ const ResearchAssistant: React.FC = () => {
     });
     setResults(chatResult);
   };
-  
+
   return (
     <ResultPageProvider
       value={{ onReadOnline: handleReadOnline, page: "researchAssistant" }}
@@ -103,7 +109,7 @@ const ResearchAssistant: React.FC = () => {
         <DrbHero />
         <ResearchAssistantNav />
       </DrbBreakout>
-      <Box display="flex" flexDir="row" overflow="hidden">
+      <Box display="flex" flexDir="row" overflow="hidden" height="100vh">
         {results && Object.keys(results).length > 0 && (
           <Box
             padding="s"
@@ -113,7 +119,7 @@ const ResearchAssistant: React.FC = () => {
             flex="1"
           >
             {showWebReader ? (
-              linkResults && (
+              pdfData && (
                 <>
                   <Button
                     onClick={() => setShowWebReader(false)}
@@ -121,11 +127,12 @@ const ResearchAssistant: React.FC = () => {
                   >
                     Close reader
                   </Button>
-                  <ReaderLayout
+                  <ResearchAssistantViewer pdfData={pdfData} />
+                  {/* <ReaderLayout
                     linkResult={linkResults}
                     proxyUrl={proxyUrl}
                     backUrl={backUrl}
-                  />
+                  /> */}
                 </>
               )
             ) : (

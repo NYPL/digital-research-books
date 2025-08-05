@@ -44,3 +44,18 @@ export interface UseResearchAssistantResult {
   error: string | null;
   clearHistory: () => void;
 }
+
+export type ItemReadResults = {
+  data: ApiItemsRead; 
+  status?: number;
+  timestamp?: string;
+  responseType?: string;
+}
+
+export type ApiItemsRead = {
+  pageContentType: string;
+  pageData: string;
+  pageName: string;
+  previousPages: string[];
+  nextPages: string[];
+};
