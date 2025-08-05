@@ -24,13 +24,6 @@ def test_bucket():
     return os.environ["PRIVATE_FILE_BUCKET"]
 
 
-@pytest.fixture
-def s3_client():
-    return boto3.client(
-        "s3", endpoint_url="http://localhost:4566"
-    )  # LocalStack endpoint
-
-
 def _get_grin_status(db_manager, barcode):
     grin_status = db_manager.session.get(GRINStatus, barcode)
     return grin_status
@@ -89,8 +82,10 @@ def _has_bucket_write_access(s3_manager, bucket_name):
         return False
 
 
-def test_download_process(db_manager, test_bucket, s3_client):
+def test_download_process(db_manager, test_bucket, s3_manager):
     grin_download_service = GRINDownloadService(test_bucket)
+
+    _set_grin_status(db_manager, TEST_BARCODE, GRINState.CONVERTED)
 
     # confirm barcode has CONVERTED state before proceeding with download
     if _get_grin_status(db_manager, TEST_BARCODE) is None:
@@ -102,9 +97,9 @@ def test_download_process(db_manager, test_bucket, s3_client):
 
     ocr_path, mets_file = grin_download_service.download_barcode(TEST_BARCODE)
 
-    assert_ocr_package_uploaded(s3_client, test_bucket, ocr_path)
+    assert_ocr_package_uploaded(s3_manager, test_bucket, ocr_path)
 
-    assert_mets_file_uploaded(s3_client, test_bucket, mets_file)
+    assert_mets_file_uploaded(s3_manager, test_bucket, mets_file)
 
     db_manager.session.refresh(grin_status)
     assert grin_status.state == GRINState.DOWNLOADED.value, (
@@ -115,11 +110,11 @@ def test_download_process(db_manager, test_bucket, s3_client):
     _set_grin_status(db_manager, TEST_BARCODE, GRINState.CONVERTED)
 
 
-def assert_ocr_package_uploaded(s3_client, test_bucket, ocr_path):
+def assert_ocr_package_uploaded(s3_manager, test_bucket, ocr_path):
     ocr_key = f"grin/{TEST_BARCODE}/{TEST_BARCODE}.tar.gz.gpg"
     ocr_path = ocr_path + f"{TEST_BARCODE}.tar.gz.gpg"
     try:
-        s3_client.head_object(Bucket=test_bucket, Key=ocr_key)
+        s3_manager.client.head_object(Bucket=test_bucket, Key=ocr_key)
         assert ocr_path == ocr_key, (
             f"OCR package path mismatch: expected {ocr_key}, got {ocr_path}"
         )
@@ -127,10 +122,10 @@ def assert_ocr_package_uploaded(s3_client, test_bucket, ocr_path):
         assert False, f"OCR package {ocr_key} does not exist in S3: {e}"
 
 
-def assert_mets_file_uploaded(s3_client, test_bucket, mets_file):
+def assert_mets_file_uploaded(s3_manager, test_bucket, mets_file):
     mets_key = f"grin/{TEST_BARCODE}/NYPL_{TEST_BARCODE}.xml"
     try:
-        s3_client.head_object(Bucket=test_bucket, Key=mets_key)
+        s3_manager.client.head_object(Bucket=test_bucket, Key=mets_key)
         assert mets_file == mets_key, (
             f"METS file path mismatch: expected {mets_key}, got {mets_file}"
         )
