@@ -24,7 +24,8 @@ def test_url(grin_client, fragment):
 
 
 @pytest.mark.parametrize(
-    "fragment", ["_available", "_converted", "_failed", "_all_books"]
+    "fragment",
+    ["_available", "_converted", "_failed", "_all_books"],
     # removed _in_process because of the 429 too many requests error
 )
 def test_get(grin_client, fragment):
