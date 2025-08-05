@@ -88,17 +88,22 @@ class METSFile:
 
             yield self._parse_page(page, file_mapping)
 
-    def _page_ids(self) -> list:
-        struct_map = self._find("METS:structMap")
-        file_mapping = self._map_file_ids()
-        for page in struct_map.find(
-            "METS:div",
-            namespaces=NSMAP,
-        ).findall("METS:div", namespaces=NSMAP):
-            if not page.get("TYPE") == "page":
-                continue
+    def get_surrounding_pages(self, page_id: str, window: int = 10) -> tuple:
+        page_sequence = self.page_sequence
 
-            return page.get("")
+        try:
+            page_index = page_sequence.index(page_id)
+        except ValueError:
+            return [], []
+
+        previous_pages = page_sequence[max(0, page_index - window) : page_index]
+        next_pages = page_sequence[
+            min(len(page_sequence), page_index + 1) : min(
+                len(page_sequence), page_index + 1 + window
+            )
+        ]
+
+        return previous_pages, next_pages
 
     @property
     def page_count(self) -> int:
@@ -138,6 +143,15 @@ class METSFile:
                     .find("METS:FLocat", namespaces=NSMAP)
                     .xpath("@xlink:href", namespaces=NSMAP)[0]
                 )
+
+    @property
+    def page_sequence(self) -> list[str]:
+        return [
+            file.get("SEQ")
+            for file in self._find("METS:fileSec")
+            .find("METS:fileGrp", namespaces=NSMAP)
+            .findall("METS:file", namespaces=NSMAP)
+        ]
 
     def _find(self, target: str):
         return self.root.find(target, namespaces=NSMAP)
@@ -195,31 +209,6 @@ class METSFile:
                 )
 
         return id_map
-
-    def get_surrounding_pages(self, page_id: str, window: int = 10) -> tuple:
-        page_sequence = self._page_sequence()
-
-        try:
-            page_index = page_sequence.index(page_id)
-        except ValueError:
-            return [], []
-
-        previous_pages = page_sequence[max(0, page_index - window) : page_index]
-        next_pages = page_sequence[
-            min(len(page_sequence), page_index + 1) : min(
-                len(page_sequence), page_index + 1 + window
-            )
-        ]
-
-        return previous_pages, next_pages
-
-    def _page_sequence(self) -> list[str]:
-        return [
-            file.get("SEQ")
-            for file in self._find("METS:fileSec")
-            .find("METS:fileGrp", namespaces=NSMAP)
-            .findall("METS:file", namespaces=NSMAP)
-        ]
 
 
 @dataclasses.dataclass
