@@ -19,20 +19,9 @@ def db_manager():
         yield manager
 
 
-@pytest.fixture(autouse=True)
-def set_env():
-    os.environ.get("AWS_ACCESS", None)
-    os.environ.get("AWS_SECRET", None)
-
-
 @pytest.fixture
 def test_bucket():
     return os.environ["PRIVATE_FILE_BUCKET"]
-
-
-@pytest.fixture
-def grin_download_service(test_bucket):
-    return GRINDownloadService(test_bucket)
 
 
 @pytest.fixture
@@ -63,21 +52,22 @@ def _set_grin_status(db_manager, barcode, state):
     return _get_grin_status(db_manager, barcode)
 
 
-def test_s3_bucket(grin_download_service, test_bucket, s3_client):
+def test_s3_bucket(test_bucket, s3_manager):
+    grin_download_service = GRINDownloadService(test_bucket)
     assert grin_download_service.bucket == test_bucket, (
         f"Bucket '{test_bucket}' does not exist and instead received {grin_download_service.bucket}"
     )
-    assert _localstack_bucket_read_access(s3_client, test_bucket), (
+    assert _has_bucket_read_access(s3_manager, test_bucket), (
         f"Bucket {test_bucket} is not readable"
     )
-    assert _localstack_bucket_write_access(s3_client, test_bucket), (
+    assert _has_bucket_write_access(s3_manager, test_bucket), (
         f"Bucket {test_bucket} is not writable"
     )
 
 
-def _localstack_bucket_read_access(s3, bucket_name):
+def _has_bucket_read_access(s3_manager, bucket_name):
     try:
-        s3.head_bucket(Bucket=bucket_name)
+        s3_manager.client.head_bucket(Bucket=bucket_name)
         logger.info(f"Confirmed read access to bucket '{bucket_name}'.")
         return True
     except ClientError as e:
@@ -85,19 +75,23 @@ def _localstack_bucket_read_access(s3, bucket_name):
         return False
 
 
-def _localstack_bucket_write_access(s3, bucket_name):
+def _has_bucket_write_access(s3_manager, bucket_name):
     test_key = "test-write-access.txt"
     try:
-        s3.put_object(Bucket=bucket_name, Key=test_key, Body=b"test")
+        s3_manager.client.put_object(Bucket=bucket_name, Key=test_key, Body=b"test")
         logger.info(f"Confirmed write access to bucket '{bucket_name}'.")
-        s3.delete_object(Bucket=bucket_name, Key=test_key)  # deletes the test file
+        s3_manager.client.delete_object(
+            Bucket=bucket_name, Key=test_key
+        )  # deletes the test file
         return True
     except ClientError as e:
         logger.error(f"No write access to bucket '{bucket_name}': {e}")
         return False
 
 
-def test_download_process(grin_download_service, db_manager, test_bucket, s3_client):
+def test_download_process(db_manager, test_bucket, s3_client):
+    grin_download_service = GRINDownloadService(test_bucket)
+
     # confirm barcode has CONVERTED state before proceeding with download
     if _get_grin_status(db_manager, TEST_BARCODE) is None:
         _set_grin_status(db_manager, TEST_BARCODE, GRINState.CONVERTED)
