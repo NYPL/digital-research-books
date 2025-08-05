@@ -39,8 +39,6 @@ def item_read(item_id, page_id):
     with tempfile.TemporaryDirectory() as tmpdir:
         ocr_path = os.path.join(tmpdir, os.path.basename(ocr_key))
         image_path = os.path.join(tmpdir, os.path.basename(image_key))
-        print(ocr_path)
-        print(image_path)
 
         storage_manager.client.download_file(bucket, ocr_key, ocr_path)
         storage_manager.client.download_file(bucket, image_key, image_path)
