@@ -9,3 +9,4 @@ from .drbSearch import search
 from .drbUtils import utils
 from .drbWork import work, works
 from .drbFulfill import fulfill
+from .items import items_blueprint
