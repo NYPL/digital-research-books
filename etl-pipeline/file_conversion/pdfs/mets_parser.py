@@ -147,7 +147,7 @@ class METSFile:
         text_file = next(
             file_mapping[fptr.get("FILEID")]
             for fptr in page_elem.findall("METS:fptr", namespaces=NSMAP)
-            if file_mapping[fptr.get("FILEID")].use == "OCR"
+            if file_mapping[fptr.get("FILEID")].use.lower() == "ocr"
         )
         id = text_file.fid.removeprefix("TXT")
 
