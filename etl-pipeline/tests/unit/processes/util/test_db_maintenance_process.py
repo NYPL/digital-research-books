@@ -1,5 +1,4 @@
 import pytest
-from sqlalchemy import text
 from unittest.mock import patch
 
 from processes import DatabaseMaintenanceProcess
@@ -21,7 +20,7 @@ class TestDatabaseMaintenanceProcess:
         )
         mock_connection_enter.__enter__.return_value = mock_connection
 
-        db_maintenance_process.runProcess()
+        db_maintenance_process.run()
 
         db_maintenance_process.db_manager.create_session.assert_called_once()
 

@@ -28,7 +28,7 @@ class TestAPIProcess:
         with patch("processes.api.API") as MockAPI:
             mock_api = MockAPI.return_value
 
-            api_process.runProcess()
+            api_process.run()
 
             api_process.db_manager.generate_engine.assert_called_once()
             api_process.redis_manager.create_client.assert_called_once()
@@ -42,4 +42,4 @@ class TestAPIProcess:
         )
 
         with pytest.raises(Exception):
-            api_process.runProcess()
+            api_process.run()
