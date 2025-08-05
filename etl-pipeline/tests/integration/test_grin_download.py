@@ -85,8 +85,6 @@ def _has_bucket_write_access(s3_manager, bucket_name):
 def test_download_process(db_manager, test_bucket, s3_manager):
     grin_download_service = GRINDownloadService(test_bucket)
 
-    _set_grin_status(db_manager, TEST_BARCODE, GRINState.CONVERTED)
-
     # confirm barcode has CONVERTED state before proceeding with download
     if _get_grin_status(db_manager, TEST_BARCODE) is None:
         _set_grin_status(db_manager, TEST_BARCODE, GRINState.CONVERTED)
