@@ -1,31 +1,33 @@
-from flask import Blueprint, current_app, request, jsonify
+from flask import request
 from elasticsearch_dsl import Search, Q
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-import json
 from textwrap import shorten
 from typing import Optional
 
 from .items import items_blueprint
-from managers import S3Manager
-from model import ESPage, Item
-from api.db import DBClient
+from managers import DBManager
+from model import ESPage, Item, Record
 from api.utils import APIUtils
 
 RESPONSE_TYPE = "itemSearchResponse"
-embedder = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+
+try:
+    embedder = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+except:
+    embedder = None
 
 
 @items_blueprint.route("/<item_id>/search", methods=["GET"])
 def search_item(item_id):
-    # with DBClient(current_app.config["DB_CLIENT"]) as db_client:
-    #     record_id = db_client.session.query(Item.record_id).filter(Item.id == item_id).scalar()
+    with DBManager() as db_manager:
+        record_id = (
+            db_manager.session.query(Record.id)
+            .join(Item, Item.record_id == Record.id)
+            .filter(Item.id == int(item_id))
+            .scalar()
+        )
 
-    #     if record_id is None:
-    #         return APIUtils.formatResponseObject(
-    #             404, RESPONSE_TYPE, {"message": "Record not found"}
-    #         )
-
-    search_request = get_search_request()
+    search_request = get_search_request(str(record_id))
 
     if not search_request:
         return APIUtils.formatResponseObject(
@@ -50,7 +52,7 @@ def search_item(item_id):
     return APIUtils.formatResponseObject(200, RESPONSE_TYPE, results)
 
 
-def get_search_request() -> Optional[Search]:
+def get_search_request(record_id: str) -> Optional[Search]:
     mode = request.args.get("mode", "keyword")
     query = request.args.get("kw")
     keyword_query = Q("match", text=query)
@@ -59,6 +61,7 @@ def get_search_request() -> Optional[Search]:
         return (
             Search(index=ESPage.Index.name)
             .query(keyword_query)
+            .filter("term", record_id=record_id)
             .highlight("text", fragment_size=150, number_of_fragments=3)
         )
     elif mode == "semantic":
@@ -75,6 +78,7 @@ def get_search_request() -> Optional[Search]:
                     "params": {"query_vector": embedding},
                 },
             )
+            .filter("term", record_id=record_id)
             .highlight("text", fragment_size=150, number_of_fragments=3)
         )
     elif mode == "hybrid":
@@ -101,6 +105,7 @@ def get_search_request() -> Optional[Search]:
         return (
             Search(index=ESPage.Index.name)
             .query(hybrid_query)
+            .filter("term", record_id=record_id)
             .highlight("text", fragment_size=150, number_of_fragments=3)
         )
 

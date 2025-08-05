@@ -145,6 +145,15 @@ class METSFile:
                 )
 
     @property
+    def first_page(self) -> str:
+        return (
+            self._find("METS:fileSec")
+            .find("METS:fileGrp", namespaces=NSMAP)
+            .find("METS:file", namespaces=NSMAP)
+            .get("SEQ")
+        )
+
+    @property
     def page_sequence(self) -> list[str]:
         return [
             file.get("SEQ")

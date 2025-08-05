@@ -21,10 +21,13 @@ class RedriveRecordsProcess:
 
     def run(self):
         try:
-            query_filters = [Record.source == self.params.source]
+            query_filters = [
+                # Record.source == self.params.source,
+                Record.source_id == "33433115534525|grin"
+            ]
 
-            if self.params.process_type != "complete":
-                query_filters.append(Record.cluster_status == false())
+            # if self.params.process_type != "complete":
+            #     query_filters.append(Record.cluster_status == false())
 
             records = (
                 self.db_manager.session.query(Record)

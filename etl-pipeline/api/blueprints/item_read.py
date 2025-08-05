@@ -6,22 +6,32 @@ import tempfile
 from api.utils import APIUtils
 from .items import items_blueprint
 import file_conversion.pdfs.mets_parser as mets_parser
-from managers import S3Manager
-
+from managers import DBManager, S3Manager
+from model import Item, Record
 
 RESPONSE_TYPE = "itemRead"
 
 
 @items_blueprint.route("/<item_id>/read/<page_id>", methods=["GET"])
 def item_read(item_id, page_id):
+    with DBManager() as db_manager:
+        record_source_id = (
+            db_manager.session.query(Record.source_id)
+            .join(Item, Item.record_id == Record.id)
+            .filter(Item.id == int(item_id))
+            .scalar()
+        )
+
+        barcode = record_source_id.split("|")[0]
+
     bucket = os.environ["PRIVATE_FILE_BUCKET"]
-    prefix = f"grin/33433115534525/{page_id}"
+    prefix = f"grin/{barcode}/{page_id}"
 
     storage_manager = S3Manager()
 
     mets_file = mets_parser.METSFile.from_mets_str(
         storage_manager.get_object(
-            key=f"grin/33433115534525/NYPL_33433115534525.xml",
+            key=f"grin/{barcode}/NYPL_{barcode}.xml",
             bucket=os.environ["PRIVATE_FILE_BUCKET"],
         )["Body"].read()
     )

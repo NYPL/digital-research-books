@@ -1,9 +1,12 @@
 import argparse
+import os
 
 from args_parser import env_parser
+from digital_assets import get_stored_file_url
 from logger import create_log
+import file_conversion.pdfs.mets_parser as mets_parser
 from managers import DBManager, ElasticsearchManager, S3Manager
-from model import Record
+from model import Record, Part, FileFlags, Source
 from utils import with_logging, setup_env
 from processes.record_embedder import RecordEmbedder
 
@@ -37,11 +40,32 @@ class TextPipeline:
                 .first()
             )
 
-        if not record:
-            self.logger.warning(f"Barcode {barcode} not found")
-            return
+            if not record:
+                self.logger.warning(f"Barcode {barcode} not found")
+                return
 
-        self.record_embedder.embed(record, barcode)
+            mets_file = mets_parser.METSFile.from_mets_str(
+                self.storage_manager.get_object(
+                    key=f"grin/{barcode}/NYPL_{barcode}.xml",
+                    bucket=os.environ["PRIVATE_FILE_BUCKET"],
+                )["Body"].read()
+            )
+            first_page_part = Part(
+                index=1,
+                url=get_stored_file_url(
+                    storage_name=os.environ["PRIVATE_FILE_BUCKET"],
+                    file_path=f"grin/{barcode}/{mets_file.first_page}",
+                ),
+                source=Source.GRIN.value,
+                file_type="application/ocr",
+                flags=str(FileFlags(reader=True)),
+            )
+            record.has_part = [str(first_page_part)]
+
+            db_manager.session.commit()
+            db_manager.session.refresh(record)
+
+        # self.record_embedder.embed(record, barcode)
 
 
 if __name__ == "__main__":
