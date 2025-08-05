@@ -12,6 +12,7 @@ from api.db import DBClient
 from api.utils import APIUtils
 
 RESPONSE_TYPE = "itemSearchResponse"
+embedder = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
 
 @items_blueprint.route("/<item_id>/search", methods=["GET"])
@@ -50,7 +51,6 @@ def search_item(item_id):
 
 
 def get_search_request() -> Optional[Search]:
-    embedder = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     mode = request.args.get("mode", "keyword")
     query = request.args.get("kw")
     keyword_query = Q("match", text=query)
