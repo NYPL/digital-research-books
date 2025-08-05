@@ -19,9 +19,6 @@ class RecordEmbedder:
         self.embedder = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         self.logger = create_log(__name__)
 
-        if self.es_manager.client.indices.exists(index=ESPage.Index.name):
-            self.es_manager.client.indices.delete(index=ESPage.Index.name)
-
         if not self.es_manager.client.indices.exists(index=ESPage.Index.name):
             ESPage.init(index=ESPage.Index.name)
 
