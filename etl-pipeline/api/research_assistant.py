@@ -10,13 +10,15 @@ from logger import create_log
 from .utils import APIUtils
 from .db import DBClient
 from uuid import UUID
+from .blueprints.item_search import get_search_results, QueryMode
 
 import json
 
 VRA_SYSTEM_PROMPT_V0 = SystemMessage(
     content=(
         "You are a Virtual Research Assistant for the New York Public Library. "
-        "Find relevant digitized literature using the search-tool based on the patron's inquiry. "
+        "Find relevant digitized literature using the catalog-search-tool based on the patron's inquiry. "
+        "If you are provided an item_id, use the item-search-tool."
         "Respond politely with a brief description of how you searched. "
         "Do not summarize the search results. "
         "If the inquiry is not research related, politely decline to answer."
@@ -35,7 +37,26 @@ def json_serial_uuid(obj):
 class ResearchAssistant:
     def __init__(self, es_client: ElasticClient, db_client: DBClient):
         @tool(
-            "search-tool",
+            "item-search-tool",
+            description="Search within an item given a keywork, semantic or hybrid query.",
+        )
+        def search_item(
+            item_id: str,
+            query_mode: QueryMode,
+            keyword: Optional[str],
+            semantic_query: Optional[str],
+            size: int = 10,
+        ):
+            return get_search_results(
+                item_id,
+                query_mode,
+                keyword,
+                semantic_query,
+                size,
+            )
+
+        @tool(
+            "catalog-search-tool",
             description="Search the Digital Research Books catalog.",
             args_schema=SearchParams,
         )
@@ -122,7 +143,7 @@ class ResearchAssistant:
         self.model = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
         self.agent = create_react_agent(
             model=self.model,
-            tools=[search_catalog],
+            tools=[search_catalog, search_item],
             prompt=self.system_prompt,
         )
 

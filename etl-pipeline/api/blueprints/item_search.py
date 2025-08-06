@@ -1,6 +1,8 @@
 from flask import request
 from elasticsearch_dsl import Search, Q
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain.agents import tool
+
 from textwrap import shorten
 from typing import Optional, Literal
 
@@ -19,7 +21,7 @@ except:
 
 
 @items_blueprint.route("/<item_id>/search", methods=["GET"])
-def search_item(item_id):
+def item_search(item_id):
     search_results = get_search_results(
         item_id,
         query_mode=request.args.get("mode", "keyword"),
