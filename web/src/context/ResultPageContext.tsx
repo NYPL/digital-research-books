@@ -3,11 +3,13 @@ import React, { createContext, useContext } from "react";
 type PageType = "keyword" | "researchAssistant";
 
 type ResultPageContextType = {
+    onPreview: (itemId: number, url: string) => void;
     onReadOnline: (linkId: number) => void;
     page: PageType;
 };
 
 const ResultPageContext = createContext<ResultPageContextType>({
+    onPreview: () => { },
     onReadOnline: () => { },
     page: "keyword",
 });

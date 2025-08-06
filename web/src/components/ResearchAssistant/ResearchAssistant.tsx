@@ -14,9 +14,9 @@ import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
 import ResearchAssistantNav from "./ResearchAssistantNav";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
-// import ReaderLayout from "../ReaderLayout/ReaderLayout";
-// import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
-// import { LinkResult } from "~/src/types/LinkQuery";
+import ReaderLayout from "../ReaderLayout/ReaderLayout";
+import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
+import { LinkResult } from "~/src/types/LinkQuery";
 import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
 import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
@@ -37,7 +37,7 @@ const ResearchAssistant: React.FC = () => {
   } = useResearchAssistant();
   const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
   const [showWebReader, setShowWebReader] = useState(false);
-  // const [linkResults, setLinkResults] = useState<LinkResult>();
+  const [linkResults, setLinkResults] = useState<LinkResult>();
   const [pdfData, setPdfData] = useState<ApiItemsRead>();
 
   const numberOfWorks = results?.totalWorks;
@@ -59,16 +59,30 @@ const ResearchAssistant: React.FC = () => {
     }
   }, [sendMessage]);
 
-  const handleReadOnline = async () => {
-    const itemsReadResults = await itemsReadFetcher("00000065");
-    setPdfData(itemsReadResults.data);
+  const proxyUrl: string = proxyUrlConstructor();
+  const backUrl = "/research-assistant";
+
+  const handleReadOnline = async (linkId: number) => {
     setShowWebReader(true);
-    // const linkResult: LinkResult = await readFetcher(linkId);
-    // setLinkResults(linkResult);
+    const linkResult: LinkResult = await readFetcher(linkId);
+    setLinkResults(linkResult);
   };
 
-  // const proxyUrl: string = proxyUrlConstructor();
-  // const backUrl = "/research-assistant";
+  const handlePreview = async (itemId: number, url: string) => {
+    // TODO: make less hacky, we are assuming that the string after the last '/' is the page_id
+    const itemsReadResults = await itemsReadFetcher(
+      itemId.toString(),
+      url.split("/").pop()
+    );
+    setPdfData(itemsReadResults.data);
+    setShowWebReader(true);
+  };
+
+  const handleCloseReader = () => {
+    setShowWebReader(false);
+    setPdfData(null);
+  };
+
   const onPageChange = async (select: number) => {
     const newSearchQuery: SearchQuery = {
       queries: [],
@@ -99,7 +113,11 @@ const ResearchAssistant: React.FC = () => {
 
   return (
     <ResultPageProvider
-      value={{ onReadOnline: handleReadOnline, page: "researchAssistant" }}
+      value={{
+        onPreview: handlePreview,
+        onReadOnline: handleReadOnline,
+        page: "researchAssistant",
+      }}
     >
       <DrbBreakout
         breadcrumbsData={[
@@ -119,38 +137,37 @@ const ResearchAssistant: React.FC = () => {
             flex="1"
           >
             {showWebReader ? (
-              pdfData && (
                 <>
-                  <Button
-                    onClick={() => setShowWebReader(false)}
-                    id="close-reader-button"
-                  >
+                  <Button onClick={handleCloseReader} id="close-reader-button">
                     Close reader
                   </Button>
-                  <ResearchAssistantViewer pdfData={pdfData} />
-                  {/* <ReaderLayout
-                    linkResult={linkResults}
-                    proxyUrl={proxyUrl}
-                    backUrl={backUrl}
-                  /> */}
+                  {pdfData ? (
+                    <ResearchAssistantViewer pdfData={pdfData} />
+                  ) : (
+                    <ReaderLayout
+                      linkResult={linkResults}
+                      proxyUrl={proxyUrl}
+                      backUrl={backUrl}
+                    />
+                  )}
                 </>
-              )
             ) : (
               <Box>
                 <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
                   {numberOfWorks > 0
-                    ? `${firstElement.toLocaleString()} - ${
-                        numberOfWorks < lastElement
-                          ? numberOfWorks.toLocaleString()
-                          : lastElement.toLocaleString()
-                      } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
+                    ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
+                      ? numberOfWorks.toLocaleString()
+                      : lastElement.toLocaleString()
+                    } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
                     : "Viewing 0 items"}
                 </Text>
 
                 <ResultsList works={results.works} />
 
                 <Pagination
-                  pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
+                  pageCount={
+                    resultsPaging.lastPage ? resultsPaging.lastPage : 1
+                  }
                   initialPage={resultsPaging.currentPage}
                   onPageChange={(e) => onPageChange(e)}
                   __css={{ paddingTop: "m" }}
@@ -179,10 +196,7 @@ const ResearchAssistant: React.FC = () => {
             <Heading level="h2" size="heading3" color="ui.white" margin="0">
               Virtual Research Assistant
             </Heading>
-            <Button
-              onClick={clearHistory}
-              id="clear-history-button"
-            >
+            <Button onClick={clearHistory} id="clear-history-button">
               Clear chat
             </Button>
           </Box>

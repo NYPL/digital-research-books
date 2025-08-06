@@ -6,6 +6,7 @@ import EditionCardUtils from "~/src/util/EditionCardUtils";
 import DownloadLink from "./DownloadLink";
 import EddLink from "./EddLink";
 import ReadOnlineLink from "./ReadOnlineLink";
+import PreviewLink from "./PreviewLink";
 
 const Ctas: React.FC<{
   authors: Agent[];
@@ -20,19 +21,24 @@ const Ctas: React.FC<{
   const readOnlineLink = EditionCardUtils.getReadOnlineLink(item);
   const downloadLink = EditionCardUtils.selectDownloadLink(item);
 
-  const authorNames = authors ? authors.map((author) => author.name) : []
+  const authorNames = authors ? authors.map((author) => author.name) : [];
 
   if (readOnlineLink || downloadLink) {
     return (
       <>
-        {readOnlineLink && (
-          <ReadOnlineLink
-            authors={authorNames}
-            isLoggedIn={isLoggedIn}
-            readOnlineLink={readOnlineLink}
-            title={title}
-          />
-        )}
+        {readOnlineLink &&
+          (readOnlineLink.mediaType !== "application/ocr" ? (
+            <ReadOnlineLink
+              authors={authorNames}
+              isLoggedIn={isLoggedIn}
+              readOnlineLink={readOnlineLink}
+              title={title}
+            />
+          ) : (
+            <PreviewLink
+              previewLink={readOnlineLink}
+            />
+          ))}
         {downloadLink && (
           <DownloadLink
             authors={authorNames}
