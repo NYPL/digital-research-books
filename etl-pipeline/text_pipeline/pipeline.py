@@ -9,6 +9,7 @@ from managers import DBManager, ElasticsearchManager, S3Manager
 from model import Record, Part, FileFlags, Source
 from utils import with_logging, setup_env
 from processes.record_embedder import RecordEmbedder
+from processes.record_pipeline import RecordPipelineProcess
 
 parser = argparse.ArgumentParser(
     prog="textpipeline.pipeline",
@@ -28,6 +29,7 @@ class TextPipeline:
         self.es_manager.create_elastic_connection()
 
         self.record_embedder = RecordEmbedder(self.es_manager, self.storage_manager)
+        self.record_pipeline = RecordPipelineProcess()
 
     @with_logging(__name__)
     def run(self, barcode: str):
@@ -65,7 +67,10 @@ class TextPipeline:
             db_manager.session.commit()
             db_manager.session.refresh(record)
 
-        # self.record_embedder.embed(record, barcode)
+        self.record_embedder.embed(record, barcode)
+        self.record_pipeline.process_record(
+            source_id=record.source_id, source=record.source
+        )
 
 
 if __name__ == "__main__":

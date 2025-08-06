@@ -75,6 +75,26 @@ class RecordPipelineProcess:
             if self.db_manager.engine:
                 self.db_manager.engine.dispose()
 
+    def process_record(self, source_id=str, source=str):
+        self.db_manager.create_session()
+
+        record = (
+            self.db_manager.session.query(Record)
+            .filter(Record.source_id == source_id)
+            .filter(Record.source == source)
+            .first()
+        )
+
+        if record is None:
+            raise Exception(f"{source} record with source_id {source_id} not found")
+
+        record_with_files = self.record_file_saver.save_record_files(record)
+        embellished_record = self.record_embellisher.embellish_record(record_with_files)
+        clustered_records = self.record_clusterer.cluster_record(embellished_record)
+        self.link_fulfiller.fulfill_records_links(clustered_records)
+
+        return record
+
     def _process_message(self, message):
         logger.info("Processing message %s", message)
         start = perf_counter()
@@ -83,24 +103,7 @@ class RecordPipelineProcess:
             receipt_handle = message["ReceiptHandle"]
             source_id, source = self._parse_message(message_body=message_body)
 
-            self.db_manager.create_session()
-
-            record = (
-                self.db_manager.session.query(Record)
-                .filter(Record.source_id == source_id)
-                .filter(Record.source == source)
-                .first()
-            )
-
-            if record is None:
-                raise Exception(f"{source} record with source_id {source_id} not found")
-
-            record_with_files = self.record_file_saver.save_record_files(record)
-            embellished_record = self.record_embellisher.embellish_record(
-                record_with_files
-            )
-            clustered_records = self.record_clusterer.cluster_record(embellished_record)
-            self.link_fulfiller.fulfill_records_links(clustered_records)
+            record = self.process_record(source_id, source)
 
             self.sqs_manager.acknowledge_message_processed(receipt_handle)
         except Exception:
