@@ -16,7 +16,7 @@ import ResearchAssistantNav from "./ResearchAssistantNav";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
 // import ReaderLayout from "../ReaderLayout/ReaderLayout";
 // import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
-import { LinkResult } from "~/src/types/LinkQuery";
+// import { LinkResult } from "~/src/types/LinkQuery";
 import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
 import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
@@ -37,7 +37,7 @@ const ResearchAssistant: React.FC = () => {
   } = useResearchAssistant();
   const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
   const [showWebReader, setShowWebReader] = useState(false);
-  const [linkResults, setLinkResults] = useState<LinkResult>();
+  // const [linkResults, setLinkResults] = useState<LinkResult>();
   const [pdfData, setPdfData] = useState<ApiItemsRead>();
 
   const numberOfWorks = results?.totalWorks;
@@ -59,7 +59,7 @@ const ResearchAssistant: React.FC = () => {
     }
   }, [sendMessage]);
 
-  const handleReadOnline = async (linkId: number) => {
+  const handleReadOnline = async () => {
     const itemsReadResults = await itemsReadFetcher("00000065");
     setPdfData(itemsReadResults.data);
     setShowWebReader(true);

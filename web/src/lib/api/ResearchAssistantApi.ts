@@ -1,5 +1,4 @@
 import appConfig from "~/config/appConfig";
-import { log } from "../newrelic/NewRelic";
 import { ItemReadResults } from "~/src/types/ResearchAssistant";
 
 const apiEnv = process.env["APP_ENV"];

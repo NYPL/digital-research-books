@@ -145,7 +145,7 @@ const ReaderLayout: React.FC<{
         document.getElementById("nypl-footer").style.display = "none";
       }
     }
-  }, [isLimitedAccess, isRead, pdfWorkerSrc, proxyUrl, url]);
+  }, [isLimitedAccess, isRead, pdfWorkerSrc, proxyUrl, url, page]);
 
   const BackButton = () => {
     return (
