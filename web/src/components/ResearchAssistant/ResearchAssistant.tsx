@@ -39,6 +39,7 @@ const ResearchAssistant: React.FC = () => {
   const [showWebReader, setShowWebReader] = useState(false);
   const [linkResults, setLinkResults] = useState<LinkResult>();
   const [pdfData, setPdfData] = useState<ApiItemsRead>();
+  const [previewItemId, setPreviewItemId] = useState("");
 
   const numberOfWorks = results?.totalWorks;
   const resultsPaging = results?.paging;
@@ -70,8 +71,9 @@ const ResearchAssistant: React.FC = () => {
 
   const handlePreview = async (itemId: number, url: string) => {
     // TODO: make less hacky, we are assuming that the string after the last '/' is the page_id
+    setPreviewItemId(itemId.toString());
     const itemsReadResults = await itemsReadFetcher(
-      itemId.toString(),
+      previewItemId,
       url.split("/").pop()
     );
     setPdfData(itemsReadResults.data);
@@ -142,7 +144,7 @@ const ResearchAssistant: React.FC = () => {
                     Close reader
                   </Button>
                   {pdfData ? (
-                    <ResearchAssistantViewer pdfData={pdfData} />
+                    <ResearchAssistantViewer itemId={previewItemId} pdfData={pdfData} />
                   ) : (
                     <ReaderLayout
                       linkResult={linkResults}
