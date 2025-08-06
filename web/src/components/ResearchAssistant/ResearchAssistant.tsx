@@ -69,12 +69,14 @@ const ResearchAssistant: React.FC = () => {
     setLinkResults(linkResult);
   };
 
-  const handlePreview = async (itemId: number, url: string) => {
-    // TODO: make less hacky, we are assuming that the string after the last '/' is the page_id
-    setPreviewItemId(itemId.toString());
+  const handlePreview = async (url: string) => {
+    // TODO: make less hacky, /items/<item-id>/read/<page-id>
+    const urlParts = url.split("/");
+    const itemId = urlParts[urlParts.length - 3];
+    setPreviewItemId(itemId);
     const itemsReadResults = await itemsReadFetcher(
       previewItemId,
-      url.split("/").pop()
+      urlParts[urlParts.length - 1]
     );
     setPdfData(itemsReadResults.data);
     setShowWebReader(true);
