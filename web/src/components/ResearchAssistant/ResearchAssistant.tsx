@@ -29,6 +29,8 @@ const ResearchAssistant: React.FC = () => {
   const {
     messages,
     sendMessage,
+    itemId,
+    setItemId,
     results,
     setResults,
     isLoading,
@@ -39,7 +41,6 @@ const ResearchAssistant: React.FC = () => {
   const [showWebReader, setShowWebReader] = useState(false);
   const [linkResults, setLinkResults] = useState<LinkResult>();
   const [pdfData, setPdfData] = useState<ApiItemsRead>();
-  const [previewItemId, setPreviewItemId] = useState("");
 
   const numberOfWorks = results?.totalWorks;
   const resultsPaging = results?.paging;
@@ -72,8 +73,8 @@ const ResearchAssistant: React.FC = () => {
   const handlePreview = async (url: string) => {
     // TODO: make less hacky, /items/<item-id>/read/<page-id>
     const urlParts = url.split("/");
-    const itemId = urlParts[urlParts.length - 3];
-    setPreviewItemId(itemId);
+    const previewItemId = urlParts[urlParts.length - 3];
+    setItemId(previewItemId);
     const itemsReadResults = await itemsReadFetcher(
       previewItemId,
       urlParts[urlParts.length - 1]
@@ -85,6 +86,7 @@ const ResearchAssistant: React.FC = () => {
   const handleCloseReader = () => {
     setShowWebReader(false);
     setPdfData(null);
+    setItemId("");
   };
 
   const onPageChange = async (select: number) => {
@@ -132,7 +134,7 @@ const ResearchAssistant: React.FC = () => {
         <ResearchAssistantNav />
       </DrbBreakout>
       <Box display="flex" flexDir="row" overflow="hidden" height="100vh">
-        {results && Object.keys(results).length > 0 && (
+        {((results && Object.keys(results).length > 0) || showWebReader) && (
           <Box
             padding="s"
             border="1px solid #e5e7eb"
@@ -146,7 +148,7 @@ const ResearchAssistant: React.FC = () => {
                     Close reader
                   </Button>
                   {pdfData ? (
-                    <ResearchAssistantViewer itemId={previewItemId} pdfData={pdfData} />
+                    <ResearchAssistantViewer itemId={itemId} pdfData={pdfData} />
                   ) : (
                     <ReaderLayout
                       linkResult={linkResults}

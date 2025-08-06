@@ -10,6 +10,7 @@ import {
 export const useResearchAssistant = (): UseResearchAssistantResult => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [results, setResults] = useState<ChatResults>();
+  const [itemId, setItemId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,6 +19,11 @@ export const useResearchAssistant = (): UseResearchAssistantResult => {
       if (!text.trim()) return;
 
       setError(null);
+
+      console.log(itemId)
+      if (itemId !== "") {
+        text +=(`<item_id=${itemId}>`);
+      }
 
       const newUserMessage: Message = {
         id: Date.now().toString() + "-user",
@@ -106,5 +112,5 @@ export const useResearchAssistant = (): UseResearchAssistantResult => {
     setError(null);
   }, []);
 
-  return { messages, sendMessage, results, setResults, isLoading, error, clearHistory };
+  return { messages, sendMessage, itemId, setItemId, results, setResults, isLoading, error, clearHistory };
 };

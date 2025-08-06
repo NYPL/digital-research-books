@@ -38,6 +38,8 @@ export type SearchParams = {
 export interface UseResearchAssistantResult {
   messages: Message[];
   sendMessage: (text: string) => Promise<void>;
+  itemId: string;
+  setItemId: (itemId: string) => void;
   results: ChatResults;
   setResults: (results: ChatResults) => void;
   isLoading: boolean;
