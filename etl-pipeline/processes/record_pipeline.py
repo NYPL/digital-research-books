@@ -56,7 +56,7 @@ class RecordPipelineProcess:
             es_manager=self.es_manager,
         )
 
-    def runProcess(self, max_attempts: int = 10):
+    def run(self, max_attempts: int = 10):
         try:
             for attempt in range(max_attempts):
                 wait_time = 5 * attempt

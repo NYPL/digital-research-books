@@ -10,7 +10,7 @@ class TestDatabaseMigrationProcess:
         test_db_migration_process = MigrationProcess(
             None, None, None, None, None, None, ["testOpt1", "testOpt2"]
         )
-        test_db_migration_process.runProcess()
+        test_db_migration_process.run()
 
         mock_alembic.assert_called_once_with(
             argv=["--raiseerr", "testOpt1", "testOpt2"]

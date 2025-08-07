@@ -113,7 +113,9 @@ class MUSEManager:
 
         skip_cover = ""
 
-        for card in chapter_table.find_all(class_="card_text"):
+        for card in chapter_table.select(
+            ".card_text:has(li.title), .card_text:has(div.title)"
+        ):
             title_item = card.find("li", class_="title") or card.find(
                 "div", class_="title"
             )

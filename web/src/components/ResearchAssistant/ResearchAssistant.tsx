@@ -8,11 +8,15 @@ import {
   Button,
   Heading,
   Pagination,
-  TemplateAppContainer,
   Text,
 } from "@nypl/design-system-react-components";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
+import ResearchAssistantNav from "./ResearchAssistantNav";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
+import ReaderLayout from "../ReaderLayout/ReaderLayout";
+import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
+import { LinkResult } from "~/src/types/LinkQuery";
 import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
 import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
@@ -30,6 +34,8 @@ const ResearchAssistant: React.FC = () => {
   } = useResearchAssistant();
   const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
 
+  const [showWebReader, setShowWebReader] = useState(false);
+  const [linkResults, setLinkResults] = useState<LinkResult>();
   const numberOfWorks = results?.totalWorks;
   const resultsPaging = results?.paging;
   const firstElement =
@@ -49,6 +55,14 @@ const ResearchAssistant: React.FC = () => {
     }
   }, [sendMessage]);
 
+  const handleReadOnline = async (linkId: number) => {
+    setShowWebReader(true);
+    const linkResult: LinkResult = await readFetcher(linkId);
+    setLinkResults(linkResult);
+  };
+
+  const proxyUrl: string = proxyUrlConstructor();
+  const backUrl = "/research-assistant";
   const onPageChange = async (select: number) => {
     const newSearchQuery: SearchQuery = {
       queries: [],
@@ -76,89 +90,108 @@ const ResearchAssistant: React.FC = () => {
     });
     setResults(chatResult);
   };
-
-  const breakoutElement = (
-    <DrbBreakout
-      breadcrumbsData={[
-        { url: "/research-assistant", text: "Virtual Research Assistant" },
-      ]}
+  
+  return (
+    <ResultPageProvider
+      value={{ onReadOnline: handleReadOnline, page: "researchAssistant" }}
     >
-      <DrbHero />
-    </DrbBreakout>
-  );
+      <DrbBreakout
+        breadcrumbsData={[
+          { url: "/research-assistant", text: "Virtual Research Assistant" },
+        ]}
+      >
+        <DrbHero />
+        <ResearchAssistantNav />
+      </DrbBreakout>
+      <Box display="flex" flexDir="row" overflow="hidden">
+        {results && Object.keys(results).length > 0 && (
+          <Box
+            padding="s"
+            border="1px solid #e5e7eb"
+            overflowY="auto"
+            maxHeight="100vh"
+            flex="1"
+          >
+            {showWebReader ? (
+              linkResults && (
+                <>
+                  <Button
+                    onClick={() => setShowWebReader(false)}
+                    id="close-reader-button"
+                  >
+                    Close reader
+                  </Button>
+                  <ReaderLayout
+                    linkResult={linkResults}
+                    proxyUrl={proxyUrl}
+                    backUrl={backUrl}
+                  />
+                </>
+              )
+            ) : (
+              <Box>
+                <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
+                  {numberOfWorks > 0
+                    ? `${firstElement.toLocaleString()} - ${
+                        numberOfWorks < lastElement
+                          ? numberOfWorks.toLocaleString()
+                          : lastElement.toLocaleString()
+                      } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
+                    : "Viewing 0 items"}
+                </Text>
 
-  const contentPrimaryElement = (
-    <Box display="flex" flexDir="row" overflow="hidden">
-      {results && Object.keys(results).length > 0 && (
+                <ResultsList works={results.works} />
+
+                <Pagination
+                  pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
+                  initialPage={resultsPaging.currentPage}
+                  onPageChange={(e) => onPageChange(e)}
+                  __css={{ paddingTop: "m" }}
+                />
+              </Box>
+            )}
+          </Box>
+        )}
+
         <Box
-          padding="s"
-          border="1px solid #e5e7eb"
-          overflowY="auto"
-          maxHeight="70vh"
           flex="1"
+          display="flex"
+          flexDirection="column"
+          bgColor="section.research.primary"
+          border="1px solid #e5e7eb"
+          maxHeight="100vh"
         >
-          <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
-            {numberOfWorks > 0
-              ? `${firstElement.toLocaleString()} - ${
-                  numberOfWorks < lastElement
-                    ? numberOfWorks.toLocaleString()
-                    : lastElement.toLocaleString()
-                } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
-              : "Viewing 0 items"}
-          </Text>
-          <ResultsList works={results.works} />
-          <Pagination
-            pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
-            initialPage={resultsPaging.currentPage}
-            onPageChange={(e) => onPageChange(e)}
-            __css={{ paddingTop: "m" }}
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            paddingX="l"
+            paddingY="s"
+            borderBottom="1px white solid"
+          >
+            <Heading level="h2" size="heading3" color="ui.white" margin="0">
+              Virtual Research Assistant
+            </Heading>
+            <Button
+              onClick={clearHistory}
+              id="clear-history-button"
+            >
+              Clear chat
+            </Button>
+          </Box>
+
+          <ResearchAssistantWindow messages={messages} isLoading={isLoading} />
+
+          {error && <Text>{error}</Text>}
+
+          <ResearchAssistantInput
+            onSendMessage={sendMessage}
+            isDisabled={isLoading}
+            messages={messages}
           />
         </Box>
-      )}
-
-      <Box
-        flex="1"
-        display="flex"
-        flexDirection="column"
-        bgColor="section.research.primary"
-        border="1px solid #e5e7eb"
-        maxHeight="70vh"
-      >
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          paddingX="l"
-          paddingY="s"
-          borderBottom="1px white solid"
-        >
-          <Heading level="h2" size="heading3" color="ui.white" margin="0">
-            Virtual Research Assistant
-          </Heading>
-          <Button onClick={clearHistory} id="clear-history-button">
-            Clear chat
-          </Button>
-        </Box>
-
-        <ResearchAssistantWindow messages={messages} isLoading={isLoading} />
-
-        {error && <Text>{error}</Text>}
-
-        <ResearchAssistantInput
-          onSendMessage={sendMessage}
-          isDisabled={isLoading}
-          messages={messages}
-        />
       </Box>
-    </Box>
-  );
-
-  return (
-    <TemplateAppContainer
-      breakout={breakoutElement}
-      contentPrimary={contentPrimaryElement}
-      gridTemplateColumns="1fr 100% 1fr"
-    />
+    </ResultPageProvider>
   );
 };
 

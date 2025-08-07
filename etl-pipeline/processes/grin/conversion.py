@@ -13,6 +13,7 @@ from .. import utils
 
 IN_PROCESS_LIMIT = 50000
 DELAY_IN_SECONDS = 60
+CONVERSION_LIMIT = 5000
 
 
 class GRINConversion:
@@ -23,7 +24,7 @@ class GRINConversion:
         self.logger = create_log(__name__)
         self.batch_limit = batch_limit
 
-    def runProcess(self):
+    def run(self):
         if self.params.process_type == "daily":
             with DBManager() as self.db_manager:
                 self.convert_new_barcodes()
@@ -65,7 +66,9 @@ class GRINConversion:
             self.logger.info(f"Hit in process limit of {IN_PROCESS_LIMIT} barcodes.")
             return
 
-        self.logger.info(f"Converting {available_to_process_count} pending conversion")
+        conversion_limit = min(available_to_process_count, CONVERSION_LIMIT)
+
+        self.logger.info(f"Converting {conversion_limit} pending conversion")
 
         barcodes_pending_conversion = (
             self.db_manager.session.execute(
@@ -75,7 +78,7 @@ class GRINConversion:
                         GRINStatus.state == GRINState.PENDING_CONVERSION.value,
                     )
                     .where(GRINStatus.date_created <= GRINStatus.backfill_timestamp())
-                    .limit(available_to_process_count)
+                    .limit(conversion_limit)
                 )
             )
             .scalars()

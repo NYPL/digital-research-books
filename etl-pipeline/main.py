@@ -1,9 +1,9 @@
 import os
 import newrelic.agent
 
-import argparse
 import inspect
 
+from args_parser import create_arg_parser
 from load_env import load_env_file
 from logger import create_log
 
@@ -52,17 +52,17 @@ def main(args):
             source,
             options,
         )
-    except:
+    except Exception:
         logger.exception(f"Failed to initialize process {process} in {environment}")
         return
 
     if process in ("APIProcess", "DevelopmentSetupProcess", "MigrationProcess"):
-        process_instance.runProcess()
+        process_instance.run()
     else:
         app = newrelic.agent.register_application(timeout=10.0)
 
         with newrelic.agent.BackgroundTask(app, name=process_instance):
-            process_instance.runProcess()
+            process_instance.run()
 
 
 def register_processes():
@@ -88,53 +88,6 @@ def run_script(script: str, *args):
 
     if script is not None:
         script(*args)
-
-
-def create_arg_parser():
-    parser = argparse.ArgumentParser(description="Run DCDW Data Ingest Jobs")
-
-    parser.add_argument("-p", "--process", help="The name of the process job to be run")
-    parser.add_argument("-sc", "--script", help="The name of the script to run")
-    parser.add_argument(
-        "-e",
-        "--environment",
-        required=True,
-        help="Environment for deployment, sets env file to load",
-    )
-    parser.add_argument(
-        "-i",
-        "--ingestType",
-        help="The interval to run the ingest over. Generally daily/complete/custom",
-    )
-    parser.add_argument(
-        "-f",
-        "--inputFile",
-        help="Name of file to ingest. Ignored if -i custom is not set",
-    )
-    parser.add_argument(
-        "-s", "--startDate", help="Start point for coverage period to query/process"
-    )
-    parser.add_argument(
-        "-l",
-        "--limit",
-        help="Set overall limit for number of records imported in this process",
-    )
-    parser.add_argument(
-        "-o",
-        "--offset",
-        help="Set start offset for current processed (for batched import process)",
-    )
-    parser.add_argument(
-        "-r",
-        "--singleRecord",
-        help="Single record ID for ingesting an individual record",
-    )
-    parser.add_argument(
-        "-src", "--source", help="Run a process against records from a specified source"
-    )
-    parser.add_argument("options", nargs="*", help="Additional arguments")
-
-    return parser
 
 
 if __name__ == "__main__":

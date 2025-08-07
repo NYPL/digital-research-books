@@ -12,6 +12,7 @@ import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
 import { useRouter } from "next/router";
+import ResearchAssistantNav from "./ResearchAssistantNav";
 
 const ResearchAssistantLanding: React.FC = () => {
     const router = useRouter();
@@ -70,38 +71,7 @@ const ResearchAssistantLanding: React.FC = () => {
                 ]}
             >
                 <DrbHero />
-                <Box
-                    height="l"
-                    paddingY="xs"
-                    display="flex"
-                    maxWidth="1280px"
-                    alignItems="center"
-                    margin="auto"
-                    gap="s"
-                >
-                    <Box
-                        display="flex"
-                        alignItems="center"
-                        paddingX="s"
-                        paddingY="xxs"
-                        backgroundColor="section.research.primary-05"
-                        borderRadius="6px"
-                    >
-                        <ResearchAssistantIcon />
-                        <Text
-                            size="body1"
-                            color="section.research.secondary"
-                            isBold
-                            noSpace
-                        >
-                            Virtual Research Assistant
-                        </Text>
-                    </Box>
-                    <Box display="flex" alignItems="center">
-                        <Icon name="search" align="left" size="large" />
-                        <Text noSpace>Keyword search</Text>
-                    </Box>
-                </Box>
+                <ResearchAssistantNav />
             </DrbBreakout>
 
             <Box display="flex" flexDir="column">
