@@ -72,11 +72,12 @@ class TestElasticClient:
         mockGenerate = mocker.patch.object(ElasticClient, "generateSearchQuery")
         mockExecute = mocker.patch.object(ElasticClient, "executeSearchQuery")
         mockExecute.return_value = "testResponse"
+        test_params = {"query": "test"}
 
-        assert testInstance.searchQuery("testParams") == "testResponse"
+        assert testInstance.searchQuery(test_params) == "testResponse"
 
-        mockGenerate.assert_called_once_with("testParams")
-        mockExecute.assert_called_once_with("testParams", 0, 10)
+        mockGenerate.assert_called_once_with(test_params)
+        mockExecute.assert_called_once_with(test_params, 0, 10)
 
     def test_generateSearchQuery_keyword_search(
         self, testInstance, mockSearch, searchMocks, mocker
@@ -315,22 +316,7 @@ class TestElasticClient:
         searchMocks["authorQuery"].assert_not_called()
         searchMocks["subjectQuery"].assert_not_called()
         searchMocks["authorityQuery"].assert_not_called()
-        searchMocks["identifierQuery"].assert_called_once_with(
-            [
-                "isbn",
-                "issn",
-                "lcc",
-                "lccn",
-                "oclc",
-                "owi",
-                "nypl",
-                "hathi",
-                "gutenberg",
-                "doab",
-                "doi",
-            ],
-            "test",
-        )
+        searchMocks["identifierQuery"].assert_called_once_with("test")
 
         mockSearch.query.assert_called_once_with("searchClauses")
 
@@ -701,7 +687,7 @@ class TestElasticClient:
         ]
 
     def test_identifierQuery_OnlyIdentifier(self, testInstance):
-        testQueryES = testInstance.identifierQuery(["testIdent"], "testIdent")
+        testQueryES = testInstance.identifierQuery("isbn|testIdentifier")
         testQuery = testQueryES.to_dict()
 
         assert testInstance.searchedFields == [
@@ -713,40 +699,40 @@ class TestElasticClient:
         assert testQuery["bool"]["should"][0]["nested"]["path"] == "identifiers"
         assert testQuery["bool"]["should"][0]["nested"]["query"]["bool"]["must"][0][
             "term"
-        ] == {"identifiers.identifier": "testIdent"}
-        assert (
-            testQuery["bool"]["should"][1]["nested"]["path"] == "editions.identifiers"
-        )
-        assert testQuery["bool"]["should"][1]["nested"]["query"]["bool"]["must"][0][
-            "term"
-        ] == {"editions.identifiers.identifier": "testIdent"}
-
-    def test_identifierQuery_AuthIdent(self, testInstance):
-        testQueryES = testInstance.identifierQuery(["testAuth"], "testAuth|testIdent")
-        testQuery = testQueryES.to_dict()
-
-        assert testInstance.searchedFields == [
-            "identifiers.identifier",
-            "editions.identifiers.identifier",
-            "identifiers.authority",
-            "editions.identifiers.authority",
-        ]
-        assert testQuery["bool"]["should"][0]["nested"]["path"] == "identifiers"
-        assert testQuery["bool"]["should"][0]["nested"]["query"]["bool"]["must"][0][
-            "term"
-        ] == {"identifiers.authority": "testAuth"}
+        ] == {"identifiers.authority": "isbn"}
         assert testQuery["bool"]["should"][0]["nested"]["query"]["bool"]["must"][1][
             "term"
-        ] == {"identifiers.identifier": "testIdent"}
+        ] == {"identifiers.identifier": "testIdentifier"}
         assert (
             testQuery["bool"]["should"][1]["nested"]["path"] == "editions.identifiers"
         )
         assert testQuery["bool"]["should"][1]["nested"]["query"]["bool"]["must"][0][
             "term"
-        ] == {"editions.identifiers.authority": "testAuth"}
+        ] == {"editions.identifiers.authority": "isbn"}
         assert testQuery["bool"]["should"][1]["nested"]["query"]["bool"]["must"][1][
             "term"
-        ] == {"editions.identifiers.identifier": "testIdent"}
+        ] == {"editions.identifiers.identifier": "testIdentifier"}
+
+    def test_identifierQuery_AuthIdent(self, testInstance):
+        testQueryES = testInstance.identifierQuery("testIdentifier")
+        testQuery = testQueryES.to_dict()
+
+        assert testInstance.searchedFields == [
+            "identifiers.identifier",
+            "editions.identifiers.identifier",
+            "identifiers.authority",
+            "editions.identifiers.authority",
+        ]
+        assert testQuery["bool"]["should"][0]["nested"]["path"] == "identifiers"
+        assert testQuery["bool"]["should"][0]["nested"]["query"]["bool"]["must"][0][
+            "term"
+        ] == {"identifiers.identifier": "testIdentifier"}
+        assert (
+            testQuery["bool"]["should"][1]["nested"]["path"] == "editions.identifiers"
+        )
+        assert testQuery["bool"]["should"][1]["nested"]["query"]["bool"]["must"][0][
+            "term"
+        ] == {"editions.identifiers.identifier": "testIdentifier"}
 
     def test_getFromSize(self):
         startPosition, endPosition = ElasticClient.getFromSize(3, 15)
