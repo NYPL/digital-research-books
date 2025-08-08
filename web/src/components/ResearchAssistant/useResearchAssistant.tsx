@@ -20,9 +20,8 @@ export const useResearchAssistant = (): UseResearchAssistantResult => {
 
       setError(null);
 
-      console.log(itemId)
       if (itemId !== "") {
-        text +=(`<item_id=${itemId}>`);
+        text +=(`<ItemId>${itemId}</ItemId>`);
       }
 
       const newUserMessage: Message = {

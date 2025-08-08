@@ -22,13 +22,24 @@ export enum MessageStatus {
   Error = "error",
 }
 
-export interface ChatResults {
+export interface CatalogSearchResults {
   facets: { formats: FacetItem[]; languages: FacetItem[] };
   totalWorks?: number;
   works: ApiWork[];
   paging: ApiSearchPaging;
   searchParams: SearchParams;
 }
+
+export interface ItemSearchResults {
+  highlightedText: string[];
+  readLink: string;
+  textPreview: string;
+}
+
+export type ChatResults =
+  | { type: "catalog_search"; data: CatalogSearchResults }
+  | { type: "item_search"; data: ItemSearchResults[] }
+  | null;
 
 export type SearchParams = {
   query: [string, string][];
@@ -48,11 +59,11 @@ export interface UseResearchAssistantResult {
 }
 
 export type ItemReadResults = {
-  data: ApiItemsRead; 
+  data: ApiItemsRead;
   status?: number;
   timestamp?: string;
   responseType?: string;
-}
+};
 
 export type ApiItemsRead = {
   pageContentType: string;

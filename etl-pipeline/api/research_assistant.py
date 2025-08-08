@@ -47,13 +47,20 @@ class ResearchAssistant:
             semantic_query: Optional[str],
             size: int = 10,
         ):
-            return get_search_results(
+            item_results = get_search_results(
                 item_id,
                 query_mode,
                 keyword,
                 semantic_query,
                 size,
             )
+
+            data_block = {
+                "data": item_results,
+                "type": "item_search"
+            }
+
+            return json.dumps(data_block)
 
         @tool(
             "catalog-search-tool",
@@ -121,7 +128,7 @@ class ResearchAssistant:
                 params.page + 1, params.size, total_hits
             )
 
-            data_block = {
+            search_results = {
                 "totalWorks": total_hits,
                 "works": APIUtils.formatWorkOutput(
                     works,
@@ -134,6 +141,11 @@ class ResearchAssistant:
                 "paging": paging,
                 "facets": facets,
                 "searchParams": params.to_query_filters(),
+            }
+
+            data_block = {
+                "data": search_results,
+                "type": "catalog_search"
             }
 
             db_client.closeSession()
