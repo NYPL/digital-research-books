@@ -16,12 +16,13 @@ import json
 
 VRA_SYSTEM_PROMPT_V0 = SystemMessage(
     content=(
-        "You are a Virtual Research Assistant for the New York Public Library. "
-        "Find relevant digitized literature using the catalog-search-tool based on the patron's inquiry. "
+        "You are a Virtual Research Assistant. "
+        "Find relevant digitized literature (items) using the catalog-search-tool based on the patron's inquiry. "
+        "Find relevant text within an item that may answer a researcher's inquiry."
         "If you are provided an <itemId>item_id</itemId>, use the item-search-tool with that item_id."
-        "Respond politely with a brief description of how you searched. "
+        "Respond politely with a brief description of what you did. "
         "Do not summarize the search results. "
-        "If the inquiry is not research related, politely decline to answer."
+        "If the inquiry is not research related or related to a particular item, politely decline to answer."
     )
 )
 
@@ -43,8 +44,8 @@ class ResearchAssistant:
         def search_item(
             item_id: str,
             query_mode: QueryMode,
-            keyword: Optional[str],
-            semantic_query: Optional[str],
+            keyword: Optional[str] = None,
+            semantic_query: Optional[str] = None,
             size: int = 10,
         ):
             item_results = get_search_results(
@@ -55,10 +56,7 @@ class ResearchAssistant:
                 size,
             )
 
-            data_block = {
-                "data": item_results,
-                "type": "item_search"
-            }
+            data_block = {"data": item_results, "type": "item_search"}
 
             return json.dumps(data_block)
 
@@ -143,10 +141,7 @@ class ResearchAssistant:
                 "searchParams": params.to_query_filters(),
             }
 
-            data_block = {
-                "data": search_results,
-                "type": "catalog_search"
-            }
+            data_block = {"data": search_results, "type": "catalog_search"}
 
             db_client.closeSession()
 
