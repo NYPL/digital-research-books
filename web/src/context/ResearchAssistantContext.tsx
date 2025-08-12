@@ -142,7 +142,7 @@ export const ResearchAssistantProvider: React.FC<{
                 setIsLoading(false);
             }
         },
-        [messages]
+        [messages, itemId]
     );
 
     const handleCloseReader = useCallback(() => {
