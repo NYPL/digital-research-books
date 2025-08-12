@@ -1,23 +1,24 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import ResearchAssistant from "./ResearchAssistant";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
-import { useResearchAssistant } from "./useResearchAssistant";
 import { Message, MessageType } from "~/src/types/ResearchAssistant";
 import MessageBubble from "./MessageBubble";
 import ResearchAssistantInput from "./ResearchAssistantInput";
+import ResearchAssistant from "./ResearchAssistant";
 
 const mockClearHistory = jest.fn();
 const mockSendMessage = jest.fn();
 
-jest.mock("./useResearchAssistant", () => ({
-    useResearchAssistant: jest.fn(),
+const mockUseResearchAssistant = jest.fn();
+jest.mock("~/src/context/ResearchAssistantContext", () => ({
+  useResearchAssistant: () => mockUseResearchAssistant(),
+  ResearchAssistantProvider: ({ children }) => <div>{children}</div>,
 }));
 
 describe("ResearchAssistant", () => {
     beforeEach(() => {
-        (useResearchAssistant as jest.Mock).mockClear();
-        (useResearchAssistant as jest.Mock).mockReturnValue({
+        mockUseResearchAssistant.mockClear();
+        mockUseResearchAssistant.mockReturnValue({
             messages: [],
             sendMessage: mockSendMessage,
             isLoading: false,
@@ -46,7 +47,7 @@ describe("ResearchAssistant", () => {
     });
 
     test("displays an error message when an error occurs", () => {
-        (useResearchAssistant as jest.Mock).mockReturnValue({
+        mockUseResearchAssistant.mockReturnValue({
             messages: [],
             sendMessage: jest.fn(),
             isLoading: false,
