@@ -56,7 +56,7 @@ const ResearchAssistantInner: React.FC = () => {
         <DrbHero />
         <ResearchAssistantNav />
       </DrbBreakout>
-      <Box display="flex" flexDir="row" overflow="hidden" height="100vh">
+      <Box display="flex" flexDir="row" overflow="hidden" height="80vh">
         {results && Object.keys(results).length > 0 && (
           <>
             {results.type === "catalog_search" && (
@@ -74,7 +74,7 @@ const ResearchAssistantInner: React.FC = () => {
           flexDirection="column"
           bgColor="section.research.primary"
           border="1px solid #e5e7eb"
-          maxHeight="100vh"
+          maxHeight="80vh"
         >
           <Box
             display="flex"

@@ -76,7 +76,7 @@ const CatalogResults: React.FC<{
           padding="s"
           border="1px solid #e5e7eb"
           overflowY="auto"
-          maxHeight="100vh"
+          maxHeight="80vh"
           flex="1"
         >
           {showWebReader ? (
