@@ -1,5 +1,6 @@
 import os
 import pytest
+import random
 import re
 from datetime import datetime, timezone
 import json
@@ -457,3 +458,29 @@ def grin_client():
     client = GRINClient()
 
     yield client
+
+
+@pytest.fixture()
+def generate_test_barcodes(grin_client):
+    available_barcodes_scrape_fragment = "_all_books?&book_state=NEW&format=text"
+    byte_response = grin_client.get(available_barcodes_scrape_fragment)
+    lines = byte_response.decode("utf8").strip().split("\n")
+    filtered_barcodes = [
+        b.strip() for b in lines if b.strip().isdigit() and len(b.strip()) == 14
+    ]
+
+    return (
+        random.sample(filtered_barcodes, 5)
+        if len(filtered_barcodes) >= 5
+        else filtered_barcodes
+    )
+
+
+@pytest.fixture()
+def expected_barcodes_statuses():
+    return [
+        "Success",
+        "Already being converted",
+        "Not allowed to be downloaded",
+        "Other error",
+    ]
