@@ -45,6 +45,7 @@ def grin_status(db_manager):
     )
     db_manager.commit_changes()
 
+
 @pytest.mark.skip(reason="barcode no longer available on grin")
 def test_grin_download(s3_manager, grin_status):
     bucket = os.environ["PRIVATE_FILE_BUCKET"]
