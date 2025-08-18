@@ -1,25 +1,24 @@
 import { Box, Pagination, Text } from "@nypl/design-system-react-components";
 import { useState } from "react";
-import { searchResultsFetcher, proxyUrlConstructor } from "~/src/lib/api/SearchApi";
+import {
+  searchResultsFetcher,
+} from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
-import { CatalogSearchResults, ChatResults } from "~/src/types/ResearchAssistant";
+import {
+  CatalogSearchResults,
+  ChatResults,
+} from "~/src/types/ResearchAssistant";
 import { SearchQueryDefaults, SearchQuery } from "~/src/types/SearchQuery";
 import { toApiQuery } from "~/src/util/apiConversion";
-import ReaderLayout from "../ReaderLayout/ReaderLayout";
 import ResultsList from "../ResultsList/ResultsList";
-import ResearchAssistantViewer from "./ResearchAssistantViewer";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-
 
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;
 }> = ({ results }) => {
   const {
-    itemId,
     setViewState,
     showWebReader,
-    pdfData,
-    linkResults,
   } = useResearchAssistant();
 
   const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
@@ -62,14 +61,11 @@ const CatalogResults: React.FC<{
         searchParams: results.searchParams,
       },
     };
-    setViewState(prev => ({
-        ...prev,
-        results: chatResult,
+    setViewState((prev) => ({
+      ...prev,
+      results: chatResult,
     }));
   };
-
-  const proxyUrl: string = proxyUrlConstructor();
-  const backUrl = "/research-assistant";
 
   return (
     <>
@@ -81,39 +77,25 @@ const CatalogResults: React.FC<{
           maxHeight="80vh"
           flex="1"
         >
-          {showWebReader ? (
-            <>
-              {pdfData ? (
-                <ResearchAssistantViewer itemId={itemId} pdfData={pdfData} />
-              ) : (
-                <ReaderLayout
-                  linkResult={linkResults}
-                  proxyUrl={proxyUrl}
-                  backUrl={backUrl}
-                />
-              )}
-            </>
-          ) : (
-            <Box>
-              <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
-                {numberOfWorks > 0
-                  ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
-                    ? numberOfWorks.toLocaleString()
-                    : lastElement.toLocaleString()
-                  } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
-                  : "Viewing 0 items"}
-              </Text>
+          <Box>
+            <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
+              {numberOfWorks > 0
+                ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
+                  ? numberOfWorks.toLocaleString()
+                  : lastElement.toLocaleString()
+                } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
+                : "Viewing 0 items"}
+            </Text>
 
-              <ResultsList works={results.works} />
+            <ResultsList works={results.works} />
 
-              <Pagination
-                pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
-                initialPage={resultsPaging.currentPage}
-                onPageChange={(e) => onPageChange(e)}
-                __css={{ paddingTop: "m" }}
-              />
-            </Box>
-          )}
+            <Pagination
+              pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
+              initialPage={resultsPaging.currentPage}
+              onPageChange={(e) => onPageChange(e)}
+              __css={{ paddingTop: "m" }}
+            />
+          </Box>
         </Box>
       )}
     </>

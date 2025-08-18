@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import {
     ChatResults,
     ApiItemsRead,
@@ -48,6 +48,9 @@ export const ResearchAssistantProvider: React.FC<{
         results: null,
         linkResults: null,
     });
+    useEffect(() => {
+        console.log("viewState changed:", viewState);
+    }, [viewState]);
 
     const pushNewState = (
         results: ChatResults,
@@ -177,6 +180,7 @@ export const ResearchAssistantProvider: React.FC<{
         );
         setViewState(prev => ({
             ...prev,
+            results: viewState.results,
             pdfData: itemsReadResults.data,
             itemId: previewItemId,
             showWebReader: true,
@@ -188,6 +192,7 @@ export const ResearchAssistantProvider: React.FC<{
         const linkResult = await readFetcher(linkId);
         setViewState(prev => ({
             ...prev,
+            results: viewState.results,
             linkResults: linkResult,
             showWebReader: true,
         }));

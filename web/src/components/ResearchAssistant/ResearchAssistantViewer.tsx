@@ -63,7 +63,7 @@ const ResearchAssistantViewer: React.FC<{
   };
 
   return (
-    <Box height="90%">
+    <Box height="90%" padding="m">
       {isLoading && <Loading />}
       <object width="100%" height="100%" type="application/pdf" data={pdfUrl}>
         <p>Insert your error message here, if the PDF cannot be displayed.</p>

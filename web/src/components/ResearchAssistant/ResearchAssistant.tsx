@@ -18,6 +18,9 @@ import {
 } from "~/src/context/ResearchAssistantContext";
 import CatalogResults from "./CatalogResults";
 import ItemResults from "./ItemResults";
+import ResearchAssistantViewer from "./ResearchAssistantViewer";
+import ReaderLayout from "../ReaderLayout/ReaderLayout";
+import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 
 const ResearchAssistantInner: React.FC = () => {
   const {
@@ -30,6 +33,9 @@ const ResearchAssistantInner: React.FC = () => {
     goToPreviousState,
     clearHistory,
     showWebReader,
+    pdfData,
+    itemId,
+    linkResults,
     handleReadOnline,
     handlePreview,
   } = useResearchAssistant();
@@ -43,6 +49,9 @@ const ResearchAssistantInner: React.FC = () => {
       sessionStorage.removeItem("researchAssistantInitialMessage");
     }
   }, [sendMessage]);
+
+  const proxyUrl: string = proxyUrlConstructor();
+  const backUrl = "/research-assistant";
 
   return (
     <ResultPageProvider
@@ -64,7 +73,7 @@ const ResearchAssistantInner: React.FC = () => {
         {((results && Object.keys(results).length > 0) || showWebReader) && (
           <Box display="flex" flexDirection="column" flex="1">
             {historyStack.length > 1 && (
-              <Box>
+              <Box padding="s" borderBottom="1px solid" borderColor="ui.border">
                 <Button
                   buttonType="text"
                   id="back-button"
@@ -81,13 +90,29 @@ const ResearchAssistantInner: React.FC = () => {
                 </Button>
               </Box>
             )}
-            {results && Object.keys(results).length > 0 && (
+            {showWebReader ? (
               <>
-                {results.type === "catalog_search" && (
-                  <CatalogResults results={results.data} />
+                {pdfData ? (
+                  <ResearchAssistantViewer itemId={itemId} pdfData={pdfData} />
+                ) : (
+                  <ReaderLayout
+                    linkResult={linkResults}
+                    proxyUrl={proxyUrl}
+                    backUrl={backUrl}
+                  />
                 )}
-                {results.type === "item_search" && (
-                  <ItemResults results={results.data} />
+              </>
+            ) : (
+              <>
+                {results && Object.keys(results).length > 0 && (
+                  <>
+                    {results.type === "catalog_search" && (
+                      <CatalogResults results={results.data} />
+                    )}
+                    {results.type === "item_search" && (
+                      <ItemResults results={results.data} />
+                    )}
+                  </>
                 )}
               </>
             )}
