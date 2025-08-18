@@ -10,6 +10,7 @@ interface MessageBubbleProps {
 
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
   ({ message }, ref) => {
+    MessageBubble.displayName = "MessageBubble";
     const isUser = message.type === "human";
     const bubbleClasses = isUser
       ? `${styles.messageBubble} ${styles.userBubble}`

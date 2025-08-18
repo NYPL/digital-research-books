@@ -1,4 +1,4 @@
-import { Box, Button, Pagination, Text } from "@nypl/design-system-react-components";
+import { Box, Pagination, Text } from "@nypl/design-system-react-components";
 import { useState } from "react";
 import { searchResultsFetcher, proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
@@ -16,7 +16,7 @@ const CatalogResults: React.FC<{
 }> = ({ results }) => {
   const {
     itemId,
-    setResults,
+    setViewState,
     showWebReader,
     pdfData,
     linkResults,
@@ -62,7 +62,10 @@ const CatalogResults: React.FC<{
         searchParams: results.searchParams,
       },
     };
-    setResults(chatResult);
+    setViewState(prev => ({
+        ...prev,
+        results: chatResult,
+    }));
   };
 
   const proxyUrl: string = proxyUrlConstructor();

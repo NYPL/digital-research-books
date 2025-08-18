@@ -55,18 +55,6 @@ export type SearchParams = {
   filters?: [string, string][];
 };
 
-export interface UseResearchAssistantResult {
-  messages: Message[];
-  sendMessage: (text: string) => Promise<void>;
-  itemId: string;
-  setItemId: (itemId: string) => void;
-  results: ChatResults;
-  setResults: (results: ChatResults) => void;
-  isLoading: boolean;
-  error: string | null;
-  clearHistory: () => void;
-}
-
 export type ItemReadResults = {
   data: ApiItemsRead;
   status?: number;

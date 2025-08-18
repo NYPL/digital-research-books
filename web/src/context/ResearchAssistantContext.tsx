@@ -15,20 +15,16 @@ interface ResearchAssistantContextType {
     messages: any[];
     sendMessage: (message: string) => Promise<void>;
     results: ChatResults | null;
-    setResults: React.Dispatch<React.SetStateAction<ChatResults | null>>;
     isLoading: boolean;
     error: string | null;
     historyStack: HistoryItem[];
     goToPreviousState: () => void;
     clearHistory: () => void;
     showWebReader: boolean;
-    setShowWebReader: React.Dispatch<React.SetStateAction<boolean>>;
     itemId: string;
-    setItemId: React.Dispatch<React.SetStateAction<string>>;
     pdfData: ApiItemsRead | null;
-    setPdfData: React.Dispatch<React.SetStateAction<ApiItemsRead | null>>;
     linkResults: LinkResult | null;
-    setLinkResults: React.Dispatch<React.SetStateAction<LinkResult | null>>;
+    setViewState: React.Dispatch<React.SetStateAction<any | null>>;
     handlePreview: (url: string) => Promise<void>;
     handleReadOnline: (linkId: number) => Promise<void>;
 }
@@ -41,16 +37,17 @@ export const ResearchAssistantProvider: React.FC<{
     children: React.ReactNode;
 }> = ({ children }) => {
     const [messages, setMessages] = useState<any[]>([]);
-    const [results, setResults] = useState<ChatResults | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [historyStack, setHistoryStack] = useState<HistoryItem[]>([]);
-
-    const [showWebReader, setShowWebReader] = useState(false);
-    const [itemId, setItemId] = useState<string>("");
-    const [pdfData, setPdfData] = useState<ApiItemsRead | null>(null);
-    const [linkResults, setLinkResults] = useState<LinkResult | null>(null);
+    const [viewState, setViewState] = useState({
+        showWebReader: false,
+        pdfData: null,
+        itemId: "",
+        results: null,
+        linkResults: null,
+    });
 
     const pushNewState = (
         results: ChatResults,
@@ -86,8 +83,8 @@ export const ResearchAssistantProvider: React.FC<{
         setMessages((prevMessages) => [...prevMessages, newUserMessage]);
 
         let textToSend = text;
-        if (itemId !== "") {
-            textToSend += `<ItemId>${itemId}</ItemId>`;
+        if (viewState.itemId !== "") {
+            textToSend += `<ItemId>${viewState.itemId}</ItemId>`;
         }
 
         const messagesForBackend = [
@@ -143,14 +140,17 @@ export const ResearchAssistantProvider: React.FC<{
                     .concat(assistantMessage)
             );
 
-            setResults(data.results);
-            setShowWebReader(false);
+            setViewState(prev => ({
+                ...prev,
+                results: data.results,
+                showWebReader: false,
+            }));
 
             if (data.results?.type === "catalog_search") {
                 setHistoryStack([]);
                 pushNewState(data.results, false, null, null, "");
-            } else if (data.results?.type === "item_search" && itemId) {
-                pushNewState(data.results, false, null, null, itemId);
+            } else if (data.results?.type === "item_search" && viewState.itemId) {
+                pushNewState(data.results, false, null, null, viewState.itemId);
             }
         } catch (err: any) {
             console.error("Error sending message:", err);
@@ -175,16 +175,22 @@ export const ResearchAssistantProvider: React.FC<{
             previewItemId,
             urlParts[urlParts.length - 1]
         );
-        setPdfData(itemsReadResults.data);
-        setItemId(previewItemId);
-        setShowWebReader(true);
+        setViewState(prev => ({
+            ...prev,
+            pdfData: itemsReadResults.data,
+            itemId: previewItemId,
+            showWebReader: true,
+        }));
         pushNewState(null, true, itemsReadResults.data, null, previewItemId);
     };
 
     const handleReadOnline = async (linkId: number) => {
         const linkResult = await readFetcher(linkId);
-        setLinkResults(linkResult);
-        setShowWebReader(true);
+        setViewState(prev => ({
+            ...prev,
+            linkResults: linkResult,
+            showWebReader: true,
+        }));
         pushNewState(null, true, null, linkResult, "");
     };
 
@@ -192,51 +198,52 @@ export const ResearchAssistantProvider: React.FC<{
         setHistoryStack((prevStack) => {
             if (prevStack.length > 1) {
                 const prevState = prevStack[prevStack.length - 2];
-                setResults(prevState.results);
-                setItemId(prevState.itemId || "");
-                setShowWebReader(prevState.showWebReader);
-                setPdfData(prevState.pdfData);
-                setLinkResults(prevState.linkResults);
+                setViewState(prev => ({
+                    ...prev,
+                    results: prevState.results,
+                    itemId: prevState.itemId || "",
+                    pdfData: prevState.pdfData,
+                    showWebReader: prevState.showWebReader,
+                    linkResults: prevState.linkResults,
+                }));
                 return prevStack.slice(0, -1);
             }
 
-            setResults(null);
-            setItemId("");
-            setShowWebReader(false);
-            setPdfData(null);
-            setLinkResults(null);
+            setViewState(prev => ({
+                ...prev,
+                results: null,
+                itemId: "",
+                pdfData: null,
+                showWebReader: false,
+                linkResults: null,
+            }));
             return [];
         });
     };
 
     const clearHistory = () => {
         setMessages([]);
-        setResults(null);
         setError(null);
-        setShowWebReader(false);
-        setPdfData(null);
-        setLinkResults(null);
-        setItemId("");
+        setViewState(prev => ({
+            ...prev,
+            results: null,
+            showWebReader: false,
+            pdfData: null,
+            itemId: "",
+            linkResults: null,
+        }));
     };
 
     const value: ResearchAssistantContextType = {
         messages,
         sendMessage,
-        results,
-        setResults,
         isLoading,
         error,
         historyStack,
         goToPreviousState,
         clearHistory,
-        showWebReader,
-        setShowWebReader,
-        itemId,
-        setItemId,
-        pdfData,
-        setPdfData,
-        linkResults,
-        setLinkResults,
+        ...viewState,
+        setViewState,
         handlePreview,
         handleReadOnline,
     };
