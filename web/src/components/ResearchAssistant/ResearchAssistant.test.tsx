@@ -68,6 +68,7 @@ describe("ResearchAssistant", () => {
 });
 
 describe("ResearchAssistantWindow", () => {
+    window.HTMLElement.prototype.scrollIntoView = function() {};
     test('displays "What research topic..." when no messages and not loading', () => {
         render(<ResearchAssistantWindow messages={[]} isLoading={false} />);
         expect(
