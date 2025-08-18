@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Heading,
+  Icon,
   Text,
 } from "@nypl/design-system-react-components";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
@@ -25,6 +26,8 @@ const ResearchAssistantInner: React.FC = () => {
     results,
     isLoading,
     error,
+    historyStack,
+    goToPreviousState,
     clearHistory,
     handleReadOnline,
     handlePreview,
@@ -57,16 +60,36 @@ const ResearchAssistantInner: React.FC = () => {
         <ResearchAssistantNav />
       </DrbBreakout>
       <Box display="flex" flexDir="row" overflow="hidden" height="80vh">
-        {results && Object.keys(results).length > 0 && (
-          <>
-            {results.type === "catalog_search" && (
-              <CatalogResults results={results.data} />
-            )}
-            {results.type === "item_search" && (
-              <ItemResults results={results.data} />
-            )}
-          </>
-        )}
+        <Box display="flex" flexDirection="column" flex="1">
+          {historyStack.length > 1 && (
+            <Box>
+              <Button
+                buttonType="text"
+                id="back-button"
+                color="section.research.secondary"
+                onClick={goToPreviousState}
+              >
+                <Icon
+                  name="arrow"
+                  iconRotation="rotate90"
+                  align="left"
+                  size="small"
+                />
+                Back to results
+              </Button>
+            </Box>
+          )}
+          {results && Object.keys(results).length > 0 && (
+            <>
+              {results.type === "catalog_search" && (
+                <CatalogResults results={results.data} />
+              )}
+              {results.type === "item_search" && (
+                <ItemResults results={results.data} />
+              )}
+            </>
+          )}
+        </Box>
 
         <Box
           flex="1"

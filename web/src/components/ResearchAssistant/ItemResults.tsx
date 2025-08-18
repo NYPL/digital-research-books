@@ -13,7 +13,7 @@ const ItemResults: React.FC<{
   results: ItemSearchResults[];
 }> = ({ results }) => {
   const { onPreview } = useResultPageContext();
-  const { itemId, pdfData, showWebReader, handleCloseReader } = useResearchAssistant();
+  const { itemId, pdfData, showWebReader } = useResearchAssistant();
 
   return (
     <Box
@@ -25,9 +25,6 @@ const ItemResults: React.FC<{
     >
       {showWebReader ? (
         <>
-          <Button onClick={handleCloseReader} id="close-reader-button">
-            Close reader
-          </Button>
           {pdfData && (
             <ResearchAssistantViewer itemId={itemId} pdfData={pdfData} />
           )}
@@ -47,7 +44,7 @@ const ItemResults: React.FC<{
               >
                 <Text>{item.textPreview}</Text>
                 <Box as="ul" paddingLeft="l">
-                  {item.highlightedText.map((text, textIndex) => (
+                  {item.highlightedText && item.highlightedText.map((text, textIndex) => (
                     <Text key={textIndex} as="li">
                       {text}
                     </Text>

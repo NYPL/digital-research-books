@@ -1,4 +1,5 @@
 import { FacetItem } from "./DataModel";
+import { LinkResult } from "./LinkQuery";
 import { ApiSearchPaging } from "./SearchQuery";
 import { ApiWork } from "./WorkQuery";
 
@@ -34,6 +35,14 @@ export interface ItemSearchResults {
   highlightedText: string[];
   readLink: string;
   textPreview: string;
+}
+
+export interface HistoryItem {
+  results: ChatResults;
+  itemId?: string;
+  showWebReader: boolean;
+  pdfData: ApiItemsRead | null;
+  linkResults: LinkResult | null;
 }
 
 export type ChatResults =

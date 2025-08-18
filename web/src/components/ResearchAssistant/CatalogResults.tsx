@@ -20,7 +20,6 @@ const CatalogResults: React.FC<{
     showWebReader,
     pdfData,
     linkResults,
-    handleCloseReader,
   } = useResearchAssistant();
 
   const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
@@ -81,9 +80,6 @@ const CatalogResults: React.FC<{
         >
           {showWebReader ? (
             <>
-              <Button onClick={handleCloseReader} id="close-reader-button">
-                Close reader
-              </Button>
               {pdfData ? (
                 <ResearchAssistantViewer itemId={itemId} pdfData={pdfData} />
               ) : (
