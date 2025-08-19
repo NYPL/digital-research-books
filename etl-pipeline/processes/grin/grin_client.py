@@ -87,9 +87,7 @@ class GRINClient(object):
         return self.get(filename, *args, **kwargs)
 
     def get_new_barcodes(self, *args, **kwargs):
-        barcodes = self.get(
-            "_all_books?execute_query=true&book_state=NEW&format=text"
-        )
+        barcodes = self.get("_all_books?execute_query=true&book_state=NEW&format=text")
         barcodes = barcodes.decode("utf8").strip().split("\n")
         return barcodes
 
