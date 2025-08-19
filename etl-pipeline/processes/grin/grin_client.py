@@ -86,22 +86,12 @@ class GRINClient(object):
     def download(self, filename, *args, **kwargs):
         return self.get(filename, *args, **kwargs)
 
-    def acquired_today(self, *args, **kwargs):
-        # For GRIN queries, range start is inclusive but the range end is exclusive.
-        # This means you must set the upper range to one day after the desired date
-        today = datetime.now()
-        yesterday = today - timedelta(1)
-        year = today.strftime("%Y")
-        month = today.strftime("%m")
-        range_start = yesterday.strftime("%Y-%m-%d")
-        range_end = today.strftime("%Y-%m-%d")
-
-        data = self.get(
-            "_monthly_report?execute_query=true&year=%s&month=%s&check_in_date_start=%s&check_in_date_end=%s&book_state=NEW&format=text"
-            % (year, month, range_start, range_end)
+    def get_new_barcodes(self, *args, **kwargs):
+        barcodes = self.get(
+            "_all_books?execute_query=true&book_state=NEW&format=text"
         )
-        data = data.decode("utf8").split("\n")
-        return data
+        barcodes = barcodes.decode("utf8").strip().split("\n")
+        return barcodes
 
     def _for_state(self, state, *args, **kwargs):
         data = self.get("_%s?format=text" % state, *args, **kwargs)

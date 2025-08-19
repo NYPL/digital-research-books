@@ -16,7 +16,7 @@ def main(batch_limit=1000):
 
     with DBManager() as db_manager:
         url = grin_client._url(
-            f"_all_books?book_state=NEW&book_state=PREVIOUSLY_DOWNLOADED&format=text"
+            f"_all_books?book_state=NEW&format=text"
         )
         print(f"Scraping url: {url}")
 
