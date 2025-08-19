@@ -9,6 +9,7 @@ const ResearchAssistantIcon: React.FC = () => {
             // @ts-expect-error: Override color value type
             color="#F9E08E"
             size="large"
+            id="research-assistant-icon"
         >
             <svg
                 width="24"

@@ -1,7 +1,7 @@
 import React from "react";
 import { GetServerSideProps } from "next";
 import Layout from "~/src/components/Layout/Layout";
-import ResearchAssistantLanding from "~/src/components/ResearchAssistant/ResearchAssistantLanding";
+import ResearchAssistantLanding from "~/src/components/ResearchAssistantLanding/ResearchAssistantLanding";
 
 const ResearchAssistantLandingPage: React.FC = () => {
   return (
