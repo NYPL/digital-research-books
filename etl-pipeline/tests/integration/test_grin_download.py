@@ -81,6 +81,7 @@ def _has_bucket_write_access(s3_manager, bucket_name):
         logger.error(f"No write access to bucket '{bucket_name}': {e}")
         return False
 
+
 @pytest.mark.skip(reason="barcode no longer available on grin")
 def test_download_process(db_manager, test_bucket, s3_manager):
     grin_download_service = GRINDownloadService(test_bucket)
