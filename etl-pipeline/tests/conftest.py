@@ -484,7 +484,7 @@ def test_download_barcode(grin_client):
     range_end = today.strftime("%Y-%m-%d")
 
     converted_book = grin_client.get(
-        "_converted?result_count=1&&last_conversion_date_start=%s&last_conversion_date_end=%s&book_state=PREVIOUSLY_DOWNLOADED&format=text"
+        "_converted?result_count=1&last_conversion_date_start=%s&last_conversion_date_end=%s&book_state=PREVIOUSLY_DOWNLOADED&format=text"
         % (range_start, range_end)
     )
     barcode = converted_book.decode("utf8").strip().split(".")[0]

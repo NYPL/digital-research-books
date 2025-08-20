@@ -87,7 +87,14 @@ class GRINClient(object):
         return self.get(filename, *args, **kwargs)
 
     def get_new_barcodes(self, *args, **kwargs):
-        barcodes = self.get("_all_books?execute_query=true&book_state=NEW&format=text")
+        today = datetime.now()
+        yesterday = today - timedelta(1)
+        range_start = yesterday.strftime("%Y-%m-%d")
+        range_end = today.strftime("%Y-%m-%d")
+        barcodes = self.get(
+            "_all_books?execute_query=true&book_state=NEW&format=text&last_scan_date_start=%s&last_scan_date_end=%s"
+            % (range_start, range_end)
+        )
         barcodes = barcodes.decode("utf8").strip().split("\n")
         return barcodes
 
