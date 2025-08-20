@@ -475,13 +475,6 @@ def generate_test_barcodes(grin_client):
         else filtered_barcodes
     )
 
-@pytest.fixture()
-def test_download_barcode(grin_client):
-    converted_book = grin_client.get("_converted?result_count=1&book_state=PREVIOUSLY_DOWNLOADED&format=text")
-    barcode = converted_book.decode("utf8").strip().split(".")[0]
-
-    return barcode
-
 
 @pytest.fixture()
 def expected_barcodes_statuses():

@@ -10,6 +10,8 @@ from datetime import datetime
 
 logger = create_log(__name__)
 
+TEST_BARCODE = "33433000009799"  # barcode with converted status in local test db
+
 
 @pytest.fixture
 def db_manager():
@@ -80,36 +82,36 @@ def _has_bucket_write_access(s3_manager, bucket_name):
         return False
 
 
-def test_download_process(db_manager, test_bucket, s3_manager, test_download_barcode):
-    barcode = test_download_barcode
+@pytest.mark.skip(reason="barcode no longer available on grin")
+def test_download_process(db_manager, test_bucket, s3_manager):
     grin_download_service = GRINDownloadService(test_bucket)
 
     # confirm barcode has CONVERTED state before proceeding with download
-    if _get_grin_status(db_manager, barcode) is None:
-        _set_grin_status(db_manager, barcode, GRINState.CONVERTED)
-    grin_status = _get_grin_status(db_manager, barcode)
+    if _get_grin_status(db_manager, TEST_BARCODE) is None:
+        _set_grin_status(db_manager, TEST_BARCODE, GRINState.CONVERTED)
+    grin_status = _get_grin_status(db_manager, TEST_BARCODE)
     assert grin_status.state == GRINState.CONVERTED.value, (
-        f"Barcode {barcode} does not have CONVERTED status. Actual status: {grin_status.state}"
+        f"Barcode {TEST_BARCODE} does not have CONVERTED status. Actual status: {grin_status.state}"
     )
 
-    ocr_path, mets_file = grin_download_service.download_barcode(barcode)
+    ocr_path, mets_file = grin_download_service.download_barcode(TEST_BARCODE)
 
-    assert_ocr_package_uploaded(s3_manager, test_bucket, ocr_path, barcode)
+    assert_ocr_package_uploaded(s3_manager, test_bucket, ocr_path)
 
-    assert_mets_file_uploaded(s3_manager, test_bucket, mets_file, barcode)
+    assert_mets_file_uploaded(s3_manager, test_bucket, mets_file)
 
     db_manager.session.refresh(grin_status)
     assert grin_status.state == GRINState.DOWNLOADED.value, (
-        f"Barcode {barcode} does not have DOWNLOADED status. Actual status: {grin_status.state}"
+        f"Barcode {TEST_BARCODE} does not have DOWNLOADED status. Actual status: {grin_status.state}"
     )
 
     # reset the barcode state to CONVERTED for future tests
-    _set_grin_status(db_manager, barcode, GRINState.CONVERTED)
+    _set_grin_status(db_manager, TEST_BARCODE, GRINState.CONVERTED)
 
 
-def assert_ocr_package_uploaded(s3_manager, test_bucket, ocr_path, barcode):
-    ocr_key = f"grin/{barcode}/{barcode}.tar.gz.gpg"
-    ocr_path = ocr_path + f"{barcode}.tar.gz.gpg"
+def assert_ocr_package_uploaded(s3_manager, test_bucket, ocr_path):
+    ocr_key = f"grin/{TEST_BARCODE}/{TEST_BARCODE}.tar.gz.gpg"
+    ocr_path = ocr_path + f"{TEST_BARCODE}.tar.gz.gpg"
     try:
         s3_manager.client.head_object(Bucket=test_bucket, Key=ocr_key)
         assert ocr_path == ocr_key, (
@@ -119,8 +121,8 @@ def assert_ocr_package_uploaded(s3_manager, test_bucket, ocr_path, barcode):
         assert False, f"OCR package {ocr_key} does not exist in S3: {e}"
 
 
-def assert_mets_file_uploaded(s3_manager, test_bucket, mets_file, barcode):
-    mets_key = f"grin/{barcode}/NYPL_{barcode}.xml"
+def assert_mets_file_uploaded(s3_manager, test_bucket, mets_file):
+    mets_key = f"grin/{TEST_BARCODE}/NYPL_{TEST_BARCODE}.xml"
     try:
         s3_manager.client.head_object(Bucket=test_bucket, Key=mets_key)
         assert mets_file == mets_key, (
