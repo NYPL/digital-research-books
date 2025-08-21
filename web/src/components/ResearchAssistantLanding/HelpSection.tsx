@@ -1,9 +1,4 @@
-import {
-    Box,
-    Button,
-    Heading,
-    Icon,
-} from "@nypl/design-system-react-components";
+import { Box, Button, Icon, Text } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
 
 const HelpSection: React.FC = () => {
@@ -20,9 +15,8 @@ const HelpSection: React.FC = () => {
                 flexDir="column"
                 alignItems="center"
             >
-                <Heading
-                    level="h2"
-                    size="heading3"
+                <Text
+                    fontSize="2rem"
                     fontWeight="semibold"
                     color="section.research.secondary"
                     marginBottom="l"
@@ -31,7 +25,7 @@ const HelpSection: React.FC = () => {
                         Have a question? Get <Link to="#help">help</Link> or{" "}
                         <Link to="#learn-more">learn more about this project</Link>
                     </>
-                </Heading>
+                </Text>
                 <Button
                     id="try-it-button"
                     buttonType="secondary"
