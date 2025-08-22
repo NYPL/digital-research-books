@@ -477,7 +477,7 @@ def generate_test_barcodes(grin_client):
 
 
 @pytest.fixture()
-def test_download_barcode(grin_client):
+def downloadable_barcode(grin_client):
     today = datetime.now()
     three_days = today - timedelta(3)
     range_start = three_days.strftime("%Y-%m-%d")
