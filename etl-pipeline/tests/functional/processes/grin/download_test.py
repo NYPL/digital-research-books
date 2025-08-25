@@ -10,8 +10,8 @@ from model import Record, FRBRStatus, RecordState, Source, GRINStatus, GRINState
 
 
 @pytest.fixture
-def grin_status(db_manager):
-    barcode = "33433011009234"
+def grin_status(db_manager, downloadable_barcode):
+    barcode = downloadable_barcode
 
     # Setup: Ensure a clean state before creating the new record
     db_manager.session.execute(delete(GRINStatus).where(GRINStatus.barcode == barcode))

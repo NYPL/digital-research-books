@@ -17,7 +17,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ##### Prerequisites
 
-- Install Node.js v18 or later
+- Install Node.js v22 or later
 - To view pdfs locally through the webreader, you will need to set up a local proxy. If you used environment variables from `.env.sample` you should be able to pull the [web-reader](https://github.com/NYPL-Simplified/web-reader) repo, install it, and run `npm run cors-proxy`. See the web-reader repo for more [instructions](https://github.com/NYPL-Simplified/web-reader#cors-proxy)
 
 1. Install the required packages

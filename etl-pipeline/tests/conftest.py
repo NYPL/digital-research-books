@@ -2,7 +2,7 @@ import os
 import pytest
 import random
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 import requests_mock
 from sqlalchemy import text, delete
@@ -474,6 +474,22 @@ def generate_test_barcodes(grin_client):
         if len(filtered_barcodes) >= 5
         else filtered_barcodes
     )
+
+
+@pytest.fixture()
+def downloadable_barcode(grin_client):
+    today = datetime.now()
+    three_days = today - timedelta(3)
+    range_start = three_days.strftime("%Y-%m-%d")
+    range_end = today.strftime("%Y-%m-%d")
+
+    converted_book = grin_client.get(
+        "_converted?result_count=1&last_conversion_date_start=%s&last_conversion_date_end=%s&book_state=PREVIOUSLY_DOWNLOADED&format=text"
+        % (range_start, range_end)
+    )
+    barcode = converted_book.decode("utf8").strip().split(".")[0]
+
+    return barcode
 
 
 @pytest.fixture()
