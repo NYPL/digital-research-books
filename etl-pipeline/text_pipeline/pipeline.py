@@ -68,9 +68,6 @@ class TextPipeline:
             db_manager.session.refresh(record)
 
         self.record_embedder.embed(record, barcode)
-        self.record_pipeline.process_record(
-            source_id=record.source_id, source=record.source
-        )
 
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ class ResearchAssistant:
     def __init__(self, es_client: ElasticClient, db_client: DBClient):
         @tool(
             "item-search-tool",
-            description="Search within an item given a keywork, semantic or hybrid query.",
+            description="Search within an item given a keyword, semantic or hybrid query.",
         )
         def search_item(
             item_id: str,
