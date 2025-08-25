@@ -79,6 +79,7 @@ const SearchSection: React.FC = () => {
                         _hover={{
                             backgroundColor: "ui.white",
                         }}
+                        aria-label="Send"
                     >
                         <ResearchAssistantSendIcon />
                     </Button>

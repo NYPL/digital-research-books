@@ -104,6 +104,7 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
           _disabled={{
             backgroundColor: "ui.disabled.secondary",
           }}
+          aria-label="Send"
         >
           <ResearchAssistantSendIcon isDisabled={isDisabled} />
         </Button>
