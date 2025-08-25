@@ -80,7 +80,7 @@ def test_convert_barcodes_pending_conversion_fix(mocked_conversion_process):
             )
             mock_update_grin_state.assert_any_call(
                 mock_converted,
-                old_state=GRINState.PENDING_CONVERSION,
+                old_state=GRINState.CONVERTING,
                 new_state=GRINState.CONVERTED,
             )
             mock_update_grin_state.assert_any_call(

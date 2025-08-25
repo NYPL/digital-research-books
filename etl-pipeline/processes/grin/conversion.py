@@ -45,13 +45,12 @@ class GRINConversion:
             time.sleep(DELAY_IN_SECONDS)
 
     def convert_new_barcodes(self):
-        new_barcodes = self.client.acquired_today()
+        new_barcodes = self.client.get_new_barcodes()
 
-        if len(new_barcodes) <= 2:
+        if len(new_barcodes) == 0:
             self.logger.info("No new barcodes")
             return
 
-        new_barcodes = self._transform_scraped_data(new_barcodes)
         converting_barcodes, _ = self._convert_barcodes(new_barcodes["Barcode"])
 
         self._save_barcodes(converting_barcodes, GRINState.CONVERTING)
@@ -101,7 +100,7 @@ class GRINConversion:
 
         self._update_grin_state(
             converted_barcodes,
-            old_state=GRINState.PENDING_CONVERSION,
+            old_state=GRINState.CONVERTING,
             new_state=GRINState.CONVERTED,
         )
 
