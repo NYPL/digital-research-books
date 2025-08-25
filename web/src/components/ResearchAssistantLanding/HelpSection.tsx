@@ -1,4 +1,4 @@
-import { Box, Button, Icon, Text } from "@nypl/design-system-react-components";
+import { Box, Button, Text } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
 
 const HelpSection: React.FC = () => {
@@ -31,8 +31,11 @@ const HelpSection: React.FC = () => {
                     buttonType="secondary"
                     borderColor="section.research.secondary"
                     color="section.research.secondary"
+                    margin="0 auto"
+                    borderRadius="2px"
+                    fontWeight="medium"
                 >
-                    Try it out <Icon />
+                    Try it out ↑
                 </Button>
             </Box>
         </Box>

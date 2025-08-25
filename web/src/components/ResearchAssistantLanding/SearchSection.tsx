@@ -9,6 +9,7 @@ import {
 import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
 import { useState } from "react";
 import { useRouter } from "next/router";
+import ResearchAssistantSendIcon from "../ResearchAssistant/ResearchAssistantSendIcon";
 
 const SearchSection: React.FC = () => {
     const router = useRouter();
@@ -43,7 +44,16 @@ const SearchSection: React.FC = () => {
                 // @ts-expect-error: Override gap value type
                 gap="0"
             >
-                <Box display="flex" flexDir="row" gap="0">
+                <Box
+                    display="flex"
+                    flexDir="row"
+                    gap="0"
+                    border="1px solid"
+                    borderColor="ui.border.default"
+                    borderRadius="8px"
+                    backgroundColor="ui.white"
+                    paddingRight="xs"
+                >
                     <TextInput
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
@@ -51,12 +61,26 @@ const SearchSection: React.FC = () => {
                         id="message-input"
                         labelText={""}
                         flex="1"
+                        sx={{
+                            input: {
+                                border: "none",
+                                borderRadius: "8px",
+                                height: "64px",
+                                flexGrow: 2,
+                            },
+                        }}
                     />
                     <Button
                         onClick={handleLocalSearchSubmit}
                         id="research-landing-submit"
+                        backgroundColor="transparent"
+                        height="64px"
+                        borderRadius="8px"
+                        _hover={{
+                            backgroundColor: "ui.white",
+                        }}
                     >
-                        Send
+                        <ResearchAssistantSendIcon />
                     </Button>
                 </Box>
             </Form>
@@ -98,11 +122,10 @@ const SearchSection: React.FC = () => {
                 borderColor="ui.white"
                 marginTop="s"
                 buttonType="secondary"
-                width="200px"
                 margin="0 auto"
                 borderWidth="2px"
             >
-                Learn more <Icon />
+                Learn more ↓
             </Button>
         </>
     );

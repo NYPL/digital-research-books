@@ -28,7 +28,7 @@ const HeroSection: React.FC = () => (
                     <Box display="flex" gap="s" alignItems="center">
                         <Text noSpace>Introducing the NYPL Virtual Research Assistant</Text>
                         <Box display="inline">
-                            <ResearchAssistantIcon />
+                            <ResearchAssistantIcon inCircle={true} />
                         </Box>
                     </Box>
                 </Heading>
