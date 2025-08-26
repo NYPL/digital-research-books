@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 import os
 from .grin_client import GRINClient
 import pandas as pd
@@ -28,6 +29,7 @@ class GRINConversion:
         if self.params.process_type == "daily":
             with DBManager() as self.db_manager:
                 self.convert_new_barcodes()
+                self.convert_failed_barcodes()
                 return
 
         while (barcodes_remaining := self._get_unconverted_barcode_count()) > 0:
@@ -109,6 +111,33 @@ class GRINConversion:
             old_state=GRINState.PENDING_CONVERSION,
             new_state=GRINState.UNAVAILABLE,
         )
+
+    def convert_failed_barcodes(self):
+        failed_conversion_barcodes = self.client.failed_conversion()
+
+        if failed_conversion_barcodes:
+            failed_barcodes = (
+                self.db_manager.session.execute(
+                    (
+                        select(GRINStatus.barcode).where(
+                            GRINStatus.state == GRINState.CONVERTING.value,
+                            GRINStatus.barcode.in_(failed_conversion_barcodes),
+                            GRINStatus.date_modified
+                            <= datetime.now(timezone.utc) - timedelta(weeks=2),
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+
+            self.logger.info(f"Converting {len(failed_barcodes)} failed conversions")
+            converting_barcodes, _ = self._convert_barcodes(failed_barcodes)
+            self._update_grin_state(
+                converting_barcodes,
+                old_state=GRINState.CONVERTING,
+                new_state=GRINState.CONVERTING,
+            )
 
     def sync_converted_books(self) -> set:
         converted_filenames = self.client.converted_filenames()
