@@ -12,17 +12,21 @@ const PreviewLink: React.FC<{
     const linkText = "Preview";
 
     return (
-        isResearchAssistant && previewLink && (
-            <Box>
-                <Button
-                    id={`preview-button-${previewLink.link_id}`}
-                    onClick={() => onPreview(previewLink.url)}
-                    width="100%"
-                >
-                    {linkText}
-                </Button>
-            </Box>
-        )
+        <>
+            {isResearchAssistant && previewLink ? (
+                <Box>
+                    <Button
+                        id={`preview-button-${previewLink.link_id}`}
+                        onClick={() => onPreview(previewLink.url)}
+                        width="100%"
+                    >
+                        {linkText}
+                    </Button>
+                </Box>
+            ) : (
+                <>Not yet available</>
+            )}
+        </>
     );
 };
 
