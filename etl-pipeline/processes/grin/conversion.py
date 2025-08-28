@@ -213,7 +213,6 @@ class GRINConversion:
         if converted_barcodes:
             self._send_converted_barcodes_for_download(converted_barcodes)
 
-
     def _convert_barcodes(self, barcodes):
         converted_data = self.client.convert(barcodes)
 
