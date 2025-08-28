@@ -30,6 +30,7 @@ class GRINConversion:
             with DBManager() as self.db_manager:
                 self.convert_new_barcodes()
                 self.convert_failed_barcodes()
+                self.sync_and_send_converted_barcodes()
                 return
 
         while (barcodes_remaining := self._get_unconverted_barcode_count()) > 0:
@@ -38,8 +39,7 @@ class GRINConversion:
             with DBManager() as self.db_manager:
                 try:
                     self.convert_barcodes_pending_conversion()
-                    converted_barcodes = self.sync_converted_books()
-                    self.send_converted_barcodes_for_download(converted_barcodes)
+                    self.sync_and_send_converted_barcodes()
                 except Exception:
                     self.logger.exception("Failed to run GRIN conversion process")
 
@@ -139,7 +139,7 @@ class GRINConversion:
                 new_state=GRINState.CONVERTING,
             )
 
-    def sync_converted_books(self) -> set:
+    def _sync_converted_books(self) -> set:
         converted_filenames = self.client.converted_filenames()
         newly_converted_barcodes = set()
 
@@ -200,13 +200,19 @@ class GRINConversion:
 
         return newly_converted_barcodes
 
-    def send_converted_barcodes_for_download(self, converted_barcodes):
+    def _send_converted_barcodes_for_download(self, converted_barcodes):
         for chunked_barcodes in chunk(iter(converted_barcodes), 10):
             self.sqs_manager.send_message_to_queue({"barcodes": chunked_barcodes})
 
         self.logger.info(
             f"Sent {len(converted_barcodes)} converted barcodes for download"
         )
+
+    def _sync_and_send_converted_barcodes(self):
+        converted_barcodes = self._sync_converted_books()
+        if converted_barcodes:
+            self._send_converted_barcodes_for_download(converted_barcodes)
+
 
     def _convert_barcodes(self, barcodes):
         converted_data = self.client.convert(barcodes)
