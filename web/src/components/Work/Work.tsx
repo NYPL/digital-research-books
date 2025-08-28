@@ -154,7 +154,7 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
           marginBottom="l"
         />
       )}
-      <Box id="nypl-item-details">
+      <Box id="nypl-item-details" paddingBottom="l">
         {work.editions && work.editions.length > 1 && (
           <>
             <Flex justify="space-between" marginBottom="xl">

@@ -198,7 +198,7 @@ const Edition: React.FC<{ editionResult: EditionResult; backUrl?: string }> = (
           />
         </Flex>
       )}
-      <SimpleGrid columns={1} gap="grid.s">
+      <SimpleGrid columns={1} gap="grid.s" paddingBottom="l">
         {edition.instances
           .filter((instance) => {
             if (!featuredInstance) return true;

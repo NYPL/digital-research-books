@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Box,
   Heading,
   TemplateAppContainer,
 } from "@nypl/design-system-react-components";
@@ -18,7 +19,7 @@ const About: React.FC = () => {
   );
 
   const contentPrimaryElement = (
-    <>
+    <Box paddingBottom="l">
       <Heading level="h1">
         <span>
           <span className="rn-section-title__emphasis">
@@ -112,7 +113,7 @@ const About: React.FC = () => {
         think. If there are things you like or dislike, if there’s a feature
         missing, if you find an error please tell us in the feedback!
       </p>
-    </>
+    </Box>
   );
   return (
     <TemplateAppContainer
