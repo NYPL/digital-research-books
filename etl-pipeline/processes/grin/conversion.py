@@ -133,11 +133,7 @@ class GRINConversion:
 
             self.logger.info(f"Converting {len(failed_barcodes)} failed conversions")
             converting_barcodes, _ = self._convert_barcodes(failed_barcodes)
-            self._update_grin_state(
-                converting_barcodes,
-                old_state=GRINState.CONVERTING,
-                new_state=GRINState.CONVERTING,
-            )
+            self._update_grin_date_modified(converting_barcodes)
 
     def _sync_converted_books(self) -> set:
         converted_filenames = self.client.converted_filenames()
@@ -312,4 +308,22 @@ class GRINConversion:
             self.db_manager.session.rollback()
             self.logger.exception(
                 f"Failed to update {len(barcodes)} barcodes from {old_state.value} to {new_state.value}"
+            )
+
+    def _update_grin_date_modified(self, barcodes):
+        try:
+            update_results = self.db_manager.session.execute(
+                update(GRINStatus)
+                .filter(GRINStatus.barcode.in_(barcodes))
+                .values(date_modified=datetime.now(timezone.utc))
+            )
+            self.db_manager.commit_changes()
+
+            self.logger.info(
+                f"Updated {update_results.rowcount} barcodes date modified"
+            )
+        except Exception:
+            self.db_manager.session.rollback()
+            self.logger.exception(
+                f"Failed to update {len(barcodes)} barcodes date modified"
             )
