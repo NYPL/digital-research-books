@@ -53,7 +53,7 @@ class GRINConversion:
             self.logger.info("No new barcodes")
             return
 
-        converting_barcodes, _ = self._convert_barcodes(new_barcodes["Barcode"])
+        converting_barcodes, *_ = self._convert_barcodes(new_barcodes)
 
         self._save_barcodes(converting_barcodes, GRINState.CONVERTING)
 
@@ -132,7 +132,7 @@ class GRINConversion:
             )
 
             self.logger.info(f"Converting {len(failed_barcodes)} failed conversions")
-            converting_barcodes, _ = self._convert_barcodes(failed_barcodes)
+            converting_barcodes, *_ = self._convert_barcodes(failed_barcodes)
             self._update_grin_date_modified(converting_barcodes)
 
     def _sync_converted_books(self) -> set:
