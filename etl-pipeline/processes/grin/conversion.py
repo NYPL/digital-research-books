@@ -30,7 +30,7 @@ class GRINConversion:
             with DBManager() as self.db_manager:
                 self.convert_new_barcodes()
                 self.convert_failed_barcodes()
-                self.sync_and_send_converted_barcodes()
+                self._sync_and_send_converted_barcodes()
                 return
 
         while (barcodes_remaining := self._get_unconverted_barcode_count()) > 0:
@@ -39,7 +39,7 @@ class GRINConversion:
             with DBManager() as self.db_manager:
                 try:
                     self.convert_barcodes_pending_conversion()
-                    self.sync_and_send_converted_barcodes()
+                    self._sync_and_send_converted_barcodes()
                 except Exception:
                     self.logger.exception("Failed to run GRIN conversion process")
 
@@ -53,7 +53,7 @@ class GRINConversion:
             self.logger.info("No new barcodes")
             return
 
-        converting_barcodes, _ = self._convert_barcodes(new_barcodes["Barcode"])
+        converting_barcodes, *_ = self._convert_barcodes(new_barcodes)
 
         self._save_barcodes(converting_barcodes, GRINState.CONVERTING)
 
@@ -132,7 +132,7 @@ class GRINConversion:
             )
 
             self.logger.info(f"Converting {len(failed_barcodes)} failed conversions")
-            converting_barcodes, _ = self._convert_barcodes(failed_barcodes)
+            converting_barcodes, *_ = self._convert_barcodes(failed_barcodes)
             self._update_grin_date_modified(converting_barcodes)
 
     def _sync_converted_books(self) -> set:
