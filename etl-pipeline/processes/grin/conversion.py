@@ -30,7 +30,7 @@ class GRINConversion:
             with DBManager() as self.db_manager:
                 self.convert_new_barcodes()
                 self.convert_failed_barcodes()
-                self.sync_and_send_converted_barcodes()
+                self._sync_and_send_converted_barcodes()
                 return
 
         while (barcodes_remaining := self._get_unconverted_barcode_count()) > 0:
@@ -39,7 +39,7 @@ class GRINConversion:
             with DBManager() as self.db_manager:
                 try:
                     self.convert_barcodes_pending_conversion()
-                    self.sync_and_send_converted_barcodes()
+                    self._sync_and_send_converted_barcodes()
                 except Exception:
                     self.logger.exception("Failed to run GRIN conversion process")
 
