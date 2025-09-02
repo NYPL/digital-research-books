@@ -21,6 +21,7 @@ import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
 import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
 import { toApiQuery } from "~/src/util/apiConversion";
+import ResearchAssistantIcon from "./ResearchAssistantIcon";
 
 const ResearchAssistant: React.FC = () => {
   const {
@@ -90,7 +91,7 @@ const ResearchAssistant: React.FC = () => {
     });
     setResults(chatResult);
   };
-  
+
   return (
     <ResultPageProvider
       value={{ onReadOnline: handleReadOnline, page: "researchAssistant" }}
@@ -132,18 +133,17 @@ const ResearchAssistant: React.FC = () => {
               <Box>
                 <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
                   {numberOfWorks > 0
-                    ? `${firstElement.toLocaleString()} - ${
-                        numberOfWorks < lastElement
-                          ? numberOfWorks.toLocaleString()
-                          : lastElement.toLocaleString()
-                      } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
+                    ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
+                      ? numberOfWorks.toLocaleString()
+                      : lastElement.toLocaleString()
+                    } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
                     : "Viewing 0 items"}
                 </Text>
-
                 <ResultsList works={results.works} />
-
                 <Pagination
-                  pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
+                  pageCount={
+                    resultsPaging.lastPage ? resultsPaging.lastPage : 1
+                  }
                   initialPage={resultsPaging.currentPage}
                   onPageChange={(e) => onPageChange(e)}
                   __css={{ paddingTop: "m" }}
@@ -170,12 +170,11 @@ const ResearchAssistant: React.FC = () => {
             borderBottom="1px white solid"
           >
             <Heading level="h2" size="heading3" color="ui.white" margin="0">
-              Virtual Research Assistant
+              <>
+                <ResearchAssistantIcon /> Virtual Research Assistant
+              </>
             </Heading>
-            <Button
-              onClick={clearHistory}
-              id="clear-history-button"
-            >
+            <Button onClick={clearHistory} id="clear-history-button">
               Clear chat
             </Button>
           </Box>
