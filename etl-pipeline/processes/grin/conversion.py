@@ -132,8 +132,12 @@ class GRINConversion:
             )
 
             self.logger.info(f"Converting {len(failed_barcodes)} failed conversions")
-            converting_barcodes, *_ = self._convert_barcodes(failed_barcodes)
-            self._update_grin_date_modified(converting_barcodes)
+
+            if len(failed_barcodes) > 0:
+                converting_barcodes, *_ = self._convert_barcodes(failed_barcodes)
+                self._update_grin_date_modified(converting_barcodes)
+            else:
+                self.logger.info("No failed conversion barcodes from last two weeks")
 
     def _sync_converted_books(self) -> set:
         converted_filenames = self.client.converted_filenames()
@@ -164,19 +168,17 @@ class GRINConversion:
                     .all()
                 )
 
-                if not barcodes_to_update:
-                    continue
+                if barcodes_to_update:
+                    update_results = self.db_manager.session.execute(
+                        update(GRINStatus)
+                        .filter(GRINStatus.barcode.in_(barcodes_to_update))
+                        .values(state=GRINState.CONVERTED.value)
+                    )
 
-                update_results = self.db_manager.session.execute(
-                    update(GRINStatus)
-                    .filter(GRINStatus.barcode.in_(barcodes_to_update))
-                    .values(state=GRINState.CONVERTED.value)
-                )
+                    self.db_manager.commit_changes()
 
-                self.db_manager.commit_changes()
-
-                self.logger.info(f"Converted {update_results.rowcount} barcodes")
-                newly_converted_barcodes.update(barcodes_to_update)
+                    self.logger.info(f"Converted {update_results.rowcount} barcodes")
+                    newly_converted_barcodes.update(barcodes_to_update)
             except Exception:
                 self.db_manager.session.rollback()
                 self.logger.exception(
