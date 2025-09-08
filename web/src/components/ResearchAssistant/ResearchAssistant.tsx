@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useResearchAssistant } from "./useResearchAssistant";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import ResearchAssistantInput from "./ResearchAssistantInput";
-import ResultsList from "../ResultsList/ResultsList";
 import {
   Box,
   Button,
@@ -22,6 +21,7 @@ import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
 import { toApiQuery } from "~/src/util/apiConversion";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
+import ResearchAssistantResultsList from "./ResearchAssistantResultsList";
 
 const ResearchAssistant: React.FC = () => {
   const {
@@ -139,7 +139,7 @@ const ResearchAssistant: React.FC = () => {
                     } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
                     : "Viewing 0 items"}
                 </Text>
-                <ResultsList works={results.works} />
+                <ResearchAssistantResultsList works={results.works} />
                 <Pagination
                   pageCount={
                     resultsPaging.lastPage ? resultsPaging.lastPage : 1

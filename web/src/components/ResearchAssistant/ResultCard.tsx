@@ -11,15 +11,12 @@ import Link from "../Link/Link";
 import { Agent, WorkEdition } from "~/src/types/DataModel";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
 import { PLACEHOLDER_COVER_LINK } from "~/src/constants/editioncard";
-import CardRequiredBadge from "../EditionCard/CardRequiredBadge";
 import Ctas from "../EditionCard/Ctas";
-import FeaturedEditionBadge from "../EditionCard/FeaturedEditionBadge";
 import PublisherAndLocation from "../EditionCard/PublisherAndLocation";
-import ScanAndDeliverBlurb from "../EditionCard/ScanAndDeliverBlurb";
-import UpBlurb from "../EditionCard/UpBlurb";
 import PublicDomainBadge from "./PublicDomainBadge";
 import AuthorsList from "../AuthorsList/AuthorsList";
 import { ApiWork } from "~/src/types/WorkQuery";
+import ResearchAssistantIcon from "./ResearchAssistantIcon";
 
 export const ResultCard: React.FC<{
     authors: Agent[];
@@ -42,9 +39,6 @@ export const ResultCard: React.FC<{
     };
 
     const coverUrl = EditionCardUtils.getCover(edition.links);
-    const isPhysicalEdition = EditionCardUtils.isPhysicalEdition(previewItem);
-    const isUniversityPress = EditionCardUtils.isUniversityPress(previewItem);
-    const isLoginRequired = isPhysicalEdition || isUniversityPress;
 
     return (
         <Box
@@ -62,26 +56,15 @@ export const ResultCard: React.FC<{
                     alignItems="center"
                     marginBottom="xs"
                 >
-                    {isLoginRequired && <CardRequiredBadge />}
-                    {isFeaturedEdition && <FeaturedEditionBadge />}
                     <PublicDomainBadge />
                 </Flex>
                 <Flex gap="s" flexDirection="row">
-                    <Image
-                        src={coverUrl}
-                        alt={
-                            coverUrl === PLACEHOLDER_COVER_LINK
-                                ? "Placeholder Cover"
-                                : `Cover for ${EditionCardUtils.editionYearText(edition)}`
-                        }
-                        size="xsmall"
-                        aspectRatio="original"
-                    />
+                    <Box width="120px" bgColor="ui.gray.light-cool" flexShrink="0" />
                     <Box>
                         <Text size="caption" marginBottom="xxs">
                             E-BOOK
                         </Text>
-                        <Heading size="heading7">
+                        <Heading size="heading7" noSpace marginBottom="xxs">
                             <Link
                                 to={{
                                     pathname: `/work/${edition.edition_id}`,
@@ -99,15 +82,13 @@ export const ResultCard: React.FC<{
                                 By <AuthorsList authors={authors} />
                             </Box>
                         )}
-                        <Box>
+                        <Box marginTop="m">
                             <PublisherAndLocation
                                 pubPlace={edition.publication_place}
                                 publishers={edition.publishers}
                             />
                         </Box>
                         <Box>{editionYearElem()}</Box>
-                        {isPhysicalEdition && <ScanAndDeliverBlurb />}
-                        {isUniversityPress && <UpBlurb publishers={edition.publishers} />}
                     </Box>
                 </Flex>
                 <Accordion
@@ -115,15 +96,64 @@ export const ResultCard: React.FC<{
                     id={`accordion-summary-${edition.edition_id}`}
                     accordionData={[
                         {
-                            label: "Read summary",
-                            panel: <Text>{edition.summary || "No summary available."}</Text>,
+                            label: (
+                                <Box
+                                    display="flex"
+                                    gap="xxs"
+                                    alignItems="center"
+                                    margin="0"
+                                    __css={{ svg: { marginInlineStart: "0 !important" } }}
+                                >
+                                    <ResearchAssistantIcon />
+                                    <Text noSpace>Read summary</Text>
+                                </Box>
+                            ),
+                            panel: (
+                                <Box>
+                                    {edition.summary ||
+                                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
+                                    <Text
+                                        size="caption"
+                                        color="ui.gray.semi-dark"
+                                        noSpace
+                                        marginY="s"
+                                    >
+                                        AI-generated. Verify results.
+                                    </Text>
+                                </Box>
+                            ),
+                        },
+                        {
+                            label: (
+                                <Box
+                                    display="flex"
+                                    gap="xxs"
+                                    alignItems="center"
+                                    margin="0"
+                                    __css={{ svg: { marginInlineStart: "0 !important" } }}
+                                >
+                                    <ResearchAssistantIcon />
+                                    <Text noSpace>Why is this result relevant?</Text>
+                                </Box>
+                            ),
+                            panel: (
+                                <Box>
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                                    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                    <Text
+                                        size="caption"
+                                        color="ui.gray.semi-dark"
+                                        noSpace
+                                        marginY="s"
+                                    >
+                                        AI-generated. Verify results.
+                                    </Text>
+                                </Box>
+                            ),
                         },
                     ]}
                 />
-                <Flex
-                    flexDir="row"
-                    gap="xs"
-                >
+                <Flex flexDir="row" gap="xs">
                     <Ctas authors={authors} item={previewItem} title={work.title} />
                 </Flex>
             </Flex>
