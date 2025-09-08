@@ -4,13 +4,11 @@ import {
     Flex,
     Text,
     Accordion,
-    Image,
     Heading,
 } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
 import { Agent, WorkEdition } from "~/src/types/DataModel";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
-import { PLACEHOLDER_COVER_LINK } from "~/src/constants/editioncard";
 import Ctas from "../EditionCard/Ctas";
 import PublisherAndLocation from "../EditionCard/PublisherAndLocation";
 import PublicDomainBadge from "./PublicDomainBadge";
@@ -29,7 +27,7 @@ export const ResultCard: React.FC<{
     const editionYearElem = () => {
         const editionDisplay = EditionCardUtils.editionYearText(edition);
         const additionalEditions =
-            work.edition_count > 1 ? ` + ${work.edition_count - 1} more` : "";
+            isFeaturedEdition ? ` + ${work.edition_count - 1} more` : "";
 
         return (
             <>
@@ -37,8 +35,6 @@ export const ResultCard: React.FC<{
             </>
         );
     };
-
-    const coverUrl = EditionCardUtils.getCover(edition.links);
 
     return (
         <Box
