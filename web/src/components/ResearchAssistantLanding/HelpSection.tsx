@@ -3,7 +3,7 @@ import Link from "../Link/Link";
 
 const HelpSection: React.FC = () => {
     return (
-        <Box backgroundColor="ui.bg.default">
+        <Box backgroundColor="ui.bg.default" paddingX="xs">
             <Box
                 paddingY="xxl"
                 color="section.research.secondary"
@@ -34,6 +34,12 @@ const HelpSection: React.FC = () => {
                     margin="0 auto"
                     borderRadius="2px"
                     fontWeight="medium"
+                    onClick={() => {
+                        const heroSectionElement = document.getElementById("hero-section");
+                        if (heroSectionElement) {
+                            heroSectionElement.scrollIntoView({ behavior: "smooth" });
+                        }
+                    }}
                 >
                     Try it out ↑
                 </Button>

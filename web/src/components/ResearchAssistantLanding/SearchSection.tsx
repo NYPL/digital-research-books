@@ -103,14 +103,16 @@ const SearchSection: React.FC = () => {
                         gap="xs"
                         alignItems="left"
                         justifyContent="flex-start"
+                        textAlign="left"
+                        height="auto"
                         _hover={{
                             backgroundColor: "#f3f7fc",
                         }}
                     >
-                        <Box display="flex" justifyContent="space-between" width="100%">
-                            <Box display="flex" alignContent="center" alignSelf="flex-start">
+                        <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+                            <Box display="flex" alignItems="center" alignSelf="flex-start">
                                 <ResearchAssistantIcon />
-                                <Text>{suggestion}</Text>
+                                <Text noSpace>{suggestion}</Text>
                             </Box>
                             <Icon align="right" name="search" size="large" />
                         </Box>
@@ -125,6 +127,12 @@ const SearchSection: React.FC = () => {
                 buttonType="secondary"
                 margin="0 auto"
                 borderWidth="2px"
+                onClick={() => {
+                    const featuresSectionElement = document.getElementById("features-section");
+                    if (featuresSectionElement) {
+                        featuresSectionElement.scrollIntoView({ behavior: "smooth" });
+                    }
+                }}
             >
                 Learn more ↓
             </Button>

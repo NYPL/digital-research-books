@@ -2,7 +2,7 @@ import { Box, Heading } from "@nypl/design-system-react-components";
 
 const FocusedResearchSection: React.FC = () => {
     return (
-        <Box backgroundColor="ui.bg.default">
+        <Box backgroundColor="ui.bg.default" paddingX="xs">
             <Box
                 paddingY="xxl"
                 color="section.research.secondary"
@@ -18,7 +18,7 @@ const FocusedResearchSection: React.FC = () => {
                     color="section.research.secondary"
                     marginBottom="l"
                 >
-                    Do focused research with snart tools
+                    Do focused research with smart tools
                 </Heading>
                 <Box
                     width="1280px"

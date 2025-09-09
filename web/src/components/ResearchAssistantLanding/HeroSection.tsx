@@ -3,7 +3,7 @@ import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
 import SearchSection from "./SearchSection";
 
 const HeroSection: React.FC = () => (
-    <Box backgroundColor="section.research.primary">
+    <Box backgroundColor="section.research.primary" paddingX="xs" id="hero-section">
         <Box
             display="flex"
             flexDir="column"

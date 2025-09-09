@@ -25,7 +25,7 @@ const FeaturesSection: React.FC = () => {
     ];
     
     return (
-        <Box backgroundColor="ui.bg.default">
+        <Box backgroundColor="ui.bg.default" paddingX="xs" id="features-section">
             <Box
                 paddingY="xxl"
                 color="section.research.secondary"

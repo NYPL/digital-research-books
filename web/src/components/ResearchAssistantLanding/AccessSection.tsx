@@ -25,7 +25,7 @@ const AccessSection: React.FC = () => {
     ];
 
     return (
-        <Box backgroundColor="section.research.primary">
+        <Box backgroundColor="section.research.primary" paddingX="xs">
             <Box
                 paddingY="xxl"
                 color="ui.white"
