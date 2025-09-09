@@ -51,33 +51,61 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
       onSubmit={handleSubmit}
       id="research-assistant-form"
       borderTop="1px white solid"
-      paddingX="l"
+      paddingLeft="l"
+      paddingRight="xxxl"
       paddingY="s"
-      sx={{
-        "#research-assistant-form-parent": {
-          gap: 0,
-        },
-      }}
       // @ts-expect-error: Override gap value type
       gap="0"
     >
-      <Box display="flex" flexDir="row" gap="0">
+      {messages.length > 0 && (
+        <Box display="flex" flexDir="row-reverse" gap="xs" marginBottom="xs">
+          {[1, 2, 3].map((item) => (
+            <Button
+              id={`related-item-btn-${item}`}
+              bgColor="ui.white"
+              color="section.research.secondary"
+              borderColor="section.research.secondary"
+              buttonType="secondary"
+              size="small"
+              key={item}
+              _hover={{
+                bgColor: "#f3f7fc",
+              }}
+            >
+              Lorem ipsum
+            </Button>
+          ))}
+        </Box>
+      )}
+      <Box display="flex" flexDir="row" alignItems="center" gap="0">
         <TextInput
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder={placeholderValue}
-          disabled={isDisabled}
-          id="chat-input"
           autoComplete="off"
-          labelText={""}
-          ref={inputRef}
+          disabled={isDisabled}
           flex="1"
+          id="chat-input"
+          labelText={""}
+          height="fit-content"
+          minHeight="40px"
+          onChange={(e) => setInputText(e.target.value)}
+          onInput={(e) => {
+            const target = e.target as HTMLTextAreaElement;
+            target.style.height = "0px";
+            target.style.height = target.scrollHeight + "px";
+          }}
+          placeholder={placeholderValue}
+          ref={inputRef}
+          type="textarea"
+          value={inputText}
+          sx={{
+            textarea: {
+              height: "40px",
+              minHeight: "40px",
+              maxHeight: "80px",
+              resize: "none"
+            },
+          }}
         />
-        <Button
-          type="submit"
-          isDisabled={isDisabled}
-          id="send-chat-button"
-        >
+        <Button type="submit" isDisabled={isDisabled} id="send-chat-button">
           Send
         </Button>
       </Box>

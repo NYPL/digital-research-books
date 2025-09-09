@@ -104,13 +104,11 @@ const ResearchAssistant: React.FC = () => {
         <DrbHero />
         <ResearchAssistantNav />
       </DrbBreakout>
-      <Box display="flex" flexDir="row" overflow="hidden">
+      <Box display="flex" flexDir="row">
         {results && Object.keys(results).length > 0 && (
           <Box
             padding="s"
             border="1px solid #e5e7eb"
-            overflowY="auto"
-            maxHeight="100vh"
             flex="1"
           >
             {showWebReader ? (
@@ -131,7 +129,7 @@ const ResearchAssistant: React.FC = () => {
               )
             ) : (
               <Box>
-                <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
+                <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace position="sticky" top="0" bgColor="ui.white">
                   {numberOfWorks > 0
                     ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
                       ? numberOfWorks.toLocaleString()
@@ -160,6 +158,8 @@ const ResearchAssistant: React.FC = () => {
           bgColor="section.research.primary"
           border="1px solid #e5e7eb"
           maxHeight="100vh"
+          position="sticky"
+          top="0"
         >
           <Box
             display="flex"
@@ -169,10 +169,11 @@ const ResearchAssistant: React.FC = () => {
             paddingY="s"
             borderBottom="1px white solid"
           >
-            <Heading level="h2" size="heading3" color="ui.white" margin="0">
-              <>
-                <ResearchAssistantIcon /> Virtual Research Assistant
-              </>
+            <Heading level="h2" size="heading7" color="ui.white" margin="0">
+              <Box display="flex" alignItems="center">
+                <ResearchAssistantIcon /> 
+                <>Virtual Research Assistant</>
+              </Box>
             </Heading>
             <Button onClick={clearHistory} id="clear-history-button">
               Clear chat
