@@ -28,9 +28,31 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
       onSendMessage(inputText);
       setInputText("");
 
+      if (inputRef.current && inputRef.current) {
+        inputRef.current.style.height = "40px";
+        inputRef.current.value = "";
+      }
+
       if (inputRef.current && !isDisabled) {
         inputRef.current.focus();
       }
+    }
+  };
+
+  const updateTextareaHeight = (e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLTextAreaElement;
+    target.style.height = "0px";
+    target.style.height =
+      target.scrollHeight >= 132
+        ? target.scrollHeight + 20 + "px"
+        : target.scrollHeight + 2 + "px";
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleSubmit(e);
     }
   };
 
@@ -48,31 +70,33 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
 
   return (
     <Form
-      onSubmit={handleSubmit}
       id="research-assistant-form"
+      onSubmit={handleSubmit}
       borderTop="1px white solid"
+      // @ts-expect-error: Override gap value type
+      gap="0"
       paddingLeft="l"
       paddingRight="xxxl"
       paddingY="s"
-      // @ts-expect-error: Override gap value type
-      gap="0"
     >
-      {messages.length > 0 && (
-        <Box display="flex" flexDir="row-reverse" gap="xs" marginBottom="xs">
+      {/* TODO: Replace with actual related items and logic when available */}
+      {messages.length > 1 && (
+        <Box display="flex" justifyContent="flex-end" marginBottom="xs">
           {[1, 2, 3].map((item) => (
             <Button
+              buttonType="secondary"
               id={`related-item-btn-${item}`}
+              key={item}
               bgColor="ui.white"
               color="section.research.secondary"
               borderColor="section.research.secondary"
-              buttonType="secondary"
               size="small"
-              key={item}
+              marginLeft="xs"
               _hover={{
                 bgColor: "#f3f7fc",
               }}
             >
-              Lorem ipsum
+              Related item {item}
             </Button>
           ))}
         </Box>
@@ -81,31 +105,32 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
         <TextInput
           autoComplete="off"
           disabled={isDisabled}
-          flex="1"
           id="chat-input"
           labelText={""}
-          height="fit-content"
-          minHeight="40px"
           onChange={(e) => setInputText(e.target.value)}
-          onInput={(e) => {
-            const target = e.target as HTMLTextAreaElement;
-            target.style.height = "0px";
-            target.style.height = target.scrollHeight + "px";
-          }}
+          onInput={(e) => updateTextareaHeight(e)}
+          onKeyDown={(e) => handleKeyDown(e)}
           placeholder={placeholderValue}
           ref={inputRef}
           type="textarea"
           value={inputText}
+          flex="1"
+          height="fit-content"
+          minHeight="40px"
           sx={{
             textarea: {
               height: "40px",
               minHeight: "40px",
-              maxHeight: "80px",
-              resize: "none"
+              maxHeight: "132px", // 6 rows
+              resize: "none",
             },
           }}
         />
-        <Button type="submit" isDisabled={isDisabled} id="send-chat-button">
+        <Button
+          type="submit"
+          isDisabled={isDisabled || inputText === ""}
+          id="send-chat-button"
+        >
           Send
         </Button>
       </Box>
