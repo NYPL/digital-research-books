@@ -6,32 +6,40 @@ import {
     Accordion,
     Heading,
 } from "@nypl/design-system-react-components";
-import Link from "../Link/Link";
-import { Agent, WorkEdition } from "~/src/types/DataModel";
-import EditionCardUtils from "~/src/util/EditionCardUtils";
+import AuthorsList from "../AuthorsList/AuthorsList";
 import Ctas from "../EditionCard/Ctas";
+import Link from "../Link/Link";
 import PublisherAndLocation from "../EditionCard/PublisherAndLocation";
 import PublicDomainBadge from "./PublicDomainBadge";
-import AuthorsList from "../AuthorsList/AuthorsList";
-import { ApiWork } from "~/src/types/WorkQuery";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
+import { ApiWork } from "~/src/types/WorkQuery";
+import { Agent, WorkEdition } from "~/src/types/DataModel";
+import EditionCardUtils from "~/src/util/EditionCardUtils";
 
-export const ResultCard: React.FC<{
+interface ResultCardProps {
     authors: Agent[];
     edition: WorkEdition;
     work: ApiWork;
     isFeaturedEdition?: boolean;
-}> = ({ authors, edition, work, isFeaturedEdition }) => {
+}
+
+export const ResultCard: React.FC<ResultCardProps> = ({
+    authors,
+    edition,
+    work,
+    isFeaturedEdition,
+}) => {
     const previewItem = EditionCardUtils.getPreviewItem(edition.items);
 
     const editionYearElem = () => {
         const editionDisplay = EditionCardUtils.editionYearText(edition);
-        const additionalEditions =
-            isFeaturedEdition ? ` + ${work.edition_count - 1} more` : "";
+        const additionalEditions = isFeaturedEdition
+            ? ` + ${work.edition_count - 1} more`
+            : "";
 
         return (
             <>
-                {editionDisplay} <Link to={"/"}>{additionalEditions}</Link>
+                {editionDisplay} <Link to="/">{additionalEditions}</Link>
             </>
         );
     };
