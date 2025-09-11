@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 import os
 from .grin_client import GRINClient
 import pandas as pd
@@ -28,6 +29,8 @@ class GRINConversion:
         if self.params.process_type == "daily":
             with DBManager() as self.db_manager:
                 self.convert_new_barcodes()
+                self.convert_failed_barcodes()
+                self._sync_and_send_converted_barcodes()
                 return
 
         while (barcodes_remaining := self._get_unconverted_barcode_count()) > 0:
@@ -36,8 +39,7 @@ class GRINConversion:
             with DBManager() as self.db_manager:
                 try:
                     self.convert_barcodes_pending_conversion()
-                    converted_barcodes = self.sync_converted_books()
-                    self.send_converted_barcodes_for_download(converted_barcodes)
+                    self._sync_and_send_converted_barcodes()
                 except Exception:
                     self.logger.exception("Failed to run GRIN conversion process")
 
@@ -51,7 +53,7 @@ class GRINConversion:
             self.logger.info("No new barcodes")
             return
 
-        converting_barcodes, _ = self._convert_barcodes(new_barcodes["Barcode"])
+        converting_barcodes, *_ = self._convert_barcodes(new_barcodes)
 
         self._save_barcodes(converting_barcodes, GRINState.CONVERTING)
 
@@ -110,7 +112,30 @@ class GRINConversion:
             new_state=GRINState.UNAVAILABLE,
         )
 
-    def sync_converted_books(self) -> set:
+    def convert_failed_barcodes(self):
+        failed_conversion_barcodes = self.client.failed_conversion()
+
+        if failed_conversion_barcodes:
+            failed_barcodes = (
+                self.db_manager.session.execute(
+                    (
+                        select(GRINStatus.barcode).where(
+                            GRINStatus.state == GRINState.CONVERTING.value,
+                            GRINStatus.barcode.in_(failed_conversion_barcodes),
+                            GRINStatus.date_modified
+                            <= datetime.now(timezone.utc) - timedelta(weeks=2),
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+
+            self.logger.info(f"Converting {len(failed_barcodes)} failed conversions")
+            converting_barcodes, *_ = self._convert_barcodes(failed_barcodes)
+            self._update_grin_date_modified(converting_barcodes)
+
+    def _sync_converted_books(self) -> set:
         converted_filenames = self.client.converted_filenames()
         newly_converted_barcodes = set()
 
@@ -171,13 +196,18 @@ class GRINConversion:
 
         return newly_converted_barcodes
 
-    def send_converted_barcodes_for_download(self, converted_barcodes):
+    def _send_converted_barcodes_for_download(self, converted_barcodes):
         for chunked_barcodes in chunk(iter(converted_barcodes), 10):
             self.sqs_manager.send_message_to_queue({"barcodes": chunked_barcodes})
 
         self.logger.info(
             f"Sent {len(converted_barcodes)} converted barcodes for download"
         )
+
+    def _sync_and_send_converted_barcodes(self):
+        converted_barcodes = self._sync_converted_books()
+        if converted_barcodes:
+            self._send_converted_barcodes_for_download(converted_barcodes)
 
     def _convert_barcodes(self, barcodes):
         converted_data = self.client.convert(barcodes)
@@ -278,4 +308,22 @@ class GRINConversion:
             self.db_manager.session.rollback()
             self.logger.exception(
                 f"Failed to update {len(barcodes)} barcodes from {old_state.value} to {new_state.value}"
+            )
+
+    def _update_grin_date_modified(self, barcodes):
+        try:
+            update_results = self.db_manager.session.execute(
+                update(GRINStatus)
+                .filter(GRINStatus.barcode.in_(barcodes))
+                .values(date_modified=datetime.now(timezone.utc))
+            )
+            self.db_manager.commit_changes()
+
+            self.logger.info(
+                f"Updated {update_results.rowcount} barcodes date modified"
+            )
+        except Exception:
+            self.db_manager.session.rollback()
+            self.logger.exception(
+                f"Failed to update {len(barcodes)} barcodes date modified"
             )
