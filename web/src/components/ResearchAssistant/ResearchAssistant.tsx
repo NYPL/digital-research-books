@@ -1,8 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useResearchAssistant } from "./useResearchAssistant";
-import ResearchAssistantWindow from "./ResearchAssistantWindow";
-import ResearchAssistantInput from "./ResearchAssistantInput";
-import ResultsList from "../ResultsList/ResultsList";
 import {
   Box,
   Button,
@@ -12,15 +8,20 @@ import {
 } from "@nypl/design-system-react-components";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
-import ResearchAssistantNav from "./ResearchAssistantNav";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
-import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
+import ResearchAssistantIcon from "./ResearchAssistantIcon";
+import ResearchAssistantInput from "./ResearchAssistantInput";
+import ResearchAssistantResultsList from "./ResearchAssistantResultsList";
+import ResearchAssistantWindow from "./ResearchAssistantWindow";
+import ResearchAssistantNav from "./ResearchAssistantNav";
 import { LinkResult } from "~/src/types/LinkQuery";
+import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
 import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
 import { toApiQuery } from "~/src/util/apiConversion";
+import { useResearchAssistant } from "./useResearchAssistant";
 
 const ResearchAssistant: React.FC = () => {
   const {
@@ -33,9 +34,9 @@ const ResearchAssistant: React.FC = () => {
     clearHistory,
   } = useResearchAssistant();
   const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
-
   const [showWebReader, setShowWebReader] = useState(false);
   const [linkResults, setLinkResults] = useState<LinkResult>();
+
   const numberOfWorks = results?.totalWorks;
   const resultsPaging = results?.paging;
   const firstElement =
@@ -44,6 +45,13 @@ const ResearchAssistant: React.FC = () => {
     searchQuery?.page <= resultsPaging?.lastPage
       ? resultsPaging?.currentPage * resultsPaging?.recordsPerPage
       : numberOfWorks;
+  const resultsPagingText =
+    numberOfWorks > 0
+      ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
+        ? numberOfWorks.toLocaleString()
+        : lastElement.toLocaleString()
+      } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
+      : "Viewing 0 items";
 
   useEffect(() => {
     const initialMessage = sessionStorage.getItem(
@@ -90,7 +98,7 @@ const ResearchAssistant: React.FC = () => {
     });
     setResults(chatResult);
   };
-  
+
   return (
     <ResultPageProvider
       value={{ onReadOnline: handleReadOnline, page: "researchAssistant" }}
@@ -131,19 +139,13 @@ const ResearchAssistant: React.FC = () => {
             ) : (
               <Box>
                 <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
-                  {numberOfWorks > 0
-                    ? `${firstElement.toLocaleString()} - ${
-                        numberOfWorks < lastElement
-                          ? numberOfWorks.toLocaleString()
-                          : lastElement.toLocaleString()
-                      } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
-                    : "Viewing 0 items"}
+                  {resultsPagingText}
                 </Text>
-
-                <ResultsList works={results.works} />
-
+                <ResearchAssistantResultsList works={results.works} />
                 <Pagination
-                  pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
+                  pageCount={
+                    resultsPaging.lastPage ? resultsPaging.lastPage : 1
+                  }
                   initialPage={resultsPaging.currentPage}
                   onPageChange={(e) => onPageChange(e)}
                   __css={{ paddingTop: "m" }}
@@ -170,12 +172,11 @@ const ResearchAssistant: React.FC = () => {
             borderBottom="1px white solid"
           >
             <Heading level="h2" size="heading3" color="ui.white" margin="0">
-              Virtual Research Assistant
+              <>
+                <ResearchAssistantIcon /> Virtual Research Assistant
+              </>
             </Heading>
-            <Button
-              onClick={clearHistory}
-              id="clear-history-button"
-            >
+            <Button onClick={clearHistory} id="clear-history-button">
               Clear chat
             </Button>
           </Box>

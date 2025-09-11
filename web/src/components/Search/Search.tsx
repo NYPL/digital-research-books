@@ -332,10 +332,11 @@ const SearchResults: React.FC<{
         pageCount={searchPaging.lastPage ? searchPaging.lastPage : 1}
         initialPage={searchPaging.currentPage}
         onPageChange={(e) => onPageChange(e)}
-        __css={{ paddingTop: "m" }}
+        __css={{ paddingTop: "m", paddingBottom: "l"}}
       />
     </>
   );
+
   return (
     <TemplateAppContainer
       breakout={breakoutElement}

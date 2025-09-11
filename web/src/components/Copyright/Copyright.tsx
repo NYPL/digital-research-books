@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import React from "react";
 import {
+  Box,
   Heading,
   List,
   TemplateAppContainer,
@@ -13,7 +14,7 @@ const Copyright: React.FC = () => {
     <DrbBreakout breadcrumbsData={[{ url: "/copyright", text: "Copyright" }]} />
   );
   const contentPrimaryElement = (
-    <>
+    <Box paddingBottom="l">
       <Heading level="h1">Copyright Explanations</Heading>
       <Heading level="h2">Public Domain</Heading>
       <p>
@@ -166,7 +167,7 @@ const Copyright: React.FC = () => {
         the copyright and related rights legislation that applies to your use.
         For other uses you need to obtain permission from the rights-holder(s).
       </p>
-    </>
+    </Box>
   );
   return (
     <TemplateAppContainer

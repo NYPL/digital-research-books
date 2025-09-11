@@ -193,7 +193,7 @@ const Collection: React.FC<{
         pageCount={pageCount}
         initialPage={currentPage}
         onPageChange={(e) => onPageChange(e)}
-        __css={{ paddingTop: "m" }}
+        __css={{ paddingTop: "m", paddingBottom: "l" }}
       />
     </>
   );

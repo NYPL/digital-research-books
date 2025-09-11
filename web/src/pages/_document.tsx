@@ -55,7 +55,7 @@ class MyDocument extends Document<DocumentProps> {
           <Main />
           <div
             id="nypl-footer"
-            style={{ marginTop: "auto", paddingTop: "2rem" }}
+            style={{ marginTop: "auto" }}
           ></div>
           <Script
             src="https://ds-header.nypl.org/footer.min.js?containerId=nypl-footer"

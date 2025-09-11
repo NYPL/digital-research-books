@@ -214,7 +214,7 @@ const AdvancedSearch: React.FC<{
   );
 
   const contentPrimaryElement = (
-    <Form action="/search" method="get" id="search-form">
+    <Form action="/search" method="get" id="search-form" paddingBottom="l">
       {/* Search Terms */}
       {inputTermRows.map(
         (inputTerms: { key: string; label: string }[], i: number) => {

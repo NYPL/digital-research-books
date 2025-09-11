@@ -34,7 +34,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
                 </Text>
                 {message.data.content}
               </Box>
-              <Text color="ui.gray.semi-dark" noSpace>AI-generated. Verify results.</Text>
+              <Text size="caption" color="ui.gray.semi-dark" noSpace>AI-generated. Verify results.</Text>
             </Box>
           </Box>
         )}
