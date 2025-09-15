@@ -1,8 +1,10 @@
 import React from "react";
 import styles from "../../../styles/components/MessageBubble.module.scss";
-import { Box, Text } from "@nypl/design-system-react-components";
+import { Box, Button, Flex, Text } from "@nypl/design-system-react-components";
 import { Message } from "~/src/types/ResearchAssistant";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
+import ThumbsUpIcon from "./ThumbsUpIcon";
+import ThumbsDownIcon from "./ThumbsDownIcon";
 
 interface MessageBubbleProps {
   message: Message;
@@ -27,14 +29,25 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         ) : (
           <Box className={styles.messageContent} display="flex" gap="xs">
             <ResearchAssistantIcon />
-            <Box display="flex" flexDir="column" gap="m">
+            <Box display="flex" flexDir="column" gap="12px">
               <Box>
                 <Text color="section.research.primary" isBold noSpace>
                   Virtual Research Assistant:
                 </Text>
                 {message.data.content}
               </Box>
-              <Text size="caption" color="ui.gray.semi-dark" noSpace>AI-generated. Verify results.</Text>
+              <Flex alignItems="center" justifyContent="space-between">
+                <Text size="caption" color="ui.gray.semi-dark" noSpace>AI-generated. Verify results.</Text>
+                <Flex gap="12px">
+                  {/* TODO: Add functionality for thumbs up/down buttons */}
+                  <Button id="thumbs-up-button" buttonType="text" aria-label="Thumbs up" padding="0" minWidth="18px">
+                    <ThumbsUpIcon />
+                  </Button>
+                  <Button id="thumbs-down-button" buttonType="text" aria-label="Thumbs down" padding="0" minWidth="18px">
+                    <ThumbsDownIcon />
+                  </Button>
+                </Flex>
+              </Flex>
             </Box>
           </Box>
         )}
