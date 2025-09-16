@@ -47,4 +47,6 @@ const HeroSection: React.ForwardRefExoticComponent<
     </SectionContainer>
 ));
 
+HeroSection.displayName = "HeroSection";
+
 export default HeroSection;

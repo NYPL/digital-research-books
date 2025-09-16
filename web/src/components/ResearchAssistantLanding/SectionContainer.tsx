@@ -38,4 +38,6 @@ const SectionContainer: React.ForwardRefExoticComponent<
     )
 );
 
+SectionContainer.displayName = "SectionContainer";
+
 export default SectionContainer;

@@ -1,4 +1,4 @@
-import { Box, Button, Text } from "@nypl/design-system-react-components";
+import { Button, Text } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
 import { forwardRef } from "react";
 import SectionContainer from "./SectionContainer";
@@ -47,5 +47,7 @@ const HelpSection: React.ForwardRefExoticComponent<
         </SectionContainer>
     );
 });
+
+HelpSection.displayName = "HeroSection";
 
 export default HelpSection;
