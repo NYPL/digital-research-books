@@ -1,33 +1,28 @@
 import { Box, Heading } from "@nypl/design-system-react-components";
+import SectionContainer from "./SectionContainer";
 
 const FocusedResearchSection: React.FC = () => {
     return (
-        <Box backgroundColor="ui.bg.default" paddingX="xs">
-            <Box
-                paddingY="xxl"
+        <SectionContainer
+            backgroundColor="ui.bg.default"
+            color="section.research.secondary"
+        >
+            <Heading
+                level="h2"
+                size="heading3"
+                fontWeight="semibold"
                 color="section.research.secondary"
-                textAlign="center"
-                margin="0 auto"
-                maxWidth="1280px"
-                width="100%"
+                marginBottom="l"
             >
-                <Heading
-                    level="h2"
-                    size="heading3"
-                    fontWeight="semibold"
-                    color="section.research.secondary"
-                    marginBottom="l"
-                >
-                    Do focused research with smart tools
-                </Heading>
-                <Box
-                    width="1280px"
-                    height="580px"
-                    backgroundColor="section.research.secondary"
-                    borderRadius="8px"
-                ></Box>
-            </Box>
-        </Box>
+                Do focused research with smart tools
+            </Heading>
+            <Box
+                width="1280px"
+                height="580px"
+                backgroundColor="section.research.secondary"
+                borderRadius="8px"
+            ></Box>
+        </SectionContainer>
     );
 };
 

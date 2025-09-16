@@ -1,8 +1,12 @@
 import { Box, Icon } from "@nypl/design-system-react-components";
 import React from "react";
 
-const ResearchAssistantIcon: React.FC<{ inCircle?: boolean }> = ({
-    inCircle,
+interface ResearchAssistantIconProps {
+    inCircle?: boolean;
+}
+
+const ResearchAssistantIcon: React.FC<ResearchAssistantIconProps> = ({
+    inCircle = false,
 }) => {
     const svgIcon = (
         <svg

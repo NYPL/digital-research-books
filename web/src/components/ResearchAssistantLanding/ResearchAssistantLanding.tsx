@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Box } from "@nypl/design-system-react-components";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
@@ -11,6 +11,9 @@ import FaqSection from "./FaqSection";
 import HelpSection from "./HelpSection";
 
 const ResearchAssistantLanding: React.FC = () => {
+    const heroSectionRef = useRef<HTMLDivElement>(null);
+    const helpSectionRef = useRef<HTMLDivElement>(null);
+
     return (
         <>
             <DrbBreakout
@@ -22,12 +25,12 @@ const ResearchAssistantLanding: React.FC = () => {
                 <ResearchAssistantNav />
             </DrbBreakout>
             <Box display="flex" flexDir="column">
-                <HeroSection />
+                <HeroSection ref={heroSectionRef} helpSectionRef={helpSectionRef} />
                 <FeaturesSection />
                 <AccessSection />
                 <FocusedResearchSection />
                 <FaqSection />
-                <HelpSection />
+                <HelpSection ref={helpSectionRef} heroSectionRef={heroSectionRef} />
             </Box>
         </>
     );

@@ -11,18 +11,22 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import ResearchAssistantSendIcon from "../ResearchAssistant/ResearchAssistantSendIcon";
 
-const SearchSection: React.FC = () => {
+interface SearchSectionProps {
+    helpSectionRef: React.RefObject<HTMLDivElement>;
+}
+
+const SearchSection: React.FC<SearchSectionProps> = ({ helpSectionRef }) => {
     const router = useRouter();
     const [searchInput, setSearchInput] = useState("");
 
     const onSubmit = (query: string) => {
-        sessionStorage.setItem("researchAssistantInitialMessage", query.trim());
+        sessionStorage.setItem("researchAssistantInitialMessage", query);
         router.push("/research-assistant");
     };
 
     const handleLocalSearchSubmit = () => {
-        if (searchInput.trim()) {
-            onSubmit(searchInput.trim());
+        if (searchInput) {
+            onSubmit(searchInput);
         }
     };
 
@@ -56,7 +60,7 @@ const SearchSection: React.FC = () => {
                 >
                     <TextInput
                         value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
+                        onChange={(e) => setSearchInput(e.target.value.trim())}
                         placeholder="What research topic can I help you explore today?"
                         id="message-input"
                         labelText={""}
@@ -127,12 +131,7 @@ const SearchSection: React.FC = () => {
                 buttonType="secondary"
                 margin="0 auto"
                 borderWidth="2px"
-                onClick={() => {
-                    const featuresSectionElement = document.getElementById("features-section");
-                    if (featuresSectionElement) {
-                        featuresSectionElement.scrollIntoView({ behavior: "smooth" });
-                    }
-                }}
+                onClick={() => helpSectionRef.current?.scrollIntoView({ behavior: "smooth" })}
             >
                 Learn more ↓
             </Button>

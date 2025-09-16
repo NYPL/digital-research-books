@@ -1,8 +1,12 @@
 import { Icon } from "@nypl/design-system-react-components";
 import React from "react";
 
-const ResearchAssistantSendIcon: React.FC<{ isDisabled?: boolean }> = ({
-    isDisabled,
+interface ResearchAssistantSendIconProps {
+    isDisabled?: boolean;
+}
+
+const ResearchAssistantSendIcon: React.FC<ResearchAssistantSendIconProps> = ({
+    isDisabled = false,
 }) => {
     return (
         <Icon

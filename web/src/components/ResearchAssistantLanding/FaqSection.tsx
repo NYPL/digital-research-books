@@ -1,15 +1,14 @@
 import {
     Accordion,
-    AccordionTypes,
     Box,
     Heading,
     Text,
 } from "@nypl/design-system-react-components";
+import SectionContainer from "./SectionContainer";
 
 const FaqSection: React.FC = () => {
     const accordionData = [
         {
-            accordionType: "default" as AccordionTypes,
             label:
                 "What types of content does the Virtual Research Assistant search over?",
             panel: (
@@ -34,31 +33,26 @@ const FaqSection: React.FC = () => {
             ),
         },
         {
-            accordionType: "default" as AccordionTypes,
             label:
                 "How accurate are the answers provided by the Virtual Research Assistant?",
             panel: <Box></Box>,
         },
         {
-            accordionType: "default" as AccordionTypes,
             label:
                 "Will my prompts be used to train the Virtual Research Assistant's model?",
             panel: <Box></Box>,
         },
         {
-            accordionType: "default" as AccordionTypes,
             label:
                 "Will my information and data remain private and secure when I use the Virtual Research Assistant?",
             panel: <Box></Box>,
         },
         {
-            accordionType: "default" as AccordionTypes,
             label:
                 "Where can I can learn more about this project and the New York Public Library's use of AI?",
             panel: <Box></Box>,
         },
         {
-            accordionType: "default" as AccordionTypes,
             label:
                 "Do I need an NYPL library card to use the Virtual Research Assistant?",
             panel: <Box></Box>,
@@ -66,31 +60,23 @@ const FaqSection: React.FC = () => {
     ];
 
     return (
-        <Box backgroundColor="section.research.primary" paddingX="xs">
-            <Box
-                paddingY="xxl"
-                textAlign="left"
-                margin="0 auto"
-                maxWidth="1280px"
-                width="100%"
+        <SectionContainer backgroundColor="section.research.primary">
+            <Heading
+                level="h2"
+                size="heading3"
+                fontWeight="semibold"
+                color="ui.white"
+                marginBottom="l"
+                textAlign="center"
             >
-                <Heading
-                    level="h2"
-                    size="heading3"
-                    fontWeight="semibold"
-                    color="ui.white"
-                    marginBottom="l"
-                    textAlign="center"
-                >
-                    Frequently asked questions
-                </Heading>
-                <Accordion
-                    backgroundColor="ui.white"
-                    id="faq-accordion"
-                    accordionData={accordionData}
-                />
-            </Box>
-        </Box>
+                Frequently asked questions
+            </Heading>
+            <Accordion
+                backgroundColor="ui.white"
+                id="faq-accordion"
+                accordionData={accordionData}
+            />
+        </SectionContainer>
     );
 };
 

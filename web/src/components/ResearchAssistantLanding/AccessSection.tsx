@@ -1,4 +1,5 @@
 import { Box, Heading, Text } from "@nypl/design-system-react-components";
+import SectionContainer from "./SectionContainer";
 
 const AccessSection: React.FC = () => {
     const features = [
@@ -25,68 +26,59 @@ const AccessSection: React.FC = () => {
     ];
 
     return (
-        <Box backgroundColor="section.research.primary" paddingX="xs">
-            <Box
-                paddingY="xxl"
+        <SectionContainer backgroundColor="section.research.primary">
+            <Heading
+                level="h2"
+                size="heading3"
+                fontWeight="semibold"
                 color="ui.white"
-                textAlign="center"
-                margin="0 auto"
-                maxWidth="1280px"
-                width="100%"
+                marginBottom="l"
             >
-                <Heading
-                    level="h2"
-                    size="heading3"
-                    fontWeight="semibold"
-                    color="ui.white"
-                    marginBottom="l"
-                >
-                    Access and engage with scholarly e-books in minutes
-                </Heading>
-                <Box
-                    display="grid"
-                    gridTemplateColumns="repeat(4, 1fr)"
-                    gridTemplateRows="auto"
-                    gap="xl"
-                >
-                    {features.map((feature, index) => (
-                        <Box
-                            key={index}
-                            gridColumn={index + 1}
-                            display="grid"
-                            gridTemplateColumns="1fr"
-                            gridTemplateRows="auto auto 1fr"
-                            justifyItems="center"
-                            textAlign="center"
-                            gap="s"
-                            backgroundColor="section.research.secondary"
-                            borderRadius="8px"
-                            paddingX="s"
-                            paddingBottom="s"
+                Access and engage with scholarly e-books in minutes
+            </Heading>
+            <Box
+                display="grid"
+                gridTemplateColumns="repeat(4, 1fr)"
+                gridTemplateRows="auto"
+                gap="xl"
+            >
+                {features.map((feature, index) => (
+                    <Box
+                        key={index}
+                        gridColumn={index + 1}
+                        display="grid"
+                        gridTemplateColumns="1fr"
+                        gridTemplateRows="auto auto 1fr"
+                        justifyItems="center"
+                        textAlign="center"
+                        gap="s"
+                        backgroundColor="section.research.secondary"
+                        borderRadius="8px"
+                        paddingX="s"
+                        paddingBottom="s"
+                    >
+                        <Text
+                            gridRow="2"
+                            size="body1"
+                            fontWeight="medium"
+                            color="ui.white"
+                            noSpace
                         >
-                            <Text
-                                gridRow="2"
-                                size="body1"
-                                fontWeight="medium"
-                                color="ui.white"
-                                noSpace
-                            >
-                                {feature.title}
-                            </Text>
-                            <Box
-                                gridRow="3"
-                                fontSize="body2"
-                                fontWeight="medium"
-                                width="100%"
-                                height="200px"
-                                borderRadius="8px"
-                                backgroundColor="rgba(0, 131, 138, 0.20)"
-                            ></Box>
-                        </Box>
-                    ))}
-                </Box>
+                            {feature.title}
+                        </Text>
+                        <Box
+                            gridRow="3"
+                            fontSize="body2"
+                            fontWeight="medium"
+                            width="100%"
+                            height="200px"
+                            borderRadius="8px"
+                            backgroundColor="rgba(0, 131, 138, 0.20)"
+                        ></Box>
+                    </Box>
+                ))}
             </Box>
-        </Box>
+        </SectionContainer>
     );
 };
 
