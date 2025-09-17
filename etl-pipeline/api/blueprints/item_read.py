@@ -8,6 +8,7 @@ from .items import items_blueprint
 import file_conversion.pdfs.mets_parser as mets_parser
 from managers import DBManager, S3Manager
 from model import Item, Record
+from processes.grin.unpack import GRINUnpackService
 
 RESPONSE_TYPE = "itemRead"
 
@@ -41,35 +42,33 @@ def item_read(item_id, page_id):
     response = storage_manager.client.list_objects_v2(Bucket=bucket, Prefix=prefix)
     files = [obj["Key"] for obj in response.get("Contents", [])]
 
-    ocr_key = next((f for f in files if f.endswith("html")), None)
-    image_key = next(
-        (
-            f
-            for f in files
-            if f.lower().endswith((".png", ".jpg", ".jpeg", ".tiff", ".tif", ".jp2"))
-        ),
-        None,
-    )
-
-    if not ocr_key or not image_key:
-        return APIUtils.formatResponseObject(
-            404, RESPONSE_TYPE, {"message": "Page not found"}
-        )
+    ocr_key, image_key = _find_files(files)
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        ocr_path = os.path.join(tmpdir, os.path.basename(ocr_key))
-        image_path = os.path.join(tmpdir, os.path.basename(image_key))
+        if not ocr_key or not image_key:
+            unpack_service = GRINUnpackService(bucket)
+            unpacked_files = unpack_service.unpack_barcode_package(barcode)
+            ocr_key, image_key = _find_files(unpacked_files.keys(), page_id=page_id)
 
-        storage_manager.client.download_file(bucket, ocr_key, ocr_path)
-        storage_manager.client.download_file(bucket, image_key, image_path)
+            if not ocr_key or not image_key:
+                return APIUtils.formatResponseObject(
+                    404, RESPONSE_TYPE, {"message": "Page not found"}
+                )
 
-        pdf_path = os.path.join(tmpdir, f"{page_id}.pdf")
+            ocr_path = os.path.join(tmpdir, os.path.basename(ocr_key))
+            image_path = os.path.join(tmpdir, os.path.basename(image_key))
 
-        hocr_transform = HocrTransform(hocr_filename=ocr_path, dpi=300)
-        hocr_transform.to_pdf(out_filename=pdf_path, image_filename=image_path)
+            with open(ocr_path, "wb") as f:
+                f.write(unpacked_files[ocr_key])
+            with open(image_path, "wb") as f:
+                f.write(unpacked_files[image_key])
+        else:
+            ocr_path = os.path.join(tmpdir, os.path.basename(ocr_key))
+            image_path = os.path.join(tmpdir, os.path.basename(image_key))
+            storage_manager.client.download_file(bucket, ocr_key, ocr_path)
+            storage_manager.client.download_file(bucket, image_key, image_path)
 
-        with open(pdf_path, "rb") as f:
-            pdf_data = f.read()
+        pdf_data = _create_pdf_from_paths(ocr_path, image_path, page_id)
 
     return APIUtils.formatResponseObject(
         200,
@@ -82,3 +81,33 @@ def item_read(item_id, page_id):
             "nextPages": next_pages,
         },
     )
+
+
+def _create_pdf_from_paths(ocr_path, image_path, page_id):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        pdf_path = os.path.join(tmpdir, f"{page_id}.pdf")
+        hocr_transform = HocrTransform(hocr_filename=ocr_path, dpi=300)
+        hocr_transform.to_pdf(out_filename=pdf_path, image_filename=image_path)
+        with open(pdf_path, "rb") as f:
+            return f.read()
+
+
+def _find_files(file_list, page_id=None):
+    ocr_key = next(
+        (
+            f
+            for f in file_list
+            if f.endswith("html") and (page_id is None or page_id in f)
+        ),
+        None,
+    )
+    image_key = next(
+        (
+            f
+            for f in file_list
+            if f.lower().endswith((".png", ".jpg", ".jpeg", ".tiff", ".tif", ".jp2"))
+            and (page_id is None or page_id in f)
+        ),
+        None,
+    )
+    return ocr_key, image_key
