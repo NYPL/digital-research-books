@@ -48,6 +48,6 @@ const HelpSection: React.ForwardRefExoticComponent<
     );
 });
 
-HelpSection.displayName = "HeroSection";
+HelpSection.displayName = "HelpSection";
 
 export default HelpSection;
