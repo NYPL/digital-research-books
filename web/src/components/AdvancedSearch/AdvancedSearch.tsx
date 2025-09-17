@@ -11,7 +11,7 @@ import {
   breadcrumbTitles,
   inputTermRows,
 } from "~/src/constants/labels";
-import FilterYears from "~/src/components/FilterYears/FilterYears";
+import FilterYears from "~/src/components/SearchFilters/FilterYears";
 import {
   Filter,
   SearchQuery,
@@ -30,8 +30,8 @@ import {
   TemplateAppContainer,
   TextInput,
 } from "@nypl/design-system-react-components";
-import LanguageAccordion from "../LanguageAccordion/LanguageAccordion";
-import FilterBookFormat from "../FilterBookFormat/FilterBookFormat";
+import FilterLanguage from "../SearchFilters/FilterLanguage";
+import FilterBookFormat from "../SearchFilters/FilterBookFormat";
 import { FacetItem, Query } from "~/src/types/DataModel";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import filterFields from "~/src/constants/filters";
@@ -254,7 +254,7 @@ const AdvancedSearch: React.FC<{
       </FormField>
       <FormField>
         {languages && languages.length > 0 && (
-          <LanguageAccordion
+          <FilterLanguage
             languages={languages}
             showCount={false}
             selectedLanguages={languageFilters}

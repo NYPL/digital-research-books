@@ -24,7 +24,7 @@ import {
 import { sortMap } from "~/src/constants/sorts";
 import ResultsList from "../ResultsList/ResultsList";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
-import Filters from "../ResultsFilters/ResultsFilters";
+import Filters from "../SearchFilters/ResultsFilters";
 import ResultsSorts from "../ResultsSorts/ResultsSorts";
 import SearchHeader from "../SearchHeader/SearchHeader";
 import { ApiWork } from "~/src/types/WorkQuery";
@@ -191,7 +191,7 @@ const SearchResults: React.FC<{
             width: { base: "100%", md: "fit-content" },
           }}
         >
-          Refine results
+          Filter results
         </Button>
         <Modal
           bodyContent={
@@ -218,9 +218,6 @@ const SearchResults: React.FC<{
                 />
               </Box>
               <form name="filterForm">
-                <Heading level="h2" size="heading3" id="filter-desktop-header">
-                  Refine Results
-                </Heading>
                 <Filters
                   filters={searchQuery.filters}
                   showAll={searchQuery.showAll}
@@ -298,19 +295,14 @@ const SearchResults: React.FC<{
   const contentSidebarElement = (
     <Form
       id="search-filter-form"
-      bg="ui.gray.x-light-cool"
-      p="xs"
-      gap="grid.xs"
+      bgColor="ui.gray.x-light-cool"
+      border="1px solid"
+      borderColor="ui.border.default"
+      borderRadius="8px"
       display={{ base: "none", md: "block" }}
+      gap="grid.s"
+      padding="s"
     >
-      <Heading
-        level="h2"
-        size="heading3"
-        id="filter-desktop-header"
-        __css={{ m: "0" }}
-      >
-        Refine Results
-      </Heading>
       <Filters
         filters={searchQuery.filters}
         showAll={searchQuery.showAll}
