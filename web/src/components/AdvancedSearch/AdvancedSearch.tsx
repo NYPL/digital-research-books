@@ -27,6 +27,7 @@ import {
   FormRow,
   Heading,
   HelperErrorText,
+  SelectedItems,
   TemplateAppContainer,
   TextInput,
 } from "@nypl/design-system-react-components";
@@ -73,11 +74,11 @@ const AdvancedSearch: React.FC<{
     setLanguages(
       previousLanguages
         ? previousLanguages.data.map((language) => {
-            return {
-              value: language.language,
-              count: language.count,
-            };
-          })
+          return {
+            value: language.language,
+            count: language.count,
+          };
+        })
         : []
     );
   }, [previousLanguages]);
@@ -147,29 +148,28 @@ const AdvancedSearch: React.FC<{
     setQueries([...allQueries]);
   };
 
-  const onLanguageChange = (e, language) => {
-    setLanguageFilters([
-      ...(e.target.checked
-        ? [
-            ...languageFilters,
-            { field: filterFields.language, value: language },
-          ]
-        : languageFilters.filter((filter) => {
-            return filter.value !== language;
-          })),
-    ]);
+  const onLanguageChange = (languages: SelectedItems) => {
+    const multiSelectId = "languages-multiselect";
+    const selectedLanguages = languages[multiSelectId]?.items || [];
+    const languageFilters = selectedLanguages
+      ? selectedLanguages.map((language) => ({
+        field: filterFields.language,
+        value: language,
+      }))
+      : [];
+    setLanguageFilters(languageFilters);
   };
 
-  const onBookFormatChange = (e, format) => {
-    const newFilters = [
-      ...(e.target.checked
-        ? [...formatFilters, { field: filterFields.format, value: format }]
-        : formatFilters.filter((filter) => {
-            return filter.value !== format;
-          })),
-    ];
-
-    setFormatFilters(newFilters);
+  const onBookFormatChange = (formats) => {
+    const multiSelectId = "format-multiselect";
+    const selectedFormats = formats[multiSelectId]?.items || [];
+    const formatFilters = selectedFormats
+      ? selectedFormats.map((format) => ({
+        field: filterFields.format,
+        value: format,
+      }))
+      : [];
+    setFormatFilters(formatFilters);
   };
 
   const onDateChange = (
@@ -258,7 +258,7 @@ const AdvancedSearch: React.FC<{
             languages={languages}
             showCount={false}
             selectedLanguages={languageFilters}
-            onLanguageChange={(e, language) => onLanguageChange(e, language)}
+            onLanguageChange={(languages) => onLanguageChange(languages)}
           />
         )}
       </FormField>
@@ -277,8 +277,8 @@ const AdvancedSearch: React.FC<{
       <FormField>
         <FilterBookFormat
           selectedFormats={formatFilters}
-          onFormatChange={(e, format) => {
-            onBookFormatChange(e, format);
+          onFormatChange={(formats) => {
+            onBookFormatChange(formats);
           }}
         />
       </FormField>
