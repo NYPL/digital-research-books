@@ -66,7 +66,7 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder={placeholderValue}
-          disabled={isDisabled}
+          isDisabled={isDisabled}
           id="chat-input"
           autoComplete="off"
           labelText={""}

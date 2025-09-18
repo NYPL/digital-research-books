@@ -37,7 +37,6 @@ export const CollectionItemCard: React.FC<{
       layout="row"
       isBordered
       isAlignedRightActions
-      p="s"
     >
       <CardHeading
         level="h5"
@@ -51,7 +50,7 @@ export const CollectionItemCard: React.FC<{
       >
         <EditionYear links={links} published={published} />
       </CardHeading>
-      <CardContent>
+      <CardContent padding="s">
         <PublisherAndLocation
           pubPlace={locationCreated}
           publisher={publisher}

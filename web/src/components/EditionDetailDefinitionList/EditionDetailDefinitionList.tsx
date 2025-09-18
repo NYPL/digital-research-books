@@ -11,7 +11,7 @@ const getPublishersList = (publishers: Agent[]): JSX.Element => {
     );
   }
   return (
-    <List type="ul" noStyling>
+    <List variant="ul" noStyling>
       {publishers.map((publisher: Agent) => {
         return <li key={publisher.name}>{publisher.name}</li>;
       })}
@@ -25,7 +25,7 @@ export const EditionDetailDefinitionList: React.FC<{ edition: ApiEdition }> = ({
   return (
     <List
       title="Details"
-      type="dl"
+      variant="dl"
       id="details-list"
       sx={{
         h2: {
@@ -63,7 +63,7 @@ export const EditionDetailDefinitionList: React.FC<{ edition: ApiEdition }> = ({
           <>
             <dt>Languages</dt>
             <dd>
-              <List type="ul" noStyling>
+              <List variant="ul" noStyling>
                 {edition.languages.map((lang) => {
                   return (
                     <li key={`language-${lang.language}`}>{lang.language}</li>

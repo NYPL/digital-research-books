@@ -2,7 +2,10 @@ import React from "react";
 import {
   Box,
   Heading,
-  TemplateAppContainer,
+  Template,
+  TemplateBreakout,
+  TemplateContent,
+  TemplateMain,
 } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
@@ -18,9 +21,9 @@ const About: React.FC = () => {
     <DrbBreakout breadcrumbsData={[{ url: "/about", text: "About" }]} />
   );
 
-  const contentPrimaryElement = (
+  const contentElement = (
     <Box paddingBottom="l">
-      <Heading level="h1">
+      <Heading level="h1" marginBottom="s">
         <span>
           <span className="rn-section-title__emphasis">
             Digital Research Books
@@ -63,6 +66,7 @@ const About: React.FC = () => {
         level="h2"
         id="sources-and-data-heading"
         text="Sources and Data"
+        marginBottom="s"
       />
 
       <p>
@@ -85,6 +89,7 @@ const About: React.FC = () => {
         level="h2"
         id="beta-testing-heading"
         text="What does Beta Testing mean?"
+        marginBottom="s"
       />
 
       <p>
@@ -116,10 +121,12 @@ const About: React.FC = () => {
     </Box>
   );
   return (
-    <TemplateAppContainer
-      breakout={breakoutElement}
-      contentPrimary={contentPrimaryElement}
-    />
+    <Template variant="narrow">
+      <TemplateBreakout>{breakoutElement}</TemplateBreakout>
+      <TemplateMain>
+        <TemplateContent>{contentElement}</TemplateContent>
+      </TemplateMain>
+    </Template>
   );
 };
 

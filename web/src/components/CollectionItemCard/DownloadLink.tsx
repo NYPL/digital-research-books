@@ -38,7 +38,7 @@ const DownloadLink: React.FC<{ author: string | undefined; links: OpdsLink[]; ti
     return (
       <Link
         to={`${formattedUrl}`}
-        linkType="buttonSecondary"
+        linkVariant="buttonSecondary"
         onClick={trackDownloadCta}
         aria-label={`${title} Download PDF`}
       >

@@ -20,7 +20,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     >
       <Box className={bubbleClasses}>
         {isUser ? (
-          <Text className={styles.messageContent} noSpace>
+          <Text className={styles.messageContent}>
             <b>You: </b>
             {message.data.content}
           </Text>
@@ -29,12 +29,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
             <ResearchAssistantIcon />
             <Box display="flex" flexDir="column" gap="m">
               <Box>
-                <Text color="section.research.primary" isBold noSpace>
+                <Text color="section.research.primary" isBold>
                   Virtual Research Assistant:
                 </Text>
                 {message.data.content}
               </Box>
-              <Text size="caption" color="ui.gray.semi-dark" noSpace>AI-generated. Verify results.</Text>
+              <Text size="caption" color="ui.gray.semi-dark">AI-generated. Verify results.</Text>
             </Box>
           </Box>
         )}

@@ -4,7 +4,7 @@ import { StatusBadge } from "@nypl/design-system-react-components";
 const PublicDomainBadge: React.FC = () => {
   return (
     <StatusBadge
-      type="positive"
+      variant="positive"
       width={{ base: "100%", md: "fit-content" }}
     >
       PUBLIC DOMAIN

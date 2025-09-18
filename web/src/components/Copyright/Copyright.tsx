@@ -4,7 +4,10 @@ import {
   Box,
   Heading,
   List,
-  TemplateAppContainer,
+  Template,
+  TemplateBreakout,
+  TemplateContent,
+  TemplateMain,
 } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
@@ -13,22 +16,22 @@ const Copyright: React.FC = () => {
   const breakoutElement = (
     <DrbBreakout breadcrumbsData={[{ url: "/copyright", text: "Copyright" }]} />
   );
-  const contentPrimaryElement = (
+  const contentElement = (
     <Box paddingBottom="l">
-      <Heading level="h1">Copyright Explanations</Heading>
-      <Heading level="h2">Public Domain</Heading>
+      <Heading level="h1" marginBottom="s">Copyright Explanations</Heading>
+      <Heading level="h2" marginBottom="s">Public Domain</Heading>
       <p>
         Works in the public domain have no copyright (in most cases because the
         copyright term has expired) and you are free to use, adapt, share, and
         distribute the work in any way you wish.
       </p>
-      <Heading level="h2">Public Domain (US Only)</Heading>
+      <Heading level="h2" marginBottom="s">Public Domain (US Only)</Heading>
       <p>
         Works may be in the public domain in the Unites States (where you can
         use and distribute them without restriction), but still subject to
         copyright laws and restrictions outside the United States.
       </p>
-      <Heading level="h2">Creative Commons Licenses</Heading>
+      <Heading level="h2" marginBottom="s">Creative Commons Licenses</Heading>
       <p>
         <Link to="https://creativecommons.org/">Creative Commons licenses</Link>{" "}
         allow rights-holders to grant people the right to freely use their
@@ -36,7 +39,7 @@ const Copyright: React.FC = () => {
         There are several licenses with different combinations of four basic
         clauses:
       </p>
-      <List type="dl">
+      <List variant="dl">
         <dt>BY</dt>
 
         <dd>
@@ -72,7 +75,7 @@ const Copyright: React.FC = () => {
         Digital Research Books Beta. Refer to linked license descriptions for
         specifics:
       </p>
-      <List type="ul">
+      <List variant="ul" marginBottom="s">
         <li>
           <Link to="https://creativecommons.org/licenses/by/3.0/">
             Attribution 3.0 Unported (CC BY 3.0)
@@ -141,7 +144,7 @@ const Copyright: React.FC = () => {
           </Link>
         </li>
       </List>
-      <Heading level="h2">CC0 Public Domain Dedication</Heading>
+      <Heading level="h2" marginBottom="s">CC0 Public Domain Dedication</Heading>
       <p>
         The{" "}
         <Link to="https://creativecommons.org/publicdomain/zero/1.0/">
@@ -151,7 +154,7 @@ const Copyright: React.FC = () => {
         adapt, share, and distribute the work as if it were in the Public
         domain.
       </p>
-      <Heading level="h2">GNU General Public License</Heading>
+      <Heading level="h2" marginBottom="s">GNU General Public License</Heading>
       <p>
         For a work licensed under the{" "}
         <Link to="http://www.gnu.org/licenses/gpl.html">
@@ -160,7 +163,7 @@ const Copyright: React.FC = () => {
         , you may copy, distribute and modify the work as long as any
         modifications are also made available under the GPL.
       </p>
-      <Heading level="h2">In Copyright</Heading>
+      <Heading level="h2" marginBottom="s">In Copyright</Heading>
       <p>
         Works that are In Copyright are protected by copyright and/or related
         rights. You are free to use this Item in any way that is permitted by
@@ -170,10 +173,12 @@ const Copyright: React.FC = () => {
     </Box>
   );
   return (
-    <TemplateAppContainer
-      breakout={breakoutElement}
-      contentPrimary={contentPrimaryElement}
-    />
+    <Template variant="narrow">
+      <TemplateBreakout>{breakoutElement}</TemplateBreakout>
+      <TemplateMain>
+        <TemplateContent>{contentElement}</TemplateContent>
+      </TemplateMain>
+    </Template>
   );
 };
 

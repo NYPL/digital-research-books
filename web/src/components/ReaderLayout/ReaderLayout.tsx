@@ -168,7 +168,7 @@ const ReaderLayout: React.FC<{
       {isEmbed && (
         <Layout>
           <Breadcrumbs
-            breadcrumbsType="research"
+            variant="research"
             breadcrumbsData={[
               ...defaultBreadcrumbs,
               {

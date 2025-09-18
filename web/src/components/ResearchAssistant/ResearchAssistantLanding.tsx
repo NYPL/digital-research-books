@@ -90,7 +90,7 @@ const ResearchAssistantLanding: React.FC = () => {
                     >
                         <Heading level="h2" color="ui.white">
                             <Box display="flex" gap="s" alignItems="center">
-                                <Text noSpace>
+                                <Text>
                                     Introducing the NYPL Virtual Research Assistant
                                 </Text>
                                 <Box display="inline">
@@ -134,7 +134,7 @@ const ResearchAssistantLanding: React.FC = () => {
                                 key={index}
                                 onClick={() => handleSuggestionClick(suggestion)}
                                 id={`suggestion-${index}`}
-                                buttonType="secondary"
+                                variant="secondary"
                                 backgroundColor="ui.white"
                                 gap="xs"
                                 alignItems="left"
@@ -162,7 +162,7 @@ const ResearchAssistantLanding: React.FC = () => {
                         color="ui.white"
                         borderColor="ui.white"
                         marginTop="s"
-                        buttonType="secondary"
+                        variant="secondary"
                         width="200px"
                         margin="0 auto"
                     >
@@ -182,6 +182,7 @@ const ResearchAssistantLanding: React.FC = () => {
                         level="h2"
                         size="heading3"
                         color="section.research.secondary"
+                        marginBottom="s"
                     >
                         Get more out of your research journey with the power of AI
                     </Heading>
@@ -199,6 +200,7 @@ const ResearchAssistantLanding: React.FC = () => {
                                     color="section.research.secondary"
                                     gridColumn={index + 1}
                                     gridRow="1"
+                                    marginBottom="s"
                                 >
                                     {feature.title}
                                 </Heading>

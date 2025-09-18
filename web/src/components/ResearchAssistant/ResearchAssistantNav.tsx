@@ -31,14 +31,13 @@ const ResearchAssistantNav: React.FC = () => {
                         size="body1"
                         color="section.research.secondary"
                         isBold
-                        noSpace
                     >
                         Virtual Research Assistant
                     </Text>
                 </Box>
                 <Box display="flex" alignItems="center">
                     <Icon name="search" align="left" size="large" />
-                    <Text noSpace>Keyword search</Text>
+                    <Text>Keyword search</Text>
                 </Box>
             </Box>
         </Box>

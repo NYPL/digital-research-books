@@ -2,130 +2,128 @@
 
 exports[`renders about unchanged 1`] = `
 <div
-  class="css-1u8qly9"
+  class="css-1xdhyk6"
 >
   <div
     class="css-0"
   >
-    <header
-      class="css-0"
+    <nav
+      aria-label="Breadcrumb"
+      class="chakra-breadcrumb css-1xdhyk6"
+      data-testid="ds-breadcrumbs"
     >
-      <nav
-        aria-label="Breadcrumb"
-        class="chakra-breadcrumb css-1xdhyk6"
+      <ol
+        class="chakra-breadcrumb__list css-70qvj9"
       >
-        <ol
-          class="chakra-breadcrumb__list css-70qvj9"
+        <li
+          class="chakra-breadcrumb__list-item css-18biwo"
         >
-          <li
-            class="chakra-breadcrumb__list-item css-18biwo"
+          <a
+            class="chakra-breadcrumb__link css-0"
+            href="https://www.nypl.org"
           >
-            <a
-              class="chakra-breadcrumb__link css-0"
-              href="https://www.nypl.org"
-            >
-              <span
-                class="breadcrumb-label"
-              >
-                Home
-              </span>
-            </a>
             <span
-              class="css-t4q1nq"
-              role="presentation"
+              class="ds-breadcrumbs-link-label"
             >
-              /
+              Home
             </span>
-          </li>
-          <li
-            class="chakra-breadcrumb__list-item css-18biwo"
+          </a>
+          <span
+            class="css-t4q1nq"
+            role="presentation"
           >
-            <a
-              class="chakra-breadcrumb__link css-0"
-              href="https://www.nypl.org/research"
-            >
-              <span
-                class="breadcrumb-label"
-              >
-                Research
-              </span>
-            </a>
+            /
+          </span>
+        </li>
+        <li
+          class="chakra-breadcrumb__list-item css-18biwo"
+        >
+          <a
+            class="chakra-breadcrumb__link css-0"
+            href="https://www.nypl.org/research"
+          >
             <span
-              class="css-t4q1nq"
-              role="presentation"
+              class="ds-breadcrumbs-link-label"
             >
-              /
+              Research
             </span>
-          </li>
-          <li
-            class="chakra-breadcrumb__list-item css-18biwo"
+          </a>
+          <span
+            class="css-t4q1nq"
+            role="presentation"
           >
-            <a
-              class="chakra-breadcrumb__link css-0"
-              href="/"
+            /
+          </span>
+        </li>
+        <li
+          class="chakra-breadcrumb__list-item css-18biwo"
+        >
+          <a
+            class="chakra-breadcrumb__link css-0"
+            href="/"
+          >
+            <svg
+              aria-hidden="true"
+              class="chakra-icon css-1vgifmd"
+              data-testid="ds-breadcrumbs-backarrow"
+              focusable="false"
+              id="undefined-ds-breadcrumbs-backarrow"
+              role="img"
+              viewBox="0 0 24 14"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <svg
-                aria-hidden="true"
-                class="chakra-icon breadcrumbs-icon css-1vgifmd"
-                focusable="false"
-                id="undefined__backarrow"
-                role="img"
-                viewBox="0 0 24 14"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <title>
-                  arrow icon
-                </title>
-                <path
-                  clip-rule="evenodd"
-                  d="M10.526 12.871L.263 1.676 1.737.324 12 11.52 22.263.324l1.474 1.352L13.474 12.87a2 2 0 01-2.948 0z"
-                  fill-rule="evenodd"
-                />
-              </svg>
-              <span
-                class="breadcrumb-label"
-              >
-                Digital Research Books Beta
-              </span>
-            </a>
+              <title>
+                arrow icon
+              </title>
+              <path
+                clip-rule="evenodd"
+                d="M10.526 12.871L.263 1.676 1.737.324 12 11.52 22.263.324l1.474 1.352L13.474 12.87a2 2 0 01-2.948 0z"
+                fill-rule="evenodd"
+              />
+            </svg>
             <span
-              class="css-t4q1nq"
-              role="presentation"
+              class="ds-breadcrumbs-link-label"
             >
-              /
+              Digital Research Books Beta
             </span>
-          </li>
-          <li
-            class="chakra-breadcrumb__list-item css-18biwo"
+          </a>
+          <span
+            class="css-t4q1nq"
+            role="presentation"
           >
-            <a
-              aria-current="page"
-              class="chakra-breadcrumb__link css-0"
-              href="/about"
+            /
+          </span>
+        </li>
+        <li
+          class="chakra-breadcrumb__list-item css-18biwo"
+        >
+          <a
+            aria-current="page"
+            class="chakra-breadcrumb__link css-0"
+            href="/about"
+          >
+            <span
+              class="ds-breadcrumbs-link-label"
             >
-              <span
-                class="breadcrumb-label"
-              >
-                About
-              </span>
-            </a>
-          </li>
-        </ol>
-      </nav>
-    </header>
+              About
+            </span>
+          </a>
+        </li>
+      </ol>
+    </nav>
   </div>
   <main
     class="css-0"
-    id="mainContent"
   >
     <div
-      class="css-0"
+      class="ds-template-content css-0"
     >
       <div
         class="css-6mo20s"
       >
         <h1
-          class="chakra-heading css-1xdhyk6"
+          class="chakra-heading css-1ays41z"
+          data-testid="ds-heading"
         >
           <span>
             <span
@@ -145,6 +143,7 @@ exports[`renders about unchanged 1`] = `
            
           <a
             class="chakra-link css-qsaw8"
+            data-testid="ds-link"
             href="/copyright"
           >
             public domain
@@ -153,6 +152,7 @@ exports[`renders about unchanged 1`] = `
            
           <a
             class="chakra-link css-qsaw8"
+            data-testid="ds-link"
             href="/copyright"
           >
             Creative Commons licences
@@ -164,6 +164,7 @@ exports[`renders about unchanged 1`] = `
            
           <a
             class="chakra-link css-qsaw8"
+            data-testid="ds-link"
             href="/work/5950e6df-9d99-42fe-8924-1116166a2acb"
           >
             Mary Wollstonecraft’s A Vindication of the Rights of Woman
@@ -171,7 +172,8 @@ exports[`renders about unchanged 1`] = `
           , many of them available digitally. We group them all together under a single search result and try to make the differences between them--years when and places where they were published, for instance--easy to understand.
         </p>
         <h2
-          class="chakra-heading css-1xdhyk6"
+          class="chakra-heading css-1ays41z"
+          data-testid="ds-heading"
           id="sources-and-data-heading"
         >
           Sources and Data
@@ -181,6 +183,7 @@ exports[`renders about unchanged 1`] = `
            
           <a
             class="chakra-link css-qsaw8"
+            data-testid="ds-link"
             href="https://www.hathitrust.org/"
           >
             HathiTrust
@@ -189,6 +192,7 @@ exports[`renders about unchanged 1`] = `
            
           <a
             class="chakra-link css-qsaw8"
+            data-testid="ds-link"
             href="https://doabooks.org/"
           >
             The Directory of Open Access Books
@@ -196,6 +200,7 @@ exports[`renders about unchanged 1`] = `
           , and 
           <a
             class="chakra-link css-qsaw8"
+            data-testid="ds-link"
             href="http://www.gutenberg.org/"
           >
             Project Gutenberg
@@ -204,6 +209,7 @@ exports[`renders about unchanged 1`] = `
            
           <a
             class="chakra-link css-qsaw8"
+            data-testid="ds-link"
             href="https://www.worldcat.org/"
           >
             WorldCat
@@ -212,6 +218,7 @@ exports[`renders about unchanged 1`] = `
            
           <a
             class="chakra-link css-qsaw8"
+            data-testid="ds-link"
             href="http://classify.oclc.org/classify2/"
           >
             Classify
@@ -219,7 +226,8 @@ exports[`renders about unchanged 1`] = `
            to make connections between different editions of the same work.
         </p>
         <h2
-          class="chakra-heading css-1xdhyk6"
+          class="chakra-heading css-1ays41z"
+          data-testid="ds-heading"
           id="beta-testing-heading"
         >
           What does Beta Testing mean?

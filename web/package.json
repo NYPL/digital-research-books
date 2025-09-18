@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@chakra-ui/react": "2.5.4",
-    "@nypl/design-system-react-components": "3.6.1",
+    "@nypl/design-system-react-components": "4.0.1",
     "@nypl/web-reader": "4.3.5",
     "@types/node": "16.11.6",
     "css-loader": "7.1.1",
