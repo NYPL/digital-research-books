@@ -7,6 +7,7 @@ import {
   TextInputRefType,
 } from "@nypl/design-system-react-components";
 import { Message } from "~/src/types/ResearchAssistant";
+import ResearchAssistantSendIcon from "./ResearchAssistantSendIcon";
 
 interface ResearchAssistantInputProps {
   onSendMessage: (text: string) => void;
@@ -61,7 +62,16 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
       // @ts-expect-error: Override gap value type
       gap="0"
     >
-      <Box display="flex" flexDir="row" gap="0">
+      <Box
+        display="flex"
+        flexDir="row"
+        gap="0"
+        border="1px solid"
+        borderColor="ui.border.default"
+        borderRadius="8px"
+        backgroundColor="ui.white"
+        paddingRight="s"
+      >
         <TextInput
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
@@ -72,13 +82,31 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
           labelText={""}
           ref={inputRef}
           flex="1"
+          sx={{
+            input: {
+              border: "none",
+              borderRadius: "8px",
+              height: "64px",
+              flexGrow: 2,
+            },
+          }}
         />
         <Button
           type="submit"
           isDisabled={isDisabled}
           id="send-chat-button"
+          backgroundColor="transparent"
+          height="64px"
+          borderRadius="8px"
+          _hover={{
+            backgroundColor: "ui.white",
+          }}
+          _disabled={{
+            backgroundColor: "ui.disabled.secondary",
+          }}
+          aria-label="Send"
         >
-          Send
+          <ResearchAssistantSendIcon isDisabled={isDisabled} />
         </Button>
       </Box>
     </Form>
