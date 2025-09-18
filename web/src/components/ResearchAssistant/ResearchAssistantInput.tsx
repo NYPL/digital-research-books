@@ -132,7 +132,7 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
               border: "none",
               borderRadius: "8px",
               height: "64px",
-              minHeight: "40px",
+              minHeight: "64px",
               maxHeight: "132px", // 6 rows
               resize: "none",
               flexGrow: 2,
