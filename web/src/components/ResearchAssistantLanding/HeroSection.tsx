@@ -29,9 +29,10 @@ const HeroSection: React.ForwardRefExoticComponent<
                 color="ui.white"
                 fontWeight="semibold"
                 size="heading2"
+                marginBottom="s"
             >
                 <Box display="flex" gap="s" alignItems="center">
-                    <Text noSpace>Introducing the NYPL Virtual Research Assistant</Text>
+                    <span>Introducing the NYPL Virtual Research Assistant</span>
                     <span>
                         <ResearchAssistantIcon inCircle={true} />
                     </span>

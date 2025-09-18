@@ -93,7 +93,7 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
         )}
         {props.backUrl && (
           <Box paddingTop="s">
-            <Link to={props.backUrl} linkVariant="backwards">
+            <Link to={props.backUrl} variant="backwards">
               Back to search results
             </Link>
           </Box>
@@ -138,7 +138,7 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
           </CardContent>
           <CardActions width="165px">
             <Link
-              linkVariant="buttonPrimary"
+              variant="buttonPrimary"
               to={"/collection/" + work.inCollections[0].uuid}
             >
               Browse Collection

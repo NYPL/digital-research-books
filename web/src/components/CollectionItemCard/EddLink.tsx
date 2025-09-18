@@ -14,7 +14,7 @@ export const EddLink: React.FC<{
         <Link
           // Url starts with www
           to={`https://${eddLink.href}`}
-          linkVariant="buttonPrimary"
+          variant="buttonPrimary"
           target="_blank"
           aria-label={`Request scan for ${title}`}
         >
@@ -27,7 +27,7 @@ export const EddLink: React.FC<{
       <>
         <Link
           to={`${LOGIN_LINK_BASE}${encodeURIComponent(window.location.href)}`}
-          linkVariant="buttonPrimary"
+          variant="buttonPrimary"
           aria-label={`Log in to request scan for ${title}`}
         >
           Log in to request scan

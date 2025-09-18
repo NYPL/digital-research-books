@@ -9,27 +9,29 @@ import {
 interface IProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   to: any;
   modifiers?: string[];
-  linkVariant?: LinkVariants;
+  variant?: LinkVariants;
   isUnderlined?: boolean;
 }
 
 const Link = ({
   children,
   to,
-  linkVariant,
+  variant,
   isUnderlined,
   "aria-label": ariaLabel,
   onClick,
+  ...rest
 }: IProps) => {
   return (
     <DSLink
       href={to}
       as={BaseLink}
-      isUnderlined={isUnderlined}
-      variant={linkVariant}
-      onClick={onClick}
       aria-label={ariaLabel}
+      isUnderlined={isUnderlined}
+      onClick={onClick}
+      variant={variant}
       __css={{ width: "100%" }}
+      {...rest}
     >
       {children}
     </DSLink>

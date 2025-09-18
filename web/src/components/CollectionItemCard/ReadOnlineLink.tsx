@@ -33,7 +33,7 @@ const ReadOnlineLink: React.FC<{  author: string | undefined; links: OpdsLink[];
       to={{
         pathname: formatUrl(readOnlineLink.href),
       }}
-      linkVariant="buttonPrimary"
+      variant="buttonPrimary"
       aria-label={`${title} Read Online`}
       onClick={trackReadOnlineClick}
     >

@@ -112,7 +112,7 @@ const Edition: React.FC<{ editionResult: EditionResult; backUrl?: string }> = (
             lineHeight="calc(1.1 * var(--nypl-fontSizes-heading-primary))"
             pl={{ md: "s" }}
           >
-            <Link to={props.backUrl} linkVariant="backwards">
+            <Link to={props.backUrl} variant="backwards">
               Back to search results
             </Link>
           </Box>
@@ -164,7 +164,7 @@ const Edition: React.FC<{ editionResult: EditionResult; backUrl?: string }> = (
           </CardContent>
           <CardActions width="165px">
             <Link
-              linkVariant="buttonPrimary"
+              variant="buttonPrimary"
               to={"/collection/" + edition.inCollections[0].uuid}
             >
               Browse Collection

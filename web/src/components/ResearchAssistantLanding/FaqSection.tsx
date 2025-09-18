@@ -13,7 +13,7 @@ const FaqSection: React.FC = () => {
                 "What types of content does the Virtual Research Assistant search over?",
             panel: (
                 <Box>
-                    <Text>
+                    <Text marginBottom="s">
                         The Virtual Research Assistant is currently in beta and searches
                         over 1 million scholarly e-books from our Research Collections to
                         formulate its responses. This includes public domain and open access
@@ -21,7 +21,7 @@ const FaqSection: React.FC = () => {
                         books owned by NYPL.
                     </Text>
 
-                    <Text noSpace>
+                    <Text>
                         In the future, the Virtual Research Assistant will expand to search
                         millions of additional scholarly e-books from our collection. It
                         will also search physical books from our Research Catalog, as well
@@ -73,6 +73,8 @@ const FaqSection: React.FC = () => {
             </Heading>
             <Accordion
                 backgroundColor="ui.white"
+                color="ui.black"
+                textAlign="left"
                 id="faq-accordion"
                 accordionData={accordionData}
             />

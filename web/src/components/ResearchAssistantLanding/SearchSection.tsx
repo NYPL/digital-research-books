@@ -4,7 +4,6 @@ import {
     TextInput,
     Button,
     Icon,
-    Text,
 } from "@nypl/design-system-react-components";
 import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
 import { useState } from "react";
@@ -101,7 +100,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ helpSectionRef }) => {
                         key={index}
                         onClick={() => handleSuggestionClick(suggestion)}
                         id={`suggestion-${index}`}
-                        buttonType="secondary"
+                        variant="secondary"
                         color="section.research.secondary"
                         backgroundColor="ui.white"
                         gap="xs"
@@ -116,7 +115,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ helpSectionRef }) => {
                         <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
                             <Box display="flex" alignItems="center" alignSelf="flex-start">
                                 <ResearchAssistantIcon />
-                                <Text noSpace>{suggestion}</Text>
+                                <span>{suggestion}</span>
                             </Box>
                             <Icon align="right" name="search" size="large" />
                         </Box>
@@ -128,7 +127,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ helpSectionRef }) => {
                 color="ui.white"
                 borderColor="ui.white"
                 marginTop="s"
-                buttonType="secondary"
+                variant="secondary"
                 margin="0 auto"
                 borderWidth="2px"
                 onClick={() => helpSectionRef.current?.scrollIntoView({ behavior: "smooth" })}

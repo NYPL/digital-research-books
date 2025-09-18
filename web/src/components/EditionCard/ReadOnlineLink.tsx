@@ -59,7 +59,7 @@ const ReadOnlineLink: React.FC<{
         ) : (
           <Link
             to={linkUrl}
-            linkVariant="buttonPrimary"
+            variant="buttonPrimary"
             aria-label={`${title} ${linkText}`}
             onClick={trackReadOnlineClick}
           >

@@ -16,7 +16,7 @@ const ViewEditionsLink: React.FC<{ work: ApiWork }> = ({ work }) => {
             query: { showAll: true, featured: previewEdition.edition_id },
             hash: "#all-editions",
           }}
-          linkVariant="standalone"
+          variant="standalone"
         >
           {`View All ${editionCount} Editions`}
         </Link>
