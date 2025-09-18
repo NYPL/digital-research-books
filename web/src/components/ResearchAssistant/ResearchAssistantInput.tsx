@@ -7,6 +7,7 @@ import {
   TextInputRefType,
 } from "@nypl/design-system-react-components";
 import { Message } from "~/src/types/ResearchAssistant";
+import ResearchAssistantSendIcon from "./ResearchAssistantSendIcon";
 
 interface ResearchAssistantInputProps {
   onSendMessage: (text: string) => void;
@@ -101,7 +102,16 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
           ))}
         </Box>
       )}
-      <Box display="flex" flexDir="row" alignItems="center" gap="0">
+      <Box
+        display="flex"
+        flexDir="row"
+        gap="0"
+        border="1px solid"
+        borderColor="ui.border.default"
+        borderRadius="8px"
+        backgroundColor="ui.white"
+        paddingRight="s"
+      >
         <TextInput
           autoComplete="off"
           disabled={isDisabled}
@@ -119,10 +129,13 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
           minHeight="40px"
           sx={{
             textarea: {
-              height: "40px",
+              border: "none",
+              borderRadius: "8px",
+              height: "64px",
               minHeight: "40px",
               maxHeight: "132px", // 6 rows
               resize: "none",
+              flexGrow: 2,
             },
           }}
         />
@@ -130,8 +143,18 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
           type="submit"
           isDisabled={isDisabled || inputText === ""}
           id="send-chat-button"
+          backgroundColor="transparent"
+          height="64px"
+          borderRadius="8px"
+          _hover={{
+            backgroundColor: "ui.white",
+          }}
+          _disabled={{
+            backgroundColor: "ui.disabled.secondary",
+          }}
+          aria-label="Send"
         >
-          Send
+          <ResearchAssistantSendIcon isDisabled={isDisabled} />
         </Button>
       </Box>
     </Form>
