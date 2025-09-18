@@ -36,7 +36,7 @@ class ItemDetailPage {
       "[aria-label='Select a search category']"
     );
     this.homepageSearchBox = page.locator("[aria-label='Item Search']");
-    this.searchButton = page.locator("#searchbar-button-search-bar");
+    this.searchButton = page.locator("#search-bar-submit-button");
     this.advancedSearchLink = page.locator("[href='/advanced-search']");
     this.itemTitle = page.locator("#work-title");
     this.itemAuthor = page.locator(

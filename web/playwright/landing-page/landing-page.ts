@@ -55,7 +55,7 @@ class LandingPage {
       "[aria-label='Select a search category']"
     );
     this.homepageSearchBox = page.locator("[aria-label='Item Search']");
-    this.searchButton = page.locator("#searchbar-button-search-bar");
+    this.searchButton = page.locator("#search-bar-submit-button");
     this.firstSearchResultAuthor = page.locator(
       "a:text('Corelli, Marie') >> nth=0"
     );
@@ -148,7 +148,7 @@ class LandingPage {
       "[aria-label='Select a search category']"
     );
     this.homepageSearchBox = page.locator("[aria-label='Item Search']");
-    this.searchButton = page.locator("#searchbar-button-search-bar");
+    this.searchButton = page.locator("#search-bar-submit-button");
     this.advancedSearchLink = page.locator("[href='/advanced-search']");
     this.collectionsHeading = page.locator(
       "h2:text('Recently Added Collections')"
