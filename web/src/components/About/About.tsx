@@ -6,6 +6,7 @@ import {
   TemplateBreakout,
   TemplateContent,
   TemplateMain,
+  Text,
 } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
@@ -32,14 +33,14 @@ const About: React.FC = () => {
         </span>
       </Heading>
 
-      <p>
+      <Text marginBottom="s">
         Digital Research Books Beta is an experimental project, now in early
         Beta testing, that collects digital versions of research books from many
         different sources, including Open Access publications, into one
         convenient place to search.
-      </p>
+      </Text>
 
-      <p>
+      <Text marginBottom="s">
         All the materials in Digital Research Books Beta are completely free to
         read and most of them you can download and keep, with no library card
         required. The books are either in the{" "}
@@ -47,9 +48,9 @@ const About: React.FC = () => {
         use of them, or under{" "}
         <Link to="/copyright">Creative Commons licences</Link> that may have
         some conditions, but only on redistribution or adaptation.
-      </p>
+      </Text>
 
-      <p>
+      <Text marginBottom="s">
         In addition to collecting these digital editions, we group all the
         editions of the same title together as a single “work.” For instance
         there are many editions of{" "}
@@ -60,7 +61,7 @@ const About: React.FC = () => {
         single search result and try to make the differences between them--years
         when and places where they were published, for instance--easy to
         understand.
-      </p>
+      </Text>
 
       <Heading
         level="h2"
@@ -69,7 +70,7 @@ const About: React.FC = () => {
         marginBottom="s"
       />
 
-      <p>
+      <Text marginBottom="s">
         The material in Digital Research Books Beta are drawn from several
         public sources, mainly{" "}
         <Link to="https://www.hathitrust.org/">HathiTrust</Link>,{" "}
@@ -83,7 +84,7 @@ const About: React.FC = () => {
         experimental{" "}
         <Link to="http://classify.oclc.org/classify2/">Classify</Link> to make
         connections between different editions of the same work.
-      </p>
+      </Text>
 
       <Heading
         level="h2"
@@ -92,7 +93,7 @@ const About: React.FC = () => {
         marginBottom="s"
       />
 
-      <p>
+      <Text marginBottom="s">
         It means that this is a work-in-progress. We are constantly working on
         the interface and trying new ideas to deal with the data. If you visit
         repeatedly, sometimes it may look different. If you search for the same
@@ -101,23 +102,23 @@ const About: React.FC = () => {
         is automated and based on millions of library records including some
         that are inaccurate. Part of what we are exploring is how to detect and
         adjust mistakes, and how to make sure we don’t introduce any new ones.
-      </p>
+      </Text>
 
-      <p>
+      <Text marginBottom="s">
         It also means that the project may change radically. We may change the
         URL. We may learn that a different approach is necessary. We may learn
         that it isn’t useful enough to anyone to continue. If you find books in
         Digital Research Books Beta that are especially useful to you, you
         should download a copy so that you have one no matter what becomes of
         this project.
-      </p>
+      </Text>
 
-      <p>
+      <Text marginBottom="s">
         Most of all, it means your feedback is important! Most pages have a
         feedback button in the bottom right corner. We want to know what you
         think. If there are things you like or dislike, if there’s a feature
         missing, if you find an error please tell us in the feedback!
-      </p>
+      </Text>
     </Box>
   );
   return (
