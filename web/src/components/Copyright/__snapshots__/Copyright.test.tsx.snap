@@ -133,7 +133,10 @@ exports[`renders Copyright page unchanged 1`] = `
         >
           Public Domain
         </h2>
-        <p>
+        <p
+          class="chakra-text css-1ays41z"
+          data-testid="ds-text"
+        >
           Works in the public domain have no copyright (in most cases because the copyright term has expired) and you are free to use, adapt, share, and distribute the work in any way you wish.
         </p>
         <h2
@@ -142,7 +145,10 @@ exports[`renders Copyright page unchanged 1`] = `
         >
           Public Domain (US Only)
         </h2>
-        <p>
+        <p
+          class="chakra-text css-1ays41z"
+          data-testid="ds-text"
+        >
           Works may be in the public domain in the Unites States (where you can use and distribute them without restriction), but still subject to copyright laws and restrictions outside the United States.
         </p>
         <h2
@@ -151,7 +157,10 @@ exports[`renders Copyright page unchanged 1`] = `
         >
           Creative Commons Licenses
         </h2>
-        <p>
+        <p
+          class="chakra-text css-1ays41z"
+          data-testid="ds-text"
+        >
           <a
             class="chakra-link css-qsaw8"
             data-testid="ds-link"
@@ -194,7 +203,10 @@ exports[`renders Copyright page unchanged 1`] = `
             </dd>
           </dl>
         </section>
-        <p>
+        <p
+          class="chakra-text css-1ays41z"
+          data-testid="ds-text"
+        >
           The following Creative Commons licenses are applied to materials in Digital Research Books Beta. Refer to linked license descriptions for specifics:
         </p>
         <ul
@@ -307,7 +319,10 @@ exports[`renders Copyright page unchanged 1`] = `
         >
           CC0 Public Domain Dedication
         </h2>
-        <p>
+        <p
+          class="chakra-text css-1ays41z"
+          data-testid="ds-text"
+        >
           The
            
           <a
@@ -326,7 +341,10 @@ exports[`renders Copyright page unchanged 1`] = `
         >
           GNU General Public License
         </h2>
-        <p>
+        <p
+          class="chakra-text css-1ays41z"
+          data-testid="ds-text"
+        >
           For a work licensed under the
            
           <a
@@ -344,7 +362,10 @@ exports[`renders Copyright page unchanged 1`] = `
         >
           In Copyright
         </h2>
-        <p>
+        <p
+          class="chakra-text css-1ays41z"
+          data-testid="ds-text"
+        >
           Works that are In Copyright are protected by copyright and/or related rights. You are free to use this Item in any way that is permitted by the copyright and related rights legislation that applies to your use. For other uses you need to obtain permission from the rights-holder(s).
         </p>
       </div>
