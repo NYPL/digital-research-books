@@ -14,6 +14,7 @@ logger = create_log(__name__)
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
 
 
+# TODO: Investigate rework to avoid temporary file I/O and handle potential memory leaks.
 class GRINUnpackService:
     def __init__(self, bucket):
         self.bucket = bucket
