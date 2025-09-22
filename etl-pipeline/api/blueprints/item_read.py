@@ -42,13 +42,13 @@ def item_read(item_id, page_id):
     response = storage_manager.client.list_objects_v2(Bucket=bucket, Prefix=prefix)
     files = [obj["Key"] for obj in response.get("Contents", [])]
 
-    ocr_key, image_key = _find_files(files)
+    ocr_key, image_key = _find_files_from_list_objects(files, page_id)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         if not ocr_key or not image_key:
             unpack_service = GRINUnpackService(bucket)
             unpacked_files = unpack_service.unpack_barcode_package(barcode)
-            ocr_key, image_key = _find_files(unpacked_files.keys(), page_id=page_id)
+            ocr_key, image_key = _find_files_from_dict(unpacked_files, page_id)
 
             if not ocr_key or not image_key:
                 return APIUtils.formatResponseObject(
@@ -92,22 +92,30 @@ def _create_pdf_from_paths(ocr_path, image_path, page_id):
             return f.read()
 
 
-def _find_files(file_list, page_id=None):
-    ocr_key = next(
-        (
-            f
-            for f in file_list
-            if f.endswith("html") and (page_id is None or page_id in f)
-        ),
-        None,
-    )
+def _find_files_from_list_objects(file_list, page_id):
+    ocr_key = next((f for f in file_list if f.endswith("html") and page_id in f), None)
     image_key = next(
         (
             f
             for f in file_list
             if f.lower().endswith((".png", ".jpg", ".jpeg", ".tiff", ".tif", ".jp2"))
-            and (page_id is None or page_id in f)
+            and page_id in f
         ),
         None,
     )
+
+    return ocr_key, image_key
+
+
+def _find_files_from_dict(file_dict, page_id):
+    ocr_key = f"{page_id}.html" if f"{page_id}.html" in file_dict else None
+
+    for k in file_dict.keys():
+        if (
+            k.lower().endswith((".png", ".jpg", ".jpeg", ".tiff", ".tif", ".jp2"))
+            and page_id in k
+        ):
+            image_key = k
+            break
+
     return ocr_key, image_key
