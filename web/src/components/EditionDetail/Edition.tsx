@@ -10,7 +10,11 @@ import {
   Heading,
   HorizontalRule,
   SimpleGrid,
-  TemplateAppContainer,
+  Template,
+  TemplateBreakout,
+  TemplateContent,
+  TemplateFull,
+  TemplateMain,
   Toggle,
 } from "@nypl/design-system-react-components";
 
@@ -79,13 +83,13 @@ const Edition: React.FC<{ editionResult: EditionResult; backUrl?: string }> = (
     </DrbBreakout>
   );
 
-  const contentTopElement = (
-    <>
-      <Flex direction={{ base: "column", md: "row" }}>
+  const fullElement = (
+    <><Flex direction={{ base: "column", md: "row" }}>
         {edition && (
           <Heading
             level="h1"
             size="heading2"
+            marginBottom="s"
             sx={{
               a: {
                 textDecoration: "none",
@@ -108,7 +112,7 @@ const Edition: React.FC<{ editionResult: EditionResult; backUrl?: string }> = (
             lineHeight="calc(1.1 * var(--nypl-fontSizes-heading-primary))"
             pl={{ md: "s" }}
           >
-            <Link to={props.backUrl} linkType="backwards">
+            <Link to={props.backUrl} variant="backwards">
               Back to search results
             </Link>
           </Box>
@@ -160,7 +164,7 @@ const Edition: React.FC<{ editionResult: EditionResult; backUrl?: string }> = (
           </CardContent>
           <CardActions width="165px">
             <Link
-              linkType="button"
+              variant="buttonPrimary"
               to={"/collection/" + edition.inCollections[0].uuid}
             >
               Browse Collection
@@ -169,9 +173,9 @@ const Edition: React.FC<{ editionResult: EditionResult; backUrl?: string }> = (
         </Card>
       )}
     </>
-  );
+  )
 
-  const contentPrimaryElement = (
+  const contentElement = (
     <>
       <EditionDetailDefinitionList edition={edition} />
       {edition.instances && edition.instances.length > 1 && (
@@ -182,7 +186,7 @@ const Edition: React.FC<{ editionResult: EditionResult; backUrl?: string }> = (
         />
       )}
       {edition.instances && edition.instances.length > 1 && (
-        <Flex justify="space-between">
+        <Flex justify="space-between" marginBottom="s">
           <Heading level="h2" size="heading5">
             Other Copies
           </Heading>
@@ -215,11 +219,13 @@ const Edition: React.FC<{ editionResult: EditionResult; backUrl?: string }> = (
     </>
   );
   return (
-    <TemplateAppContainer
-      breakout={breakoutElement}
-      contentTop={contentTopElement}
-      contentPrimary={contentPrimaryElement}
-    />
+    <Template>
+      <TemplateBreakout>{breakoutElement}</TemplateBreakout>
+      <TemplateMain>
+        <TemplateFull>{fullElement}</TemplateFull>
+        <TemplateContent>{contentElement}</TemplateContent>
+      </TemplateMain>
+    </Template>
   );
 };
 

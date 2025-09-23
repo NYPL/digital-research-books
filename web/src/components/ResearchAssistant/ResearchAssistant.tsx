@@ -138,7 +138,7 @@ const ResearchAssistant: React.FC = () => {
               )
             ) : (
               <Box>
-                <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
+                <Text fontSize="2" fontWeight="semibold" paddingY="xs">
                   {resultsPagingText}
                 </Text>
                 <ResearchAssistantResultsList works={results.works} />
@@ -171,10 +171,8 @@ const ResearchAssistant: React.FC = () => {
             paddingY="s"
             borderBottom="1px white solid"
           >
-            <Heading level="h2" size="heading3" color="ui.white" margin="0">
-              <>
-                <ResearchAssistantIcon /> Virtual Research Assistant
-              </>
+            <Heading level="h2" size="heading3" color="ui.white">
+              <ResearchAssistantIcon /> Virtual Research Assistant
             </Heading>
             <Button onClick={clearHistory} id="clear-history-button">
               Clear chat

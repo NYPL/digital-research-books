@@ -28,7 +28,7 @@ const WorkDetailDefinitionList: React.FC<{ work: ApiWork }> = ({ work }) => {
   return (
     <List
       title="Details"
-      type="dl"
+      variant="dl"
       id="details-list"
       sx={{
         h2: {
@@ -48,7 +48,7 @@ const WorkDetailDefinitionList: React.FC<{ work: ApiWork }> = ({ work }) => {
           <>
             <dt>Alternative Titles</dt>
             <dd>
-              <List type="ul" noStyling>
+              <List variant="ul" noStyling>
                 {work.alt_titles.map((title: string, i: number) => (
                   <li key={`alt-title-${i}`}>
                     <Link
@@ -83,7 +83,7 @@ const WorkDetailDefinitionList: React.FC<{ work: ApiWork }> = ({ work }) => {
           <>
             <dt>Subjects</dt>
             <dd>
-              <List type="ul" noStyling>
+              <List variant="ul" noStyling>
                 {unique(work.subjects, "heading")
                   .sort((a: Subject, b: Subject) =>
                     a.heading &&
@@ -114,7 +114,7 @@ const WorkDetailDefinitionList: React.FC<{ work: ApiWork }> = ({ work }) => {
           <>
             <dt>Languages</dt>
             <dd>
-              <List type="ul" noStyling>
+              <List variant="ul" noStyling>
                 {languages.map((language, i) => (
                   <li key={`language${i.toString()}`}>{language}</li>
                 ))}

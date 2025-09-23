@@ -68,7 +68,6 @@ const FeaturesSection: React.FC = () => {
                             level="h3"
                             size="heading5"
                             color="section.research.secondary"
-                            noSpace
                         >
                             {feature.title}
                         </Heading>

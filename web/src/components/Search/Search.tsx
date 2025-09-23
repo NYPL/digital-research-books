@@ -9,9 +9,14 @@ import {
   Flex,
   Form,
   useModal,
-  TemplateAppContainer,
+  Template,
   Text,
   useNYPLBreakpoints,
+  TemplateBreakout,
+  TemplateContent,
+  TemplateMain,
+  TemplateSidebar,
+  TemplateFull,
 } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
 import { FacetItem, Query } from "~/src/types/DataModel";
@@ -186,7 +191,7 @@ const SearchResults: React.FC<{
         <Button
           id="filter-button"
           onClick={onOpen}
-          buttonType="secondary"
+          variant="secondary"
           sx={{
             width: { base: "100%", md: "fit-content" },
           }}
@@ -196,7 +201,7 @@ const SearchResults: React.FC<{
         <Modal
           bodyContent={
             <>
-              <Button buttonType="link" onClick={onClose} id="modal-button">
+              <Button variant="text" onClick={onClose} id="modal-button">
                 <Flex align="center">
                   <Icon
                     decorative={true}
@@ -240,7 +245,7 @@ const SearchResults: React.FC<{
         {searchQuery.filters.length > 0 && !isLargerThanLarge && (
           <Button
             id="clear-filters-button"
-            buttonType="secondary"
+            variant="secondary"
             type="reset"
             onClick={() => {
               changeFilters([]);
@@ -256,45 +261,6 @@ const SearchResults: React.FC<{
     </DrbBreakout>
   );
 
-  const contentTopElement = (
-    <>
-      {isFlagActive("totalCount") && (
-        <Box float="right">
-          <TotalWorks totalWorks={numberOfWorks} />
-        </Box>
-      )}
-
-      <Box className="search-heading">
-        <Box role="alert">
-          <Heading level="h1" size="heading3" id="page-title-heading">
-            <>Search results for {getDisplayItemsHeading(searchQuery)}</>
-          </Heading>
-        </Box>
-      </Box>
-      <HorizontalRule bg="section.research.primary" />
-      <Flex justify="space-between" align="center">
-        <Text fontSize="1.75rem" className="page-counter" __css={{ m: "0" }}>
-          {numberOfWorks > 0
-            ? `Viewing ${firstElement.toLocaleString()} - ${
-                numberOfWorks < lastElement
-                  ? numberOfWorks.toLocaleString()
-                  : lastElement.toLocaleString()
-              } of ${numberOfWorks.toLocaleString()} items`
-            : "Viewing 0 items"}
-        </Text>
-        <Form id="results-sorts-form" display={["none", "none", "block"]}>
-          <ResultsSorts
-            perPage={searchQuery.perPage}
-            sort={searchQuery.sort}
-            sortMap={sortMap}
-            onChangePerPage={(e) => onChangePerPage(e)}
-            onChangeSort={(e) => onChangeSort(e)}
-          />
-        </Form>
-      </Flex>
-    </>
-  );
-
   const contentSidebarElement = (
     <Form
       id="search-filter-form"
@@ -307,7 +273,6 @@ const SearchResults: React.FC<{
         level="h2"
         size="heading3"
         id="filter-desktop-header"
-        __css={{ m: "0" }}
       >
         Refine Results
       </Heading>
@@ -325,26 +290,64 @@ const SearchResults: React.FC<{
     </Form>
   );
 
-  const contentPrimaryElement = (
+  const contentFullElement = (
+    <>
+      {isFlagActive("totalCount") && (
+        <Box float="right">
+          <TotalWorks totalWorks={numberOfWorks} />
+        </Box>
+      )}
+      <Box className="search-heading">
+        <Box role="alert">
+          <Heading level="h1" size="heading3" id="page-title-heading">
+            Search results for {getDisplayItemsHeading(searchQuery)}
+          </Heading>
+        </Box>
+      </Box>
+      <HorizontalRule bg="section.research.primary" marginY="s" />
+      <Flex justify="space-between" align="center">
+        <Text fontSize="1.75rem" className="page-counter" __css={{ m: "0" }}>
+          {numberOfWorks > 0
+            ? `Viewing ${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
+              ? numberOfWorks.toLocaleString()
+              : lastElement.toLocaleString()
+            } of ${numberOfWorks.toLocaleString()} items`
+            : "Viewing 0 items"}
+        </Text>
+        <Form id="results-sorts-form" display={["none", "none", "block"]}>
+          <ResultsSorts
+            perPage={searchQuery.perPage}
+            sort={searchQuery.sort}
+            sortMap={sortMap}
+            onChangePerPage={(e) => onChangePerPage(e)}
+            onChangeSort={(e) => onChangeSort(e)}
+          />
+        </Form>
+      </Flex>
+    </>
+  )
+
+  const contentElement = (
     <>
       <ResultsList works={works} />
       <Pagination
         pageCount={searchPaging.lastPage ? searchPaging.lastPage : 1}
         initialPage={searchPaging.currentPage}
         onPageChange={(e) => onPageChange(e)}
-        __css={{ paddingTop: "m", paddingBottom: "l"}}
+        __css={{ paddingTop: "m", paddingBottom: "l" }}
       />
     </>
   );
 
   return (
-    <TemplateAppContainer
-      breakout={breakoutElement}
-      contentTop={contentTopElement}
-      contentSidebar={contentSidebarElement}
-      contentPrimary={contentPrimaryElement}
-      sidebar={"left"}
-    />
+    <Template variant="sidebarLeft">
+      <TemplateBreakout>{breakoutElement}</TemplateBreakout>
+      <TemplateMain>
+        <TemplateFull>{contentFullElement}</TemplateFull>
+        <TemplateSidebar>{contentSidebarElement}</TemplateSidebar>
+        <TemplateContent>{contentElement}</TemplateContent>
+      </TemplateMain>
+    </Template>
   );
 };
 

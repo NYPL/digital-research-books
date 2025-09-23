@@ -68,7 +68,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                         <Text size="caption" marginBottom="xxs">
                             E-BOOK
                         </Text>
-                        <Heading size="heading7" noSpace marginBottom="xxs">
+                        <Heading size="heading7" marginBottom="xxs">
                             <Link
                                 to={{
                                     pathname: `/work/${edition.edition_id}`,
@@ -109,7 +109,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                     __css={{ svg: { marginInlineStart: "0 !important" } }}
                                 >
                                     <ResearchAssistantIcon />
-                                    <Text noSpace>Read summary</Text>
+                                    <Text>Read summary</Text>
                                 </Box>
                             ),
                             panel: (
@@ -119,7 +119,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                     <Text
                                         size="caption"
                                         color="ui.gray.semi-dark"
-                                        noSpace
                                         marginY="s"
                                     >
                                         AI-generated. Verify results.
@@ -137,7 +136,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                     __css={{ svg: { marginInlineStart: "0 !important" } }}
                                 >
                                     <ResearchAssistantIcon />
-                                    <Text noSpace>Why is this result relevant?</Text>
+                                    <Text>Why is this result relevant?</Text>
                                 </Box>
                             ),
                             panel: (
@@ -147,7 +146,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                     <Text
                                         size="caption"
                                         color="ui.gray.semi-dark"
-                                        noSpace
                                         marginY="s"
                                     >
                                         AI-generated. Verify results.

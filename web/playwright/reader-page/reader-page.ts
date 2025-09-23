@@ -10,7 +10,7 @@ class ReaderPage {
   constructor(page: Page) {
     this.page = page;
     this.homepageSearchBox = page.locator("[aria-label='Item Search']");
-    this.searchButton = page.locator("#searchbar-button-search-bar");
+    this.searchButton = page.locator("#search-bar-submit-button");
     this.robotSoccerTitle = page.locator("//a[text()='Robot soccer'] >> nth=0");
     this.firstReadOnlineButton = page.locator("a:text('Read Online') >> nth=0");
   }
