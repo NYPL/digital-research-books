@@ -143,6 +143,11 @@ Execute the command in your terminal. You will be prompted to enter your credent
 aws configure 
 ```
 
+## Install GPG (if working with Google Books)
+The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`
+
+Ensure that it is available by installing it via `brew` (if on a Mac) or the appropiate tool for your OS
+
 ### Running Individual Processes
 
 While Docker handles the main services, you can run individual processes using:

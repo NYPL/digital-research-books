@@ -26,7 +26,7 @@ const DrbBreadcrumbs: React.FC<{ breadcrumbsData: BreadcrumbsDataProps[] }> = (
 
   return (
     <Breadcrumbs
-      breadcrumbsType="research"
+      variant="research"
       breadcrumbsData={breadcrumbsDataAll}
     />
   );

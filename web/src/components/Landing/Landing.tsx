@@ -3,7 +3,10 @@ import {
   Box,
   Heading,
   Hero,
-  TemplateAppContainer,
+  Template,
+  TemplateBreakout,
+  TemplateContent,
+  TemplateMain,
   useNYPLBreakpoints,
 } from "@nypl/design-system-react-components";
 import SearchForm from "~/src/components/SearchForm/SearchForm";
@@ -70,13 +73,14 @@ const LandingPage: React.FC<{ collections?: Opds2Feed }> = ({
         backgroundColor="ui.gray.light-cool"
         backgroundImageSrc={backgroundImageSrc}
         foregroundColor="ui.black"
-        heroType="primary"
+        variant="primary"
         heading={
           <Heading
             level="h1"
             size="heading2"
             id="primary-hero"
             color="ui.black"
+            marginBottom="s"
           >
             Search the World&apos;s Research Collections
           </Heading>
@@ -86,17 +90,19 @@ const LandingPage: React.FC<{ collections?: Opds2Feed }> = ({
     </DrbBreakout>
   );
 
-  const contentPrimaryElement = (
+  const contentElement = (
     <Box marginLeft="l" marginRight="l">
-      <Heading level="h2">Recently Added Collections</Heading>
+      <Heading level="h2" marginBottom="s">Recently Added Collections</Heading>
       <CollectionList collections={collections} />
     </Box>
   );
   return (
-    <TemplateAppContainer
-      breakout={breakoutElement}
-      contentPrimary={contentPrimaryElement}
-    />
+    <Template>
+      <TemplateBreakout>{breakoutElement}</TemplateBreakout>
+      <TemplateMain paddingBottom="l">
+        <TemplateContent>{contentElement}</TemplateContent>
+      </TemplateMain>
+    </Template>
   );
 };
 

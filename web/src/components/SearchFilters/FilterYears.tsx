@@ -93,14 +93,14 @@ const FilterYears: React.FC<{
                         : "year-filter-button"
                     }
                     onClick={() => onSubmit()}
-                    buttonType="secondary"
+                    variant="secondary"
                   >
                     Apply
                   </Button>
                 )}
               </Flex>
               {dateRangeError && (
-                <HelperErrorText isInvalid={true} text={dateRangeError} />
+                <HelperErrorText marginTop="xxs" isInvalid={true} text={dateRangeError} />
               )}
             </>
           ),

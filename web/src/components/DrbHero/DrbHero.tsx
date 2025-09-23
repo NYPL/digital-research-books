@@ -5,12 +5,10 @@ export const DrbHero: React.FC = () => {
   return (
     <Hero
       backgroundColor="section.research.primary"
-      heroType="tertiary"
+      variant="tertiary"
       heading={
         <Heading level="h1" id="tertiary-hero">
-          <>
             Digital Research Books <sup>Beta</sup>
-          </>
         </Heading>
       }
     />

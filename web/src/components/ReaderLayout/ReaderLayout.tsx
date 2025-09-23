@@ -145,12 +145,12 @@ const ReaderLayout: React.FC<{
         document.getElementById("nypl-footer").style.display = "none";
       }
     }
-  }, [isLimitedAccess, isRead, pdfWorkerSrc, proxyUrl, url]);
+  }, [isLimitedAccess, isRead, pdfWorkerSrc, proxyUrl, url, page]);
 
   const BackButton = () => {
     return (
       //Apends design system classname to use Design System Link.
-      <Link to={props.backUrl} type="action" className="nypl-ds logo-link">
+      <Link to={props.backUrl} variant="action" className="nypl-ds logo-link">
         <Icon decorative className="logo-link__icon">
           <ReaderLogoSvg />
         </Icon>
@@ -168,7 +168,7 @@ const ReaderLayout: React.FC<{
       {isEmbed && (
         <Layout>
           <Breadcrumbs
-            breadcrumbsType="research"
+            variant="research"
             breadcrumbsData={[
               ...defaultBreadcrumbs,
               {

@@ -28,7 +28,10 @@ import {
   Heading,
   HelperErrorText,
   SelectedItems,
-  TemplateAppContainer,
+  Template,
+  TemplateBreakout,
+  TemplateContent,
+  TemplateMain,
   TextInput,
 } from "@nypl/design-system-react-components";
 import FilterLanguage from "../SearchFilters/FilterLanguage";
@@ -201,15 +204,106 @@ const AdvancedSearch: React.FC<{
     />
   );
 
-  const contentTopElement = (
+  const contentElement = (
     <>
-      <Heading level="h1">Advanced Search</Heading>
+      <Heading level="h1" marginBottom="s">Advanced Search</Heading>
       {emptySearchError && (
-        <HelperErrorText text={errorMessagesText.emptySearch} isInvalid />
+        <HelperErrorText marginTop="xxs" text={errorMessagesText.emptySearch} isInvalid />
       )}
       {dateRangeError && (
-        <HelperErrorText text={errorMessagesText.invalidDate} isInvalid />
+        <HelperErrorText marginTop="xxs"  text={errorMessagesText.invalidDate} isInvalid />
       )}
+      <Form action="/search" method="get" id="search-form" paddingBottom="l">
+        {/* Search Terms */}
+        {inputTermRows.map(
+          (inputTerms: { key: string; label: string }[], i: number) => {
+            return (
+              <FormRow key={`input-row-${inputTerms[i].key}`}>
+                {inputTerms.map((field: { key: string; label: string }) => {
+                  return (
+                    <FormField key={`input-field-${field.key}`}>
+                      <TextInput
+                        id={`search-${field.label}`}
+                        labelText={field.label}
+                        value={
+                          findQueryForField(queries, field.key)
+                            ? findQueryForField(queries, field.key).query
+                            : ""
+                        }
+                        onChange={(e) => onQueryChange(e, field.key)}
+                        showLabel
+                        type="text"
+                      />
+                    </FormField>
+                  );
+                })}
+              </FormRow>
+            );
+          }
+        )}
+        <FormField>
+          <Checkbox
+            id="gov-doc-checkbox"
+            labelText="Show only US government documents"
+            onChange={(e) => {
+              onGovDocChange(e);
+            }}
+            isChecked={!!govDocFilter && govDocFilter.value === "onlyGovDoc"}
+          />
+        </FormField>
+        <FormField>
+          {languages && languages.length > 0 && (
+            <FilterLanguage
+              languages={languages}
+              showCount={false}
+              selectedLanguages={languageFilters}
+              onLanguageChange={(languages) => onLanguageChange(languages)}
+            />
+          )}
+        </FormField>
+        <FormField>
+          <FilterBookFormat
+            selectedFormats={formatFilters}
+            onFormatChange={(formats) => {
+              onBookFormatChange(formats);
+            }}
+          />
+        </FormField>
+        <FormField>
+          <FilterYears
+            startFilter={startFilter}
+            endFilter={endFilter}
+            onDateChange={(
+              e: React.ChangeEvent<HTMLInputElement>,
+              isStart: boolean
+            ) => {
+              onDateChange(e, isStart);
+            }}
+          />
+        </FormField>
+        <FormField>
+          <ButtonGroup>
+            <Button
+              type="submit"
+              variant="primary"
+              onClick={(e) => {
+                submit(e);
+              }}
+              id="submit-button"
+            >
+              Search
+            </Button>
+            <Button
+              type="reset"
+              variant="secondary"
+              onClick={() => clearSearch()}
+              id="reset-button"
+            >
+              Clear
+            </Button>
+          </ButtonGroup>
+        </FormField>
+      </Form>
     </>
   );
 
@@ -286,7 +380,7 @@ const AdvancedSearch: React.FC<{
         <ButtonGroup>
           <Button
             type="submit"
-            buttonType="primary"
+            variant="primary"
             onClick={(e) => {
               submit(e);
             }}
@@ -296,7 +390,7 @@ const AdvancedSearch: React.FC<{
           </Button>
           <Button
             type="reset"
-            buttonType="secondary"
+            variant="secondary"
             onClick={() => clearSearch()}
             id="reset-button"
           >
@@ -307,11 +401,12 @@ const AdvancedSearch: React.FC<{
     </Form>
   );
   return (
-    <TemplateAppContainer
-      breakout={breakoutElement}
-      contentTop={contentTopElement}
-      contentPrimary={contentPrimaryElement}
-    />
+    <Template>
+      <TemplateBreakout>{breakoutElement}</TemplateBreakout>
+      <TemplateMain>
+        <TemplateContent>{contentElement}</TemplateContent>
+      </TemplateMain>
+    </Template>
   );
 };
 

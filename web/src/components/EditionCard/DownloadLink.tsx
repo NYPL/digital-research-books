@@ -87,7 +87,7 @@ const DownloadLink: React.FC<{
       <Box data-testid={LOGIN_TO_DOWNLOAD_TEST_ID}>
         <Link
           to={`${linkUrl}`}
-          linkType="buttonSecondary"
+          variant="buttonSecondary"
           onClick={(e) => handleDownload(e)}
           aria-label={`${title} Download PDF`}
         >
