@@ -55,7 +55,7 @@ class SearchPage {
     this.firstRequestButton = page.locator("a:text('Request scan') >> nth=0");
 
     this.governmentDocumentsCheckbox = page.locator(
-      "span:text('Show only US government documents')"
+      "span:text('Limit to US government documents')"
     );
     this.firstGovernmentDocumentAuthor = page.locator(
       "a:text('United States') >> nth=0"

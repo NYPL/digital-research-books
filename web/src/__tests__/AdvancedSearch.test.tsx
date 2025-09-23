@@ -43,7 +43,7 @@ describe("renders advanced search correctly", () => {
     });
     test("Gov doc filter is shown", () => {
       const govDocCheckbox = screen.getByRole("checkbox", {
-        name: "Show only US government documents",
+        name: "Limit to US government documents",
       });
       expect(govDocCheckbox).toBeInTheDocument();
       expect(govDocCheckbox).not.toBeChecked();
@@ -184,7 +184,7 @@ describe("Advanced Search clear", () => {
 
     const englishCheckbox = screen.getByRole("checkbox", { name: "english" });
     const readableCheckbox = screen.getByRole("checkbox", { name: "Readable" });
-    const govDocCheckbox = screen.getByRole("checkbox", { name: "Show only US government documents" });
+    const govDocCheckbox = screen.getByRole("checkbox", { name: "Limit to US government documents" });
 
     await userEvent.click(englishCheckbox);
     await userEvent.type(

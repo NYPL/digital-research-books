@@ -195,7 +195,7 @@ const SearchResults: React.FC<{
         </Button>
         <Modal
           bodyContent={
-            <>
+            <Box data-testid="filters-modal-content">
               <Button buttonType="link" onClick={onClose} id="modal-button">
                 <Flex align="center">
                   <Icon
@@ -231,7 +231,7 @@ const SearchResults: React.FC<{
                   }}
                 />
               </form>
-            </>
+            </Box>
           }
         />
         {searchQuery.filters.length > 0 && !isLargerThanLarge && (

@@ -2,7 +2,7 @@ import {
   MultiSelect,
   SelectedItems,
 } from "@nypl/design-system-react-components";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Filter } from "~/src/types/SearchQuery";
 
 interface FilterMultiSelectProps {
@@ -27,14 +27,25 @@ const FilterMultiSelect: React.FC<FilterMultiSelectProps> = ({
   onChange,
 }) => {
   const initialSelectedItems = selectedFilters
-    ? {
-        [multiSelectId]: {
-          items: selectedFilters.map((f) => String(f.value)),
-        },
-      }
-    : {};
-
+      ? {
+          [multiSelectId]: {
+            items: selectedFilters.map((f) => String(f.value)),
+          },
+        }
+      : {};
   const [selectedItems, setSelectedItems] = useState(initialSelectedItems);
+
+  useEffect(() => {
+    const initialSelectedItems = selectedFilters
+      ? {
+          [multiSelectId]: {
+            items: selectedFilters.map((f) => String(f.value)),
+          },
+        }
+      : {};
+    setSelectedItems(initialSelectedItems)
+  }, [selectedFilters])
+
 
   const handleChange = (selectedId: string) => {
     let itemIds = selectedItems[multiSelectId]?.items ?? [];

@@ -10,14 +10,14 @@ export const FilterLanguagesCommonTests = (
   selectedLanguages?: Filter[]
 ) => {
   test("Language Filter appears", () => {
-    const languages = screen.getByRole("group", { name: "List of Languages" });
+    const languages = screen.getByRole("group", { name: "Language" });
 
     expect(languages).toBeInTheDocument();
   });
 
   test("Language Filters shows all available languages", () => {
     const languageGroup = screen.getByRole("group", {
-      name: "List of Languages",
+      name: "Language",
     });
     // expect(languageGroup).toBeVisible();
 

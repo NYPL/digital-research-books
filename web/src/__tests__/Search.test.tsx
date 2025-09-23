@@ -39,7 +39,7 @@ const emptySearchResults: ApiSearchResult = {
   },
 };
 const clickFiltersButton = async () =>
-    userEvent.click(await screen.findByRole("button", { name: "Refine results" })
+    userEvent.click(await screen.findByRole("button", { name: "Filter results" })
   );
 
 describe("Renders Search Results Page", () => {
@@ -81,30 +81,31 @@ describe("Renders Search Results Page", () => {
   describe("Filters modal show and hide", () => {
     test("Filters button appears", () => {
       expect(
-        screen.getByRole("button", { name: "Refine results" })
+        screen.getByRole("button", { name: "Filter results" })
       ).toBeInTheDocument();
     });
     test("clicking 'filters' button shows filters contents", async () => {
       await clickFiltersButton();
+      const modal = screen.getByTestId("filters-modal-content")
       expect(
-        screen.getByRole("combobox", { name: "Items Per Page", hidden: false })
+        within(modal).getByRole("combobox", { name: "Items Per Page", hidden: false })
       ).toHaveValue("10");
-      expect(screen.getByRole("combobox", { name: "Sort By" })).toHaveValue(
+      expect(within(modal).getByRole("combobox", { name: "Sort By" })).toHaveValue(
         "Relevance"
       );
       expect(
-        screen.getByRole("checkbox", { name: "Available Online" })
+        within(modal).getByRole("checkbox", { name: "Available Online" })
       ).toBeChecked();
-      const languages = screen.getByRole("group", {
-        name: "List of Languages",
+      const languages = within(modal).getByRole("group", {
+        name: "Language",
       });
       expect(languages).toBeInTheDocument();
       // expect(
       //   within(languages).getByRole("checkbox", { name: "Filter Languages" })
       // ).not.toBeChecked();
       FilterFormatTests();
-      const pubYear = screen.getByRole("group", {
-        name: "Publication Year",
+      const pubYear = within(modal).getByRole("region", {
+        name: "Date filter",
       });
       expect(pubYear).toBeInTheDocument();
       expect(
@@ -118,7 +119,7 @@ describe("Renders Search Results Page", () => {
         })
       ).toHaveValue(null);
 
-      const backButton = screen.getByRole("button", { name: "Go Back" });
+      const backButton = within(modal).getByRole("button", { name: "Go Back" });
       expect(backButton).toBeInTheDocument();
     });
   });
@@ -140,7 +141,7 @@ describe("Renders Search Results Page", () => {
 
         await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
         expect(
-          screen.getByRole("button", { name: "Refine results" })
+          screen.getByRole("button", { name: "Filter results" })
         ).toBeInTheDocument();
       }, 15000);
     });
@@ -162,7 +163,7 @@ describe("Renders Search Results Page", () => {
 
         await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
         expect(
-          screen.getByRole("button", { name: "Refine results" })
+          screen.getByRole("button", { name: "Filter results" })
         ).toBeInTheDocument();
       }, 15000);
     });
@@ -183,7 +184,7 @@ describe("Renders Search Results Page", () => {
         });
         await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
         expect(
-          screen.getByRole("button", { name: "Refine results" })
+          screen.getByRole("button", { name: "Filter results" })
         ).toBeInTheDocument();
       }, 15000);
     });
@@ -198,7 +199,7 @@ describe("Renders Search Results Page", () => {
       test("Clicking new language sends new search", async () => {
         await clickFiltersButton();
         const languages = screen.getByRole("group", {
-          name: "List of Languages",
+          name: "Language",
         });
 
         const englishCheckbox = within(languages).getByRole("checkbox", {
@@ -216,11 +217,11 @@ describe("Renders Search Results Page", () => {
 
         await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
         await userEvent.click(
-          screen.getByRole("button", { name: "Refine results" })
+          screen.getByRole("button", { name: "Filter results" })
         );
 
         const languages2 = screen.getByRole("group", {
-          name: "List of Languages",
+          name: "Language",
         });
 
         const englishCheckbox2 = within(languages2).getByRole("checkbox", {
@@ -246,7 +247,7 @@ describe("Renders Search Results Page", () => {
         });
         await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
         expect(
-          screen.getByRole("button", { name: "Refine results" })
+          screen.getByRole("button", { name: "Filter results" })
         ).toBeInTheDocument();
       }, 15000);
     });
@@ -262,7 +263,7 @@ describe("Renders Search Results Page", () => {
       test("Clicking show only gov docs sends new search", async () => {
         await clickFiltersButton();
         const govDocCheckbox = screen.getByRole("checkbox", {
-          name: "Show only US government documents",
+          name: "Limit to US government documents",
         });
         await userEvent.click(govDocCheckbox);
         expect(mockRouter).toMatchObject({
@@ -274,7 +275,7 @@ describe("Renders Search Results Page", () => {
         });
         await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
         expect(
-          screen.getByRole("button", { name: "Refine results" })
+          screen.getByRole("button", { name: "Filter results" })
         ).toBeInTheDocument();
       }, 15000);
     });
@@ -358,7 +359,7 @@ describe("Renders Search Results Page", () => {
           screen.getByText("Published in Island Getaway by Nook Industries")
         ).toBeInTheDocument();
       });
-      test("Shows Full list of languages", () => {
+      test("Shows Full Language", () => {
         expect(
           screen.getByText("Languages: English, Spanish")
         ).toBeInTheDocument();
@@ -471,7 +472,7 @@ describe("Renders Search Results Page", () => {
           )
         ).toBeInTheDocument();
       });
-      test("Shows Full list of languages in edition", () => {
+      test("Shows Full Language in edition", () => {
         expect(
           screen.getByText(
             "Languages: Lang1, Lang2, Lang3, Lang4, Lang5, Lang6, Lang7, Lang8, Lang9, Lang10, Lang11, Lang12, Lang13, Lang14, Lang15, Lang16, Lang17"
@@ -775,7 +776,7 @@ describe("Renders selected languages in language accordion when there are no mat
       },
     });
     const languages = screen.getByRole("group", {
-      name: "List of Languages",
+      name: "Language",
     });
 
     const russianCheckbox = within(languages).getByRole("checkbox", {

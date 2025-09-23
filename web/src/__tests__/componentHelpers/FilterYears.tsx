@@ -23,21 +23,21 @@ export const FilterYearsTests = (
     ).toHaveValue((endYear && endYear.value) || null);
     if (hasApplyButton) {
       expect(
-        screen.getByRole("button", { name: "Apply year" })
+        screen.getByRole("button", { name: "Apply" })
       ).toBeInTheDocument();
     }
   });
 
   if (hasApplyButton) {
     test("Submits filters with only 'from' value", async () => {
-      const yearGroup = screen.getByRole("group", {
-        name: "Publication Year",
+      const yearGroup = screen.getByRole("region", {
+        name: "Date filter",
       });
       const fromInput = within(yearGroup).getByRole("spinbutton", {
         name: "From",
       });
       const applyButton = within(yearGroup).getByRole("button", {
-        name: "Apply year",
+        name: "Apply",
       });
       await userEvent.type(fromInput, "1990");
       expect(fromInput).toHaveValue(1990);
@@ -52,14 +52,14 @@ export const FilterYearsTests = (
       });
     });
     test("Submits filters with only 'to' value", async () => {
-      const yearGroup = screen.getByRole("group", {
-        name: "Publication Year",
+      const yearGroup = screen.getByRole("region", {
+        name: "Date filter",
       });
       const toInput = within(yearGroup).getByRole("spinbutton", {
         name: "To",
       });
       const applyButton = within(yearGroup).getByRole("button", {
-        name: "Apply year",
+        name: "Apply",
       });
       await userEvent.type(toInput, "1990");
       await userEvent.click(applyButton);
@@ -74,8 +74,8 @@ export const FilterYearsTests = (
     });
 
     test("Submits search with both 'from' and 'to'", async () => {
-      const yearGroup = screen.getByRole("group", {
-        name: "Publication Year",
+      const yearGroup = screen.getByRole("region", {
+        name: "Date filter",
       });
       const toInput = within(yearGroup).getByRole("spinbutton", {
         name: "To",
@@ -84,7 +84,7 @@ export const FilterYearsTests = (
         name: "From",
       });
       const applyButton = within(yearGroup).getByRole("button", {
-        name: "Apply year",
+        name: "Apply",
       });
       await userEvent.type(fromInput, "1990");
       await userEvent.type(toInput, "2000");
@@ -100,8 +100,8 @@ export const FilterYearsTests = (
     });
 
     test("shows error text when 'to' is after 'from", async () => {
-      const yearGroup = screen.getByRole("group", {
-        name: "Publication Year",
+      const yearGroup = screen.getByRole("region", {
+        name: "Date filter",
       });
       const toInput = within(yearGroup).getByRole("spinbutton", {
         name: "To",
@@ -110,7 +110,7 @@ export const FilterYearsTests = (
         name: "From",
       });
       const applyButton = within(yearGroup).getByRole("button", {
-        name: "Apply year",
+        name: "Apply",
       });
       await userEvent.type(fromInput, "1990");
       await userEvent.type(toInput, "1890");
