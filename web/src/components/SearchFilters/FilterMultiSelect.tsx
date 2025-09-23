@@ -44,7 +44,7 @@ const FilterMultiSelect: React.FC<FilterMultiSelectProps> = ({
         }
       : {};
     setSelectedItems(initialSelectedItems)
-  }, [selectedFilters])
+  }, [selectedFilters, multiSelectId])
 
 
   const handleChange = (selectedId: string) => {
