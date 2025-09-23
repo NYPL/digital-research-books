@@ -66,6 +66,11 @@ const FilterMultiSelect: React.FC<FilterMultiSelectProps> = ({
       onClear={handleClear}
       width="full"
       isDefaultOpen={isDefaultOpen}
+      sx={{
+        ".chakra-accordion__button": {
+          fontWeight: "medium",
+        }
+      }}
     />
   );
 };

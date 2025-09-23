@@ -107,7 +107,14 @@ const FilterYears: React.FC<{
         },
       ]}
       isDefaultOpen
-      bgColor="ui.white"
+      sx={{
+        "button[aria-expanded=true]": {
+          bgColor: "ui.link.primary-05"
+        },
+        ".chakra-collapse": {
+          bgColor: "ui.white"
+        }
+      }}
     />
   );
 };
