@@ -82,4 +82,4 @@ class GRINUnpackService:
                 logger.info(f"Uploaded {file_name} to S3.")
             else:
                 logger.error(f"Failed to upload {file_name} to S3: {e}")
-                raise
+                raise ClientError
