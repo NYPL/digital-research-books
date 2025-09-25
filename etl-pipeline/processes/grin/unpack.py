@@ -1,3 +1,4 @@
+import atexit
 import concurrent.futures
 import os
 import tempfile
@@ -12,6 +13,14 @@ from logger import create_log
 logger = create_log(__name__)
 
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+
+
+def shutdown_executor():
+    logger.info("Shutting down ThreadPoolExecutor...")
+    executor.shutdown(wait=True)
+
+
+atexit.register(shutdown_executor)
 
 
 # TODO: Investigate rework to avoid temporary file I/O and handle potential memory leaks.
@@ -82,4 +91,4 @@ class GRINUnpackService:
                 logger.info(f"Uploaded {file_name} to S3.")
             else:
                 logger.error(f"Failed to upload {file_name} to S3: {e}")
-                raise ClientError
+                raise e
