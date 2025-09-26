@@ -31,13 +31,11 @@ def test_unpack_barcode_package_success(mock_unpack_service, mocker):
     ocr_package_name = f"{barcode}.tar.gz.gpg"
     decrypted_package_path = f"/tmp/decrypted/{barcode}.tar.gz"
 
-    _original_path_join = os.path.join
-
     mock_path_join = mocker.patch(
         "processes.grin.unpack.os.path.join",
         side_effect=lambda *args: "/mocked/temp/path/file.tar.gz.gpg"
         if args[1] == ocr_package_name
-        else _original_path_join(*args),
+        else os.path.join(*args),
     )
 
     mock_tmp_dir = mocker.patch("processes.grin.unpack.tempfile.TemporaryDirectory")
@@ -69,7 +67,7 @@ def test_unpack_barcode_package_success(mock_unpack_service, mocker):
         {"Error": {"Code": "404", "Message": "Not Found"}}, "head_object"
     )
 
-    result = service.unpack_barcode_package(barcode)
+    unpacked_files = service.unpack_barcode_package(barcode)
 
     mock_s3_client.download_file.assert_called_once_with(
         Bucket=service.bucket,
@@ -96,7 +94,7 @@ def test_unpack_barcode_package_success(mock_unpack_service, mocker):
         "file1.txt": b"content of file 1",
         "file2.jpg": b"content of file 2",
     }
-    assert result == expected_files
+    assert unpacked_files == expected_files
 
 
 def test_unpack_barcode_package_tar_error(mock_unpack_service, mocker):
