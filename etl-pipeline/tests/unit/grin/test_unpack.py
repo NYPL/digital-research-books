@@ -32,10 +32,15 @@ def test_unpack_barcode_package_success(mock_unpack_service, mocker):
     decrypted_package_path = f"/tmp/decrypted/{barcode}.tar.gz"
 
     real_join = os.path.join
-    def mock_join(*args):
-        return '/mocked/temp/path/file.tar.gz.gpg' if args[1] == ocr_package_name else real_join(*args)
 
-    mocker.patch('processes.grin.unpack.os.path.join', side_effect=mock_join)
+    def mock_join(*args):
+        return (
+            "/mocked/temp/path/file.tar.gz.gpg"
+            if args[1] == ocr_package_name
+            else real_join(*args)
+        )
+
+    mocker.patch("processes.grin.unpack.os.path.join", side_effect=mock_join)
 
     mock_download_service.decrypt_ocr_package.return_value = decrypted_package_path
 
