@@ -244,7 +244,7 @@ const AdvancedSearch: React.FC<{
         <FormField>
           <Checkbox
             id="gov-doc-checkbox"
-            labelText="Show only US government documents"
+            labelText="Limit to US government documents"
             onChange={(e) => {
               onGovDocChange(e);
             }}

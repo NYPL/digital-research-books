@@ -113,12 +113,6 @@ const Filters: React.FC<{
       }
     };
 
-    const clearFilters = () => {
-      setFilters([]);
-      changeFilters([]);
-      setDateRangeError("");
-    };
-
     /**
      * Toggles the "Show All" filter.
      * If we should show only what's available online,
@@ -201,7 +195,6 @@ const Filters: React.FC<{
       <FilterBarInline
         heading="Filter results"
         layout="column"
-        onClear={clearFilters}
         renderChildren={renderFilterComponets}
       />
     );
