@@ -7,6 +7,7 @@ import tarfile
 from botocore.exceptions import ClientError
 from datetime import datetime, timedelta, timezone
 from processes.grin.download import GRINDownloadService
+from utils.profiler import profile
 from managers import S3Manager
 from logger import create_log
 
@@ -30,6 +31,7 @@ class GRINUnpackService:
         self.download_service = GRINDownloadService(bucket)
         self.s3_manager = S3Manager()
 
+    @profile(logger=logger)
     def unpack_barcode_package(self, barcode):
         barcode = str(barcode)
         ocr_dir = f"grin/{barcode}/"
