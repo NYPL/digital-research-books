@@ -17,7 +17,6 @@ executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
 
 
 def shutdown_executor():
-    logger.info("Shutting down ThreadPoolExecutor...")
     executor.shutdown(wait=True)
 
 
