@@ -18,18 +18,14 @@ import filterFields from "~/src/constants/filters";
 
 const Filters: React.FC<{
   filters: Filter[];
-  showAll: boolean;
   languages: FacetItem[];
   isModal?: boolean;
   changeFilters: (newFilters?: Filter[]) => void;
-  changeShowAll: (showAll: boolean) => void;
 }> = ({
   filters: propFilters,
-  showAll: propShowAll,
   languages,
   isModal,
   changeFilters,
-  changeShowAll,
 }) => {
     const [dateRangeError, setDateRangeError] = useState("");
     const [filters, setFilters] = useState(propFilters);

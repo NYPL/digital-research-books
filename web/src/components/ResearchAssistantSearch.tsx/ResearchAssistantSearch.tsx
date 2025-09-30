@@ -146,15 +146,6 @@ const SearchResults: React.FC<{
     setTagSetData(buildTagSetData(newSearchQuery.filters));
   };
 
-  const changeShowAll = (showAll: boolean) => {
-    const newSearchQuery: SearchQuery = {
-      ...searchQuery,
-      showAll: showAll,
-    };
-    setSearchQuery(newSearchQuery);
-    sendSearchQuery(newSearchQuery);
-  };
-
   const onChangePerPage = (e) => {
     e.preventDefault();
     const newPage = 0;
@@ -269,14 +260,10 @@ const SearchResults: React.FC<{
               <form name="filterForm">
                 <Filters
                   filters={searchQuery.filters}
-                  showAll={searchQuery.showAll}
                   languages={getAvailableLanguages(searchResults)}
                   isModal={true}
                   changeFilters={(filters: Filter[]) => {
                     changeFilters(filters);
-                  }}
-                  changeShowAll={(showAll: boolean) => {
-                    changeShowAll(showAll);
                   }}
                 />
               </form>
@@ -315,13 +302,9 @@ const SearchResults: React.FC<{
     >
       <Filters
         filters={searchQuery.filters}
-        showAll={searchQuery.showAll}
         languages={getAvailableLanguages(searchResults)}
         changeFilters={(filters: Filter[]) => {
           changeFilters(filters);
-        }}
-        changeShowAll={(showAll: boolean) => {
-          changeShowAll(showAll);
         }}
       />
     </Form>
