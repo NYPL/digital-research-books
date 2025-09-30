@@ -137,6 +137,7 @@ def test_upload_file_to_s3_success(mock_unpack_service):
     assert kwargs["Key"] == "test_dir/test_file.txt"
     assert kwargs["Tagging"] == "retention=7days"
 
+
 def test_upload_file_to_s3_skip_existing(mock_unpack_service):
     service, mock_s3_client, _ = mock_unpack_service
 
