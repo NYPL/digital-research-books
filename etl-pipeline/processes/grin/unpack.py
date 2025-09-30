@@ -87,7 +87,7 @@ class GRINUnpackService:
                     Body=file_data,
                     Bucket=self.bucket,
                     Key=s3_key,
-                    Expires=expiration_time,
+                    Tagging="retention=7days",
                 )
                 logger.info(f"Uploaded {file_name} to S3.")
             else:
