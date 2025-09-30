@@ -80,7 +80,7 @@ const SearchResults: React.FC<{
 
   const sendSearchQuery = async (searchQuery: SearchQuery) => {
     router.push({
-      pathname: "/search",
+      pathname: "/research-assistant-search",
       query: toLocationQuery(toApiQuery(searchQuery)),
     });
   };
@@ -195,7 +195,7 @@ const SearchResults: React.FC<{
 
   const buildTagSetData = (filters: Filter[]) => {
     const tagSetData = [];
-    for (let filter of filters) {
+    for (const filter of filters) {
       tagSetData.push({
         label: <Text isCapitalized>{filter.value}</Text>,
       });
