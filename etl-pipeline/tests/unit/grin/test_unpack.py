@@ -135,16 +135,7 @@ def test_upload_file_to_s3_success(mock_unpack_service):
     assert kwargs["Body"] == file_data
     assert kwargs["Bucket"] == service.bucket
     assert kwargs["Key"] == "test_dir/test_file.txt"
-
-    expiration_time = kwargs["Expires"]
-    assert isinstance(expiration_time, datetime)
-    time_difference = expiration_time - datetime.now(timezone.utc)
-    assert (
-        timedelta(weeks=1) - timedelta(minutes=5)
-        < time_difference
-        < timedelta(weeks=1) + timedelta(minutes=5)
-    )
-
+    assert kwargs["Tagging"] == "retention=7days"
 
 def test_upload_file_to_s3_skip_existing(mock_unpack_service):
     service, mock_s3_client, _ = mock_unpack_service
