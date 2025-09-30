@@ -5,7 +5,6 @@ import {
   Toggle,
 } from "@nypl/design-system-react-components";
 import FilterLanguage from "./FilterLanguage";
-import FilterBookFormat from "./FilterFormat";
 import FilterYears from "./FilterYears";
 import { FacetItem } from "~/src/types/DataModel";
 import { Filter } from "~/src/types/SearchQuery";
@@ -16,13 +15,6 @@ import {
 } from "~/src/util/SearchQueryUtils";
 import { errorMessagesText } from "~/src/constants/labels";
 import filterFields from "~/src/constants/filters";
-
-/**
- * Shows a form with the Languages, Format and Year filters
- *
- *
- * submitOnChange: Toggles whether to automatically submit state changes
- */
 
 const Filters: React.FC<{
   filters: Filter[];
@@ -41,7 +33,6 @@ const Filters: React.FC<{
 }) => {
     const [dateRangeError, setDateRangeError] = useState("");
     const [filters, setFilters] = useState(propFilters);
-    const [showAll, setShowAll] = useState(propShowAll);
 
     const onLanguageChange = (languages: SelectedItems) => {
       const multiSelectId = isModal
@@ -57,25 +48,6 @@ const Filters: React.FC<{
       const newFilters = [
         ...findFiltersExceptField(filters, filterFields.language),
         ...languageFilters,
-      ];
-      setFilters(newFilters);
-      changeFilters(newFilters);
-    };
-
-    const onBookFormatChange = (formats) => {
-      const multiSelectId = isModal
-        ? "format-multiselect-modal"
-        : "format-multiselect";
-      const selectedFormats = formats[multiSelectId]?.items || [];
-      const formatFilters = selectedFormats
-        ? selectedFormats.map((format) => ({
-          field: filterFields.format,
-          value: format,
-        }))
-        : [];
-      const newFilters = [
-        ...findFiltersExceptField(filters, filterFields.format),
-        ...formatFilters,
       ];
       setFilters(newFilters);
       changeFilters(newFilters);
@@ -106,22 +78,17 @@ const Filters: React.FC<{
         setDateRangeError(errorMessagesText.emptySearch);
       }
 
-      if (startYear && endYear && endYear.value < startYear.value) {
+      if (
+        startYear &&
+        endYear &&
+        startYear.value !== "" &&
+        endYear.value !== "" &&
+        endYear.value < startYear.value
+      ) {
         setDateRangeError(errorMessagesText.invalidDate);
       } else {
         changeFilters(removeEmptyFilters(filters));
       }
-    };
-
-    /**
-     * Toggles the "Show All" filter.
-     * If we should show only what's available online,
-     *  showAll=false and this checkbox is checked
-     */
-
-    const toggleShowAll = (e) => {
-      setShowAll(!e.target.checked);
-      changeShowAll(!e.target.checked);
     };
 
     const toggleGovDoc = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,17 +109,6 @@ const Filters: React.FC<{
     const renderFilterComponets = () => (
       <>
         <Toggle
-          labelText="Available Online"
-          onChange={(e) => {
-            toggleShowAll(e);
-          }}
-          isChecked={!showAll}
-          size="small"
-          id={
-            isModal ? "available-online-toggle-modal" : "available-online-toggle"
-          }
-        />
-        <Toggle
           labelText="Limit to US government documents"
           onChange={(e) => {
             toggleGovDoc(e);
@@ -160,11 +116,6 @@ const Filters: React.FC<{
           isChecked={!!govDocFilter && govDocFilter.value === "onlyGovDoc"}
           size="small"
           id="gov-doc-toggle"
-        />
-        <FilterBookFormat
-          selectedFormats={findFiltersForField(filters, filterFields.format)}
-          isModal={isModal}
-          onFormatChange={(format) => onBookFormatChange(format)}
         />
         <FilterLanguage
           languages={languages}

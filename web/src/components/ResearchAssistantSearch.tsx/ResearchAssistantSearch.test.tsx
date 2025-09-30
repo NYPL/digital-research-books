@@ -4,7 +4,6 @@ import SearchResults from "./ResearchAssistantSearch";
 import { FilterYearsTests } from "./SearchFilters/FilterYearsTests";
 import userEvent from "@testing-library/user-event";
 import { FilterLanguagesCommonTests } from "./SearchFilters/FilterLanguagesTests";
-import { FilterFormatTests } from "./SearchFilters/FilterFormatTests";
 import mockRouter from "next-router-mock";
 import { searchResults } from "~/src/__tests__/fixtures/SearchResultFixture";
 import { ApiSearchResult, SearchQuery } from "~/src/types/SearchQuery";
@@ -90,17 +89,10 @@ describe("Renders Search Results Page", () => {
       expect(within(modal).getByRole("combobox", { name: "Sort By" })).toHaveValue(
         "Relevance"
       );
-      expect(
-        within(modal).getByRole("checkbox", { name: "Available Online" })
-      ).toBeChecked();
       const languages = within(modal).getByRole("group", {
         name: "Language",
       });
       expect(languages).toBeInTheDocument();
-      // expect(
-      //   within(languages).getByRole("checkbox", { name: "Filter Languages" })
-      // ).not.toBeChecked();
-      FilterFormatTests();
       const pubYear = within(modal).getByRole("region", {
         name: "Date filter",
       });
@@ -128,7 +120,7 @@ describe("Renders Search Results Page", () => {
         expect(modalItemsPerPage).toBeVisible();
         await userEvent.selectOptions(modalItemsPerPage, "20");
         expect(mockRouter).toMatchObject({
-          pathname: "/search",
+          pathname: "/research-assistant-search",
           query: {
             query: "keyword:Animal Crossing",
             size: "20",
@@ -151,34 +143,13 @@ describe("Renders Search Results Page", () => {
         await userEvent.selectOptions(sortBy, "Title A-Z");
         expect(sortBy).toHaveValue("Title A-Z");
         expect(mockRouter).toMatchObject({
-          pathname: "/search",
+          pathname: "/research-assistant-search",
           query: {
             query: "keyword:Animal Crossing",
             sort: "title:ASC",
           },
         });
 
-        await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
-        expect(
-          screen.getByRole("button", { name: "Filter results" })
-        ).toBeInTheDocument();
-      }, 15000);
-    });
-    describe("Available Online", () => {
-      test("Changing checkbox sends new search", async () => {
-        await clickFiltersButton();
-        const modalCheckbox = screen.getByRole("checkbox", {
-          name: "Available Online",
-        });
-        await userEvent.click(modalCheckbox);
-        expect(modalCheckbox).not.toBeChecked();
-        expect(mockRouter).toMatchObject({
-          pathname: "/search",
-          query: {
-            query: "keyword:Animal Crossing",
-            showAll: "true",
-          },
-        });
         await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
         expect(
           screen.getByRole("button", { name: "Filter results" })
@@ -205,7 +176,7 @@ describe("Renders Search Results Page", () => {
 
         await userEvent.click(englishCheckbox);
         expect(mockRouter).toMatchObject({
-          pathname: "/search",
+          pathname: "/research-assistant-search",
           query: {
             filter: "language:English",
             query: "keyword:Animal Crossing",
@@ -227,27 +198,6 @@ describe("Renders Search Results Page", () => {
         expect(englishCheckbox2).toBeChecked();
       }, 20000);
     });
-    describe("Format filter", () => {
-      test("Clicking new format sends new search", async () => {
-        await clickFiltersButton();
-        const formats = screen.getByRole("group", { name: "Format" });
-        const downloadable = within(formats).getByRole("checkbox", {
-          name: "Available to download",
-        });
-        await userEvent.click(downloadable);
-        expect(mockRouter).toMatchObject({
-          pathname: "/search",
-          query: {
-            filter: "format:downloadable",
-            query: "keyword:Animal Crossing",
-          },
-        });
-        await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
-        expect(
-          screen.getByRole("button", { name: "Filter results" })
-        ).toBeInTheDocument();
-      }, 15000);
-    });
     describe("Publication Year", () => {
       FilterYearsTests(
         true,
@@ -264,7 +214,7 @@ describe("Renders Search Results Page", () => {
         });
         await userEvent.click(govDocCheckbox);
         expect(mockRouter).toMatchObject({
-          pathname: "/search",
+          pathname: "/research-assistant-search",
           query: {
             filter: "govDoc:onlyGovDoc",
             query: "keyword:Animal Crossing",
@@ -284,11 +234,13 @@ describe("Renders Search Results Page", () => {
       ).not.toBeInTheDocument();
 
       await clickFiltersButton();
-      const formats = screen.getByRole("group", { name: "Format" });
-      const downloadable = within(formats).getByRole("checkbox", {
-        name: "Available to download",
+      const languages = screen.getByRole("group", {
+        name: "Language",
       });
-      await userEvent.click(downloadable);
+      const englishCheckbox = within(languages).getByRole("checkbox", {
+        name: "English (6)",
+      });
+      await userEvent.click(englishCheckbox);
       await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
 
       expect(
@@ -298,18 +250,20 @@ describe("Renders Search Results Page", () => {
 
     test("Resets filters when clicked", async () => {
       await clickFiltersButton();
-      const formats = screen.getByRole("group", { name: "Format" });
-      const downloadable = within(formats).getByRole("checkbox", {
-        name: "Available to download",
+      const languages = screen.getByRole("group", {
+        name: "Language",
       });
-      await userEvent.click(downloadable);
+      const englishCheckbox = within(languages).getByRole("checkbox", {
+        name: "English (6)",
+      });
+      await userEvent.click(englishCheckbox);
       await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
       const clearFiltersButton = screen.getByRole("button", {
         name: "Clear Filters",
       });
       await userEvent.click(clearFiltersButton);
       expect(mockRouter).toMatchObject({
-        pathname: "/search",
+        pathname: "/research-assistant-search",
         query: {
           query: "keyword:Animal Crossing",
         },
@@ -524,7 +478,7 @@ describe("Renders Search Results Page", () => {
       expect(nextLink).toBeInTheDocument();
       await userEvent.click(nextLink);
       expect(mockRouter).toMatchObject({
-        pathname: "/search",
+        pathname: "/research-assistant-search",
         query: {
           page: 2,
           query: "keyword:Animal Crossing",
@@ -536,7 +490,7 @@ describe("Renders Search Results Page", () => {
       expect(twoButton).toBeInTheDocument();
       await userEvent.click(twoButton);
       expect(mockRouter).toMatchObject({
-        pathname: "/search",
+        pathname: "/research-assistant-search",
         query: {
           page: 2,
           query: "keyword:Animal Crossing",
@@ -760,15 +714,18 @@ describe("Renders selected languages in language accordion when there are no mat
   });
 
   test("Show Russian (0) checkbox", async () => {
-    const formats = screen.getByRole("group", { name: "Format" });
-    const requestable = within(formats).getByRole("checkbox", {
-      name: "Available to request",
+    const fromInput = screen.getByRole("spinbutton", {
+      name: "From",
     });
-    await userEvent.click(requestable);
+    const applyButton = screen.getByRole("button", {
+      name: "Apply",
+    });
+    await userEvent.type(fromInput, "2000");
+    await userEvent.click(applyButton);
     expect(mockRouter).toMatchObject({
-      pathname: "/search",
+      pathname: "/research-assistant-search",
       query: {
-        filter: "language:Russian,format:requestable",
+        filter: "language:Russian,startYear:2000",
         query: 'title:"New York City"',
       },
     });

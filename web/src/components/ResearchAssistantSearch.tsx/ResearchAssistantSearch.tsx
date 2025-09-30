@@ -29,7 +29,7 @@ import {
 import { sortMap } from "~/src/constants/sorts";
 import ResultsList from "../ResultsList/ResultsList";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
-import Filters from "./SearchFilters/ResultsFilters";
+import Filters from "./SearchFilters/SearchFilters";
 import ResultsSorts from "../ResultsSorts/ResultsSorts";
 import SearchHeader from "../SearchHeader/SearchHeader";
 import { ApiWork } from "~/src/types/WorkQuery";
@@ -91,7 +91,7 @@ const SearchResults: React.FC<{
     if (searchQuery.display) {
       return `${searchQuery.display.field}: "${searchQuery.display.query}"`;
     }
-    //If not, the actual query is shown.
+    // If not, the actual query is shown.
     const queries = searchQuery.queries.map((query: Query, index: any) => {
       const joiner = index < searchQuery.queries.length - 1 ? " and " : "";
       return `${query.field}: "${query.query}"${joiner}`;
@@ -197,7 +197,7 @@ const SearchResults: React.FC<{
     const tagSetData = [];
     for (const filter of filters) {
       tagSetData.push({
-        label: <Text isCapitalized>{filter.value}</Text>,
+        label: capitalizeFirstLetter(filter.value.toString()),
       });
     }
     return tagSetData;
@@ -208,7 +208,7 @@ const SearchResults: React.FC<{
       changeFilters([]);
     } else {
       const newFilters = searchQuery.filters.filter(
-        (filter) => tagSet.id !== filter.value
+        (filter) => tagSet.id !== `${filter.field}-${filter.value}`
       );
       changeFilters(newFilters);
     }
