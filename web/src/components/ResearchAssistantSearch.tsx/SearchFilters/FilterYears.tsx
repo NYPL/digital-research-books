@@ -73,6 +73,7 @@ const FilterYears: React.FC<{
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     changeDate(e, true);
                   }}
+                  flex="1 1 0"
                 />
                 <TextInput
                   labelText="To"
@@ -84,6 +85,7 @@ const FilterYears: React.FC<{
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     changeDate(e, false);
                   }}
+                  flex="1 1 0"
                 />
                 {onSubmit && (
                   <Button
@@ -94,6 +96,7 @@ const FilterYears: React.FC<{
                     }
                     onClick={() => onSubmit()}
                     variant="secondary"
+                    marginTop="0.125rem"
                   >
                     Apply
                   </Button>
