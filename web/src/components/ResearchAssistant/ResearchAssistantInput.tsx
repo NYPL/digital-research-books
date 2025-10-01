@@ -103,14 +103,15 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
         </Box>
       )}
       <Box
-        display="flex"
-        flexDir="row"
-        gap="0"
+        alignItems="center"
         border="1px solid"
         borderColor="ui.border.default"
         borderRadius="8px"
         backgroundColor="ui.white"
-        paddingRight="s"
+        display="flex"
+        flexDir="row"
+        gap="0"
+        padding="s"
       >
         <TextInput
           autoComplete="off"
@@ -126,33 +127,37 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
           value={inputText}
           flex="1"
           height="fit-content"
-          minHeight="40px"
+          minHeight="1.375rem"
           sx={{
             textarea: {
               border: "none",
-              borderRadius: "8px",
-              height: "64px",
-              minHeight: "64px",
+              height: "1.375rem",
+              minHeight: "1.375rem",
               maxHeight: "132px", // 6 rows
               resize: "none",
-              flexGrow: 2,
+              padding: 0
+            },
+            "textarea:focus": {
+              outlineOffset: "14px",
             },
           }}
         />
         <Button
-          type="submit"
-          isDisabled={isDisabled || inputText === ""}
-          id="send-chat-button"
+          aria-label="Send"
           backgroundColor="transparent"
-          height="64px"
           borderRadius="8px"
+          isDisabled={isDisabled || inputText === ""}
+          height="24px"
+          id="send-chat-button"
+          padding="0"
+          type="submit"
+          width="24px"
           _hover={{
             backgroundColor: "ui.white",
           }}
           _disabled={{
             backgroundColor: "transparent",
           }}
-          aria-label="Send"
         >
           <ResearchAssistantSendIcon isDisabled={isDisabled || inputText === ""} />
         </Button>
