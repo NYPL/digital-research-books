@@ -13,7 +13,7 @@ from logger import create_log
 
 logger = create_log(__name__)
 
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=8)
 
 
 def shutdown_executor():
