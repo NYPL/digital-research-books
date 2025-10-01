@@ -30,7 +30,7 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
       setInputText("");
 
       if (inputRef.current && inputRef.current) {
-        inputRef.current.style.height = "40px";
+        inputRef.current.style.height = "1.375rem";
         inputRef.current.value = "";
       }
 
