@@ -62,7 +62,6 @@ const AccessSection: React.FC = () => {
                             size="body1"
                             fontWeight="medium"
                             color="ui.white"
-                            noSpace
                         >
                             {feature.title}
                         </Text>

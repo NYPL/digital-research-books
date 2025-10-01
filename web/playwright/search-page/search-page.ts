@@ -43,7 +43,7 @@ class SearchPage {
   constructor(page: Page) {
     this.page = page;
     this.homepageSearchBox = page.locator("[aria-label='Item Search']");
-    this.searchButton = page.locator("#searchbar-button-search-bar");
+    this.searchButton = page.locator("#search-bar-submit-button");
 
     this.requestableCheckbox = page.locator("span:text('Requestable')");
     this.firstLoginForOptionsButton = page.locator(

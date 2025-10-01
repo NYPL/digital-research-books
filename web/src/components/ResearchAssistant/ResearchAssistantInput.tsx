@@ -85,7 +85,7 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
         <Box display="flex" justifyContent="flex-end" marginBottom="xs">
           {[1, 2, 3].map((item) => (
             <Button
-              buttonType="secondary"
+              variant="secondary"
               id={`related-item-btn-${item}`}
               key={item}
               bgColor="ui.white"
@@ -114,7 +114,7 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
       >
         <TextInput
           autoComplete="off"
-          disabled={isDisabled}
+          isDisabled={isDisabled}
           id="chat-input"
           labelText={""}
           onChange={(e) => setInputText(e.target.value)}

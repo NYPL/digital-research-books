@@ -15,7 +15,7 @@ const SearchHeader: React.FC<{
       <DrbHero />
       <Box bg="ui.gray.x-light-cool">
         <Box m="0 auto" maxW="1280px" p="s">
-          <Box width={{ md: "85%" }}>
+          <Box>
             <SearchForm searchQuery={searchQuery} />
           </Box>
         </Box>

@@ -26,13 +26,27 @@ const HelpSection: React.ForwardRefExoticComponent<
                 marginBottom="l"
             >
                 <>
-                    Have a question? Get <Link to="#help">help</Link> or{" "}
-                    <Link to="#learn-more">learn more about this project</Link>
+                    Have a question? Get{" "}
+                    <Link
+                        to="https://www.nypl.org/get-help/contact-us"
+                        color="section.research.secondary"
+                        isUnderlined
+                    >
+                        help
+                    </Link>{" "}
+                    or{" "}
+                    <Link
+                        to="#learn-more"
+                        color="section.research.secondary"
+                        isUnderlined
+                    >
+                        learn more about this project
+                    </Link>
                 </>
             </Text>
             <Button
                 id="try-it-button"
-                buttonType="secondary"
+                variant="secondary"
                 borderColor="section.research.secondary"
                 color="section.research.secondary"
                 margin="0 auto"
