@@ -109,7 +109,7 @@ const ResearchAssistant: React.FC = () => {
         ]}
       >
         <DrbHero />
-        <ResearchAssistantNav />
+        <ResearchAssistantNav activePage="vra" />
       </DrbBreakout>
       <Box display="flex" flexDir="row" overflow="hidden">
         {results && Object.keys(results).length > 0 && (

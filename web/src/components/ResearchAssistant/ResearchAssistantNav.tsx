@@ -6,18 +6,22 @@ import {
 } from "@nypl/design-system-react-components";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 
-const ResearchAssistantNav: React.FC = () => {
+interface ResearchAssistantNavProps {
+  activePage: "vra" | "keyword";
+}
+
+const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({ activePage}) => {
     return (
         <SubNav
             actionBackgroundColor="section.research.primary-05"
             highlightColor="section.research.secondary"
             primaryActions={
                 <>
-                    <SubNavLink href="/research-assistant-landing" isSelected id="subnav-vra">
+                    <SubNavLink href="/research-assistant-landing" isSelected={activePage === "vra"} id="subnav-vra">
                         <ResearchAssistantIcon />
                         Virtual Research Assistant
                     </SubNavLink>
-                    <SubNavLink href="/" id="subnav-keyword-search">
+                    <SubNavLink href="/keyword-search-landing" isSelected={activePage === "keyword"} id="subnav-keyword-search">
                         <Icon name="search" align="left" size="medium" />
                         Keyword search
                     </SubNavLink>
