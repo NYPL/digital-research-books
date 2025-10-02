@@ -2,7 +2,7 @@ import { Banner, Text } from "@nypl/design-system-react-components";
 import React from "react";
 import Link from "../Link/Link";
 
-const ThumbsDownIcon: React.FC = () => {
+const ResultsBanner: React.FC = () => {
     const bannerContent = (
         <Text>
             This tool only searches <strong>public domain scholarly e-books from our
@@ -18,4 +18,4 @@ const ThumbsDownIcon: React.FC = () => {
     return <Banner content={bannerContent} variant="warning" marginRight="l" marginY="s" />;
 };
 
-export default ThumbsDownIcon;
+export default ResultsBanner;
