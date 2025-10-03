@@ -1,8 +1,6 @@
 import { Box, Pagination, Text } from "@nypl/design-system-react-components";
 import { useState } from "react";
-import {
-  searchResultsFetcher,
-} from "~/src/lib/api/SearchApi";
+import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
 import {
   CatalogSearchResults,
@@ -10,16 +8,13 @@ import {
 } from "~/src/types/ResearchAssistant";
 import { SearchQueryDefaults, SearchQuery } from "~/src/types/SearchQuery";
 import { toApiQuery } from "~/src/util/apiConversion";
-import ResultsList from "../ResultsList/ResultsList";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import ResearchAssistantResultsList from "./ResearchAssistantResultsList";
 
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;
 }> = ({ results }) => {
-  const {
-    setViewState,
-    showWebReader,
-  } = useResearchAssistant();
+  const { setViewState, showWebReader } = useResearchAssistant();
 
   const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
 
@@ -31,6 +26,13 @@ const CatalogResults: React.FC<{
     searchQuery?.page <= resultsPaging?.lastPage
       ? resultsPaging?.currentPage * resultsPaging?.recordsPerPage
       : numberOfWorks;
+  const resultsPagingText =
+    numberOfWorks > 0
+      ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
+        ? numberOfWorks.toLocaleString()
+        : lastElement.toLocaleString()
+      } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
+      : "Viewing 0 items";
 
   const onPageChange = async (select: number) => {
     const newSearchQuery: SearchQuery = {
@@ -78,16 +80,11 @@ const CatalogResults: React.FC<{
           flex="1"
         >
           <Box>
-            <Text fontSize="2" fontWeight="semibold" paddingY="xs" noSpace>
-              {numberOfWorks > 0
-                ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
-                  ? numberOfWorks.toLocaleString()
-                  : lastElement.toLocaleString()
-                } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
-                : "Viewing 0 items"}
+            <Text fontSize="2" fontWeight="semibold" paddingY="xs">
+              {resultsPagingText}
             </Text>
 
-            <ResultsList works={results.works} />
+            <ResearchAssistantResultsList works={results.works} />
 
             <Pagination
               pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}

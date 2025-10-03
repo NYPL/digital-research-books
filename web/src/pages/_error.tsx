@@ -68,18 +68,18 @@ const Error = ({ statusCode }) => {
           marginTop={{ base: "xl", md: "xxxl" }}
           width={100}
         />
-        <Heading marginTop="s" marginBottom="s">
+        <Heading marginY="s">
           {errorValues.heading}
         </Heading>
         <Box>
-          <Text noSpace display={{ base: "inline", md: "block" }}>
+          <Text display={{ base: "inline", md: "block" }}>
             {errorValues.subText}
           </Text>
-          <Text noSpace display="inline">
+          <Text display="inline">
             {errorValues.tryText}
           </Text>
           <Button
-            buttonType="text"
+            variant="text"
             display="inline-block"
             id="contact-button"
             onClick={onOpen}
@@ -95,7 +95,7 @@ const Error = ({ statusCode }) => {
           marginTop={{ base: "xl", md: "xxl" }}
           marginBottom={{ base: "xxl", md: "xxxl" }}
         >
-          <Link to="/" linkType="buttonPrimary">
+          <Link to="/" variant="buttonPrimary">
             Back to Digital Research Books
           </Link>
         </Box>

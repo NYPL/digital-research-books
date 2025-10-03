@@ -57,7 +57,7 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
           paddingY="xs"
         >
           <Box className={styles.loadingSpinner}></Box>
-          <Text size="body2" color="ui.white" marginLeft="xs" noSpace>
+          <Text size="body2" color="ui.white" marginLeft="xs">
             Assistant thinking...
           </Text>
         </Box>

@@ -149,7 +149,7 @@ const Filters: React.FC<{
       {!isModal && filters.length > 0 && (
         <Button
           id="clear-filters-button"
-          buttonType="secondary"
+          variant="secondary"
           type="reset"
           onClick={() => {
             setFilters([]);

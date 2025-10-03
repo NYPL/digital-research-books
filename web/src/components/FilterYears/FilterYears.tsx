@@ -86,7 +86,7 @@ const FilterYears: React.FC<{
         </FormField>
       </FormRow>
       {dateRangeError && (
-        <HelperErrorText isInvalid={true} text={dateRangeError} />
+        <HelperErrorText marginTop="xxs" isInvalid={true} text={dateRangeError} />
       )}
       {onSubmit && (
         <Button

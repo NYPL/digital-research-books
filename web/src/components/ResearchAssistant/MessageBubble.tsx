@@ -23,8 +23,8 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
       >
         <Box className={bubbleClasses} ref={ref}>
           {isUser ? (
-            <Text className={styles.messageContent} noSpace>
-              <b>You: </b>
+            <Text className={styles.messageContent}>
+              <strong>You: </strong>
               {message.data.content}
             </Text>
           ) : (
@@ -32,12 +32,12 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               <ResearchAssistantIcon />
               <Box display="flex" flexDir="column" gap="m">
                 <Box>
-                  <Text color="section.research.primary" isBold noSpace>
+                  <Text color="section.research.primary" isBold>
                     Virtual Research Assistant:
                   </Text>
                   {message.data.content}
                 </Box>
-                <Text color="ui.gray.semi-dark" noSpace>
+                <Text size="caption" color="ui.gray.semi-dark">
                   AI-generated. Verify results.
                 </Text>
               </Box>

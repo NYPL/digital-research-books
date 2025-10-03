@@ -12,7 +12,7 @@ const UpBlurb: React.FC<{ publishers: Agent[] }> = ({ publishers }) => {
       marginBottom={{ base: "s", lg: "0" }}
     >
       <Icon name="errorOutline" size="small" />
-      <Text size="caption" noSpace marginLeft="xxs">
+      <Text size="caption" marginLeft="xxs">
         Digitalized by NYPL with permission of {publisher}
       </Text>
     </Flex>

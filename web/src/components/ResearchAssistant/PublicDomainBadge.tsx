@@ -1,15 +1,15 @@
 import React from "react";
 import { StatusBadge } from "@nypl/design-system-react-components";
 
-const FeaturedEditionBadge: React.FC = () => {
+const PublicDomainBadge: React.FC = () => {
   return (
     <StatusBadge
-      variant="recommendation"
+      variant="positive"
       width={{ base: "100%", md: "fit-content" }}
     >
-      FEATURED EDITION
+      PUBLIC DOMAIN
     </StatusBadge>
   );
 };
 
-export default FeaturedEditionBadge;
+export default PublicDomainBadge;

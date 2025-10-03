@@ -11,7 +11,11 @@ import {
   CardActions,
   CardContent,
   CardHeading,
-  TemplateAppContainer,
+  Template,
+  TemplateBreakout,
+  TemplateContent,
+  TemplateMain,
+  TemplateFull,
 } from "@nypl/design-system-react-components";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import { EditionCard } from "~/src/components/EditionCard/EditionCard";
@@ -39,18 +43,18 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
   //Edition Card Preprocessing
   const passedInFeaturedEdition = featuredEditionId
     ? work.editions.find(
-        (edition) => edition.edition_id === Number(featuredEditionId)
-      )
+      (edition) => edition.edition_id === Number(featuredEditionId)
+    )
     : undefined;
 
   const featuredEdition = passedInFeaturedEdition
     ? passedInFeaturedEdition
     : work.editions.find(
-        (edition: WorkEdition) =>
-          edition.items &&
-          edition.items.length &&
-          EditionCardUtils.getPreviewItem(edition.items) !== undefined
-      );
+      (edition: WorkEdition) =>
+        edition.items &&
+        edition.items.length &&
+        EditionCardUtils.getPreviewItem(edition.items) !== undefined
+    );
 
   const toggleShowAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     router.push({
@@ -75,10 +79,10 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
     </DrbBreakout>
   );
 
-  const contentTopElement = (
+  const fullElement = (
     <>
       <Box>
-        <Heading level="h1" size="heading2" id="work-title">
+        <Heading level="h1" size="heading2" id="work-title" marginBottom="s">
           {work.title}
         </Heading>
         {work.sub_title && <Box>{work.sub_title}</Box>}
@@ -89,7 +93,7 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
         )}
         {props.backUrl && (
           <Box paddingTop="s">
-            <Link to={props.backUrl} linkType="backwards">
+            <Link to={props.backUrl} variant="backwards">
               Back to search results
             </Link>
           </Box>
@@ -97,11 +101,12 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
       </Box>
       {featuredEdition && (
         <Box paddingTop="l">
-          <EditionCard 
-            authors={work.authors} 
+          <EditionCard
+            authors={work.authors}
             edition={featuredEdition}
             title={work.title}
-            isFeaturedEdition={true} />
+            isFeaturedEdition={true}
+          />
         </Box>
       )}
       {work.inCollections && work.inCollections.length > 0 && (
@@ -133,7 +138,7 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
           </CardContent>
           <CardActions width="165px">
             <Link
-              linkType="button"
+              variant="buttonPrimary"
               to={"/collection/" + work.inCollections[0].uuid}
             >
               Browse Collection
@@ -144,7 +149,7 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
     </>
   );
 
-  const contentPrimaryElement = (
+  const contentElement = (
     <>
       <WorkDetailDefinitionList work={work} />
       {work.editions && work.editions.length > 1 && (
@@ -154,11 +159,11 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
           marginBottom="l"
         />
       )}
-      <Box id="nypl-item-details">
+      <Box id="nypl-item-details" paddingBottom="l">
         {work.editions && work.editions.length > 1 && (
           <>
-            <Flex justify="space-between" marginBottom="xl">
-              <Heading level="h2" size="heading5" id="all-editions" noSpace>
+            <Flex justify="space-between" marginBottom="s">
+              <Heading level="h2" size="heading5" id="all-editions">
                 Other Editions
               </Heading>
 
@@ -192,11 +197,13 @@ const WorkDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
     </>
   );
   return (
-    <TemplateAppContainer
-      breakout={breakoutElement}
-      contentTop={contentTopElement}
-      contentPrimary={contentPrimaryElement}
-    />
+    <Template>
+      <TemplateBreakout>{breakoutElement}</TemplateBreakout>
+      <TemplateMain>
+        <TemplateFull>{fullElement}</TemplateFull>
+        <TemplateContent>{contentElement}</TemplateContent>
+      </TemplateMain>
+    </Template>
   );
 };
 

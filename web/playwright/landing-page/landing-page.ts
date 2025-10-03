@@ -55,7 +55,7 @@ class LandingPage {
       "[aria-label='Select a search category']"
     );
     this.homepageSearchBox = page.locator("[aria-label='Item Search']");
-    this.searchButton = page.locator("#searchbar-button-search-bar");
+    this.searchButton = page.locator("#search-bar-submit-button");
     this.firstSearchResultAuthor = page.locator(
       "a:text('Corelli, Marie') >> nth=0"
     );
@@ -132,13 +132,13 @@ class LandingPage {
 
     this.siteNameHeading = page.locator("h1:text('Digital Research Books')");
     this.homeBreadcrumbLink = page.locator(
-      "a[href='https://www.nypl.org'] > .breadcrumb-label"
+      "a[href='https://www.nypl.org'] > .ds-breadcrumbs-link-label"
     );
     this.researchBreadcrumbLink = page.locator(
-      "a[href='https://www.nypl.org/research'] > .breadcrumb-label"
+      "a[href='https://www.nypl.org/research'] > .ds-breadcrumbs-link-label"
     );
     this.digitalResearchBooksBetaBreadcrumbLink = page.locator(
-      "span.breadcrumb-label:text('Digital Research Books Beta')"
+      "span.ds-breadcrumbs-link-label:text('Digital Research Books Beta')"
     );
     this.introText = page.locator(
       "span:text('Find millions of digital books for research from multiple sources')"
@@ -148,7 +148,7 @@ class LandingPage {
       "[aria-label='Select a search category']"
     );
     this.homepageSearchBox = page.locator("[aria-label='Item Search']");
-    this.searchButton = page.locator("#searchbar-button-search-bar");
+    this.searchButton = page.locator("#search-bar-submit-button");
     this.advancedSearchLink = page.locator("[href='/advanced-search']");
     this.collectionsHeading = page.locator(
       "h2:text('Recently Added Collections')"

@@ -1,6 +1,4 @@
 import React, { useEffect } from "react";
-import ResearchAssistantWindow from "./ResearchAssistantWindow";
-import ResearchAssistantInput from "./ResearchAssistantInput";
 import {
   Box,
   Button,
@@ -10,8 +8,6 @@ import {
 } from "@nypl/design-system-react-components";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
-import ResearchAssistantNav from "./ResearchAssistantNav";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import {
   ResearchAssistantProvider,
   useResearchAssistant,
@@ -20,7 +16,12 @@ import CatalogResults from "./CatalogResults";
 import ItemResults from "./ItemResults";
 import ResearchAssistantViewer from "./ResearchAssistantViewer";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
+import ResearchAssistantIcon from "./ResearchAssistantIcon";
+import ResearchAssistantInput from "./ResearchAssistantInput";
+import ResearchAssistantWindow from "./ResearchAssistantWindow";
+import ResearchAssistantNav from "./ResearchAssistantNav";
 import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
 
 const ResearchAssistantInner: React.FC = () => {
   const {
@@ -75,7 +76,7 @@ const ResearchAssistantInner: React.FC = () => {
             {historyStack.length > 1 && (
               <Box padding="s" borderBottom="1px solid" borderColor="ui.border">
                 <Button
-                  buttonType="text"
+                  variant="text"
                   id="back-button"
                   color="section.research.secondary"
                   onClick={goToPreviousState}
@@ -135,8 +136,8 @@ const ResearchAssistantInner: React.FC = () => {
             paddingY="s"
             borderBottom="1px white solid"
           >
-            <Heading level="h2" size="heading3" color="ui.white" margin="0">
-              Virtual Research Assistant
+            <Heading level="h2" size="heading3" color="ui.white">
+              <ResearchAssistantIcon /> Virtual Research Assistant
             </Heading>
             <Button onClick={clearHistory} id="clear-history-button">
               Clear chat

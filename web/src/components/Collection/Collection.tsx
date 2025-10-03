@@ -7,7 +7,10 @@ import {
   HorizontalRule,
   Pagination,
   SimpleGrid,
-  TemplateAppContainer,
+  Template,
+  TemplateBreakout,
+  TemplateContent,
+  TemplateMain,
   Text,
 } from "@nypl/design-system-react-components";
 import { collectionSortMap } from "~/src/constants/sorts";
@@ -44,8 +47,13 @@ const Collection: React.FC<{
   if (!collections) return <Loading />;
 
   const { metadata, links, publications } = collections;
-  const { itemsPerPage, numberOfItems, currentPage, title, description } =
-    metadata;
+  const {
+    itemsPerPage,
+    numberOfItems,
+    currentPage,
+    title,
+    description,
+  } = metadata;
   const totalItems = numberOfItems;
   const collectionId = CollectionUtils.getId(links);
   const lastPageLink = links[links.length - 1].href;
@@ -137,34 +145,24 @@ const Collection: React.FC<{
     </DrbBreakout>
   );
 
-  const contentTopElement = (
+  const contentElement = (
     <>
       <Heading level="h2" marginBottom="xl">
-        {`Collection - ${title}`}
+        Collection - {title}
       </Heading>
       <Heading level="h3" marginBottom="l">
         About this collection
       </Heading>
       <Box>{description}</Box>
-    </>
-  );
-
-  const contentPrimaryElement = (
-    <>
-      <HorizontalRule bg="section.research.primary" marginBottom="xl" />
-      <Heading level="h3">In this collection</Heading>
+      <HorizontalRule bg="section.research.primary" marginY="xl" />
+      <Heading level="h3" marginBottom="s">In this collection</Heading>
       <Flex justify="space-between" marginBottom="xl" align="center">
-        <Text
-          fontSize="desktop.heading.heading5"
-          fontWeight="heading.heading5"
-          noSpace
-        >
+        <Text fontSize="desktop.heading.heading5" fontWeight="heading.heading5">
           {totalItems > 0
-            ? `Viewing ${firstElement.toLocaleString()} - ${
-                totalItems < lastElement
-                  ? totalItems.toLocaleString()
-                  : lastElement.toLocaleString()
-              } of ${totalItems.toLocaleString()} items`
+            ? `Viewing ${firstElement.toLocaleString()} - ${totalItems < lastElement
+              ? totalItems.toLocaleString()
+              : lastElement.toLocaleString()
+            } of ${totalItems.toLocaleString()} items`
             : "Viewing 0 items"}
         </Text>
         <Form id="results-sorts-form">
@@ -180,29 +178,30 @@ const Collection: React.FC<{
       <SimpleGrid columns={1} gap="grid.l">
         {publications
           ? publications.map((pub, c) => {
-              return (
-                <CollectionItem
-                  publication={pub}
-                  key={`collection-item-${c}`}
-                />
-              );
-            })
+            return (
+              <CollectionItem
+                publication={pub}
+                key={`collection-item-${c}`}
+              />
+            );
+          })
           : null}
       </SimpleGrid>
       <Pagination
         pageCount={pageCount}
         initialPage={currentPage}
         onPageChange={(e) => onPageChange(e)}
-        __css={{ paddingTop: "m" }}
+        __css={{ paddingTop: "m", paddingBottom: "l" }}
       />
     </>
   );
   return (
-    <TemplateAppContainer
-      breakout={breakoutElement}
-      contentTop={contentTopElement}
-      contentPrimary={contentPrimaryElement}
-    />
+    <Template>
+      <TemplateBreakout>{breakoutElement}</TemplateBreakout>
+      <TemplateMain>
+        <TemplateContent>{contentElement}</TemplateContent>
+      </TemplateMain>
+    </Template>
   );
 };
 
