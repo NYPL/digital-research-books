@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import {
-    Banner,
-    Box,
     Flex,
     Icon,
     SearchBar,
@@ -13,7 +11,7 @@ import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
 import { errorMessagesText, inputTerms } from "~/src/constants/labels";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import { Query, SearchField } from "~/src/types/DataModel";
-import ResultsBanner from "../ResearchAssistant/ResultsBanner";
+import KeywordSearchBanner from "../KeywordSearchLanding/KeywordSearchBanner";
 
 const KeywordSearchForm: React.FC<{
     searchQuery?: SearchQuery;
@@ -115,7 +113,7 @@ const KeywordSearchForm: React.FC<{
                     },
                 }}
             />
-            <ResultsBanner />
+            <KeywordSearchBanner />
         </Flex>
     );
 };
