@@ -72,7 +72,14 @@ const KeywordSearchForm: React.FC<{
     };
 
     return (
-        <Box>
+        <Flex
+            flexDir="column"
+            gap="s"
+            margin="0 auto"
+            maxWidth="1280px"
+            paddingX="s"
+            paddingY="l"
+        >
             <Flex alignItems="center" gap="xxs">
                 <Icon name="actionInfo" size="medium" />
                 <Text size="body2">
@@ -105,11 +112,11 @@ const KeywordSearchForm: React.FC<{
                 sx={{
                     button: {
                         bgColor: "section.research.secondary",
-                    }
+                    },
                 }}
             />
             <ResultsBanner />
-        </Box>
+        </Flex>
     );
 };
 
