@@ -14,6 +14,7 @@ import ResearchAssistantInput from "./ResearchAssistantInput";
 import ResearchAssistantResultsList from "./ResearchAssistantResultsList";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import ResearchAssistantNav from "./ResearchAssistantNav";
+import ResultsBanner from "./ResultsBanner";
 import { LinkResult } from "~/src/types/LinkQuery";
 import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
@@ -111,13 +112,11 @@ const ResearchAssistant: React.FC = () => {
         <DrbHero />
         <ResearchAssistantNav />
       </DrbBreakout>
-      <Box display="flex" flexDir="row" overflow="hidden">
+      <Box display="flex" flexDir="row">
         {results && Object.keys(results).length > 0 && (
           <Box
-            padding="s"
-            border="1px solid #e5e7eb"
-            overflowY="auto"
-            maxHeight="100vh"
+            bgColor="ui.bg.default"
+            paddingX="l"
             flex="1"
           >
             {showWebReader ? (
@@ -137,10 +136,25 @@ const ResearchAssistant: React.FC = () => {
                 </>
               )
             ) : (
-              <Box>
-                <Text fontSize="2" fontWeight="semibold" paddingY="xs">
+              <Box paddingBottom="l">
+                <Text
+                  bgColor="ui.bg.default"
+                  borderBottom="1px solid"
+                  borderColor="ui.border.default"
+                  boxSizing="content-box"
+                  fontSize="2"
+                  fontWeight="semibold"
+                  lineHeight="40px"
+                  marginX="-2rem"
+                  paddingX="l"
+                  paddingY="s"
+                  position="sticky"
+                  top="0"
+                  zIndex="999"
+                >
                   {resultsPagingText}
                 </Text>
+                <ResultsBanner />
                 <ResearchAssistantResultsList works={results.works} />
                 <Pagination
                   pageCount={
@@ -160,19 +174,32 @@ const ResearchAssistant: React.FC = () => {
           display="flex"
           flexDirection="column"
           bgColor="section.research.primary"
-          border="1px solid #e5e7eb"
           maxHeight="100vh"
+          position="sticky"
+          top="0"
         >
           <Box
+            bgColor="section.research.primary"
             display="flex"
             justifyContent="space-between"
             alignItems="center"
             paddingX="l"
             paddingY="s"
             borderBottom="1px white solid"
+            position="sticky"
+            top="0"
+            zIndex="999"
           >
-            <Heading level="h2" size="heading3" color="ui.white">
-              <ResearchAssistantIcon /> Virtual Research Assistant
+            <Heading
+              level="h2"
+              size="heading7"
+              color="ui.white"
+              display="flex"
+              alignItems="center"
+              gap="xs"
+            >
+              <ResearchAssistantIcon inCircle />
+              <span>Virtual Research Assistant</span>
             </Heading>
             <Button onClick={clearHistory} id="clear-history-button">
               Clear chat
