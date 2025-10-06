@@ -18,6 +18,7 @@ const Login: React.FC = () => {
             window.location.href = "/research-assistant-landing";
         } catch (err) {
             setError("Login failed. Please check your credentials.");
+            console.error(err);
         } finally {
             setIsLoading(false);
         }
