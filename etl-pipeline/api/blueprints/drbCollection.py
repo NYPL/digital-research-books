@@ -15,7 +15,7 @@ from ..opds2 import Feed, Publication
 from logger import create_log
 from model import Work, Edition
 from model.postgres.collection import COLLECTION_EDITIONS
-from ..decorators import deprecated, validate_token
+from ..decorators import deprecated, require_token
 
 logger = create_log(__name__)
 
@@ -26,7 +26,7 @@ collections = Blueprint("collections", __name__, url_prefix="/collections")
 @collection.route("", methods=["POST"])
 @deprecated("This endpoint is deprecated please use /collections instead.")
 @collections.route("", methods=["POST"])
-@validate_token
+@require_token
 def collectionCreate(user=None):
     logger.info("Creating new collection")
 
@@ -116,7 +116,7 @@ def _validateAutoCollectionDef(autoDef: dict) -> str:
     "This endpoint is deprecated please use /collections/replace/<uuid> instead."
 )
 @collections.route("/replace/<uuid>", methods=["POST"])
-@validate_token
+@require_token
 def collectionReplace(uuid, user=None):
     logger.info("Handling collection replacement request")
 
@@ -173,7 +173,7 @@ def collectionReplace(uuid, user=None):
     "This endpoint is deprecated please use /collections/update/<uuid> instead."
 )
 @collections.route("/update/<uuid>", methods=["POST"])
-@validate_token
+@require_token
 def collectionUpdate(uuid, user=None):
     logger.info("Handling collection update request")
 
@@ -297,7 +297,7 @@ def get_collection(uuid):
 @collection.route("/<uuid>", methods=["DELETE"])
 @deprecated("This endpoint is deprecated please use /collections/<uuid> instead.")
 @collections.route("/<uuid>", methods=["DELETE"])
-@validate_token
+@require_token
 def collectionDelete(uuid, user=None):
     logger.info("Deleting collection {}".format(uuid))
 
@@ -323,7 +323,7 @@ def collectionDelete(uuid, user=None):
     "This endpoint is deprecated please use /collections/delete/<uuid> instead."
 )
 @collections.route("/delete/<uuid>", methods=["DELETE"])
-@validate_token
+@require_token
 def collectionDeleteWorkEdition(uuid, user=None):
     logger.info("Handling collection work/edition deletion request")
 
