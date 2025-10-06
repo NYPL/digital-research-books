@@ -38,12 +38,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
               </Box>
               <Flex alignItems="center" justifyContent="space-between">
                 <Text size="caption" color="ui.gray.semi-dark">AI-generated. Verify results.</Text>
-                <Flex gap="12px">
+                <Flex>
                   {/* TODO: Add functionality for thumbs up/down buttons */}
-                  <Button id="thumbs-up-button" variant="text" aria-label="Thumbs up" padding="0" minWidth="18px">
+                  <Button id="thumbs-up-button" variant="text" aria-label="Thumbs up" padding="xs" minWidth="18px">
                     <ThumbsUpIcon />
                   </Button>
-                  <Button id="thumbs-down-button" variant="text" aria-label="Thumbs down" padding="0" minWidth="18px">
+                  <Button id="thumbs-down-button" variant="text" aria-label="Thumbs down" padding="xs" minWidth="18px">
                     <ThumbsDownIcon />
                   </Button>
                 </Flex>

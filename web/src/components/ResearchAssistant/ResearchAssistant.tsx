@@ -116,7 +116,6 @@ const ResearchAssistant: React.FC = () => {
         {results && Object.keys(results).length > 0 && (
           <Box
             bgColor="ui.bg.default"
-            border="1px solid #e5e7eb"
             paddingX="l"
             flex="1"
           >
@@ -137,7 +136,7 @@ const ResearchAssistant: React.FC = () => {
                 </>
               )
             ) : (
-              <Box>
+              <Box paddingBottom="l">
                 <Text
                   bgColor="ui.bg.default"
                   borderBottom="1px solid"
@@ -175,18 +174,21 @@ const ResearchAssistant: React.FC = () => {
           display="flex"
           flexDirection="column"
           bgColor="section.research.primary"
-          border="1px solid #e5e7eb"
           maxHeight="100vh"
           position="sticky"
           top="0"
         >
           <Box
+            bgColor="section.research.primary"
             display="flex"
             justifyContent="space-between"
             alignItems="center"
             paddingX="l"
             paddingY="s"
             borderBottom="1px white solid"
+            position="sticky"
+            top="0"
+            zIndex="999"
           >
             <Heading
               level="h2"
