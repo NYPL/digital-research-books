@@ -6,6 +6,7 @@ from ..utils import APIUtils
 from logger import create_log
 from ..research_assistant import ResearchAssistant
 from ..auth import require_api_key
+from ..decorators import require_token
 
 logger = create_log(__name__)
 
@@ -15,6 +16,7 @@ RESPONSE_TYPE = "chats"
 
 @chats.route("", methods=["PUT"])
 @require_api_key
+@require_token
 def update_chat():
     research_assistant = ResearchAssistant(
         ElasticClient(current_app.config["REDIS_CLIENT"]),

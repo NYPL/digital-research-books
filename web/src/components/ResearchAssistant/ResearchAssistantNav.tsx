@@ -1,19 +1,21 @@
 import React from "react";
-import {
-    Icon,
-    SubNav,
-    SubNavLink,
-} from "@nypl/design-system-react-components";
+import { Icon, SubNav, SubNavLink } from "@nypl/design-system-react-components";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 
 const ResearchAssistantNav: React.FC = () => {
+    const token = localStorage.getItem("authToken");
+
     return (
         <SubNav
             actionBackgroundColor="section.research.primary-05"
             highlightColor="section.research.secondary"
             primaryActions={
                 <>
-                    <SubNavLink href="/research-assistant-landing" isSelected id="subnav-vra">
+                    <SubNavLink
+                        href="/research-assistant-landing"
+                        isSelected
+                        id="subnav-vra"
+                    >
                         <ResearchAssistantIcon />
                         Virtual Research Assistant
                     </SubNavLink>
@@ -29,9 +31,13 @@ const ResearchAssistantNav: React.FC = () => {
                     <SubNavLink href="#help" id="subnav-help">
                         Get help
                     </SubNavLink>
-                    <SubNavLink isOutlined href="#account" id="subnav-my-account">
+                    <SubNavLink
+                        isOutlined
+                        href={token ? "#account" : "/research-assistant-login"}
+                        id="subnav-my-account"
+                    >
                         <Icon name="actionIdentityFilled" size="medium" />
-                        My account
+                        {token ? "My account" : "Login"}
                     </SubNavLink>
                 </>
             }
