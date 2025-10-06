@@ -99,12 +99,12 @@ describe("Renders Search Results Page", () => {
       expect(pubYear).toBeInTheDocument();
       expect(
         within(pubYear).getByRole("spinbutton", {
-          name: "To",
+          name: "End",
         })
       ).toHaveValue(null);
       expect(
         within(pubYear).getByRole("spinbutton", {
-          name: "From",
+          name: "Start",
         })
       ).toHaveValue(null);
 
@@ -714,13 +714,13 @@ describe("Renders selected languages in language accordion when there are no mat
   });
 
   test("Show Russian (0) checkbox", async () => {
-    const fromInput = screen.getByRole("spinbutton", {
-      name: "From",
+    const startInput = screen.getByRole("spinbutton", {
+      name: "Start",
     });
     const applyButton = screen.getByRole("button", {
       name: "Apply",
     });
-    await userEvent.type(fromInput, "2000");
+    await userEvent.type(startInput, "2000");
     await userEvent.click(applyButton);
     expect(mockRouter).toMatchObject({
       pathname: "/research-assistant-search",

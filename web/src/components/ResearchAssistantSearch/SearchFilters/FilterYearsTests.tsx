@@ -13,12 +13,12 @@ export const FilterYearsTests = (
   test("Renders Filter Years", () => {
     expect(
       screen.getByRole("spinbutton", {
-        name: "From",
+        name: "Start",
       })
     ).toHaveValue((startYear && startYear.value) || null);
     expect(
       screen.getByRole("spinbutton", {
-        name: "To",
+        name: "End",
       })
     ).toHaveValue((endYear && endYear.value) || null);
     if (hasApplyButton) {
@@ -33,14 +33,14 @@ export const FilterYearsTests = (
       const yearGroup = screen.getByRole("region", {
         name: "Date filter",
       });
-      const fromInput = within(yearGroup).getByRole("spinbutton", {
-        name: "From",
+      const startInput = within(yearGroup).getByRole("spinbutton", {
+        name: "Start",
       });
       const applyButton = within(yearGroup).getByRole("button", {
         name: "Apply",
       });
-      await userEvent.type(fromInput, "1990");
-      expect(fromInput).toHaveValue(1990);
+      await userEvent.type(startInput, "1990");
+      expect(startInput).toHaveValue(1990);
       await user.click(applyButton);
 
       expect(mockRouter).toMatchObject({
@@ -55,13 +55,13 @@ export const FilterYearsTests = (
       const yearGroup = screen.getByRole("region", {
         name: "Date filter",
       });
-      const toInput = within(yearGroup).getByRole("spinbutton", {
-        name: "To",
+      const endInput = within(yearGroup).getByRole("spinbutton", {
+        name: "End",
       });
       const applyButton = within(yearGroup).getByRole("button", {
         name: "Apply",
       });
-      await userEvent.type(toInput, "1990");
+      await userEvent.type(endInput, "1990");
       await userEvent.click(applyButton);
 
       expect(mockRouter).toMatchObject({
@@ -77,17 +77,17 @@ export const FilterYearsTests = (
       const yearGroup = screen.getByRole("region", {
         name: "Date filter",
       });
-      const toInput = within(yearGroup).getByRole("spinbutton", {
-        name: "To",
+      const endInput = within(yearGroup).getByRole("spinbutton", {
+        name: "End",
       });
-      const fromInput = within(yearGroup).getByRole("spinbutton", {
-        name: "From",
+      const startInput = within(yearGroup).getByRole("spinbutton", {
+        name: "Start",
       });
       const applyButton = within(yearGroup).getByRole("button", {
         name: "Apply",
       });
-      await userEvent.type(fromInput, "1990");
-      await userEvent.type(toInput, "2000");
+      await userEvent.type(startInput, "1990");
+      await userEvent.type(endInput, "2000");
       await user.click(applyButton);
 
       expect(mockRouter).toMatchObject({
@@ -103,17 +103,17 @@ export const FilterYearsTests = (
       const yearGroup = screen.getByRole("region", {
         name: "Date filter",
       });
-      const toInput = within(yearGroup).getByRole("spinbutton", {
-        name: "To",
+      const endInput = within(yearGroup).getByRole("spinbutton", {
+        name: "End",
       });
-      const fromInput = within(yearGroup).getByRole("spinbutton", {
-        name: "From",
+      const startInput = within(yearGroup).getByRole("spinbutton", {
+        name: "Start",
       });
       const applyButton = within(yearGroup).getByRole("button", {
         name: "Apply",
       });
-      await userEvent.type(fromInput, "1990");
-      await userEvent.type(toInput, "1890");
+      await userEvent.type(startInput, "1990");
+      await userEvent.type(endInput, "1890");
       await user.click(applyButton);
 
       expect(
