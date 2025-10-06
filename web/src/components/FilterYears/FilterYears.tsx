@@ -60,10 +60,10 @@ const FilterYears: React.FC<{
       <FormRow>
         <FormField>
           <TextInput
-            labelText="From"
+            labelText="Start"
             type="number"
             value={startFilter ? startFilter.value.toString() : ""}
-            helperText="EX. 1901"
+            helperText="ex. 1901"
             id={isModal ? "date-filter-from-modal" : "date-filter-from"}
             name="Date From"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,10 +73,10 @@ const FilterYears: React.FC<{
         </FormField>
         <FormField>
           <TextInput
-            labelText="To"
+            labelText="End"
             type="number"
             value={endFilter ? endFilter.value.toString() : ""}
-            helperText="EX. 2000"
+            helperText="ex. 2000"
             id={isModal ? "date-filter-to-modal" : "date-filter-to"}
             name="Date To"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

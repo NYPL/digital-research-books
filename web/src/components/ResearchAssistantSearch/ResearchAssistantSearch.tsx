@@ -19,7 +19,7 @@ import {
   TemplateFull,
 } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
-import { FacetItem, Query } from "~/src/types/DataModel";
+import { Query } from "~/src/types/DataModel";
 import {
   ApiSearchResult,
   Filter,
@@ -35,11 +35,10 @@ import SearchHeader from "../SearchHeader/SearchHeader";
 import { ApiWork } from "~/src/types/WorkQuery";
 import useFeatureFlags from "~/src/context/FeatureFlagContext";
 import TotalWorks from "../TotalWorks/TotalWorks";
-import filterFields from "~/src/constants/filters";
-import { findFiltersForField } from "~/src/util/SearchQueryUtils";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import ActiveFilters from "./SearchFilters/ActiveFilters";
 import { capitalizeFirstLetter } from "~/src/util/Util";
+import { getAvailableLanguages } from "~/src/util/SearchUtils";
 
 const SearchResults: React.FC<{
   searchQuery: SearchQuery;
@@ -51,24 +50,23 @@ const SearchResults: React.FC<{
     ...props.searchQuery,
   });
 
-  const initialTagSetData = () => {
-    return searchQuery.filters.map((filter) => {
-      let labelStr = capitalizeFirstLetter(filter.value.toString()) 
-      
-      if (filter.value === "onlyGovDoc")
-        labelStr = "Limit to US gov docs"
-      else if (filter.field === "startYear")
-        labelStr = `After ${filter.value}`
-      else if (filter.field === "endYear")
-        labelStr = `Before ${filter.value}`
+  const buildTagSetData = (filters: Filter[]) => {
+    return filters.map((filter) => {
+      let labelStr = capitalizeFirstLetter(filter.value.toString());
+
+      if (filter.value === "onlyGovDoc") labelStr = "Limit to US gov docs";
+      else if (filter.field === "startYear") labelStr = `After ${filter.value}`;
+      else if (filter.field === "endYear") labelStr = `Before ${filter.value}`;
 
       return {
         id: `${filter.field}-${filter.value}`,
         label: labelStr,
-      }
-    })
-  }
-  const [tagSetData, setTagSetData] = useState(initialTagSetData);
+      };
+    });
+  };
+  const [tagSetData, setTagSetData] = useState(
+    buildTagSetData(searchQuery.filters)
+  );
 
   const { isFlagActive } = useFeatureFlags();
 
@@ -97,30 +95,6 @@ const SearchResults: React.FC<{
       return `${query.field}: "${query.query}"${joiner}`;
     });
     return queries && queries.join("");
-  };
-
-  const getAvailableLanguages = (
-    searchResults: ApiSearchResult
-  ): FacetItem[] => {
-    const facets: FacetItem[] =
-      searchResults &&
-      searchResults.data.facets &&
-      searchResults.data.facets["languages"];
-
-    const selectedLanguages = findFiltersForField(
-      searchQuery.filters,
-      filterFields.language
-    );
-    // adds selected language to available languages if it doesn't exist
-    if (selectedLanguages) {
-      selectedLanguages.forEach((lang) => {
-        if (!facets.find((facet) => facet.value === lang.value)) {
-          facets.push({ value: lang.value.toString(), count: 0 });
-        }
-      });
-    }
-
-    return facets;
   };
 
   const numberOfWorks = searchResults.data.totalWorks;
@@ -182,16 +156,6 @@ const SearchResults: React.FC<{
     });
     setSearchQuery(newSearchQuery);
     sendSearchQuery(newSearchQuery);
-  };
-
-  const buildTagSetData = (filters: Filter[]) => {
-    const tagSetData = [];
-    for (const filter of filters) {
-      tagSetData.push({
-        label: capitalizeFirstLetter(filter.value.toString()),
-      });
-    }
-    return tagSetData;
   };
 
   const onTagSetClear = (tagSet) => {
@@ -260,7 +224,7 @@ const SearchResults: React.FC<{
               <form name="filterForm">
                 <Filters
                   filters={searchQuery.filters}
-                  languages={getAvailableLanguages(searchResults)}
+                  languages={getAvailableLanguages(searchResults, searchQuery)}
                   isModal={true}
                   changeFilters={(filters: Filter[]) => {
                     changeFilters(filters);
@@ -302,7 +266,7 @@ const SearchResults: React.FC<{
     >
       <Filters
         filters={searchQuery.filters}
-        languages={getAvailableLanguages(searchResults)}
+        languages={getAvailableLanguages(searchResults, searchQuery)}
         changeFilters={(filters: Filter[]) => {
           changeFilters(filters);
         }}

@@ -4,7 +4,7 @@ import { ApiSearchQuery } from "../../types/SearchQuery";
 import { searchResultsFetcher } from "../../lib/api/SearchApi";
 import { toSearchQuery } from "~/src/util/apiConversion";
 import Error from "../_error";
-import Search from "~/src/components/ResearchAssistantSearch.tsx/ResearchAssistantSearch";
+import Search from "~/src/components/ResearchAssistantSearch/ResearchAssistantSearch";
 
 export async function getServerSideProps(context: any) {
   // Get Query from location

@@ -102,7 +102,7 @@ const Filters: React.FC<{
     const yearEnd = findFilterForField(filters, filterFields.endYear);
     const govDocFilter = findFilterForField(filters, filterFields.govDoc);
 
-    const renderFilterComponets = () => (
+    const renderFilterComponents = () => (
       <>
         <Toggle
           labelText="Limit to US government documents"
@@ -142,7 +142,7 @@ const Filters: React.FC<{
       <FilterBarInline
         heading="Filter results"
         layout="column"
-        renderChildren={renderFilterComponets}
+        renderChildren={renderFilterComponents}
       />
     );
   };
