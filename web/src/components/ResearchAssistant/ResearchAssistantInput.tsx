@@ -29,9 +29,31 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
       onSendMessage(inputText);
       setInputText("");
 
+      if (inputRef.current && inputRef.current) {
+        inputRef.current.style.height = "1.375rem";
+        inputRef.current.value = "";
+      }
+
       if (inputRef.current && !isDisabled) {
         inputRef.current.focus();
       }
+    }
+  };
+
+  const updateTextareaHeight = (e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLTextAreaElement;
+    target.style.height = "0px";
+    target.style.height =
+      target.scrollHeight >= 132
+        ? target.scrollHeight + 20 + "px"
+        : target.scrollHeight + 2 + "px";
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleSubmit(e);
     }
   };
 
@@ -49,64 +71,95 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
 
   return (
     <Form
-      onSubmit={handleSubmit}
       id="research-assistant-form"
+      onSubmit={handleSubmit}
       borderTop="1px white solid"
-      paddingX="l"
-      paddingY="s"
-      sx={{
-        "#research-assistant-form-parent": {
-          gap: 0,
-        },
-      }}
       // @ts-expect-error: Override gap value type
       gap="0"
+      paddingLeft="l"
+      paddingRight="xxxl"
+      paddingY="s"
     >
+      {/* TODO: Replace with actual related items and logic when available */}
+      {messages.length > 1 && (
+        <Box display="flex" justifyContent="flex-end" marginBottom="xs">
+          {[1, 2, 3].map((item) => (
+            <Button
+              variant="secondary"
+              id={`related-item-btn-${item}`}
+              key={item}
+              bgColor="ui.white"
+              color="section.research.secondary"
+              borderColor="section.research.secondary"
+              size="small"
+              marginLeft="xs"
+              _hover={{
+                bgColor: "#f3f7fc",
+              }}
+            >
+              Related item {item}
+            </Button>
+          ))}
+        </Box>
+      )}
       <Box
-        display="flex"
-        flexDir="row"
-        gap="0"
+        alignItems="center"
         border="1px solid"
         borderColor="ui.border.default"
         borderRadius="8px"
         backgroundColor="ui.white"
-        paddingRight="s"
+        display="flex"
+        flexDir="row"
+        gap="0"
+        padding="s"
       >
         <TextInput
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder={placeholderValue}
+          autoComplete="off"
           isDisabled={isDisabled}
           id="chat-input"
-          autoComplete="off"
           labelText={""}
+          onChange={(e) => setInputText(e.target.value)}
+          onInput={(e) => updateTextareaHeight(e)}
+          onKeyDown={(e) => handleKeyDown(e)}
+          placeholder={placeholderValue}
           ref={inputRef}
+          type="textarea"
+          value={inputText}
           flex="1"
+          height="fit-content"
+          minHeight="1.375rem"
           sx={{
-            input: {
+            textarea: {
               border: "none",
-              borderRadius: "8px",
-              height: "64px",
-              flexGrow: 2,
+              height: "1.375rem",
+              minHeight: "1.375rem",
+              maxHeight: "132px", // 6 rows
+              resize: "none",
+              padding: 0
+            },
+            "textarea:focus": {
+              outlineOffset: "14px",
             },
           }}
         />
         <Button
-          type="submit"
-          isDisabled={isDisabled}
-          id="send-chat-button"
+          aria-label="Send"
           backgroundColor="transparent"
-          height="64px"
           borderRadius="8px"
+          isDisabled={isDisabled || inputText === ""}
+          height="24px"
+          id="send-chat-button"
+          padding="0"
+          type="submit"
+          width="24px"
           _hover={{
             backgroundColor: "ui.white",
           }}
           _disabled={{
-            backgroundColor: "ui.disabled.secondary",
+            backgroundColor: "transparent",
           }}
-          aria-label="Send"
         >
-          <ResearchAssistantSendIcon isDisabled={isDisabled} />
+          <ResearchAssistantSendIcon isDisabled={isDisabled || inputText === ""} />
         </Button>
       </Box>
     </Form>
