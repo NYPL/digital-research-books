@@ -40,10 +40,12 @@ import ActiveFilters from "./SearchFilters/ActiveFilters";
 import { capitalizeFirstLetter } from "~/src/util/Util";
 import { getAvailableLanguages } from "~/src/util/SearchUtils";
 
-const SearchResults: React.FC<{
+interface KeywordSearchProps {
   searchQuery: SearchQuery;
   searchResults: ApiSearchResult;
-}> = (props) => {
+}
+
+const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
   const searchResults = props.searchResults;
   const [searchQuery, setSearchQuery] = useState({
     ...SearchQueryDefaults,
@@ -78,7 +80,7 @@ const SearchResults: React.FC<{
 
   const sendSearchQuery = async (searchQuery: SearchQuery) => {
     router.push({
-      pathname: "/research-assistant-search",
+      pathname: "/keyword-search",
       query: toLocationQuery(toApiQuery(searchQuery)),
     });
   };
@@ -338,4 +340,4 @@ const SearchResults: React.FC<{
   );
 };
 
-export default SearchResults;
+export default KeywordSearch;

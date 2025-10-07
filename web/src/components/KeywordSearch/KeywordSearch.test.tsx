@@ -1,6 +1,6 @@
 import React from "react";
 import { act, cleanup, screen, within } from "@testing-library/react";
-import SearchResults from "./ResearchAssistantSearch";
+import KeywordSearch from "./KeywordSearch";
 import { FilterYearsTests } from "./SearchFilters/FilterYearsTests";
 import userEvent from "@testing-library/user-event";
 import { FilterLanguagesCommonTests } from "./SearchFilters/FilterLanguagesTests";
@@ -41,7 +41,7 @@ const clickFiltersButton = async () =>
 describe("Renders Search Results Page", () => {
   beforeEach(() => {
     render(
-      <SearchResults searchQuery={searchQuery} searchResults={searchResults} />
+      <KeywordSearch searchQuery={searchQuery} searchResults={searchResults} />
     );
     act(() => {
       resizeWindow(300, 1000);
@@ -120,7 +120,7 @@ describe("Renders Search Results Page", () => {
         expect(modalItemsPerPage).toBeVisible();
         await userEvent.selectOptions(modalItemsPerPage, "20");
         expect(mockRouter).toMatchObject({
-          pathname: "/research-assistant-search",
+          pathname: "/keyword-search",
           query: {
             query: "keyword:Animal Crossing",
             size: "20",
@@ -143,7 +143,7 @@ describe("Renders Search Results Page", () => {
         await userEvent.selectOptions(sortBy, "Title A-Z");
         expect(sortBy).toHaveValue("Title A-Z");
         expect(mockRouter).toMatchObject({
-          pathname: "/research-assistant-search",
+          pathname: "/keyword-search",
           query: {
             query: "keyword:Animal Crossing",
             sort: "title:ASC",
@@ -176,7 +176,7 @@ describe("Renders Search Results Page", () => {
 
         await userEvent.click(englishCheckbox);
         expect(mockRouter).toMatchObject({
-          pathname: "/research-assistant-search",
+          pathname: "/keyword-search",
           query: {
             filter: "language:English",
             query: "keyword:Animal Crossing",
@@ -214,7 +214,7 @@ describe("Renders Search Results Page", () => {
         });
         await userEvent.click(govDocCheckbox);
         expect(mockRouter).toMatchObject({
-          pathname: "/research-assistant-search",
+          pathname: "/keyword-search",
           query: {
             filter: "govDoc:onlyGovDoc",
             query: "keyword:Animal Crossing",
@@ -263,7 +263,7 @@ describe("Renders Search Results Page", () => {
       });
       await userEvent.click(clearFiltersButton);
       expect(mockRouter).toMatchObject({
-        pathname: "/research-assistant-search",
+        pathname: "/keyword-search",
         query: {
           query: "keyword:Animal Crossing",
         },
@@ -478,7 +478,7 @@ describe("Renders Search Results Page", () => {
       expect(nextLink).toBeInTheDocument();
       await userEvent.click(nextLink);
       expect(mockRouter).toMatchObject({
-        pathname: "/research-assistant-search",
+        pathname: "/keyword-search",
         query: {
           page: 2,
           query: "keyword:Animal Crossing",
@@ -490,7 +490,7 @@ describe("Renders Search Results Page", () => {
       expect(twoButton).toBeInTheDocument();
       await userEvent.click(twoButton);
       expect(mockRouter).toMatchObject({
-        pathname: "/research-assistant-search",
+        pathname: "/keyword-search",
         query: {
           page: 2,
           query: "keyword:Animal Crossing",
@@ -503,7 +503,7 @@ describe("Renders Search Results Page", () => {
 describe("Renders correctly when perPage is greater than item count", () => {
   beforeEach(() => {
     render(
-      <SearchResults
+      <KeywordSearch
         searchQuery={searchQuery}
         searchResults={{
           data: {
@@ -532,7 +532,7 @@ describe("Renders correctly when perPage is greater than item count", () => {
 describe("Renders locale string correctly with large numbers", () => {
   beforeEach(() => {
     render(
-      <SearchResults
+      <KeywordSearch
         searchQuery={searchQuery}
         searchResults={{
           data: {
@@ -562,7 +562,7 @@ describe("Renders locale string correctly with large numbers", () => {
 describe("Renders No Results when no results are shown", () => {
   beforeEach(() => {
     render(
-      <SearchResults
+      <KeywordSearch
         searchQuery={searchQuery}
         searchResults={emptySearchResults}
       />
@@ -604,7 +604,7 @@ describe("Renders search header correctly when viaf search is passed", () => {
   };
   beforeEach(() => {
     render(
-      <SearchResults
+      <KeywordSearch
         searchQuery={viafSearchQuery}
         searchResults={searchResults}
       />
@@ -650,7 +650,7 @@ describe("Renders total works correctly when feature flag is set", () => {
   test("Shown when feature flag query is true", () => {
     mockRouter.push("?feature_totalCount=true");
     render(
-      <SearchResults searchQuery={searchQuery} searchResults={searchResults} />
+      <KeywordSearch searchQuery={searchQuery} searchResults={searchResults} />
     );
     expect(window.sessionStorage.getItem).toHaveBeenCalledTimes(1);
     expect(window.sessionStorage.setItem).toHaveBeenCalledTimes(1);
@@ -664,7 +664,7 @@ describe("Renders total works correctly when feature flag is set", () => {
   test("Not shown when feature flag query is false", () => {
     mockRouter.push("?feature_totalCount=false");
     render(
-      <SearchResults searchQuery={searchQuery} searchResults={searchResults} />
+      <KeywordSearch searchQuery={searchQuery} searchResults={searchResults} />
     );
     expect(window.sessionStorage.getItem).toHaveBeenCalledTimes(1);
     expect(window.sessionStorage.setItem).toHaveBeenCalledTimes(1);
@@ -679,7 +679,7 @@ describe("Renders total works correctly when feature flag is set", () => {
 
   test("Not shown when feature flag query is not passed", () => {
     render(
-      <SearchResults searchQuery={searchQuery} searchResults={searchResults} />
+      <KeywordSearch searchQuery={searchQuery} searchResults={searchResults} />
     );
     expect(window.sessionStorage.getItem).toHaveBeenCalledTimes(1);
     expect(window.sessionStorage.setItem).toHaveBeenCalledTimes(1);
@@ -706,7 +706,7 @@ describe("Renders selected languages in language accordion when there are no mat
       ],
     };
     render(
-      <SearchResults
+      <KeywordSearch
         searchQuery={languageSearchQuery}
         searchResults={emptySearchResults}
       />
@@ -723,7 +723,7 @@ describe("Renders selected languages in language accordion when there are no mat
     await userEvent.type(startInput, "2000");
     await userEvent.click(applyButton);
     expect(mockRouter).toMatchObject({
-      pathname: "/research-assistant-search",
+      pathname: "/keyword-search",
       query: {
         filter: "language:Russian,startYear:2000",
         query: 'title:"New York City"',
