@@ -10,6 +10,7 @@ interface IProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   to: any;
   modifiers?: string[];
   variant?: LinkVariants;
+  hasVisitedState?: boolean;
   isUnderlined?: boolean;
 }
 
@@ -17,6 +18,7 @@ const Link = ({
   children,
   to,
   variant,
+  hasVisitedState = true,
   isUnderlined,
   "aria-label": ariaLabel,
   onClick,
@@ -27,6 +29,7 @@ const Link = ({
       href={to}
       as={BaseLink}
       aria-label={ariaLabel}
+      hasVisitedState={hasVisitedState}
       isUnderlined={isUnderlined}
       onClick={onClick}
       variant={variant}
