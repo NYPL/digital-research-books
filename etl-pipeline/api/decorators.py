@@ -1,8 +1,8 @@
 from base64 import b64decode
 from functools import wraps
 from flask import current_app, request
-from db import DBClient
-from utils import APIUtils
+from .db import DBClient
+from .utils import APIUtils
 from logger import create_log
 
 

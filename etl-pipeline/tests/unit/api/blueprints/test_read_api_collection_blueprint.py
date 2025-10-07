@@ -5,10 +5,10 @@ from sqlalchemy.orm.exc import NoResultFound
 from api.blueprints.drbCollection import (
     get_collection,
     get_collections,
-    validateToken,
 )
 from api.utils import APIUtils
 from api.opdsUtils import OPDSUtils
+from api.decorators import require_token
 
 
 @pytest.fixture
@@ -214,7 +214,7 @@ def test_validate_token_success(
     test_app, mock_utils, mocker, mock_db_and_client, mock_b64decode
 ):
     mock_func = mocker.MagicMock()
-    decorated_function = validateToken(mock_func)
+    decorated_function = require_token(mock_func)
     mock_utils["validatePassword"].return_value = True
 
     with test_app.test_request_context(
@@ -228,7 +228,7 @@ def test_validate_token_success(
 
 def test_validate_token_header_error(test_app, mock_utils, mocker):
     mock_func = mocker.MagicMock()
-    decorated_function = validateToken(mock_func)
+    decorated_function = require_token(mock_func)
     mock_utils["formatResponseObject"].return_value = "testError"
 
     with test_app.test_request_context("/"):
@@ -244,7 +244,7 @@ def test_validate_token_auth_error(
     test_app, mock_utils, mocker, mock_db_and_client, mock_b64decode
 ):
     mock_func = mocker.MagicMock()
-    decorated_function = validateToken(mock_func)
+    decorated_function = require_token(mock_func)
     mock_utils["validatePassword"].return_value = False
     mock_utils["formatResponseObject"].return_value = "testError"
 
