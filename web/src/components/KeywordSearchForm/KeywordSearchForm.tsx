@@ -8,7 +8,7 @@ import {
 } from "@nypl/design-system-react-components";
 import { SEARCH_BAR_TEST_ID } from "~/src/constants/testIds";
 import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
-import { errorMessagesText, inputTerms } from "~/src/constants/labels";
+import { errorMessagesText, inputTerms, SEARCH_FORM_OPTIONS } from "~/src/constants/labels";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import { Query, SearchField } from "~/src/types/DataModel";
 import KeywordSearchBanner from "../KeywordSearchLanding/KeywordSearchBanner";
@@ -81,8 +81,7 @@ const KeywordSearchForm: React.FC<{
             <Flex alignItems="center" gap="xxs">
                 <Icon name="actionInfo" size="medium" />
                 <Text size="body2">
-                    <strong>Search tip:</strong> Enter one or more keywords, or use quotes
-                    to search for an exact phrase.
+                    <strong>Search tip:</strong> {SEARCH_FORM_OPTIONS[shownQuery.field].searchTip}
                 </Text>
             </Flex>
             <SearchBar
@@ -101,7 +100,7 @@ const KeywordSearchForm: React.FC<{
                 textInputProps={{
                     labelText: "Item Search",
                     name: "textInputName",
-                    placeholder: "Example: Copyright Law or “United States Congress”",
+                    placeholder: SEARCH_FORM_OPTIONS[shownQuery.field].placeholder,
                     value: shownQuery.query,
                     onChange: (e) => onQueryChange(e),
                 }}

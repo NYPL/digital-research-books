@@ -1,9 +1,10 @@
 import React from "react";
 import { Icon, SubNav, SubNavLink } from "@nypl/design-system-react-components";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
+import { PageType } from "~/src/types/ResearchAssistant";
 
 interface ResearchAssistantNavProps {
-    activePage: "vra" | "keyword";
+    activePage: PageType;
 }
 
 const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({

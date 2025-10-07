@@ -23,6 +23,7 @@ import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
 import { toApiQuery } from "~/src/util/apiConversion";
 import { useResearchAssistant } from "./useResearchAssistant";
+import VRALayout from "../VRALayout/VRALayout";
 
 const ResearchAssistant: React.FC = () => {
   const {
@@ -101,24 +102,15 @@ const ResearchAssistant: React.FC = () => {
   };
 
   return (
-    <ResultPageProvider
-      value={{ onReadOnline: handleReadOnline, page: "researchAssistant" }}
+    <VRALayout
+      activePage="keyword"
+      breadcrumbsData={[
+        { url: "/research-assistant", text: "Virtual Research Assistant" },
+      ]}
     >
-      <DrbBreakout
-        breadcrumbsData={[
-          { url: "/research-assistant", text: "Virtual Research Assistant" },
-        ]}
-      >
-        <DrbHero />
-        <ResearchAssistantNav activePage="vra" />
-      </DrbBreakout>
       <Box display="flex" flexDir="row">
         {results && Object.keys(results).length > 0 && (
-          <Box
-            bgColor="ui.bg.default"
-            paddingX="l"
-            flex="1"
-          >
+          <Box bgColor="ui.bg.default" paddingX="l" flex="1">
             {showWebReader ? (
               linkResults && (
                 <>
@@ -217,7 +209,7 @@ const ResearchAssistant: React.FC = () => {
           />
         </Box>
       </Box>
-    </ResultPageProvider>
+    </VRALayout>
   );
 };
 

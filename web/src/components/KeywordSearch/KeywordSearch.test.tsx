@@ -13,7 +13,6 @@ import { resizeWindow } from "~/src/__tests__/testUtils/screen";
 import { findFiltersForField } from "~/src/util/SearchQueryUtils";
 import filterFields from "~/src/constants/filters";
 import { PLACEHOLDER_COVER_LINK } from "~/src/constants/editioncard";
-import { searchFormRenderTests, searchFormTests } from "~/src/__tests__/componentHelpers/SearchForm";
 
 const searchQuery: SearchQuery = {
   queries: [{ field: SearchField.Keyword, query: "Animal Crossing" }],
@@ -59,11 +58,6 @@ describe("Renders Search Results Page", () => {
     expect(
       screen.getByRole("heading", { name: "Digital Research Books Beta" })
     ).toBeInTheDocument();
-  });
-  describe("Header search Functionality", () => {
-    searchFormRenderTests(searchQuery);
-
-    searchFormTests(mockRouter);
   });
   test("Main Content shows the current search query with 'alert' role", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(

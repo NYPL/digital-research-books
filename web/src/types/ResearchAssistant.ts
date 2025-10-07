@@ -44,3 +44,5 @@ export interface UseResearchAssistantResult {
   error: string | null;
   clearHistory: () => void;
 }
+
+export type PageType = "vra" | "keyword";

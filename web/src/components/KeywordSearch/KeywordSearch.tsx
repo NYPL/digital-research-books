@@ -31,7 +31,6 @@ import ResultsList from "../ResultsList/ResultsList";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import Filters from "./SearchFilters/SearchFilters";
 import ResultsSorts from "../ResultsSorts/ResultsSorts";
-import SearchHeader from "../SearchHeader/SearchHeader";
 import { ApiWork } from "~/src/types/WorkQuery";
 import useFeatureFlags from "~/src/context/FeatureFlagContext";
 import TotalWorks from "../TotalWorks/TotalWorks";
@@ -39,6 +38,9 @@ import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import ActiveFilters from "./SearchFilters/ActiveFilters";
 import { capitalizeFirstLetter } from "~/src/util/Util";
 import { getAvailableLanguages } from "~/src/util/SearchUtils";
+import KeywordSearchForm from "../KeywordSearchForm/KeywordSearchForm";
+import DrbHero from "../DrbHero/DrbHero";
+import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
 
 interface KeywordSearchProps {
   searchQuery: SearchQuery;
@@ -175,12 +177,14 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     <DrbBreakout
       breadcrumbsData={[
         {
-          url: `/search`,
+          url: `/keyword-search`,
           text: "Search Results",
         },
       ]}
     >
-      <SearchHeader searchQuery={searchQuery}></SearchHeader>
+      <DrbHero />
+      <ResearchAssistantNav activePage="keyword" />
+      <KeywordSearchForm searchQuery={searchQuery} />
       <Flex
         flexDir={{ base: "column", md: "row" }}
         padding="s"

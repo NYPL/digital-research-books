@@ -1,23 +1,14 @@
 import React from "react";
-import {
-    Flex,
-    Icon,
-    Text,
-} from "@nypl/design-system-react-components";
-import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import DrbHero from "../DrbHero/DrbHero";
-import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
+import { Flex, Heading, Icon } from "@nypl/design-system-react-components";
 import KeywordSearchForm from "../KeywordSearchForm/KeywordSearchForm";
+import VRALayout from "../VRALayout/VRALayout";
 
 const KeywordSearchLanding: React.FC = () => {
     return (
-        <>
-            <DrbBreakout
-                breadcrumbsData={[{ url: "/keyword-search", text: "Keyword Search" }]}
-            >
-                <DrbHero />
-                <ResearchAssistantNav activePage="keyword" />
-            </DrbBreakout>
+        <VRALayout
+            activePage="keyword"
+            breadcrumbsData={[{ url: "/keyword-search", text: "Keyword Search" }]}
+        >
             <KeywordSearchForm />
             <Flex gap="s" bgColor="ui.bg.default" alignItems="center">
                 <Flex
@@ -35,18 +26,18 @@ const KeywordSearchLanding: React.FC = () => {
                         name="search"
                         size="xlarge"
                     />
-                    <Text
+                    <Heading
                         color="section.research.secondary"
-                        fontSize="1.25rem"
-                        fontWeight="semibold"
+                        size="heading6"
                         textAlign="center"
+                        width="600px"
                     >
-                        Start searching to see results from over 1 million <br />
-                        scholarly e-books in the public domain
-                    </Text>
+                        Start searching to see results from over 1 million scholarly e-books
+                        in the public domain
+                    </Heading>
                 </Flex>
             </Flex>
-        </>
+        </VRALayout>
     );
 };
 
