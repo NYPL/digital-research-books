@@ -109,6 +109,10 @@ export const truncateStringOnWhitespace = (str: any, maxLength: any) => {
   return `${truncArray.join(" ")}...`;
 };
 
+export const capitalizeFirstLetter = (initialStr: string): string => {
+  return initialStr.charAt(0).toUpperCase() + initialStr.slice(1);
+};
+
 const util = {
   formatUrl,
   unique,
@@ -117,6 +121,7 @@ const util = {
   deepEqual,
   uniqueAndSortByFrequency,
   truncateStringOnWhitespace,
+  capitalizeFirstLetter
 };
 
 export default util;
