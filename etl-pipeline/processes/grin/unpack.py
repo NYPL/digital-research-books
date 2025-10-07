@@ -82,7 +82,6 @@ class GRINUnpackService:
             return
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
-                expiration_time = datetime.now(timezone.utc) + timedelta(weeks=1)
                 self.s3_manager.client.put_object(
                     Body=file_data,
                     Bucket=self.bucket,

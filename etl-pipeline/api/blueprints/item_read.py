@@ -98,7 +98,7 @@ def _find_files_from_list_objects(file_list, page_id):
         (
             f
             for f in file_list
-            if f.lower().endswith((".png", ".jpg", ".jpeg", ".tiff", ".tif", ".jp2"))
+            if f.lower().endswith((".tif", ".jp2", ".png", ".jpg", ".jpeg", ".tiff"))
             and page_id in f
         ),
         None,
@@ -110,7 +110,7 @@ def _find_files_from_list_objects(file_list, page_id):
 def _find_files_from_dict(file_dict, page_id):
     ocr_key = f"{page_id}.html" if f"{page_id}.html" in file_dict else None
 
-    for suffix in [".png", ".jpg", ".jpeg", ".tiff", ".tif", ".jp2"]:
+    for suffix in [".tif", ".jp2", ".png", ".jpg", ".jpeg", ".tiff"]:
         if f"{page_id}{suffix}" in file_dict:
             image_key = f"{page_id}{suffix}"
             break
