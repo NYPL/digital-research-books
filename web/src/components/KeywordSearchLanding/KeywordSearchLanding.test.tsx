@@ -3,22 +3,13 @@ import { screen } from "@testing-library/react";
 import { render } from "~/src/__tests__/testUtils/render";
 import KeywordSearchLanding from "./KeywordSearchLanding";
 
-describe("Renders Index Page", () => {
+describe("Renders keyword search landing", () => {
     beforeEach(async () => {
         render(<KeywordSearchLanding />);
-
-        await screen.findByRole("heading", {
-            name: "Digital Research Books Beta",
-        });
     });
-    test("Current page breadcrumb doesn't have href attribute", () => {
-        expect(screen.getByText("Digital Research Books Beta")).not.toHaveAttribute(
-            "href"
-        );
-    });
-    test("Shows Heading", () => {
+    test("Shows start searching text", () => {
         expect(
-            screen.getByRole("heading", { name: "Digital Research Books Beta" })
+            screen.getByRole("heading", { name: "Start searching to see results from over 1 million scholarly e-books in the public domain" })
         ).toBeInTheDocument();
     });
 });

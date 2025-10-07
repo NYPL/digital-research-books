@@ -48,17 +48,6 @@ describe("Renders Search Results Page", () => {
   });
   afterEach(() => cleanup());
 
-  test("Digital Research Books Beta doesn't have href attribute", () => {
-    const homepagelinks = screen.getAllByText("Digital Research Books Beta");
-    homepagelinks.forEach((link) => {
-      expect(link).not.toHaveAttribute("href");
-    });
-  });
-  test("DRB Header is shown", () => {
-    expect(
-      screen.getByRole("heading", { name: "Digital Research Books Beta" })
-    ).toBeInTheDocument();
-  });
   test("Main Content shows the current search query with 'alert' role", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
       'Search results for keyword: "Animal Crossing"'
