@@ -6,24 +6,20 @@ import {
   Pagination,
   Text,
 } from "@nypl/design-system-react-components";
-import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import DrbHero from "../DrbHero/DrbHero";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import ResearchAssistantInput from "./ResearchAssistantInput";
 import ResearchAssistantResultsList from "./ResearchAssistantResultsList";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
-import ResearchAssistantNav from "./ResearchAssistantNav";
 import ResultsBanner from "./ResultsBanner";
 import { LinkResult } from "~/src/types/LinkQuery";
 import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
 import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
 import { toApiQuery } from "~/src/util/apiConversion";
 import { useResearchAssistant } from "./useResearchAssistant";
-import VRALayout from "../VRALayout/VRALayout";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
 
 const ResearchAssistant: React.FC = () => {
   const {
@@ -102,12 +98,7 @@ const ResearchAssistant: React.FC = () => {
   };
 
   return (
-    <VRALayout
-      activePage="keyword"
-      breadcrumbsData={[
-        { url: "/research-assistant", text: "Virtual Research Assistant" },
-      ]}
-    >
+    <ResultPageProvider value={{ onReadOnline: handleReadOnline, page: "vra" }}>
       <Box display="flex" flexDir="row">
         {results && Object.keys(results).length > 0 && (
           <Box bgColor="ui.bg.default" paddingX="l" flex="1">
@@ -209,7 +200,7 @@ const ResearchAssistant: React.FC = () => {
           />
         </Box>
       </Box>
-    </VRALayout>
+    </ResultPageProvider>
   );
 };
 

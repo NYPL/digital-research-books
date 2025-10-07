@@ -1,14 +1,10 @@
 import React from "react";
 import { Flex, Heading, Icon } from "@nypl/design-system-react-components";
 import KeywordSearchForm from "../KeywordSearchForm/KeywordSearchForm";
-import VRALayout from "../VRALayout/VRALayout";
 
 const KeywordSearchLanding: React.FC = () => {
     return (
-        <VRALayout
-            activePage="keyword"
-            breadcrumbsData={[{ url: "/keyword-search", text: "Keyword Search" }]}
-        >
+        <>
             <KeywordSearchForm />
             <Flex gap="s" bgColor="ui.bg.default" alignItems="center">
                 <Flex
@@ -37,7 +33,7 @@ const KeywordSearchLanding: React.FC = () => {
                     </Heading>
                 </Flex>
             </Flex>
-        </VRALayout>
+        </>
     );
 };
 

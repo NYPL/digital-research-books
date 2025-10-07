@@ -140,7 +140,7 @@ const ReaderLayout: React.FC<{
       fetchAndModifyManifest(url);
 
       // hides header and footer components when web reader is displayed
-      if (page !== "researchAssistant") {
+      if (page !== "vra") {
         document.getElementById("nypl-header").style.display = "none";
         document.getElementById("nypl-footer").style.display = "none";
       }

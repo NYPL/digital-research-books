@@ -2,11 +2,19 @@ import React from "react";
 import { GetServerSideProps } from "next";
 import ResearchAssistant from "~/src/components/ResearchAssistant/ResearchAssistant";
 import Layout from "~/src/components/Layout/Layout";
+import VRALayout from "~/src/components/VRALayout/VRALayout";
 
 const ResearchAssistantPage: React.FC = () => {
   return (
     <Layout>
-      <ResearchAssistant />
+      <VRALayout
+        activePage="keyword"
+        breadcrumbsData={[
+          { url: "/research-assistant", text: "Virtual Research Assistant" },
+        ]}
+      >
+        <ResearchAssistant />
+      </VRALayout>
     </Layout>
   );
 };

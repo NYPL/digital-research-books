@@ -5,6 +5,7 @@ import { searchResultsFetcher } from "../../lib/api/SearchApi";
 import { toSearchQuery } from "~/src/util/apiConversion";
 import Error from "../_error";
 import Search from "~/src/components/KeywordSearch/KeywordSearch";
+import VRALayout from "~/src/components/VRALayout/VRALayout";
 
 export async function getServerSideProps(context: any) {
   // Get Query from location
@@ -26,10 +27,20 @@ const SearchResults: React.FC<any> = (props) => {
 
   return (
     <Layout>
-      <Search
-        searchQuery={props.searchQuery}
-        searchResults={props.searchResults}
-      />
+      <VRALayout
+        activePage="keyword"
+        breadcrumbsData={[
+          {
+            url: `/keyword-search`,
+            text: "Search Results",
+          },
+        ]}
+      >
+        <Search
+          searchQuery={props.searchQuery}
+          searchResults={props.searchResults}
+        />
+      </VRALayout>
     </Layout>
   );
 };
