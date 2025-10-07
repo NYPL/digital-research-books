@@ -89,7 +89,9 @@ def test_collection_replace_success(
     collection_request_body,
     mock_b64decode,
 ):
-    mock_db, mock_db_client_decorators, mock_db_client_drbCollection = mock_db_and_client
+    mock_db, mock_db_client_decorators, mock_db_client_drbCollection = (
+        mock_db_and_client
+    )
     collection = mocker.MagicMock(uuid="testUUID")
     mock_db.fetchSingleCollection.return_value = collection
     mock_feed_construct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")
@@ -153,7 +155,9 @@ def test_collection_replace_error(
 
 
 def test_collection_update_success(test_app, mock_utils, mocker, mock_db_and_client):
-    mock_db, mock_db_client_decorators, mock_db_client_drbCollection = mock_db_and_client
+    mock_db, mock_db_client_decorators, mock_db_client_drbCollection = (
+        mock_db_and_client
+    )
     collection = mocker.MagicMock(uuid="testUUID")
     mock_db.fetchSingleCollection.return_value = collection
     mock_feed_construct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")

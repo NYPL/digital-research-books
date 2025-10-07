@@ -91,7 +91,9 @@ def test_create_static_collection_success(
     collection_request_body,
     mock_b64decode,
 ):
-    mock_db, mock_db_client_decorators, mock_db_client_drbCollection = mock_db_and_client
+    mock_db, mock_db_client_decorators, mock_db_client_drbCollection = (
+        mock_db_and_client
+    )
     collection = mocker.MagicMock(uuid="testUUID")
     mock_db.createStaticCollection.return_value = collection
     mock_feed_construct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")

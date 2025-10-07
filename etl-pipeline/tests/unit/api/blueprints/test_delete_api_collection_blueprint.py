@@ -98,7 +98,9 @@ def test_collection_delete_error(test_app, mock_utils, mock_db_and_client):
 def test_collection_delete_work_edition_success(
     test_app, mock_utils, mocker, mock_db_and_client
 ):
-    mock_db, mock_db_client_decorators, mock_db_client_drbCollection = mock_db_and_client
+    mock_db, mock_db_client_decorators, mock_db_client_drbCollection = (
+        mock_db_and_client
+    )
     collection = mocker.MagicMock(uuid="testUUID")
     mock_db.fetchSingleCollection.return_value = collection
     mock_feed_construct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")
