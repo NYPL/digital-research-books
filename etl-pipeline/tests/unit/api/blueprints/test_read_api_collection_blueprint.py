@@ -27,14 +27,16 @@ def mock_db_and_client(mocker):
     mock_db.fetchUser.return_value = mocker.MagicMock(
         user="testUser", password="testPswd", salt="testSalt"
     )
-    mock_db_client = mocker.patch("api.blueprints.drbCollection.DBClient")
-    mock_db_client.return_value = mock_db
-    return mock_db, mock_db_client
+    mock_db_client_decorators = mocker.patch("api.decorators.DBClient")
+    mock_db_client_decorators.return_value = mock_db
+    mock_db_client_drbCollection = mocker.patch("api.blueprints.drbCollection.DBClient")
+    mock_db_client_drbCollection.return_value = mock_db
+    return mock_db, mock_db_client_decorators, mock_db_client_drbCollection
 
 
 @pytest.fixture(autouse=True)
 def mock_b64decode(mocker):
-    mock = mocker.patch("api.blueprints.drbCollection.b64decode")
+    mock = mocker.patch("api.decorators.b64decode")
     mock.return_value = b"testUser:testPswd"
     return mock
 

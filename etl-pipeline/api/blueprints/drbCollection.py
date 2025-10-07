@@ -1,6 +1,4 @@
-from base64 import b64decode
 from flask import Blueprint, request, current_app, jsonify
-from functools import wraps
 import os
 import re
 from sqlalchemy.orm.exc import NoResultFound
