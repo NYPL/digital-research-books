@@ -12,6 +12,9 @@ const ResearchAssistantViewer: React.FC<{
   const [pdfUrl, setPdfUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Convert base64-encoded PDF data to blob and create object URL.
+  // The <object> element requires a URL to display the PDF,
+  // and browsers cannot directly render base64 strings as PDF sources.
   const base64ToBlob = (base64Data, contentType) => {
     const byteCharacters = atob(base64Data);
 
@@ -68,7 +71,7 @@ const ResearchAssistantViewer: React.FC<{
       <object width="100%" height="100%" type="application/pdf" data={pdfUrl}>
         <p>Insert your error message here, if the PDF cannot be displayed.</p>
       </object>
-      <Box display="flex" flexDir="row" justifyContent="space-between">
+      <Box display="flex" flexDir="row" justifyContent="space-between" paddingTop="s">
         <Button id="previous-page-button" onClick={onPreviousPageClick}>
           Previous Page
         </Button>

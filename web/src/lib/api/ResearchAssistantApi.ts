@@ -14,6 +14,6 @@ export const itemsReadFetcher = async (itemId: string, pageId: string) => {
       return itemsReadResults;
     }
   } catch(err) {
-    console.log(err);
+    console.error(err);
   }
 };
