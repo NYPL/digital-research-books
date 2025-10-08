@@ -2,11 +2,12 @@ import React from "react";
 import BaseLink from "next/link";
 import {
   Link as DSLink,
+  LinkProps,
   LinkVariants,
 } from "@nypl/design-system-react-components";
 
-// allow this component to accept all properties of "a" tag
-interface IProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+// allow this component to accept all properties of DSLink
+interface IProps extends LinkProps {
   to: any;
   modifiers?: string[];
   variant?: LinkVariants;

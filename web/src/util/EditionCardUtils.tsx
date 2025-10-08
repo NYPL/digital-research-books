@@ -222,6 +222,14 @@ export default class EditionCardUtils {
     return universityPress !== undefined;
   }
 
+  static isPublicDomain(item: ApiItem): boolean {
+    const regex = /public[ _]?domain( \(x\))?/i
+    const publicDomain = item && item.rights && item.rights.length > 0
+      ? item.rights.find((right) => regex.test(right.rightsStatement))
+      : undefined;
+    return publicDomain !== undefined;
+  }
+
   static createGetContent = (nyplIdentityCookie: any, router: NextRouter) => {
     const fetchWithAuth = async (fulfillUrl: string, proxyUrl?: string) => {
       const url = new URL(fulfillUrl);

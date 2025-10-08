@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, VStack } from "@nypl/design-system-react-components";
 import EmptySearchSvg from "../Svgs/EmptySearchSvg";
-import ResultCard from "../ResearchAssistant/ResultCard";
+import ResultCard from "../ResultCard/ResultCard";
 import { ApiWork } from "~/src/types/WorkQuery";
 
 const ResearchAssistantResultsList: React.FC<{ works: ApiWork[] }> = ({ works }) => {

@@ -5,18 +5,16 @@ import {
   Button,
   Icon,
   Box,
-  HorizontalRule,
   Flex,
   Form,
   useModal,
   Template,
-  Text,
   useNYPLBreakpoints,
   TemplateBreakout,
   TemplateContent,
   TemplateMain,
   TemplateSidebar,
-  TemplateFull,
+  Select,
 } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
 import { Query } from "~/src/types/DataModel";
@@ -27,18 +25,17 @@ import {
   SearchQueryDefaults,
 } from "~/src/types/SearchQuery";
 import { sortMap } from "~/src/constants/sorts";
-import ResultsList from "../ResultsList/ResultsList";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import Filters from "./SearchFilters/SearchFilters";
-import ResultsSorts from "../ResultsSorts/ResultsSorts";
 import SearchHeader from "../SearchHeader/SearchHeader";
 import { ApiWork } from "~/src/types/WorkQuery";
 import useFeatureFlags from "~/src/context/FeatureFlagContext";
 import TotalWorks from "../TotalWorks/TotalWorks";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import ActiveFilters from "./SearchFilters/ActiveFilters";
-import { capitalizeFirstLetter } from "~/src/util/Util";
+import { capitalizeFirstLetter, deepEqual } from "~/src/util/Util";
 import { getAvailableLanguages } from "~/src/util/SearchUtils";
+import ResearchAssistantResultsList from "../ResearchAssistant/ResearchAssistantResultsList";
 
 const SearchResults: React.FC<{
   searchQuery: SearchQuery;
@@ -120,21 +117,6 @@ const SearchResults: React.FC<{
     setTagSetData(buildTagSetData(newSearchQuery.filters));
   };
 
-  const onChangePerPage = (e) => {
-    e.preventDefault();
-    const newPage = 0;
-    const newPerPage = e.target.value;
-    if (newPerPage !== searchQuery.perPage) {
-      const newSearchQuery: SearchQuery = Object.assign({}, searchQuery, {
-        page: newPage,
-        perPage: newPerPage,
-        total: numberOfWorks || 0,
-      });
-      setSearchQuery(newSearchQuery);
-      sendSearchQuery(newSearchQuery);
-    }
-  };
-
   const onChangeSort = (e) => {
     e.preventDefault();
     if (
@@ -212,14 +194,26 @@ const SearchResults: React.FC<{
                 </Flex>
               </Button>
               <Box>
-                <ResultsSorts
-                  isModal={true}
-                  perPage={searchQuery.perPage}
-                  sort={searchQuery.sort}
-                  sortMap={sortMap}
-                  onChangePerPage={(e) => onChangePerPage(e)}
-                  onChangeSort={(e) => onChangeSort(e)}
-                />
+                <Select
+                  id="sort-by-modal"
+                  name="sortBySelect"
+                  isRequired={false}
+                  labelText="Sort By"
+                  labelPosition="inline"
+                  value={Object.keys(sortMap).find((key) =>
+                    deepEqual(sortMap[key], searchQuery.sort)
+                  )}
+                  onChange={(e) => onChangeSort(e)}
+                  width="100%"
+                >
+                  {Object.keys(sortMap).map((sortOption: string) => {
+                    return (
+                      <option key={`sort-option-${sortOption}`}>
+                        {sortOption}
+                      </option>
+                    );
+                  })}
+                </Select>
               </Box>
               <form name="filterForm">
                 <Filters
@@ -274,8 +268,8 @@ const SearchResults: React.FC<{
     </Form>
   );
 
-  const contentFullElement = (
-    <>
+  const contentElement = (
+    <Box paddingBottom="l">
       {isFlagActive("totalCount") && (
         <Box float="right">
           <TotalWorks totalWorks={numberOfWorks} />
@@ -284,53 +278,66 @@ const SearchResults: React.FC<{
       {tagSetData.length > 0 && (
         <ActiveFilters onClick={onTagSetClear} tagSetData={tagSetData} />
       )}
-      <Box className="search-heading">
-        <Box role="alert">
-          <Heading level="h1" size="heading3" id="page-title-heading">
-            Search results for {getDisplayItemsHeading(searchQuery)}
-          </Heading>
-        </Box>
-      </Box>
-      <HorizontalRule bg="section.research.primary" marginY="s" />
-      <Flex justify="space-between" align="center">
-        <Text fontSize="1.75rem" className="page-counter" __css={{ m: "0" }}>
+      <Flex justify="space-between" align="center" marginBottom="l">
+        <Heading size="heading5" className="page-counter" role="alert">
           {numberOfWorks > 0
-            ? `Viewing ${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
+            ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
               ? numberOfWorks.toLocaleString()
               : lastElement.toLocaleString()
-            } of ${numberOfWorks.toLocaleString()} items`
+            } of ${numberOfWorks.toLocaleString()} results for ${getDisplayItemsHeading(
+              searchQuery
+            )}`
             : "Viewing 0 items"}
-        </Text>
+        </Heading>
         <Form id="results-sorts-form" display={["none", "none", "block"]}>
-          <ResultsSorts
-            perPage={searchQuery.perPage}
-            sort={searchQuery.sort}
-            sortMap={sortMap}
-            onChangePerPage={(e) => onChangePerPage(e)}
-            onChangeSort={(e) => onChangeSort(e)}
-          />
+          <Select
+            id="sort-by"
+            name="sortBySelect"
+            isRequired={false}
+            labelText="Sort By"
+            labelPosition="inline"
+            value={Object.keys(sortMap).find((key) =>
+              deepEqual(sortMap[key], searchQuery.sort)
+            )}
+            onChange={(e) => onChangeSort(e)}
+          >
+            {Object.keys(sortMap).map((sortOption: string) => {
+              return (
+                <option key={`sort-option-${sortOption}`}>{sortOption}</option>
+              );
+            })}
+          </Select>
         </Form>
       </Flex>
-    </>
-  );
-
-  const contentElement = (
-    <>
-      <ResultsList works={works} />
+      <ResearchAssistantResultsList works={works} />
       <Pagination
         pageCount={searchPaging.lastPage ? searchPaging.lastPage : 1}
         initialPage={searchPaging.currentPage}
         onPageChange={(e) => onPageChange(e)}
-        __css={{ paddingTop: "m", paddingBottom: "l" }}
+        __css={{
+          paddingTop: "m",
+          "a, li > a[aria-current='page']": {
+            color: "var(--nypl-colors-section-research-secondary)",
+            borderColor: "var(--nypl-colors-section-research-secondary)",
+            svg: {
+              fill: "var(--nypl-colors-section-research-secondary)",
+            },
+          },
+          "a[aria-disabled='true']": {
+            color: "var(--nypl-colors-ui-disabled-primary)",
+            svg: {
+              fill: "var(--nypl-colors-ui-disabled-primary)",
+            },
+          },
+        }}
       />
-    </>
+    </Box>
   );
 
   return (
     <Template variant="sidebarLeft">
       <TemplateBreakout>{breakoutElement}</TemplateBreakout>
       <TemplateMain>
-        <TemplateFull>{contentFullElement}</TemplateFull>
         <TemplateSidebar>{contentSidebarElement}</TemplateSidebar>
         <TemplateContent>{contentElement}</TemplateContent>
       </TemplateMain>
