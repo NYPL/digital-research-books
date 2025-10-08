@@ -70,7 +70,7 @@ const ResearchAssistantInner: React.FC = () => {
         <DrbHero />
         <ResearchAssistantNav />
       </DrbBreakout>
-      <Box display="flex" flexDir="row" overflow="hidden" height="80vh">
+      <Box display="flex" flexDir="row" height="100vh">
         {((results && Object.keys(results).length > 0) || showWebReader) && (
           <Box display="flex" flexDirection="column" flex="1">
             {historyStack.length > 1 && (
@@ -92,7 +92,7 @@ const ResearchAssistantInner: React.FC = () => {
               </Box>
             )}
             {showWebReader ? (
-              <>
+              <Box flex="1">
                 {pdfData ? (
                   <ResearchAssistantViewer itemId={itemId} pdfData={pdfData} />
                 ) : (
@@ -102,9 +102,9 @@ const ResearchAssistantInner: React.FC = () => {
                     backUrl={backUrl}
                   />
                 )}
-              </>
+              </Box>
             ) : (
-              <>
+              <Box paddingX="l" paddingBottom="l" flex="1">
                 {results && Object.keys(results).length > 0 && (
                   <>
                     {results.type === "catalog_search" && (
@@ -115,7 +115,7 @@ const ResearchAssistantInner: React.FC = () => {
                     )}
                   </>
                 )}
-              </>
+              </Box>
             )}
           </Box>
         )}
@@ -125,19 +125,32 @@ const ResearchAssistantInner: React.FC = () => {
           display="flex"
           flexDirection="column"
           bgColor="section.research.primary"
-          border="1px solid #e5e7eb"
-          maxHeight="80vh"
+          maxHeight="100vh"
+          position="sticky"
+          top="0"
         >
           <Box
+            bgColor="section.research.primary"
             display="flex"
             justifyContent="space-between"
             alignItems="center"
             paddingX="l"
             paddingY="s"
             borderBottom="1px white solid"
+            position="sticky"
+            top="0"
+            zIndex="999"
           >
-            <Heading level="h2" size="heading3" color="ui.white">
-              <ResearchAssistantIcon /> Virtual Research Assistant
+            <Heading
+              level="h2"
+              size="heading7"
+              color="ui.white"
+              display="flex"
+              alignItems="center"
+              gap="xs"
+            >
+              <ResearchAssistantIcon inCircle />
+              <span>Virtual Research Assistant</span>
             </Heading>
             <Button onClick={clearHistory} id="clear-history-button">
               Clear chat

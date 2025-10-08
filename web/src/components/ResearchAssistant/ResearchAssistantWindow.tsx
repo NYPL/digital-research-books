@@ -27,9 +27,9 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
     <Box
       display="flex"
       flexDir="column"
-      flex="1"
       overflowY="auto"
-      paddingX="l"
+      paddingLeft="l"
+      paddingRight="xxxl"
       paddingY="s"
       gap="s"
       marginBottom="s"

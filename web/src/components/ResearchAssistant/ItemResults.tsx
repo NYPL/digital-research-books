@@ -13,13 +13,7 @@ const ItemResults: React.FC<{
   const { onPreview } = useResultPageContext();
 
   return (
-    <Box
-      padding="s"
-      border="1px solid #e5e7eb"
-      overflowY="auto"
-      maxHeight="80vh"
-      flex="1"
-    >
+    <Box>
       <Heading level="h2" size="heading4">
         Results within the book
       </Heading>

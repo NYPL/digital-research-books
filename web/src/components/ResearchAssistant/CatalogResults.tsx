@@ -10,6 +10,7 @@ import { SearchQueryDefaults, SearchQuery } from "~/src/types/SearchQuery";
 import { toApiQuery } from "~/src/util/apiConversion";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ResearchAssistantResultsList from "./ResearchAssistantResultsList";
+import ResultsBanner from "./ResultsBanner";
 
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;
@@ -72,27 +73,33 @@ const CatalogResults: React.FC<{
   return (
     <>
       {((results && Object.keys(results).length > 0) || showWebReader) && (
-        <Box
-          padding="s"
-          border="1px solid #e5e7eb"
-          overflowY="auto"
-          maxHeight="80vh"
-          flex="1"
-        >
-          <Box>
-            <Text fontSize="2" fontWeight="semibold" paddingY="xs">
-              {resultsPagingText}
-            </Text>
+        <Box bgColor="ui.bg.default">
+          <Text
+            bgColor="ui.bg.default"
+            borderBottom="1px solid"
+            borderColor="ui.border.default"
+            boxSizing="content-box"
+            fontSize="2"
+            fontWeight="semibold"
+            lineHeight="40px"
+            marginX="-2rem"
+            paddingX="l"
+            paddingY="s"
+            position="sticky"
+            top="0"
+            zIndex="999"
+          >
+            {resultsPagingText}
+          </Text>
+          <ResultsBanner />
+          <ResearchAssistantResultsList works={results.works} />
 
-            <ResearchAssistantResultsList works={results.works} />
-
-            <Pagination
-              pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
-              initialPage={resultsPaging.currentPage}
-              onPageChange={(e) => onPageChange(e)}
-              __css={{ paddingTop: "m" }}
-            />
-          </Box>
+          <Pagination
+            pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
+            initialPage={resultsPaging.currentPage}
+            onPageChange={(e) => onPageChange(e)}
+            __css={{ paddingTop: "m" }}
+          />
         </Box>
       )}
     </>
