@@ -8,7 +8,7 @@ const ResearchAssistantPage: React.FC = () => {
   return (
     <Layout>
       <VRALayout
-        activePage="keyword"
+        activePage="vra"
         breadcrumbsData={[
           { url: "/research-assistant", text: "Virtual Research Assistant" },
         ]}

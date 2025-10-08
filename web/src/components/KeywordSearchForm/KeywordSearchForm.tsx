@@ -108,7 +108,7 @@ const KeywordSearchForm: React.FC<{
                 data-testid={SEARCH_BAR_TEST_ID}
                 sx={{
                     button: {
-                        bgColor: "section.research.secondary",
+                        bgColor: "section.research.secondary", // TODO: update hover state colors
                     },
                 }}
             />
