@@ -38,13 +38,14 @@ export default async function handler(
                 });
         }
         
-        const token = localStorage.getItem("authToken");
+        const authorization = req.headers.authorization || null;
+
         const chatsResponse = await fetch(chatsUrl, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
                 "X-API-KEY": apiKey,
-                "Authorization": `Basic ${token}`
+                "Authorization": authorization
             },
             body: JSON.stringify({ messages }),
         });
