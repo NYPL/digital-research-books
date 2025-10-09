@@ -208,7 +208,7 @@ const ResearchAssistant: React.FC = () => {
 
           <ResearchAssistantWindow messages={messages} isLoading={isLoading} />
 
-          {error && <Text>{error}</Text>}
+          {error && <Text fontWeight="bold">{error}</Text>}
 
           <ResearchAssistantInput
             onSendMessage={sendMessage}

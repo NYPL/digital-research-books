@@ -26,14 +26,16 @@ def mock_db_and_client(mocker):
     mock_db.fetchUser.return_value = mocker.MagicMock(
         user="testUser", password="testPswd", salt="testSalt"
     )
-    mock_db_client = mocker.patch("api.blueprints.drbCollection.DBClient")
-    mock_db_client.return_value = mock_db
-    return mock_db, mock_db_client
+    mock_db_client_decorators = mocker.patch("api.decorators.DBClient")
+    mock_db_client_decorators.return_value = mock_db
+    mock_db_client_drbCollection = mocker.patch("api.blueprints.drbCollection.DBClient")
+    mock_db_client_drbCollection.return_value = mock_db
+    return mock_db, mock_db_client_decorators, mock_db_client_drbCollection
 
 
 @pytest.fixture(autouse=True)
 def mock_b64decode(mocker):
-    mock = mocker.patch("api.blueprints.drbCollection.b64decode")
+    mock = mocker.patch("api.decorators.b64decode")
     mock.return_value = b"testUser:testPswd"
     return mock
 
@@ -89,7 +91,9 @@ def test_create_static_collection_success(
     collection_request_body,
     mock_b64decode,
 ):
-    mock_db, mock_db_client = mock_db_and_client
+    mock_db, mock_db_client_decorators, mock_db_client_drbCollection = (
+        mock_db_and_client
+    )
     collection = mocker.MagicMock(uuid="testUUID")
     mock_db.createStaticCollection.return_value = collection
     mock_feed_construct = mocker.patch("api.blueprints.drbCollection.constructOPDSFeed")
@@ -104,7 +108,8 @@ def test_create_static_collection_success(
         test_api_response = collectionCreate()
 
         assert test_api_response == "testOPDS2Response"
-        assert mock_db_client.call_count == 2
+        assert mock_db_client_decorators.call_count == 1
+        assert mock_db_client_drbCollection.call_count == 1
         assert mock_db.createSession.call_count == 2
         mock_db.createStaticCollection.assert_called_once_with(
             "Test Collection",

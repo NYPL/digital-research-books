@@ -37,12 +37,15 @@ export default async function handler(
                     error: 'Request body must contain a non-empty "messages" array.',
                 });
         }
+        
+        const authorization = req.headers.authorization || null;
 
         const chatsResponse = await fetch(chatsUrl, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
                 "X-API-KEY": apiKey,
+                "Authorization": authorization
             },
             body: JSON.stringify({ messages }),
         });
