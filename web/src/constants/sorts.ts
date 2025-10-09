@@ -1,5 +1,15 @@
 export const sortMap = {
   Relevance: { field: "relevance", dir: "DESC" },
+  "Title A-Z": { field: "title", dir: "ASC" },
+  "Title Z-A": { field: "title", dir: "DESC" },
+  "Author A-Z": { field: "author", dir: "ASC" },
+  "Author Z-A": { field: "author", dir: "DESC" },
+  "Year Published (Old-New)": { field: "date", dir: "ASC" },
+  "Year Published (New-Old)": { field: "date", dir: "DESC" },
+};
+
+export const vraSortMap = {
+  Relevance: { field: "relevance", dir: "DESC" },
   "Title (A - Z)": { field: "title", dir: "ASC" },
   "Title (Z - A)": { field: "title", dir: "DESC" },
   "Author (A - Z)": { field: "author", dir: "ASC" },

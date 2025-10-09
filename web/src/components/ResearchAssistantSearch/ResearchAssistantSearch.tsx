@@ -24,7 +24,7 @@ import {
   SearchQuery,
   SearchQueryDefaults,
 } from "~/src/types/SearchQuery";
-import { sortMap } from "~/src/constants/sorts";
+import { vraSortMap } from "~/src/constants/sorts";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import Filters from "./SearchFilters/SearchFilters";
 import SearchHeader from "../SearchHeader/SearchHeader";
@@ -104,6 +104,15 @@ const SearchResults: React.FC<{
     searchQuery.page <= searchPaging.lastPage
       ? searchPaging.currentPage * searchPaging.recordsPerPage
       : numberOfWorks;
+  const resultsPagingText =
+    numberOfWorks > 0
+      ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
+        ? numberOfWorks.toLocaleString()
+        : lastElement.toLocaleString()
+      } of ${numberOfWorks.toLocaleString()} results for ${getDisplayItemsHeading(
+        searchQuery
+      )}`
+      : "Viewing 0 items"
 
   // When Filters change, it should reset the page number while preserving all other search preferences.
   const changeFilters = (newFilters?: Filter[]) => {
@@ -121,10 +130,10 @@ const SearchResults: React.FC<{
     e.preventDefault();
     if (
       e.target.value !==
-      Object.keys(sortMap).find((key) => sortMap[key] === searchQuery.sort)
+      Object.keys(vraSortMap).find((key) => vraSortMap[key] === searchQuery.sort)
     ) {
       const newSearchQuery: SearchQuery = Object.assign({}, searchQuery, {
-        sort: sortMap[e.target.value],
+        sort: vraSortMap[e.target.value],
         page: SearchQueryDefaults.page,
       });
       setSearchQuery(newSearchQuery);
@@ -200,13 +209,13 @@ const SearchResults: React.FC<{
                   isRequired={false}
                   labelText="Sort By"
                   labelPosition="inline"
-                  value={Object.keys(sortMap).find((key) =>
-                    deepEqual(sortMap[key], searchQuery.sort)
+                  value={Object.keys(vraSortMap).find((key) =>
+                    deepEqual(vraSortMap[key], searchQuery.sort)
                   )}
                   onChange={(e) => onChangeSort(e)}
                   width="100%"
                 >
-                  {Object.keys(sortMap).map((sortOption: string) => {
+                  {Object.keys(vraSortMap).map((sortOption: string) => {
                     return (
                       <option key={`sort-option-${sortOption}`}>
                         {sortOption}
@@ -279,15 +288,8 @@ const SearchResults: React.FC<{
         <ActiveFilters onClick={onTagSetClear} tagSetData={tagSetData} />
       )}
       <Flex justify="space-between" align="center" marginBottom="l">
-        <Heading size="heading5" className="page-counter" role="alert">
-          {numberOfWorks > 0
-            ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
-              ? numberOfWorks.toLocaleString()
-              : lastElement.toLocaleString()
-            } of ${numberOfWorks.toLocaleString()} results for ${getDisplayItemsHeading(
-              searchQuery
-            )}`
-            : "Viewing 0 items"}
+        <Heading size="heading5" role="alert">
+          {resultsPagingText}
         </Heading>
         <Form id="results-sorts-form" display={["none", "none", "block"]}>
           <Select
@@ -296,12 +298,12 @@ const SearchResults: React.FC<{
             isRequired={false}
             labelText="Sort By"
             labelPosition="inline"
-            value={Object.keys(sortMap).find((key) =>
-              deepEqual(sortMap[key], searchQuery.sort)
+            value={Object.keys(vraSortMap).find((key) =>
+              deepEqual(vraSortMap[key], searchQuery.sort)
             )}
             onChange={(e) => onChangeSort(e)}
           >
-            {Object.keys(sortMap).map((sortOption: string) => {
+            {Object.keys(vraSortMap).map((sortOption: string) => {
               return (
                 <option key={`sort-option-${sortOption}`}>{sortOption}</option>
               );

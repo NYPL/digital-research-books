@@ -21,6 +21,8 @@ import { useResultPageContext } from "~/src/context/ResultPageContext";
 import ViewEditionsLink from "../EditionCard/ViewEditionsLink";
 import { RESEARCH_CATALOG_LINK, SCAN_AND_DELIVER_LINK } from "~/src/constants/links";
 import Ctas from "./Ctas";
+import { MAX_TITLE_LENGTH } from "~/src/constants/editioncard";
+import { truncateStringOnWhitespace } from "~/src/util/Util";
 
 interface ResultCardProps {
     authors: Agent[];
@@ -35,11 +37,12 @@ export const ResultCard: React.FC<ResultCardProps> = ({
     work,
     isFeaturedEdition,
 }) => {
+    const { page } = useResultPageContext();
     const previewItem = EditionCardUtils.getPreviewItem(edition.items);
 
     const editionYearElem = () => {
         const editionDisplay = EditionCardUtils.editionYearText(edition);
-        const additionalEditions = isFeaturedEdition
+        const additionalEditions = isFeaturedEdition && page === "researchAssistant"
             ? ` + ${work.edition_count - 1} more`
             : "";
 
@@ -54,8 +57,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({
     const isUniversityPress = EditionCardUtils.isUniversityPress(previewItem);
     const isPublicDomain = EditionCardUtils.isPublicDomain(previewItem);
     const isLoginRequired = isPhysicalEdition || isUniversityPress;
-
-    const { page } = useResultPageContext();
 
     const accordionSummaryData = () => {
         const accordionData = [];
@@ -144,14 +145,14 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                         <Heading size="heading7" marginBottom="xxs">
                             <Link
                                 to={{
-                                    pathname: `/work/${edition.edition_id}`,
+                                    pathname: `/work/${work.uuid}`,
                                     ...(previewItem
-                                        ? { query: { featured: previewItem.item_id } }
+                                        ? { query: { featured: edition.edition_id } }
                                         : null),
                                 }}
                                 isUnderlined={false}
                             >
-                                {work.title}
+                                {truncateStringOnWhitespace(work.title, MAX_TITLE_LENGTH)}
                             </Link>
                         </Heading>
                         {authors.length > 0 && (
