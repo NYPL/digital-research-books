@@ -27,20 +27,21 @@ import {
 import { vraSortMap } from "~/src/constants/sorts";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import Filters from "./SearchFilters/SearchFilters";
-import SearchHeader from "../SearchHeader/SearchHeader";
 import { ApiWork } from "~/src/types/WorkQuery";
 import useFeatureFlags from "~/src/context/FeatureFlagContext";
 import TotalWorks from "../TotalWorks/TotalWorks";
-import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import ActiveFilters from "./SearchFilters/ActiveFilters";
 import { capitalizeFirstLetter, deepEqual } from "~/src/util/Util";
 import { getAvailableLanguages } from "~/src/util/SearchUtils";
 import ResearchAssistantResultsList from "../ResearchAssistant/ResearchAssistantResultsList";
+import KeywordSearchForm from "../KeywordSearchForm/KeywordSearchForm";
 
-const SearchResults: React.FC<{
+interface KeywordSearchProps {
   searchQuery: SearchQuery;
   searchResults: ApiSearchResult;
-}> = (props) => {
+}
+
+const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
   const searchResults = props.searchResults;
   const [searchQuery, setSearchQuery] = useState({
     ...SearchQueryDefaults,
@@ -75,7 +76,7 @@ const SearchResults: React.FC<{
 
   const sendSearchQuery = async (searchQuery: SearchQuery) => {
     router.push({
-      pathname: "/research-assistant-search",
+      pathname: "/keyword-search",
       query: toLocationQuery(toApiQuery(searchQuery)),
     });
   };
@@ -161,15 +162,8 @@ const SearchResults: React.FC<{
   };
 
   const breakoutElement = (
-    <DrbBreakout
-      breadcrumbsData={[
-        {
-          url: `/search`,
-          text: "Search Results",
-        },
-      ]}
-    >
-      <SearchHeader searchQuery={searchQuery}></SearchHeader>
+    <>
+      <KeywordSearchForm searchQuery={searchQuery} />
       <Flex
         flexDir={{ base: "column", md: "row" }}
         padding="s"
@@ -253,7 +247,7 @@ const SearchResults: React.FC<{
           </Button>
         )}
       </Flex>
-    </DrbBreakout>
+    </>
   );
 
   const contentSidebarElement = (
@@ -347,4 +341,4 @@ const SearchResults: React.FC<{
   );
 };
 
-export default SearchResults;
+export default KeywordSearch;

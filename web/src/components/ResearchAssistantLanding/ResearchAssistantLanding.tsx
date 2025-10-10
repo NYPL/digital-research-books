@@ -22,7 +22,7 @@ const ResearchAssistantLanding: React.FC = () => {
                 ]}
             >
                 <DrbHero />
-                <ResearchAssistantNav />
+                <ResearchAssistantNav activePage="vra" />
             </DrbBreakout>
             <Box display="flex" flexDir="column">
                 <HeroSection ref={heroSectionRef} helpSectionRef={helpSectionRef} />

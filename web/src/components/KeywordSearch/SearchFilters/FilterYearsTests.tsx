@@ -44,7 +44,7 @@ export const FilterYearsTests = (
       await user.click(applyButton);
 
       expect(mockRouter).toMatchObject({
-        pathname: "/research-assistant-search",
+        pathname: "/keyword-search",
         query: {
           filter: "startYear:1990",
           query: "keyword:Animal Crossing",
@@ -65,7 +65,7 @@ export const FilterYearsTests = (
       await userEvent.click(applyButton);
 
       expect(mockRouter).toMatchObject({
-        pathname: "/research-assistant-search",
+        pathname: "/keyword-search",
         query: {
           filter: "endYear:1990",
           query: "keyword:Animal Crossing",
@@ -91,7 +91,7 @@ export const FilterYearsTests = (
       await user.click(applyButton);
 
       expect(mockRouter).toMatchObject({
-        pathname: "/research-assistant-search",
+        pathname: "/keyword-search",
         query: {
           filter: "startYear:1990,endYear:2000",
           query: "keyword:Animal Crossing",
