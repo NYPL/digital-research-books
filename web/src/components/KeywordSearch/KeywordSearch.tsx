@@ -114,7 +114,7 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
       } of ${numberOfWorks.toLocaleString()} results for ${getDisplayItemsHeading(
         searchQuery
       )}`
-      : "Viewing 0 items"
+      : "Viewing 0 items";
 
   // When Filters change, it should reset the page number while preserving all other search preferences.
   const changeFilters = (newFilters?: Filter[]) => {
@@ -132,7 +132,9 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     e.preventDefault();
     if (
       e.target.value !==
-      Object.keys(vraSortMap).find((key) => vraSortMap[key] === searchQuery.sort)
+      Object.keys(vraSortMap).find(
+        (key) => vraSortMap[key] === searchQuery.sort
+      )
     ) {
       const newSearchQuery: SearchQuery = Object.assign({}, searchQuery, {
         sort: vraSortMap[e.target.value],
@@ -335,10 +337,10 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     <Template variant="sidebarLeft">
       <TemplateBreakout>{breakoutElement}</TemplateBreakout>
       <TemplateFull bgColor="ui.bg.default" paddingTop="l">
-      <TemplateMain>
-        <TemplateSidebar>{sidebarElement}</TemplateSidebar>
-        <TemplateContent>{contentElement}</TemplateContent>
-      </TemplateMain>
+        <TemplateMain>
+          <TemplateSidebar>{sidebarElement}</TemplateSidebar>
+          <TemplateContent>{contentElement}</TemplateContent>
+        </TemplateMain>
       </TemplateFull>
     </Template>
   );
