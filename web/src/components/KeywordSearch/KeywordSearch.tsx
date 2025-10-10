@@ -15,6 +15,7 @@ import {
   TemplateMain,
   TemplateSidebar,
   Select,
+  TemplateFull,
 } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
 import { Query } from "~/src/types/DataModel";
@@ -250,10 +251,10 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     </>
   );
 
-  const contentSidebarElement = (
+  const sidebarElement = (
     <Form
       id="search-filter-form"
-      bgColor="ui.gray.x-light-cool"
+      bgColor="ui.white"
       border="1px solid"
       borderColor="ui.border.default"
       borderRadius="8px"
@@ -272,7 +273,7 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
   );
 
   const contentElement = (
-    <Box paddingBottom="l">
+    <Box paddingBottom="55px">
       {isFlagActive("totalCount") && (
         <Box float="right">
           <TotalWorks totalWorks={numberOfWorks} />
@@ -333,10 +334,12 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
   return (
     <Template variant="sidebarLeft">
       <TemplateBreakout>{breakoutElement}</TemplateBreakout>
+      <TemplateFull bgColor="ui.bg.default" paddingTop="l">
       <TemplateMain>
-        <TemplateSidebar>{contentSidebarElement}</TemplateSidebar>
+        <TemplateSidebar>{sidebarElement}</TemplateSidebar>
         <TemplateContent>{contentElement}</TemplateContent>
       </TemplateMain>
+      </TemplateFull>
     </Template>
   );
 };

@@ -32,7 +32,7 @@ const SearchResults: React.FC<any> = (props) => {
         breadcrumbsData={[
           {
             url: `/keyword-search`,
-            text: "Search Results",
+            text: "Keyword search",
           },
         ]}
       >

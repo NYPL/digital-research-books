@@ -17,7 +17,7 @@ const ReadOnlineLink: React.FC<{
   loginCookie?: any;
 }> = ({ authors, isLoggedIn, readOnlineLink, title }) => {
   const { onReadOnline, page } = useResultPageContext();
-  const isResearchAssistant = page === "researchAssistant";
+  const isResearchAssistant = page === "vra";
 
   let linkText = "Read Online";
   let linkUrl: any = {

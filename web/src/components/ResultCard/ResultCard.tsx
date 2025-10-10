@@ -42,7 +42,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
     const editionYearElem = () => {
         const editionDisplay = EditionCardUtils.editionYearText(edition);
-        const additionalEditions = isFeaturedEdition && page === "researchAssistant"
+        const additionalEditions = isFeaturedEdition && page === "vra"
             ? ` + ${work.edition_count - 1} more`
             : "";
 
@@ -83,7 +83,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                 </Box>
             ),
         });
-        if (page === "researchAssistant") {
+        if (page === "vra") {
             accordionData.push({
                 label: (
                     <Box

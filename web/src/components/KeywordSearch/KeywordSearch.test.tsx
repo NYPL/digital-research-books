@@ -12,8 +12,6 @@ import { render } from "~/src/__tests__/testUtils/render";
 import { resizeWindow } from "~/src/__tests__/testUtils/screen";
 import { findFiltersForField } from "~/src/util/SearchQueryUtils";
 import filterFields from "~/src/constants/filters";
-import { searchFormRenderTests, searchFormTests } from "~/src/__tests__/componentHelpers/SearchForm";
-import { PLACEHOLDER_COVER_LINK } from "~/src/constants/editioncard";
 
 const searchQuery: SearchQuery = {
   queries: [{ field: SearchField.Keyword, query: "Animal Crossing" }],
