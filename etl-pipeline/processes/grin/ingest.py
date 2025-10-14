@@ -114,7 +114,7 @@ class GRINIngestProcess:
 
             if rights:
                 record.rights = rights
-                if self._is_in_public_domain(record):
+                if self._is_in_public_domain(record) and record.has_part is None:
                     first_page_part = mets_parser.METSFile.from_mets_str(xml_metadata)
                     record.has_part = [str(first_page_part)]
         except Exception:
