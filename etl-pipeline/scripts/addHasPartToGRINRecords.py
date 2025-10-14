@@ -8,7 +8,7 @@ import file_conversion.pdfs.mets_parser as mets_parser
 from logger import create_log
 from digital_assets.utils.get_stored_file_url import get_stored_file_url
 from model import Record, Part, Source, FileFlags, GRINStatus, GRINState
-from managers import DBManager
+from managers import DBManager, SQSManager
 
 
 s3_client = boto3.client("s3")
@@ -48,6 +48,9 @@ def create_first_page_part(barcode: str, mets_file: mets_parser.METSFile) -> Par
 
 
 def main():
+    record_pipeline_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
+    sqs_manager = SQSManager(record_pipeline_queue)
+
     with DBManager() as db_manager:
         query = (
             db_manager.session.query(Record)
@@ -60,12 +63,10 @@ def main():
         )
 
         total_updated = 0
-        barcodes = []
 
         for record in query.yield_per(BATCH_SIZE):
             try:
                 barcode = record.source_id.split("|")[0]
-                barcodes.append(barcode)
                 mets_file = get_mets_file_from_s3(barcode)
 
                 if mets_file:
@@ -73,6 +74,10 @@ def main():
                     record.has_part = [str(first_page_part)]
                     db_manager.session.add(record)
                     total_updated += 1
+
+                    sqs_manager.send_message_to_queue(
+                        message={"source_id": record.source_id, "source": record.source}
+                    )
             except Exception as e:
                 logger.error(
                     f"Failed to process record with source_id {record.source_id}: {e}"
@@ -80,7 +85,6 @@ def main():
 
         db_manager.session.commit()
         logger.info(f"Updated {total_updated} GRIN records with has_part")
-        logger.info(f"Processed barcodes: {barcodes}")
 
 
 if __name__ == "__main__":
