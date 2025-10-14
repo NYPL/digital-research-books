@@ -127,6 +127,15 @@ class METSFile:
                     .xpath("@xlink:href", namespaces=NSMAP)[0]
                 )
 
+    @property
+    def first_page(self) -> str:
+        return (
+            self._find("METS:fileSec")
+            .find("METS:fileGrp", namespaces=NSMAP)
+            .find("METS:file", namespaces=NSMAP)
+            .get("SEQ")
+        )
+
     def _find(self, target: str):
         return self.root.find(target, namespaces=NSMAP)
 

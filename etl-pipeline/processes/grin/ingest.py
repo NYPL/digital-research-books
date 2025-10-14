@@ -7,7 +7,7 @@ from datetime import datetime
 from logger import create_log
 from .download import GRINDownloadService
 from managers import SQSManager, S3Manager
-from model import Record, Source
+from model import Record, Source, FileFlags, Part
 from ..record_ingestor import RecordIngestor
 from services.rights_determiner import determine_rights
 from pymarc import parse_xml_to_array
@@ -16,6 +16,7 @@ from time import sleep
 from .. import utils
 from utils.timer import timer
 from file_conversion.pdfs import mets_parser
+from digital_assets import get_stored_file_url
 
 SQS_VISIBILITY_TIMEOUT_SECS = 90 * 60
 logger = create_log(__name__)
@@ -115,8 +116,12 @@ class GRINIngestProcess:
             if rights:
                 record.rights = rights
                 if self._is_in_public_domain(record) and record.has_part is None:
-                    first_page_part = mets_parser.METSFile.from_mets_str(xml_metadata)
-                    record.has_part = [str(first_page_part)]
+                    mets_file = mets_parser.METSFile.from_mets_str(xml_metadata)
+                    if mets_file:
+                        first_page_part = self._create_first_page_part(
+                            barcode, mets_file
+                        )
+                        record.has_part = [str(first_page_part)]
         except Exception:
             logger.exception(f"Failed to determine rights for barcode: {barcode}")
 
@@ -138,3 +143,18 @@ class GRINIngestProcess:
         public_domain_threshold_date = datetime.date(threshold_year, 1, 1)
 
         return publication_date < public_domain_threshold_date or is_public_domain
+
+    def _create_first_page_part(barcode: str, mets_file: mets_parser.METSFile) -> Part:
+        if not mets_file:
+            return None
+
+        return Part(
+            index=1,
+            url=get_stored_file_url(
+                storage_name=os.environ["PRIVATE_FILE_BUCKET"],
+                file_path=f"grin/{barcode}/{mets_file.first_page}",
+            ),
+            source=Source.GRIN.value,
+            file_type="application/ocr",
+            flags=str(FileFlags(reader=True)),
+        )
