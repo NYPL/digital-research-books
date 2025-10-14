@@ -117,11 +117,10 @@ class GRINIngestProcess:
                 record.rights = rights
                 if self._is_in_public_domain(record) and record.has_part is None:
                     mets_file = mets_parser.METSFile.from_mets_str(xml_metadata)
-                    if mets_file:
-                        first_page_part = self._create_first_page_part(
-                            barcode, mets_file
-                        )
-                        record.has_part = [str(first_page_part)]
+                    first_page_part = self._create_first_page_part(
+                        barcode, mets_file
+                    )
+                    record.has_part = [str(first_page_part)]
         except Exception:
             logger.exception(f"Failed to determine rights for barcode: {barcode}")
 
