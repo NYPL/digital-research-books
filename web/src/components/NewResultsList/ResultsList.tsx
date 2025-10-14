@@ -4,7 +4,8 @@ import EmptySearchSvg from "../Svgs/EmptySearchSvg";
 import ResultCard from "../ResultCard/ResultCard";
 import { ApiWork } from "~/src/types/WorkQuery";
 
-const ResearchAssistantResultsList: React.FC<{ works: ApiWork[] }> = ({ works }) => {
+// TODO: rename folder to ResultsList when we switch to VRA/Keyword search
+const ResultsList: React.FC<{ works: ApiWork[] }> = ({ works }) => {
   if (works.length === 0) {
     return (
       <Box>
@@ -35,4 +36,4 @@ const ResearchAssistantResultsList: React.FC<{ works: ApiWork[] }> = ({ works })
   );
 };
 
-export default ResearchAssistantResultsList;
+export default ResultsList;

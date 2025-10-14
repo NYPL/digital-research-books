@@ -34,7 +34,7 @@ import TotalWorks from "../TotalWorks/TotalWorks";
 import ActiveFilters from "./SearchFilters/ActiveFilters";
 import { capitalizeFirstLetter, deepEqual } from "~/src/util/Util";
 import { getAvailableLanguages } from "~/src/util/SearchUtils";
-import ResearchAssistantResultsList from "../ResearchAssistant/ResearchAssistantResultsList";
+import ResultsList from "../NewResultsList/ResultsList";
 import KeywordSearchForm from "../KeywordSearchForm/KeywordSearchForm";
 
 interface KeywordSearchProps {
@@ -255,7 +255,6 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
 
   const sidebarElement = (
     <Form
-      id="search-filter-form"
       bgColor="ui.white"
       border="1px solid"
       borderColor="ui.border.default"
@@ -288,7 +287,7 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
         <Heading size="heading5" role="alert">
           {resultsPagingText}
         </Heading>
-        <Form id="results-sorts-form" display={["none", "none", "block"]}>
+        <Box display={["none", "none", "block"]}>
           <Select
             id="sort-by"
             name="sortBySelect"
@@ -306,9 +305,9 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
               );
             })}
           </Select>
-        </Form>
+        </Box>
       </Flex>
-      <ResearchAssistantResultsList works={works} />
+      <ResultsList works={works} />
       <Pagination
         pageCount={searchPaging.lastPage ? searchPaging.lastPage : 1}
         initialPage={searchPaging.currentPage}

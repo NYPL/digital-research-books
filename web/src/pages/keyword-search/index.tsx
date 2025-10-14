@@ -4,7 +4,7 @@ import { ApiSearchQuery } from "../../types/SearchQuery";
 import { searchResultsFetcher } from "../../lib/api/SearchApi";
 import { toSearchQuery } from "~/src/util/apiConversion";
 import Error from "../_error";
-import Search from "~/src/components/KeywordSearch/KeywordSearch";
+import KeywordSearch from "~/src/components/KeywordSearch/KeywordSearch";
 import VRALayout from "~/src/components/VRALayout/VRALayout";
 
 export async function getServerSideProps(context: any) {
@@ -36,7 +36,7 @@ const SearchResults: React.FC<any> = (props) => {
           },
         ]}
       >
-        <Search
+        <KeywordSearch
           searchQuery={props.searchQuery}
           searchResults={props.searchResults}
         />

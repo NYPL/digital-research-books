@@ -19,7 +19,7 @@ import KeywordSearchBanner from "../KeywordSearchLanding/KeywordSearchBanner";
 
 interface KeywordSearchFormProps {
     searchQuery?: SearchQuery;
-    [x: string]: any; // for styled-system props
+    [x: string]: any; // for ds styling props
 }
 
 const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({
