@@ -1,7 +1,7 @@
 import os
 
 import boto3
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 import file_conversion.pdfs.mets_parser as mets_parser
 
 
@@ -57,6 +57,7 @@ def main():
             .join(GRINStatus, GRINStatus.record_id == Record.id)
             .filter(
                 Record.source == "grin",
+                func.lower(Record.rights).contains("public domain"),
                 or_(Record.has_part == "{}", Record.has_part.is_(None)),
                 GRINStatus.state == GRINState.DOWNLOADED.value,
             )
