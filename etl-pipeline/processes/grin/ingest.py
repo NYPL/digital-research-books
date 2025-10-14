@@ -120,11 +120,9 @@ class GRINIngestProcess:
 
         if self._is_in_public_domain(record) and record.has_part is None:
             mets_file = mets_parser.METSFile.from_mets_str(xml_metadata)
-            first_page_part = self._create_first_page_part(
-                barcode, mets_file
-            )
+            first_page_part = self._create_first_page_part(barcode, mets_file)
             record.has_part = [str(first_page_part)]
-        
+
         return record
 
     def _is_in_public_domain(record) -> bool:
