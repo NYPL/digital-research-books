@@ -8,14 +8,24 @@ import {
 } from "@nypl/design-system-react-components";
 import { SEARCH_BAR_TEST_ID } from "~/src/constants/testIds";
 import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
-import { errorMessagesText, inputTerms, SEARCH_FORM_OPTIONS } from "~/src/constants/labels";
+import {
+    errorMessagesText,
+    inputTerms,
+    SEARCH_FORM_OPTIONS,
+} from "~/src/constants/labels";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import { Query, SearchField } from "~/src/types/DataModel";
 import KeywordSearchBanner from "../KeywordSearchLanding/KeywordSearchBanner";
 
-const KeywordSearchForm: React.FC<{
+interface KeywordSearchFormProps {
     searchQuery?: SearchQuery;
-}> = ({ searchQuery }) => {
+    [x: string]: any; // for ds styling props
+}
+
+const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({
+    searchQuery,
+    ...rest
+}) => {
     const initialDefaultQuery: Query = { query: "", field: SearchField.Keyword };
 
     // The display query is the query that's auto-populated in the searchbar.
@@ -76,12 +86,14 @@ const KeywordSearchForm: React.FC<{
             margin="0 auto"
             maxWidth="1280px"
             paddingX="s"
-            paddingY="l"
+            paddingTop="l"
+            {...rest}
         >
             <Flex alignItems="center" gap="xxs">
                 <Icon name="actionInfo" size="medium" />
                 <Text size="body2">
-                    <strong>Search tip:</strong> {SEARCH_FORM_OPTIONS[shownQuery.field].searchTip}
+                    <strong>Search tip:</strong>{" "}
+                    {SEARCH_FORM_OPTIONS[shownQuery.field].searchTip}
                 </Text>
             </Flex>
             <SearchBar

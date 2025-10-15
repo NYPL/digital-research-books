@@ -21,7 +21,7 @@ const KeywordSearchBanner: React.FC = () => {
             content={bannerContent}
             variant="warning"
             marginRight="l"
-            marginY="s"
+            marginTop="s"
             sx={{
                 a: {color: "ui.link.primary"}
             }}

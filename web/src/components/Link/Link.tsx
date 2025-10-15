@@ -2,11 +2,12 @@ import React from "react";
 import BaseLink from "next/link";
 import {
   Link as DSLink,
+  LinkProps as DSLinkProps,
   LinkVariants,
 } from "@nypl/design-system-react-components";
 
-// allow this component to accept all properties of "a" tag
-interface IProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+// allow this component to accept all properties of DSLink
+interface LinkProps extends DSLinkProps {
   to: any;
   modifiers?: string[];
   variant?: LinkVariants;
@@ -23,7 +24,7 @@ const Link = ({
   "aria-label": ariaLabel,
   onClick,
   ...rest
-}: IProps) => {
+}: LinkProps) => {
   return (
     <DSLink
       href={to}

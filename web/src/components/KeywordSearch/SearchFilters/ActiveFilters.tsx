@@ -2,7 +2,7 @@ import { Flex, TagSet, Text } from "@nypl/design-system-react-components";
 
 const ActiveFilters = ({ onClick, tagSetData }) => {
     return (
-        <Flex gap="s" alignItems="center">
+        <Flex gap="s" alignItems="center" marginBottom="l" marginTop="xxs">
             <Text isBold size="body2">Active filters</Text>
             <TagSet
                 id="applied-filters-tagset"

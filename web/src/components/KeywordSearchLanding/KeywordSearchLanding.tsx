@@ -5,7 +5,7 @@ import KeywordSearchForm from "../KeywordSearchForm/KeywordSearchForm";
 const KeywordSearchLanding: React.FC = () => {
     return (
         <>
-            <KeywordSearchForm />
+            <KeywordSearchForm paddingBottom="l" />
             <Flex gap="s" bgColor="ui.bg.default" alignItems="center">
                 <Flex
                     alignItems="center"

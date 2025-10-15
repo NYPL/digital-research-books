@@ -12,7 +12,6 @@ import { render } from "~/src/__tests__/testUtils/render";
 import { resizeWindow } from "~/src/__tests__/testUtils/screen";
 import { findFiltersForField } from "~/src/util/SearchQueryUtils";
 import filterFields from "~/src/constants/filters";
-import { PLACEHOLDER_COVER_LINK } from "~/src/constants/editioncard";
 
 const searchQuery: SearchQuery = {
   queries: [{ field: SearchField.Keyword, query: "Animal Crossing" }],
@@ -50,11 +49,11 @@ describe("Renders Search Results Page", () => {
 
   test("Main Content shows the current search query with 'alert' role", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
-      'Search results for keyword: "Animal Crossing"'
+      /results for keyword: "Animal Crossing"/i
     );
   });
   test("Item Count shows correctly", () => {
-    expect(screen.getByText("Viewing 1 - 10 of 26 items")).toBeInTheDocument();
+    expect(screen.getByText("1 - 10 of 26 results", { exact: false })).toBeInTheDocument();
   });
 
   describe("Filters modal show and hide", () => {
@@ -66,9 +65,6 @@ describe("Renders Search Results Page", () => {
     test("clicking 'filters' button shows filters contents", async () => {
       await clickFiltersButton();
       const modal = screen.getByTestId("filters-modal-content")
-      expect(
-        within(modal).getByRole("combobox", { name: "Items Per Page", hidden: false })
-      ).toHaveValue("10");
       expect(within(modal).getByRole("combobox", { name: "Sort By" })).toHaveValue(
         "Relevance"
       );
@@ -96,35 +92,14 @@ describe("Renders Search Results Page", () => {
     });
   });
   describe("Filters interactions in narrow view", () => {
-    describe("Per Page filters", () => {
-      test("Changes Sort By sends new search", async () => {
-        await clickFiltersButton();
-        const modalItemsPerPage = screen.getAllByLabelText("Items Per Page")[1];
-        expect(modalItemsPerPage).toBeVisible();
-        await userEvent.selectOptions(modalItemsPerPage, "20");
-        expect(mockRouter).toMatchObject({
-          pathname: "/keyword-search",
-          query: {
-            query: "keyword:Animal Crossing",
-            size: "20",
-          },
-        });
-        expect(modalItemsPerPage).toHaveValue("20");
-
-        await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
-        expect(
-          screen.getByRole("button", { name: "Filter results" })
-        ).toBeInTheDocument();
-      }, 15000);
-    });
     describe("Sorts filters", () => {
       test("Changing items sends new search ", async () => {
         await clickFiltersButton();
         const allSorts = screen.getAllByLabelText("Sort By");
         const sortBy = allSorts[1];
         expect(sortBy).toBeVisible();
-        await userEvent.selectOptions(sortBy, "Title A-Z");
-        expect(sortBy).toHaveValue("Title A-Z");
+        await userEvent.selectOptions(sortBy, "Title (A - Z)");
+        expect(sortBy).toHaveValue("Title (A - Z)");
         expect(mockRouter).toMatchObject({
           pathname: "/keyword-search",
           query: {
@@ -268,9 +243,6 @@ describe("Renders Search Results Page", () => {
             .href
         ).toContain("featured=1453292");
       });
-      test("subtitle displays", () => {
-        expect(screen.getByText("Cute Tables Subtitle")).toBeInTheDocument();
-      });
       test("Author links to author search", () => {
         expect(screen.getByText("Nook, Timmy").closest("a").href).toContain(
           "http://localhost/search?query=author%3ANook%2C+Timmy"
@@ -279,34 +251,10 @@ describe("Renders Search Results Page", () => {
           "http://localhost/search?query=author%3ANook%2C+Tammy"
         );
       });
-
-      test("Shows Year as Link in header", () => {
-        expect(screen.getByText("1915 Edition").closest("a").href).toContain(
-          "/edition/1453292"
-        );
-        expect(screen.getByText("1915 Edition").closest("a").href).toContain(
-          "featured=1956736"
-        );
-      });
       test("Shows Full Publisher", () => {
         expect(
           screen.getByText("Published in Island Getaway by Nook Industries")
         ).toBeInTheDocument();
-      });
-      test("Shows Full Language", () => {
-        expect(
-          screen.getByText("Languages: English, Spanish")
-        ).toBeInTheDocument();
-      });
-      test("Shows license with links", () => {
-        expect(
-          screen.getByText("Copyright: Public Domain").closest("a").href
-        ).toContain("/copyright");
-      });
-      test("Shows cover", () => {
-        expect(
-          screen.getByAltText("Cover for 1915 Edition").closest("img").src
-        ).toEqual("https://test-cover-2/");
       });
       test("Shows download as link", () => {
         expect(
@@ -318,7 +266,9 @@ describe("Renders Search Results Page", () => {
           screen.getAllByText("Read Online")[0].closest("a").href
         ).toContain("read/3330416");
       });
-      test("Number of editions links to work page", () => {
+      test("Number of editions links to work page", async () => {
+        const otherEditionsButton = screen.getAllByRole("button", { name: "Other editions"})[0];
+        await userEvent.click(otherEditionsButton);
         expect(
           screen.getByText("View All 3 Editions").closest("a").href
         ).toContain("/work/test-uuid-1?showAll=true");
@@ -331,31 +281,10 @@ describe("Renders Search Results Page", () => {
       });
     });
     describe("Second result has no data", () => {
-      test("Shows Unknown Year as Link in header", () => {
-        expect(
-          screen.getByText("Edition Year Unknown").closest("a").href
-        ).toContain("/edition/1172733");
-        expect(
-          screen.getByText("Edition Year Unknown").closest("a").href
-        ).not.toContain("featured");
-      });
       test("Shows Unknown Publisher", () => {
         expect(
           screen.getByText("Publisher and Location Unknown")
         ).toBeInTheDocument();
-      });
-      test("Shows Unknown languages", () => {
-        expect(screen.getByText("Languages: Undetermined")).toBeInTheDocument();
-      });
-      test("Shows Unknown license with links", () => {
-        expect(
-          screen.getByText("Copyright: Unknown").closest("a").href
-        ).toContain("/copyright");
-      });
-      test("Shows Placeholder cover", () => {
-        expect(
-          screen.getByAltText("Placeholder Cover").closest("img").src
-        ).toEqual(PLACEHOLDER_COVER_LINK);
       });
       test("Not available ctas", () => {
         expect(screen.getByText("Not yet available")).toBeInTheDocument();
@@ -377,55 +306,18 @@ describe("Renders Search Results Page", () => {
             .closest("a").href
         ).toContain("featured=1453292");
       });
-
-      test("Subtitle displays truncated", () => {
-        expect(
-          screen.getByText(
-            "super long super long super long super long super long super long super long super long super long super long super..."
-          )
-        ).toBeInTheDocument();
-      });
       test("All authors are shown and duplicate authors are not filtered", () => {
         expect(
           screen.getAllByText("Nook, Tom", { exact: false }).length
         ).toEqual(12);
       });
 
-      test("Shows Year as Link in header", () => {
-        expect(screen.getByText("1945 Edition").closest("a").href).toContain(
-          "/edition/1453292"
-        );
-        expect(screen.getByText("1945 Edition").closest("a").href).toContain(
-          "featured=1956736"
-        );
-      });
       test("Truncates publisher place and first full publisher name", () => {
         expect(
           screen.getByText(
             "Published in Taumatawhakatangihangakoauauotamateaturipukakapikimaungahoronukupokaiwhenuaki... by Nook Industries Nook Industries Nook Industries Nook Industries Nook... + 4 more"
           )
         ).toBeInTheDocument();
-      });
-      test("Shows Full Language in edition", () => {
-        expect(
-          screen.getByText(
-            "Languages: Lang1, Lang2, Lang3, Lang4, Lang5, Lang6, Lang7, Lang8, Lang9, Lang10, Lang11, Lang12, Lang13, Lang14, Lang15, Lang16, Lang17"
-          )
-        ).toBeInTheDocument();
-      });
-      test("Shows license for first item with no truncation", () => {
-        expect(
-          screen
-            .getByText(
-              "Copyright: Public Domain Public Domain Public Domain Public Domain Public Domain Public Domain Public Domain Public Domain Public Domain"
-            )
-            .closest("a").href
-        ).toContain("/copyright");
-      });
-      test("Shows cover", () => {
-        expect(
-          screen.getByAltText("Cover for 1945 Edition").closest("img").src
-        ).toEqual("https://test-cover-2/");
       });
       test("Does not show download link", () => {
         // The found `download` link is from the first result
@@ -436,7 +328,9 @@ describe("Renders Search Results Page", () => {
           screen.getAllByText("Read Online")[1].closest("a").href
         ).toContain("read/3234");
       });
-      test("Number of editions links to work page", () => {
+      test("Number of editions links to work page", async () => {
+        const otherEditionsButton = screen.getAllByRole("button", { name: "Other editions"})[1];
+        await userEvent.click(otherEditionsButton);
         expect(
           screen.getByText("View All 5 Editions").closest("a").href
         ).toContain("/work/test-uuid-3?showAll=true");
@@ -508,7 +402,7 @@ describe("Renders correctly when perPage is greater than item count", () => {
   });
 
   test("Item Count shows correctly", () => {
-    expect(screen.getByText("Viewing 1 - 2 of 2 items")).toBeInTheDocument();
+    expect(screen.getByText("1 - 2 of 2 results", { exact: false })).toBeInTheDocument();
   });
 });
 
@@ -537,7 +431,7 @@ describe("Renders locale string correctly with large numbers", () => {
   });
   test("Item Count shows correctly", () => {
     expect(
-      screen.getByText("Viewing 31,221 - 31,230 of 2,013,521 items")
+      screen.getByText("31,221 - 31,230 of 2,013,521 results", { exact: false })
     ).toBeInTheDocument();
   });
 });
@@ -551,19 +445,13 @@ describe("Renders No Results when no results are shown", () => {
       />
     );
   });
-
-  test("Main Content shows the current search query", () => {
-    expect(
-      screen.getByText('Search results for keyword: "Animal Crossing"')
-    ).toBeInTheDocument();
-  });
   test("Item Count shows correctly", () => {
     expect(screen.getByText("Viewing 0 items")).toBeInTheDocument();
   });
   test("No Results message appears", () => {
     expect(
       screen.getByText(
-        "No results were found. Please try a different keyword or fewer filters."
+        "No results were found."
       )
     ).toBeInTheDocument();
   });
@@ -596,7 +484,7 @@ describe("Renders search header correctly when viaf search is passed", () => {
 
   test("Main Content shows the viaf query", () => {
     expect(
-      screen.getByText('Search results for author: "display author"')
+      screen.getByText(/results for author: "display author"/i)
     ).toBeInTheDocument();
   });
 

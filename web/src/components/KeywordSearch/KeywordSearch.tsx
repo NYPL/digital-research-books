@@ -5,18 +5,19 @@ import {
   Button,
   Icon,
   Box,
-  HorizontalRule,
   Flex,
   Form,
   useModal,
   Template,
-  Text,
   useNYPLBreakpoints,
   TemplateBreakout,
   TemplateContent,
   TemplateMain,
   TemplateSidebar,
+  Select,
   TemplateFull,
+  SkeletonLoader,
+  SimpleGrid,
 } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
 import { Query } from "~/src/types/DataModel";
@@ -26,17 +27,16 @@ import {
   SearchQuery,
   SearchQueryDefaults,
 } from "~/src/types/SearchQuery";
-import { sortMap } from "~/src/constants/sorts";
-import ResultsList from "../ResultsList/ResultsList";
+import { vraSortMap } from "~/src/constants/sorts";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import Filters from "./SearchFilters/SearchFilters";
-import ResultsSorts from "../ResultsSorts/ResultsSorts";
 import { ApiWork } from "~/src/types/WorkQuery";
 import useFeatureFlags from "~/src/context/FeatureFlagContext";
 import TotalWorks from "../TotalWorks/TotalWorks";
 import ActiveFilters from "./SearchFilters/ActiveFilters";
-import { capitalizeFirstLetter } from "~/src/util/Util";
+import { capitalizeFirstLetter, deepEqual } from "~/src/util/Util";
 import { getAvailableLanguages } from "~/src/util/SearchUtils";
+import ResultsList from "../NewResultsList/ResultsList";
 import KeywordSearchForm from "../KeywordSearchForm/KeywordSearchForm";
 
 interface KeywordSearchProps {
@@ -50,6 +50,7 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     ...SearchQueryDefaults,
     ...props.searchQuery,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const buildTagSetData = (filters: Filter[]) => {
     return filters.map((filter) => {
@@ -78,10 +79,12 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
   const router = useRouter();
 
   const sendSearchQuery = async (searchQuery: SearchQuery) => {
-    router.push({
+    setIsLoading(true);
+    await router.push({
       pathname: "/keyword-search",
       query: toLocationQuery(toApiQuery(searchQuery)),
     });
+    setIsLoading(false);
   };
 
   // The Display Items heading (Search Results for ... )
@@ -108,6 +111,16 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     searchQuery.page <= searchPaging.lastPage
       ? searchPaging.currentPage * searchPaging.recordsPerPage
       : numberOfWorks;
+  const resultsPagingText =
+    numberOfWorks > 0
+      ? `${firstElement.toLocaleString()} - ${
+          numberOfWorks < lastElement
+            ? numberOfWorks.toLocaleString()
+            : lastElement.toLocaleString()
+        } of ${numberOfWorks.toLocaleString()} results for ${getDisplayItemsHeading(
+          searchQuery
+        )}`
+      : "Viewing 0 items";
 
   // When Filters change, it should reset the page number while preserving all other search preferences.
   const changeFilters = (newFilters?: Filter[]) => {
@@ -121,29 +134,16 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     setTagSetData(buildTagSetData(newSearchQuery.filters));
   };
 
-  const onChangePerPage = (e) => {
-    e.preventDefault();
-    const newPage = 0;
-    const newPerPage = e.target.value;
-    if (newPerPage !== searchQuery.perPage) {
-      const newSearchQuery: SearchQuery = Object.assign({}, searchQuery, {
-        page: newPage,
-        perPage: newPerPage,
-        total: numberOfWorks || 0,
-      });
-      setSearchQuery(newSearchQuery);
-      sendSearchQuery(newSearchQuery);
-    }
-  };
-
   const onChangeSort = (e) => {
     e.preventDefault();
     if (
       e.target.value !==
-      Object.keys(sortMap).find((key) => sortMap[key] === searchQuery.sort)
+      Object.keys(vraSortMap).find(
+        (key) => vraSortMap[key] === searchQuery.sort
+      )
     ) {
       const newSearchQuery: SearchQuery = Object.assign({}, searchQuery, {
-        sort: sortMap[e.target.value],
+        sort: vraSortMap[e.target.value],
         page: SearchQueryDefaults.page,
       });
       setSearchQuery(newSearchQuery);
@@ -206,14 +206,26 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
                 </Flex>
               </Button>
               <Box>
-                <ResultsSorts
-                  isModal={true}
-                  perPage={searchQuery.perPage}
-                  sort={searchQuery.sort}
-                  sortMap={sortMap}
-                  onChangePerPage={(e) => onChangePerPage(e)}
-                  onChangeSort={(e) => onChangeSort(e)}
-                />
+                <Select
+                  id="sort-by-modal"
+                  name="sortBySelect"
+                  isRequired={false}
+                  labelText="Sort By"
+                  labelPosition="inline"
+                  value={Object.keys(vraSortMap).find((key) =>
+                    deepEqual(vraSortMap[key], searchQuery.sort)
+                  )}
+                  onChange={(e) => onChangeSort(e)}
+                  width="100%"
+                >
+                  {Object.keys(vraSortMap).map((sortOption: string) => {
+                    return (
+                      <option key={`sort-option-${sortOption}`}>
+                        {sortOption}
+                      </option>
+                    );
+                  })}
+                </Select>
               </Box>
               <form name="filterForm">
                 <Filters
@@ -247,10 +259,9 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     </>
   );
 
-  const contentSidebarElement = (
+  const sidebarElement = (
     <Form
-      id="search-filter-form"
-      bgColor="ui.gray.x-light-cool"
+      bgColor="ui.white"
       border="1px solid"
       borderColor="ui.border.default"
       borderRadius="8px"
@@ -268,8 +279,8 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     </Form>
   );
 
-  const contentFullElement = (
-    <>
+  const contentElement = (
+    <Box paddingBottom="55px">
       {isFlagActive("totalCount") && (
         <Box float="right">
           <TotalWorks totalWorks={numberOfWorks} />
@@ -278,56 +289,74 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
       {tagSetData.length > 0 && (
         <ActiveFilters onClick={onTagSetClear} tagSetData={tagSetData} />
       )}
-      <Box className="search-heading">
-        <Box role="alert">
-          <Heading level="h1" size="heading3" id="page-title-heading">
-            Search results for {getDisplayItemsHeading(searchQuery)}
-          </Heading>
+      <Flex justify="space-between" align="center" marginBottom="l">
+        <Heading size="heading5" role="alert">
+          {resultsPagingText}
+        </Heading>
+        <Box display={["none", "none", "block"]}>
+          <Select
+            id="sort-by"
+            name="sortBySelect"
+            isRequired={false}
+            labelText="Sort By"
+            labelPosition="inline"
+            value={Object.keys(vraSortMap).find((key) =>
+              deepEqual(vraSortMap[key], searchQuery.sort)
+            )}
+            onChange={(e) => onChangeSort(e)}
+          >
+            {Object.keys(vraSortMap).map((sortOption: string) => {
+              return (
+                <option key={`sort-option-${sortOption}`}>{sortOption}</option>
+              );
+            })}
+          </Select>
         </Box>
-      </Box>
-      <HorizontalRule bg="section.research.primary" marginY="s" />
-      <Flex justify="space-between" align="center">
-        <Text fontSize="1.75rem" className="page-counter" __css={{ m: "0" }}>
-          {numberOfWorks > 0
-            ? `Viewing ${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
-              ? numberOfWorks.toLocaleString()
-              : lastElement.toLocaleString()
-            } of ${numberOfWorks.toLocaleString()} items`
-            : "Viewing 0 items"}
-        </Text>
-        <Form id="results-sorts-form" display={["none", "none", "block"]}>
-          <ResultsSorts
-            perPage={searchQuery.perPage}
-            sort={searchQuery.sort}
-            sortMap={sortMap}
-            onChangePerPage={(e) => onChangePerPage(e)}
-            onChangeSort={(e) => onChangeSort(e)}
-          />
-        </Form>
       </Flex>
-    </>
-  );
-
-  const contentElement = (
-    <>
-      <ResultsList works={works} />
+      {isLoading ? (
+        <SimpleGrid columns={1}>
+          <SkeletonLoader layout="row" showButton />
+          <SkeletonLoader layout="row" showButton />
+          <SkeletonLoader layout="row" showButton />
+          <SkeletonLoader layout="row" showButton />
+          <SkeletonLoader layout="row" showButton />
+        </SimpleGrid>
+      ) : (
+        <ResultsList works={works} />
+      )}
       <Pagination
         pageCount={searchPaging.lastPage ? searchPaging.lastPage : 1}
         initialPage={searchPaging.currentPage}
         onPageChange={(e) => onPageChange(e)}
-        __css={{ paddingTop: "m", paddingBottom: "l" }}
+        __css={{
+          paddingTop: "m",
+          "a, li > a[aria-current='page']": {
+            color: "var(--nypl-colors-section-research-secondary)",
+            borderColor: "var(--nypl-colors-section-research-secondary)",
+            svg: {
+              fill: "var(--nypl-colors-section-research-secondary)",
+            },
+          },
+          "a[aria-disabled='true']": {
+            color: "var(--nypl-colors-ui-disabled-primary)",
+            svg: {
+              fill: "var(--nypl-colors-ui-disabled-primary)",
+            },
+          },
+        }}
       />
-    </>
+    </Box>
   );
 
   return (
     <Template variant="sidebarLeft">
       <TemplateBreakout>{breakoutElement}</TemplateBreakout>
-      <TemplateMain>
-        <TemplateFull>{contentFullElement}</TemplateFull>
-        <TemplateSidebar>{contentSidebarElement}</TemplateSidebar>
-        <TemplateContent>{contentElement}</TemplateContent>
-      </TemplateMain>
+      <TemplateFull bgColor="ui.bg.default" paddingTop="l">
+        <TemplateMain>
+          <TemplateSidebar>{sidebarElement}</TemplateSidebar>
+          <TemplateContent>{contentElement}</TemplateContent>
+        </TemplateMain>
+      </TemplateFull>
     </Template>
   );
 };

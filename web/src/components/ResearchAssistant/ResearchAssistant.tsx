@@ -9,7 +9,7 @@ import {
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import ResearchAssistantInput from "./ResearchAssistantInput";
-import ResearchAssistantResultsList from "./ResearchAssistantResultsList";
+import ResultsList from "../NewResultsList/ResultsList";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import ResultsBanner from "./ResultsBanner";
 import { LinkResult } from "~/src/types/LinkQuery";
@@ -138,7 +138,7 @@ const ResearchAssistant: React.FC = () => {
                   {resultsPagingText}
                 </Text>
                 <ResultsBanner />
-                <ResearchAssistantResultsList works={results.works} />
+                <ResultsList works={results.works} />
                 <Pagination
                   pageCount={
                     resultsPaging.lastPage ? resultsPaging.lastPage : 1
