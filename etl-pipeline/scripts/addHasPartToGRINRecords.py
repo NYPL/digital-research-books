@@ -11,13 +11,12 @@ from model import Record, Part, Source, FileFlags, GRINStatus, GRINState
 from managers import DBManager, SQSManager
 
 
-s3_client = boto3.client("s3")
 logger = create_log(__name__)
 
 BATCH_SIZE = 1000
 
 
-def get_mets_file_from_s3(barcode: str) -> mets_parser.METSFile:
+def get_mets_file_from_s3(s3_client, barcode: str) -> mets_parser.METSFile:
     key = f"grin/{barcode}/NYPL_{barcode}.xml"
     try:
         s3_object = s3_client.get_object(
@@ -50,6 +49,7 @@ def create_first_page_part(barcode: str, mets_file: mets_parser.METSFile) -> Par
 def main():
     record_pipeline_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
     sqs_manager = SQSManager(record_pipeline_queue)
+    s3_client = boto3.client("s3")
 
     with DBManager() as db_manager:
         query = (
@@ -68,7 +68,7 @@ def main():
         for record in query.yield_per(BATCH_SIZE):
             try:
                 barcode = record.source_id.split("|")[0]
-                mets_file = get_mets_file_from_s3(barcode)
+                mets_file = get_mets_file_from_s3(s3_client, barcode)
 
                 if mets_file:
                     first_page_part = create_first_page_part(barcode, mets_file)
