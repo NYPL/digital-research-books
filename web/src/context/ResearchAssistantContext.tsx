@@ -108,9 +108,11 @@ export const ResearchAssistantProvider: React.FC<{
         ];
 
         try {
+            const token = localStorage.getItem("authToken");
             const response = await fetch("/api/research-assistant", {
                 method: "PUT",
                 headers: {
+                    "Authorization": `Basic ${token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
