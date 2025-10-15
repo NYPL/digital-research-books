@@ -10,6 +10,8 @@ interface ResearchAssistantNavProps {
 const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
     activePage,
 }) => {
+    const token = localStorage.getItem("authToken");
+
     return (
         <SubNav
             actionBackgroundColor="section.research.primary-05"
@@ -45,9 +47,13 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
                     <SubNavLink href="#help" id="subnav-help">
                         Get help
                     </SubNavLink>
-                    <SubNavLink isOutlined href="#account" id="subnav-my-account">
+                    <SubNavLink
+                        isOutlined
+                        href={token ? "#account" : "/research-assistant-login"}
+                        id="subnav-my-account"
+                    >
                         <Icon name="actionIdentityFilled" size="medium" />
-                        My account
+                        {token ? "My account" : "Login"}
                     </SubNavLink>
                 </>
             }

@@ -9,6 +9,7 @@ import re
 from model.postgres.collection import COLLECTION_EDITIONS
 from logger import create_log
 from botocore.exceptions import ClientError
+import os
 from urllib.parse import urlparse
 
 
@@ -63,6 +64,7 @@ class APIUtils:
         "hathitrust": 10,
         "oclc": 11,
         "nypl": 12,
+        "grin": 13,
     }
 
     DEFAULT_PRIORITY = 100
@@ -404,6 +406,12 @@ class APIUtils:
                     reader != "v2" and link.media_type == "application/webpub+json"
                 ):
                     flags["reader"] = False
+
+                if link.media_type == "application/ocr":
+                    page_id = link.url.split("/")[-1]
+                    link.url = (
+                        os.environ["DRB_API_HOST"] + f"/items/{item.id}/read/{page_id}"
+                    )
 
                 itemDict["links"].append(
                     {
