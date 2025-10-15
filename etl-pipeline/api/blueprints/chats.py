@@ -10,11 +10,11 @@ from ..decorators import require_token
 
 logger = create_log(__name__)
 
-chats = Blueprint("chats", __name__, url_prefix="/chats")
+chats_blueprint = Blueprint("chats", __name__, url_prefix="/chats")
 RESPONSE_TYPE = "chats"
 
 
-@chats.route("", methods=["PUT"])
+@chats_blueprint.route("", methods=["PUT"])
 @require_api_key
 @require_token
 def update_chat(user=None):

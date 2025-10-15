@@ -88,6 +88,23 @@ class METSFile:
 
             yield self._parse_page(page, file_mapping)
 
+    def get_surrounding_pages(self, page_id: str, window: int = 10) -> tuple:
+        page_sequence = self.page_sequence
+
+        try:
+            page_index = page_sequence.index(page_id)
+        except ValueError:
+            return [], []
+
+        previous_pages = page_sequence[max(0, page_index - window) : page_index]
+        next_pages = page_sequence[
+            min(len(page_sequence), page_index + 1) : min(
+                len(page_sequence), page_index + 1 + window
+            )
+        ]
+
+        return previous_pages, next_pages
+
     @property
     def page_count(self) -> int:
         struct_map = self._find("METS:structMap")
@@ -135,6 +152,15 @@ class METSFile:
             .find("METS:file", namespaces=NSMAP)
             .get("SEQ")
         )
+
+    @property
+    def page_sequence(self) -> list[str]:
+        return [
+            file.get("SEQ")
+            for file in self._find("METS:fileSec")
+            .find("METS:fileGrp", namespaces=NSMAP)
+            .findall("METS:file", namespaces=NSMAP)
+        ]
 
     def _find(self, target: str):
         return self.root.find(target, namespaces=NSMAP)

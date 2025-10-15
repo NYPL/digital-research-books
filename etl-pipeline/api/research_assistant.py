@@ -10,15 +10,21 @@ from logger import create_log
 from .utils import APIUtils
 from .db import DBClient
 from uuid import UUID
+from .blueprints.item_search import get_search_results, QueryMode
 
 import json
 
 VRA_SYSTEM_PROMPT_V0 = SystemMessage(
     content=(
-        "You are a Virtual Research Assistant for the New York Public Library. "
-        "Find relevant digitized literature using the search-tool based on the patron's inquiry. "
-        "Respond politely with a brief description of how you searched. "
-        "If the inquiry is not research related, politely decline to answer."
+        "You are a Virtual Research Assistant.\n\n"
+        "Your tasks are:\n"
+        "1. Use the `catalog-search-tool` to find relevant digitized literature (items) based on the patron's inquiry.\n"
+        "2. Use the `item-search-tool` to find relevant text within an item that may answer the inquiry. "
+        "If an <itemId>item_id</itemId> is provided, use that value as the item_id.\n\n"
+        "Guidelines:\n"
+        "- Respond politely with a brief description of what you did.\n"
+        "- Do not summarize the search results.\n"
+        "- If the inquiry is not research-related or not related to a particular item, politely decline to answer."
     )
 )
 
@@ -34,7 +40,30 @@ def json_serial_uuid(obj):
 class ResearchAssistant:
     def __init__(self, es_client: ElasticClient, db_client: DBClient):
         @tool(
-            "search-tool",
+            "item-search-tool",
+            description="Search within an item given a keyword, semantic or hybrid query.",
+        )
+        def search_item(
+            item_id: str,
+            query_mode: QueryMode,
+            keyword: Optional[str] = None,
+            semantic_query: Optional[str] = None,
+            size: int = 10,
+        ):
+            item_results = get_search_results(
+                item_id,
+                query_mode,
+                keyword,
+                semantic_query,
+                size,
+            )
+
+            data_block = {"data": item_results, "type": "item_search"}
+
+            return json.dumps(data_block)
+
+        @tool(
+            "catalog-search-tool",
             description="Search the Digital Research Books catalog.",
             args_schema=SearchParams,
         )
@@ -99,7 +128,7 @@ class ResearchAssistant:
                 params.page + 1, params.size, total_hits
             )
 
-            data_block = {
+            search_results = {
                 "totalWorks": total_hits,
                 "works": APIUtils.formatWorkOutput(
                     works,
@@ -114,6 +143,8 @@ class ResearchAssistant:
                 "searchParams": params.to_query_filters(),
             }
 
+            data_block = {"data": search_results, "type": "catalog_search"}
+
             db_client.closeSession()
 
             return json.dumps(data_block, default=json_serial_uuid)
@@ -121,7 +152,7 @@ class ResearchAssistant:
         self.model = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
         self.agent = create_react_agent(
             model=self.model,
-            tools=[search_catalog],
+            tools=[search_catalog, search_item],
             prompt=self.system_prompt,
         )
 

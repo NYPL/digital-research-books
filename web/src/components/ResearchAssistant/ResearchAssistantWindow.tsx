@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
 import styles from "../../../styles/components/ResearchAssistantWindow.module.scss";
 import { Box, Text } from "@nypl/design-system-react-components";
@@ -13,9 +13,18 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
   messages,
   isLoading,
 }) => {
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      const { scrollX, scrollY } = window;
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      window.scroll(scrollX, scrollY);
+    }
+  }, [messages]);
+
   return (
     <Box
-      className={styles.windowContainer}
       display="flex"
       flexDir="column"
       overflowY="auto"
@@ -31,8 +40,12 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
         </Box>
       )}
 
-      {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
+      {messages.map((message, index) => (
+        <MessageBubble
+          key={message.id}
+          message={message}
+          ref={index === messages.length - 1 ? messagesEndRef : null}
+        />
       ))}
 
       {isLoading && (

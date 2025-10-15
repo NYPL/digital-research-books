@@ -1,58 +1,45 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Button,
   Heading,
-  Pagination,
+  Icon,
   Text,
 } from "@nypl/design-system-react-components";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
+import {
+  ResearchAssistantProvider,
+  useResearchAssistant,
+} from "~/src/context/ResearchAssistantContext";
+import CatalogResults from "./CatalogResults";
+import ItemResults from "./ItemResults";
+import ResearchAssistantViewer from "./ResearchAssistantViewer";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import ResearchAssistantInput from "./ResearchAssistantInput";
-import ResearchAssistantResultsList from "./ResearchAssistantResultsList";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import ResearchAssistantNav from "./ResearchAssistantNav";
-import ResultsBanner from "./ResultsBanner";
-import { LinkResult } from "~/src/types/LinkQuery";
-import { proxyUrlConstructor, readFetcher } from "~/src/lib/api/SearchApi";
+import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
-import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
-import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
-import { SearchField } from "~/src/types/DataModel";
-import { toApiQuery } from "~/src/util/apiConversion";
-import { useResearchAssistant } from "./useResearchAssistant";
 
-const ResearchAssistant: React.FC = () => {
+const ResearchAssistantInner: React.FC = () => {
   const {
     messages,
     sendMessage,
     results,
-    setResults,
     isLoading,
     error,
+    historyStack,
+    goToPreviousState,
     clearHistory,
+    showWebReader,
+    pdfData,
+    itemId,
+    linkResults,
+    handleReadOnline,
+    handlePreview,
   } = useResearchAssistant();
-  const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
-  const [showWebReader, setShowWebReader] = useState(false);
-  const [linkResults, setLinkResults] = useState<LinkResult>();
-
-  const numberOfWorks = results?.totalWorks;
-  const resultsPaging = results?.paging;
-  const firstElement =
-    (resultsPaging?.currentPage - 1) * resultsPaging?.recordsPerPage + 1;
-  const lastElement =
-    searchQuery?.page <= resultsPaging?.lastPage
-      ? resultsPaging?.currentPage * resultsPaging?.recordsPerPage
-      : numberOfWorks;
-  const resultsPagingText =
-    numberOfWorks > 0
-      ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
-        ? numberOfWorks.toLocaleString()
-        : lastElement.toLocaleString()
-      } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
-      : "Viewing 0 items";
 
   useEffect(() => {
     const initialMessage = sessionStorage.getItem(
@@ -64,45 +51,16 @@ const ResearchAssistant: React.FC = () => {
     }
   }, [sendMessage]);
 
-  const handleReadOnline = async (linkId: number) => {
-    setShowWebReader(true);
-    const linkResult: LinkResult = await readFetcher(linkId);
-    setLinkResults(linkResult);
-  };
-
   const proxyUrl: string = proxyUrlConstructor();
   const backUrl = "/research-assistant";
-  const onPageChange = async (select: number) => {
-    const newSearchQuery: SearchQuery = {
-      queries: [],
-      page: select,
-    };
-    newSearchQuery.queries = results.searchParams.query.map(
-      ([field, queryStr]) => ({
-        query: queryStr,
-        field: field as SearchField,
-      })
-    );
-
-    newSearchQuery.filters = results.searchParams.filters.map(
-      ([field, value]) => ({
-        field: field,
-        value: value,
-      })
-    );
-
-    setSearchQuery(newSearchQuery);
-
-    const searchResult = await searchResultsFetcher(toApiQuery(newSearchQuery));
-    const chatResult = Object.assign({}, searchResult.data, {
-      searchParams: results.searchParams,
-    });
-    setResults(chatResult);
-  };
 
   return (
     <ResultPageProvider
-      value={{ onReadOnline: handleReadOnline, page: "researchAssistant" }}
+      value={{
+        onPreview: handlePreview,
+        onReadOnline: handleReadOnline,
+        page: "researchAssistant",
+      }}
     >
       <DrbBreakout
         breadcrumbsData={[
@@ -112,58 +70,51 @@ const ResearchAssistant: React.FC = () => {
         <DrbHero />
         <ResearchAssistantNav />
       </DrbBreakout>
-      <Box display="flex" flexDir="row">
-        {results && Object.keys(results).length > 0 && (
-          <Box
-            bgColor="ui.bg.default"
-            paddingX="l"
-            flex="1"
-          >
+      <Box display="flex" flexDir="row" height="100vh">
+        {((results && Object.keys(results).length > 0) || showWebReader) && (
+          <Box display="flex" flexDirection="column" flex="1">
+            {historyStack.length > 1 && (
+              <Box padding="s" borderBottom="1px solid" borderColor="ui.border">
+                <Button
+                  variant="text"
+                  id="back-button"
+                  color="section.research.secondary"
+                  onClick={goToPreviousState}
+                >
+                  <Icon
+                    name="arrow"
+                    iconRotation="rotate90"
+                    align="left"
+                    size="small"
+                  />
+                  Back to results
+                </Button>
+              </Box>
+            )}
             {showWebReader ? (
-              linkResults && (
-                <>
-                  <Button
-                    onClick={() => setShowWebReader(false)}
-                    id="close-reader-button"
-                  >
-                    Close reader
-                  </Button>
+              <Box flex="1">
+                {pdfData ? (
+                  <ResearchAssistantViewer itemId={itemId} pdfData={pdfData} />
+                ) : (
                   <ReaderLayout
                     linkResult={linkResults}
                     proxyUrl={proxyUrl}
                     backUrl={backUrl}
                   />
-                </>
-              )
+                )}
+              </Box>
             ) : (
-              <Box paddingBottom="l">
-                <Text
-                  bgColor="ui.bg.default"
-                  borderBottom="1px solid"
-                  borderColor="ui.border.default"
-                  boxSizing="content-box"
-                  fontSize="2"
-                  fontWeight="semibold"
-                  lineHeight="40px"
-                  marginX="-2rem"
-                  paddingX="l"
-                  paddingY="s"
-                  position="sticky"
-                  top="0"
-                  zIndex="999"
-                >
-                  {resultsPagingText}
-                </Text>
-                <ResultsBanner />
-                <ResearchAssistantResultsList works={results.works} />
-                <Pagination
-                  pageCount={
-                    resultsPaging.lastPage ? resultsPaging.lastPage : 1
-                  }
-                  initialPage={resultsPaging.currentPage}
-                  onPageChange={(e) => onPageChange(e)}
-                  __css={{ paddingTop: "m" }}
-                />
+              <Box paddingX="l" paddingBottom="l" flex="1">
+                {results && Object.keys(results).length > 0 && (
+                  <>
+                    {results.type === "catalog_search" && (
+                      <CatalogResults results={results.data} />
+                    )}
+                    {results.type === "item_search" && (
+                      <ItemResults results={results.data} />
+                    )}
+                  </>
+                )}
               </Box>
             )}
           </Box>
@@ -220,5 +171,11 @@ const ResearchAssistant: React.FC = () => {
     </ResultPageProvider>
   );
 };
+
+const ResearchAssistant: React.FC = () => (
+  <ResearchAssistantProvider>
+    <ResearchAssistantInner />
+  </ResearchAssistantProvider>
+);
 
 export default ResearchAssistant;
