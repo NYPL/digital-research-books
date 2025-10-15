@@ -1,5 +1,5 @@
 import React from "react";
-import Layout from "~/src/components/Layout/Layout";
+import Layout from "~/src/components/NewLayout/Layout";
 import { ApiSearchQuery } from "../../types/SearchQuery";
 import { searchResultsFetcher } from "../../lib/api/SearchApi";
 import { toSearchQuery } from "~/src/util/apiConversion";
@@ -8,6 +8,13 @@ import KeywordSearch from "~/src/components/KeywordSearch/KeywordSearch";
 import VRALayout from "~/src/components/VRALayout/VRALayout";
 
 export async function getServerSideProps(context: any) {
+  const isResearchAssistantEnabled = process.env.APP_ENV !== "production";
+  if (!isResearchAssistantEnabled) {
+    return {
+      notFound: true,
+    };
+  }
+
   // Get Query from location
   const searchQuery: ApiSearchQuery = context.query;
   const searchResults = await searchResultsFetcher(searchQuery);

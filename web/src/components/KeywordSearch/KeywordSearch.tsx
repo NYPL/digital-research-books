@@ -16,6 +16,8 @@ import {
   TemplateSidebar,
   Select,
   TemplateFull,
+  SkeletonLoader,
+  SimpleGrid,
 } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
 import { Query } from "~/src/types/DataModel";
@@ -48,6 +50,7 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     ...SearchQueryDefaults,
     ...props.searchQuery,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const buildTagSetData = (filters: Filter[]) => {
     return filters.map((filter) => {
@@ -76,10 +79,12 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
   const router = useRouter();
 
   const sendSearchQuery = async (searchQuery: SearchQuery) => {
-    router.push({
+    setIsLoading(true);
+    await router.push({
       pathname: "/keyword-search",
       query: toLocationQuery(toApiQuery(searchQuery)),
     });
+    setIsLoading(false);
   };
 
   // The Display Items heading (Search Results for ... )
@@ -108,12 +113,13 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
       : numberOfWorks;
   const resultsPagingText =
     numberOfWorks > 0
-      ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
-        ? numberOfWorks.toLocaleString()
-        : lastElement.toLocaleString()
-      } of ${numberOfWorks.toLocaleString()} results for ${getDisplayItemsHeading(
-        searchQuery
-      )}`
+      ? `${firstElement.toLocaleString()} - ${
+          numberOfWorks < lastElement
+            ? numberOfWorks.toLocaleString()
+            : lastElement.toLocaleString()
+        } of ${numberOfWorks.toLocaleString()} results for ${getDisplayItemsHeading(
+          searchQuery
+        )}`
       : "Viewing 0 items";
 
   // When Filters change, it should reset the page number while preserving all other search preferences.
@@ -307,7 +313,17 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
           </Select>
         </Box>
       </Flex>
-      <ResultsList works={works} />
+      {isLoading ? (
+        <SimpleGrid columns={1}>
+          <SkeletonLoader layout="row" showButton />
+          <SkeletonLoader layout="row" showButton />
+          <SkeletonLoader layout="row" showButton />
+          <SkeletonLoader layout="row" showButton />
+          <SkeletonLoader layout="row" showButton />
+        </SimpleGrid>
+      ) : (
+        <ResultsList works={works} />
+      )}
       <Pagination
         pageCount={searchPaging.lastPage ? searchPaging.lastPage : 1}
         initialPage={searchPaging.currentPage}
