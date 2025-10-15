@@ -1,14 +1,15 @@
-from botocore.exceptions import ClientError
 import argparse
 import os
 
 from args_parser import env_parser
-from file_conversion.pdfs.from_ocr import generate_pdf
+from digital_assets import get_stored_file_url
 from logger import create_log
+import file_conversion.pdfs.mets_parser as mets_parser
 from managers import DBManager, ElasticsearchManager, S3Manager
-from model import Record
+from model import Record, Part, FileFlags, Source
 from utils import with_logging, setup_env
 from processes.record_embedder import RecordEmbedder
+from processes.record_pipeline import RecordPipelineProcess
 
 parser = argparse.ArgumentParser(
     prog="textpipeline.pipeline",
@@ -28,6 +29,7 @@ class TextPipeline:
         self.es_manager.create_elastic_connection()
 
         self.record_embedder = RecordEmbedder(self.es_manager, self.storage_manager)
+        self.record_pipeline = RecordPipelineProcess()
 
     @with_logging(__name__)
     def run(self, barcode: str):
@@ -40,50 +42,32 @@ class TextPipeline:
                 .first()
             )
 
-        if not record:
-            self.logger.warning(f"Barcode {barcode} not found")
-            return
+            if not record:
+                self.logger.warning(f"Barcode {barcode} not found")
+                return
 
-        self._generate_pdf(record, barcode)
-        self.record_embedder.embed(record, barcode)
-
-    def _generate_pdf(self, record: Record, barcode: str):
-        is_in_copyright = "in_copyright" in record.rights
-        pdf_bucket = (
-            os.environ["PRIVATE_FILE_BUCKET"]
-            if is_in_copyright
-            else os.environ["FILE_BUCKET"]
-        )
-        pdf_permissions = {} if is_in_copyright else {"ACL": "public-read"}
-
-        if self._pdf_exists(barcode, pdf_bucket):
-            return
-
-        generate_pdf(
-            storage_manager=self.storage_manager,
-            bucket_name=os.environ["PRIVATE_FILE_BUCKET"],
-            upload_bucket_name=pdf_bucket,
-            file_permissions=pdf_permissions,
-            barcode=barcode,
-            ocr_dir=f"grin/{barcode}",
-            mets_file_key=f"grin/{barcode}/NYPL_{barcode}.xml",
-        )
-
-    def _pdf_exists(self, barcode: str, pdf_bucket: str) -> bool:
-        try:
-            self.storage_manager.client.head_object(
-                Key=f"pdfs/{barcode}.pdf", Bucket=pdf_bucket
+            mets_file = mets_parser.METSFile.from_mets_str(
+                self.storage_manager.get_object(
+                    key=f"grin/{barcode}/NYPL_{barcode}.xml",
+                    bucket=os.environ["PRIVATE_FILE_BUCKET"],
+                )["Body"].read()
             )
+            first_page_part = Part(
+                index=1,
+                url=get_stored_file_url(
+                    storage_name=os.environ["PRIVATE_FILE_BUCKET"],
+                    file_path=f"grin/{barcode}/{mets_file.first_page}",
+                ),
+                source=Source.GRIN.value,
+                file_type="application/ocr",
+                flags=str(FileFlags(reader=True)),
+            )
+            record.has_part = [str(first_page_part)]
 
-            self.logger.info(f"{barcode}.pdf already generated")
-            return True
-        except ClientError as e:
-            error_code = e.response["Error"]["Code"]
+            db_manager.session.commit()
+            db_manager.session.refresh(record)
 
-            if error_code != "404" and error_code != "NoSuchKey":
-                raise
-
-        return False
+        self.record_embedder.embed(record, barcode)
 
 
 if __name__ == "__main__":

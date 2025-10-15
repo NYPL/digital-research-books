@@ -21,7 +21,9 @@ class RedriveRecordsProcess:
 
     def run(self):
         try:
-            query_filters = [Record.source == self.params.source]
+            query_filters = [
+                Record.source == self.params.source,
+            ]
 
             if self.params.process_type != "complete":
                 query_filters.append(Record.cluster_status == false())
