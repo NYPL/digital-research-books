@@ -6,8 +6,6 @@ import {
   Icon,
   Text,
 } from "@nypl/design-system-react-components";
-import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import DrbHero from "../DrbHero/DrbHero";
 import {
   ResearchAssistantProvider,
   useResearchAssistant,
@@ -19,7 +17,6 @@ import ReaderLayout from "../ReaderLayout/ReaderLayout";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import ResearchAssistantInput from "./ResearchAssistantInput";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
-import ResearchAssistantNav from "./ResearchAssistantNav";
 import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
 
@@ -62,14 +59,6 @@ const ResearchAssistantInner: React.FC = () => {
         page: "vra",
       }}
     >
-      <DrbBreakout
-        breadcrumbsData={[
-          { url: "/research-assistant", text: "Virtual Research Assistant" },
-        ]}
-      >
-        <DrbHero />
-        <ResearchAssistantNav activePage="vra" />
-      </DrbBreakout>
       <Box display="flex" flexDir="row">
         {((results && Object.keys(results).length > 0) || showWebReader) && (
           <Box display="flex" flexDirection="column" flex="1">
