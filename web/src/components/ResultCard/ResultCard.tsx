@@ -1,0 +1,203 @@
+import React from "react";
+import {
+    Box,
+    Flex,
+    Text,
+    Accordion,
+    Heading,
+    Banner,
+} from "@nypl/design-system-react-components";
+import AuthorsList from "../AuthorsList/AuthorsList";
+import Link from "../Link/Link";
+import PublisherAndLocation from "../EditionCard/PublisherAndLocation";
+import PublicDomainBadge from "../ResearchAssistant/PublicDomainBadge";
+import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
+import { ApiWork } from "~/src/types/WorkQuery";
+import { Agent, WorkEdition } from "~/src/types/DataModel";
+import EditionCardUtils from "~/src/util/EditionCardUtils";
+import CardRequiredBadge from "../EditionCard/CardRequiredBadge";
+import FeaturedEditionBadge from "../EditionCard/FeaturedEditionBadge";
+import { useResultPageContext } from "~/src/context/ResultPageContext";
+import ViewEditionsLink from "../EditionCard/ViewEditionsLink";
+import { RESEARCH_CATALOG_LINK, SCAN_AND_DELIVER_LINK } from "~/src/constants/links";
+import Ctas from "./Ctas";
+import { MAX_TITLE_LENGTH } from "~/src/constants/editioncard";
+import { truncateStringOnWhitespace } from "~/src/util/Util";
+
+interface ResultCardProps {
+    authors: Agent[];
+    edition: WorkEdition;
+    work: ApiWork;
+    isFeaturedEdition?: boolean;
+}
+
+export const ResultCard: React.FC<ResultCardProps> = ({
+    authors,
+    edition,
+    work,
+    isFeaturedEdition,
+}) => {
+    const { page } = useResultPageContext();
+    const previewItem = EditionCardUtils.getPreviewItem(edition.items);
+
+    const editionYearElem = () => {
+        const editionDisplay = EditionCardUtils.editionYearText(edition);
+        const additionalEditions = isFeaturedEdition && page === "vra"
+            ? ` + ${work.edition_count - 1} more`
+            : "";
+
+        return (
+            <>
+                {editionDisplay} <Link to="/">{additionalEditions}</Link>
+            </>
+        );
+    };
+
+    const isPhysicalEdition = EditionCardUtils.isPhysicalEdition(previewItem);
+    const isUniversityPress = EditionCardUtils.isUniversityPress(previewItem);
+    const isPublicDomain = EditionCardUtils.isPublicDomain(previewItem);
+    const isLoginRequired = isPhysicalEdition || isUniversityPress;
+
+    const accordionSummaryData = () => {
+        const accordionData = [];
+        accordionData.push({
+            label: (
+                <Box
+                    display="flex"
+                    gap="xxs"
+                    alignItems="center"
+                    margin="0"
+                    __css={{ svg: { marginInlineStart: "0 !important" } }}
+                >
+                    <ResearchAssistantIcon />
+                    <Text>Read summary</Text>
+                </Box>
+            ),
+            panel: (
+                <Box>
+                    {edition.summary ||
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
+                    <Text size="caption" color="ui.gray.semi-dark" marginY="s">
+                        AI-generated. Verify results.
+                    </Text>
+                </Box>
+            ),
+        });
+        if (page === "vra") {
+            accordionData.push({
+                label: (
+                    <Box
+                        display="flex"
+                        gap="xxs"
+                        alignItems="center"
+                        margin="0"
+                        __css={{ svg: { marginInlineStart: "0 !important" } }}
+                    >
+                        <ResearchAssistantIcon />
+                        <Text>Why is this result relevant?</Text>
+                    </Box>
+                ),
+                panel: (
+                    <Box>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                        eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        <Text size="caption" color="ui.gray.semi-dark" marginY="s">
+                            AI-generated. Verify results.
+                        </Text>
+                    </Box>
+                ),
+            });
+        } else if (work.edition_count > 1) {
+            accordionData.push({
+                label: <Text>Other editions</Text>,
+                panel: <ViewEditionsLink work={work} />, // TODO: update to show other editions in accordion
+            });
+        }
+        return accordionData;
+    };
+
+    return (
+        <Box
+            border="1px solid"
+            borderColor="ui.border.default"
+            padding="s"
+            backgroundColor="ui.white"
+            borderTop="2px solid"
+            borderTopColor="section.research.primary"
+        >
+            <Flex gap="s" flexDirection="column">
+                <Flex
+                    gap="xs"
+                    flexDirection="row"
+                    alignItems="center"
+                    marginBottom="xs"
+                >
+                    {isPublicDomain && <PublicDomainBadge />}
+                    {isLoginRequired && <CardRequiredBadge />}
+                    {isFeaturedEdition && <FeaturedEditionBadge />}
+                </Flex>
+                <Flex gap="s" flexDirection="row">
+                    <Box width="120px" bgColor="ui.gray.light-cool" flexShrink="0" />
+                    <Box>
+                        <Text size="caption" marginBottom="xxs">
+                            E-BOOK
+                        </Text>
+                        <Heading size="heading7" marginBottom="xxs">
+                            <Link
+                                to={{
+                                    pathname: `/work/${work.uuid}`,
+                                    ...(previewItem
+                                        ? { query: { featured: edition.edition_id } }
+                                        : null),
+                                }}
+                                isUnderlined={false}
+                            >
+                                {truncateStringOnWhitespace(work.title, MAX_TITLE_LENGTH)}
+                            </Link>
+                        </Heading>
+                        {authors.length > 0 && (
+                            <Box>
+                                By <AuthorsList authors={authors} />
+                            </Box>
+                        )}
+                        <Box marginTop="m">
+                            <PublisherAndLocation
+                                pubPlace={edition.publication_place}
+                                publishers={edition.publishers}
+                            />
+                        </Box>
+                        <Box>{editionYearElem()}</Box>
+                    </Box>
+                </Flex>
+                <Accordion
+                    width="100%"
+                    id={`accordion-summary-${edition.edition_id}`}
+                    accordionData={accordionSummaryData()}
+                />
+                {isPhysicalEdition && (
+                    <Banner
+                        variant="informative"
+                        content={
+                            <Text>
+                                This is a physical edition from our{" "}
+                                <Link to={RESEARCH_CATALOG_LINK} hasVisitedState={false}>
+                                    Research Catalog
+                                </Link>
+                                . A partial scan can be requested via NYPL&apos;s{" "}
+                                <Link to={SCAN_AND_DELIVER_LINK} hasVisitedState={false}>
+                                    Scan & Deliver service
+                                </Link>
+                                .
+                            </Text>
+                        }
+                    />
+                )}
+                <Flex flexDir="row" gap="xs">
+                    <Ctas authors={authors} item={previewItem} title={work.title} />
+                </Flex>
+            </Flex>
+        </Box>
+    );
+};
+
+export default ResultCard;

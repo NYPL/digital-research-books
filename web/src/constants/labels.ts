@@ -78,6 +78,28 @@ export const inputTerms = [
   { text: "Subject", value: "subject" },
 ];
 
+const useQuotes = "Use quotation marks to search for an exact phrase.";
+const example = "Example: "
+
+export const SEARCH_FORM_OPTIONS = {
+  keyword: {
+    placeholder: `${example} Brooklyn Bridge or "New York City"`,
+    searchTip: `Enter one or more keywords. ${useQuotes}`,
+  },
+  title: {
+    placeholder: `${example} Middlemarch or "A Chorus Line"`,
+    searchTip: `Enter a full title or part of a title. ${useQuotes}`,
+  },
+  author: {
+    placeholder: `${example} Hurston, Zora Neale or New York City Ballet`,
+    searchTip: "Enter the name of an author, contributor, or organization. Use Last Name, First Name for more precise results.",
+  },
+  subject: {
+    placeholder: `${example} Ornithology or Greek Architecture`,
+    searchTip: "Enter a subject keyword or phrase."
+  },
+};
+
 export const inputTermRows = [
   [
     { key: "keyword", label: "Keyword" },

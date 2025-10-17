@@ -59,7 +59,7 @@ const ResearchAssistantInner: React.FC = () => {
       value={{
         onPreview: handlePreview,
         onReadOnline: handleReadOnline,
-        page: "researchAssistant",
+        page: "vra",
       }}
     >
       <DrbBreakout
@@ -68,9 +68,9 @@ const ResearchAssistantInner: React.FC = () => {
         ]}
       >
         <DrbHero />
-        <ResearchAssistantNav />
+        <ResearchAssistantNav activePage="vra" />
       </DrbBreakout>
-      <Box display="flex" flexDir="row" height="100vh">
+      <Box display="flex" flexDir="row">
         {((results && Object.keys(results).length > 0) || showWebReader) && (
           <Box display="flex" flexDirection="column" flex="1">
             {historyStack.length > 1 && (
@@ -104,7 +104,7 @@ const ResearchAssistantInner: React.FC = () => {
                 )}
               </Box>
             ) : (
-              <Box paddingX="l" paddingBottom="l" flex="1">
+              <Box paddingX="l" paddingBottom="l" flex="1" bgColor="ui.bg.default">
                 {results && Object.keys(results).length > 0 && (
                   <>
                     {results.type === "catalog_search" && (

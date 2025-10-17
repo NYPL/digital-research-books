@@ -7,7 +7,7 @@ const PreviewLink: React.FC<{
     previewLink: ItemLink;
 }> = ({ previewLink }) => {
     const { onPreview, page } = useResultPageContext();
-    const isResearchAssistant = page === "researchAssistant";
+    const isResearchAssistant = page === "vra";
 
     const linkText = "Preview";
 

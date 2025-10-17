@@ -1,8 +1,15 @@
 import React from "react";
 import { Icon, SubNav, SubNavLink } from "@nypl/design-system-react-components";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
+import { PageType } from "~/src/types/ResearchAssistant";
 
-const ResearchAssistantNav: React.FC = () => {
+interface ResearchAssistantNavProps {
+    activePage: PageType;
+}
+
+const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
+    activePage,
+}) => {
     const token = localStorage.getItem("authToken");
 
     return (
@@ -13,14 +20,23 @@ const ResearchAssistantNav: React.FC = () => {
                 <>
                     <SubNavLink
                         href="/research-assistant-landing"
-                        isSelected
+                        isSelected={activePage === "vra"}
                         id="subnav-vra"
                     >
                         <ResearchAssistantIcon />
                         Virtual Research Assistant
                     </SubNavLink>
-                    <SubNavLink href="/" id="subnav-keyword-search">
-                        <Icon name="search" align="left" size="medium" />
+                    <SubNavLink
+                        href="/keyword-search-landing"
+                        isSelected={activePage === "keyword"}
+                        id="subnav-keyword-search"
+                    >
+                        <Icon
+                            color="section.research.secondary"
+                            name="search"
+                            align="left"
+                            size="medium"
+                        />
                         Keyword search
                     </SubNavLink>
                 </>
@@ -41,6 +57,7 @@ const ResearchAssistantNav: React.FC = () => {
                     </SubNavLink>
                 </>
             }
+            padding="0"
         />
     );
 };

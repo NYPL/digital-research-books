@@ -1,6 +1,5 @@
 import React, { createContext, useContext } from "react";
-
-type PageType = "keyword" | "researchAssistant";
+import { PageType } from "../types/ResearchAssistant";
 
 type ResultPageContextType = {
     onPreview: (url: string) => void;

@@ -53,6 +53,7 @@ const ReadOnlineLink: React.FC<{
             id={`read-online-button-${readOnlineLink.link_id}`}
             onClick={() => onReadOnline(readOnlineLink.link_id)}
             width="100%"
+            bgColor="section.research.secondary"
           >
             {linkText}
           </Button>
@@ -62,6 +63,7 @@ const ReadOnlineLink: React.FC<{
             variant="buttonPrimary"
             aria-label={`${title} ${linkText}`}
             onClick={trackReadOnlineClick}
+            bgColor="section.research.secondary"
           >
             {linkText}
           </Link>

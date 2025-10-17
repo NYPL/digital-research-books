@@ -1,19 +1,17 @@
 import React from "react";
 import { GetServerSideProps } from "next";
-import ResearchAssistant from "~/src/components/ResearchAssistant/ResearchAssistant";
 import Layout from "~/src/components/Layout/Layout";
+import KeywordSearchLanding from "~/src/components/KeywordSearchLanding/KeywordSearchLanding";
 import VRALayout from "~/src/components/VRALayout/VRALayout";
 
-const ResearchAssistantPage: React.FC = () => {
+const KeywordSearchLandingPage: React.FC = () => {
   return (
     <Layout>
       <VRALayout
-        activePage="vra"
-        breadcrumbsData={[
-          { url: "/research-assistant", text: "Virtual Research Assistant" },
-        ]}
+        activePage="keyword"
+        breadcrumbsData={[{ url: "/keyword-search", text: "Keyword Search" }]}
       >
-        <ResearchAssistant />
+        <KeywordSearchLanding />
       </VRALayout>
     </Layout>
   );
@@ -33,4 +31,4 @@ export const getServerSideProps: GetServerSideProps = async () => {
   };
 };
 
-export default ResearchAssistantPage;
+export default KeywordSearchLandingPage;

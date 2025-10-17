@@ -55,6 +55,8 @@ export type SearchParams = {
   filters?: [string, string][];
 };
 
+export type PageType = "vra" | "keyword";
+
 export type ItemReadResults = {
   data: ApiItemsRead;
   status?: number;

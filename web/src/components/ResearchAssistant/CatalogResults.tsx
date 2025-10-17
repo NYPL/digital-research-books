@@ -9,8 +9,8 @@ import {
 import { SearchQueryDefaults, SearchQuery } from "~/src/types/SearchQuery";
 import { toApiQuery } from "~/src/util/apiConversion";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import ResearchAssistantResultsList from "./ResearchAssistantResultsList";
 import ResultsBanner from "./ResultsBanner";
+import ResultsList from "../NewResultsList/ResultsList";
 
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;
@@ -92,13 +92,28 @@ const CatalogResults: React.FC<{
             {resultsPagingText}
           </Text>
           <ResultsBanner />
-          <ResearchAssistantResultsList works={results.works} />
+          <ResultsList works={results.works} />
 
           <Pagination
             pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
             initialPage={resultsPaging.currentPage}
             onPageChange={(e) => onPageChange(e)}
-            __css={{ paddingTop: "m" }}
+            __css={{
+              paddingTop: "m",
+              "a, li > a[aria-current='page']": {
+                color: "var(--nypl-colors-section-research-secondary)",
+                borderColor: "var(--nypl-colors-section-research-secondary)",
+                svg: {
+                  fill: "var(--nypl-colors-section-research-secondary)",
+                },
+              },
+              "a[aria-disabled='true']": {
+                color: "var(--nypl-colors-ui-disabled-primary)",
+                svg: {
+                  fill: "var(--nypl-colors-ui-disabled-primary)",
+                },
+              },
+            }}
           />
         </Box>
       )}
