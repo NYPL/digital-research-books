@@ -38,8 +38,8 @@ waitress==3.0.1
 werkzeug==2.2.2
 newrelic==10.9.0
 geocoder==1.38.1
-langchain
-langgraph
-langchain-google-genai
-google-genai
-psutil
+langchain==1.0.0
+langgraph==1.0.0
+langchain-google-genai==3.0.0
+google-genai==1.45.0
+psutil==7.1.0
