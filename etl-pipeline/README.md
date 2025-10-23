@@ -148,7 +148,21 @@ The process for working with books downloaded from Google's GRIN interface requi
 
 Ensure that it is available by installing it via `brew` (if on a Mac) or the appropiate tool for your OS
 
-### Running Individual Processes
+
+## Available Processes
+
+The main processes available in this pipeline are:
+
+- `LocalDevelopmentSetupProcess`: Initialize development database
+- `SeedLocalDataProcess`: Import sample data
+- `APIProcess`: Run the DRB API server
+- `IngestProcess`: This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
+- `RecordPipelineProcess`: The DRB ETL pipeline. A meta-process that calls the following processes: `RecordEmbellisher`, `RecordClusterer`, `RecordFileSaver`, and `LinkFulfiller`.
+
+Source code for each process can be found from "[processes/\_\_init\_\_.py](processes/__init__.py)"
+
+
+## Running Individual Processes
 
 While Docker handles the main services, you can run individual processes using:
 
@@ -164,23 +178,6 @@ python main.py -p RecordPipelineProcess -e local
 ```
 
 See `python main.py --help` for all available options.
-
-## Available Processes
-
-The main processes available in this pipeline are:
-
-Core Setup:
-
-- `LocalDevelopmentSetupProcess`: Initialize development database
-- `SeedLocalDataProcess`: Import sample data
-- `APIProcess`: Run the DRB API
-
-Data Ingestion:
-All data ingestion can be done via `IngestProcess`. This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
-
-Processing:
-
-- `RecordPipelineProcess`: Process records.
 
 ## Formatting
 We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` to format the files. 
