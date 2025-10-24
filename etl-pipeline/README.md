@@ -37,8 +37,15 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
 ### Prerequisites
 
 - Docker Desktop
-- AWS access to the `nypl-digital-dev` account (submit ServiceNow request to DevOps)
-- Access to required AWS parameter store secrets - ask a team member
+- AWS access:
+   - submit [this ServiceNow request](https://nyplprod.service-now.com/nyplsp?id=sc_cat_item&sys_id=de6c50b21bc3455090088550cd4bcb4d&sysparm_category=f32c87c413262380c82e7e276144b004) to DevOps
+   - Account:`nypl-digital-dev` 
+   - Sign in via Azure SSO via http://awsconsole.nypl.org/
+   - (optional) Excute command in terminal, you will be prompted to authenticate.
+   ```
+   aws configure 
+   ```
+- 
 
 ### Setup Steps
 
@@ -51,13 +58,19 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
 
 2. Configure secrets:
 
-   - Create `config/local-secrets.yaml` with the following (get values from team member):
+   - Create `config/local-secrets.yaml` with the following:
      ```yaml
      AWS_SECRET: xxx
      AWS_ACCESS: xxx
      ```
 
-3. Initial Setup (one-time only):
+   - Get the values from AWS (System Manager) Parameter Store (same for QA and PRODUCTION):
+      - "drb/\<env\>/aws/access-key"
+      - "drb/\<env\>/aws/secret-key"
+
+
+
+3. Seed Local Dev DB (one-time only):
 
    ```bash
    # Run the database seeding process
@@ -132,21 +145,15 @@ Or
 pip3 install -r requirements.txt
 ```
 
+7. Install GPG
+
+The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
+`gpg` is pre-installed on most linux distributions but must be installed on MacOs.
+
+Ensure that it is available by installing it via `brew` (if on a Mac) or the appropriate tool for your OS
 
 
-## Set AWS Config  
-Request AWS credentials, example ticket here (https://newyorkpubliclibrary.atlassian.net/browse/DOPS-1503)
 
-Execute the command in your terminal. You will be prompted to enter your credentials
-
-```
-aws configure 
-```
-
-## Install GPG (if working with Google Books)
-The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`
-
-Ensure that it is available by installing it via `brew` (if on a Mac) or the appropiate tool for your OS
 
 
 ## Available Processes
@@ -157,6 +164,10 @@ The main processes available in this pipeline are:
 - `SeedLocalDataProcess`: Import sample data
 - `APIProcess`: Run the DRB API server
 - `IngestProcess`: This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
+- `RecordFileSaver`: Store any associated content files (PDFs, etc) in our s3 bucket (this is a more supporting step).
+- `RecordEmbellisher`: Using any standard numbers (ISBNs, etc) fetch additional metadata from 3rd parties and add it to the record being processed.
+- `RecordClusterer`: Using KMeans clustering to create our work/edition/item data structure.
+- `LinkFulfiller`: Ensure that the work record has displayable links via WebPub Manifests.
 - `RecordPipelineProcess`: The DRB ETL pipeline. A meta-process that calls the following processes: `RecordEmbellisher`, `RecordClusterer`, `RecordFileSaver`, and `LinkFulfiller`.
 
 Source code for each process can be found from "[processes/\_\_init\_\_.py](processes/__init__.py)"
