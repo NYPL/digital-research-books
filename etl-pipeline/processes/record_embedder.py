@@ -1,6 +1,6 @@
 from elasticsearch.helpers import bulk
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain.schema import Document
+from langchain_core.documents import Document
 import json
 import os
 from typing import Iterator
