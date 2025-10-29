@@ -14,7 +14,16 @@ levels = {
 
 
 def create_log(module):
-    logger = logging.getLogger(module)
+    # set application root logger
+    name = f"drb.{module}"
+    return logging.getLogger(name)
+
+
+def configure_loggers():
+    '''Read LOG_LEVEL from environment, and configure 'drb' application 
+    root logger.
+    '''
+    logger = logging.getLogger('drb')
     console_log_handler = logging.StreamHandler(stream=sys.stdout)
 
     log_level = os.environ.get("LOG_LEVEL", "info").lower()
@@ -32,5 +41,3 @@ def create_log(module):
         console_log_handler.setFormatter(formatter)
 
     logger.addHandler(console_log_handler)
-
-    return logger
