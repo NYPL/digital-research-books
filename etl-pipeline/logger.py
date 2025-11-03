@@ -20,10 +20,10 @@ def create_log(module):
 
 
 def configure_loggers():
-    '''Read LOG_LEVEL from environment, and configure 'drb' application 
+    """Read LOG_LEVEL from environment, and configure 'drb' application
     root logger.
-    '''
-    logger = logging.getLogger('drb')
+    """
+    logger = logging.getLogger("drb")
     console_log_handler = logging.StreamHandler(stream=sys.stdout)
 
     log_level = os.environ.get("LOG_LEVEL", "info").lower()

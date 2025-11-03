@@ -3,7 +3,8 @@ from model import Record, FRBRStatus
 
 
 class RecordBuffer:
-    '''Handles upsert of rows to the "records" table with efficient bulk writes'''
+    """Handles upsert of rows to the "records" table with efficient bulk writes"""
+
     def __init__(self, db_manager: DBManager, batch_size: int = 500):
         self.db_manager = db_manager
         self.records = set()
