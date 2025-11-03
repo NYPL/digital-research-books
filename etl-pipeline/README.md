@@ -32,7 +32,7 @@ Both endpoints provide Swagger documentation at `/apidocs/`.
 
 ## Quickstart Guide
 
-This guide provides step-by-step instructions to get the DRB ETL pipeline running locally.
+This guide provides step-by-step instructions to get the DRB ETL pipeline running locally in docker.
 
 ### Prerequisites
 
@@ -41,7 +41,7 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
    - submit [this ServiceNow request](https://nyplprod.service-now.com/nyplsp?id=sc_cat_item&sys_id=de6c50b21bc3455090088550cd4bcb4d&sysparm_category=f32c87c413262380c82e7e276144b004) to DevOps
    - Account:`nypl-digital-dev` 
    - Sign in via Azure SSO via http://awsconsole.nypl.org/
-   - (optional) Excute command in terminal, you will be prompted to authenticate.
+   - (optional) Execute command in terminal, you will be prompted to authenticate.
    ```
    aws configure 
    ```
@@ -152,6 +152,14 @@ The process for working with books downloaded from Google's GRIN interface requi
 
 Ensure that it is available by installing it via `brew` (if on a Mac) or the appropriate tool for your OS
 
+## Local Development Set-Up 
+All instructions assume your CWD is the "etl-pipeline" directory and you have activated the python venv in that directory.
+
+**Install dev requirements**
+`pip install -r dev-requirements.txt`
+
+**Install pre-commit hooks**
+`pre-commit install`
 
 
 
@@ -191,9 +199,12 @@ python main.py -p RecordPipelineProcess -e local
 See `python main.py --help` for all available options.
 
 ## Formatting
-We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` to format the files. 
+We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files. 
 
-We also check formatting before committing. From the root directory, run `pre-commit install` to setup the pre-commit hooks. 
+
+
+We also check formatting before committing. If you followed to the set up steps to install the pre-commit hooks, formatting of changed files will be performed at each commit.
+
 
 ## Testing
 
@@ -214,9 +225,6 @@ python -m pytest -v                  # Run tests with verbose output
 
 For more options and detailed usage of pytest, see the [pytest documentation](https://docs.pytest.org/en/stable/how-to/usage.html).
 
-## Formatting
-
-To format new changes, run `ruff format` in the /etl-pipeline directory.
 
 ## Deployment
 
