@@ -42,14 +42,13 @@ This guide provides step-by-step instructions to set up local development and st
 ### Prerequisites
 
 - Docker Desktop
-- AWS access:
-   - submit [this ServiceNow request](https://nyplprod.service-now.com/nyplsp?id=sc_cat_item&sys_id=de6c50b21bc3455090088550cd4bcb4d&sysparm_category=f32c87c413262380c82e7e276144b004) to DevOps
-   - Account:`nypl-digital-dev` 
-   - Sign in via Azure SSO via http://awsconsole.nypl.org/
-   - (optional) Execute command in terminal, you will be prompted to authenticate.
-   ```
-   aws configure 
-   ```
+   - (optional) sign in with nypl.org email
+- AWS access:  
+   - submit [this ServiceNow request](https://nyplprod.service-now.com/nyplsp?id=sc_cat_item&sys_id=de6c50b21bc3455090088550cd4bcb4d&sysparm_category=f32c87c413262380c82e7e276144b004) to DevOps to get your Azure SSO connected to AWS. 
+   - Sign into AWS console at http://awsconsole.nypl.org/. 
+   - Choose account:`nypl-digital-dev`  
+   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . This authorization is temporary, to re-authenticate with SSO, run `aws sso login --profile your-profile-name`
+
 
 ### Setup Steps
 
@@ -62,19 +61,12 @@ This guide provides step-by-step instructions to set up local development and st
 
 2. Configure secrets:
 
-   - Create `config/local-secrets.yaml` with the following:
-     ```yaml
-     AWS_SECRET: xxx
-     AWS_ACCESS: xxx
-     ```
-
-   - Get the values from AWS (System Manager) Parameter Store (same for QA and PRODUCTION):
-      - "drb/\<env\>/aws/access-key"
-      - "drb/\<env\>/aws/secret-key"
+   - Create `config/local-secrets.yaml`
+      - Nothing needs to be added at this point
+      - This file is not tracked in the repo and its contents are loaded as env vars when `load_env.load_env_file()` is executed. Thus it can be used for locally configured secrets as needed.
 
 
-
-3. Seed Local Dev DB (one-time only):
+3. Seed data in the local dockerized DB instance (one-time only):
 
    ```bash
    # Run the database seeding process
@@ -99,8 +91,8 @@ This guide provides step-by-step instructions to set up local development and st
 
 5. Verify the setup:
 
-   - Check that the API Documentation is being served. Navigate to http://127.0.0.1:5050/apidocs/ in your browser.
-   - Check the local, dockerized DB instances are available. Connect to the local DB using PGAdmin4 or your preferred PostgreSQL client, with the following config:
+   - Check the API server is up. Navigate to http://127.0.0.1:5050/apidocs/ in your browser.
+   - Check the local, dockerized DB instance is available. Connect to the local DB using PGAdmin4 or your preferred PostgreSQL client, with the following config:
      ```
      Host: localhost
      Port: 5432
@@ -143,16 +135,8 @@ pip3 install --upgrade pip setuptools wheel
 
 ```sh
 pip install -r requirements.txt
+pip install -r dev-requirements.txt
 ```
-
-Or
-
-```sh
-pip3 install -r requirements.txt
-```
-
-**Install dev requirements**
-`pip install -r dev-requirements.txt`
 
 
 **Install pre-commit hooks**
