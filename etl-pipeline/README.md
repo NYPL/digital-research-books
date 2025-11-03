@@ -1,10 +1,15 @@
-# Digital Research Books ETL Pipeline
+# Digital Research Books 
 
 ![ETL_Pipeline_Tests](https://github.com/NYPL/drb-etl-pipeline/workflows/ETL_Pipeline_Tests/badge.svg)
 
+This directory contains the ETL pipeline, API server, and other deployable processes related to the DRB project (including GRIN books ingestion).
+
+
+## ETL Pipeline 
+
 A containerized python application for importing data from multiple source projects and transforming this data into a unified format that can be accessed via an API (which powers [Digital Research Books Beta](http://digital-research-books-beta.nypl.org/)).
 
-## Process Overview
+### Process Overview
 
 This ETL pipeline transforms data from various sources into a unified "FRBRized" format where:
 
@@ -32,7 +37,7 @@ Both endpoints provide Swagger documentation at `/apidocs/`.
 
 ## Quickstart Guide
 
-This guide provides step-by-step instructions to get the DRB ETL pipeline running locally in docker.
+This guide provides step-by-step instructions to set up local development and start the DRB API server running locally in a docker container. 
 
 ### Prerequisites
 
@@ -45,7 +50,6 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
    ```
    aws configure 
    ```
-- 
 
 ### Setup Steps
 
@@ -77,7 +81,7 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
    docker compose -f docker-compose.setup.yml up --abort-on-container-exit
    ```
 
-4. Regular Startup:
+4. Startup Docker Services:
 
    ```bash
    docker compose up
@@ -91,10 +95,12 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
    - LocalStack (S3 and SQS)
    - API service
 
+
+
 5. Verify the setup:
 
-   - API Documentation: http://127.0.0.1:5050/apidocs/
-   - Database: Use PGAdmin4 or your preferred PostgreSQL client:
+   - Check that the API Documentation is being served. Navigate to http://127.0.0.1:5050/apidocs/ in your browser.
+   - Check the local, dockerized DB instances are available. Connect to the local DB using PGAdmin4 or your preferred PostgreSQL client, with the following config:
      ```
      Host: localhost
      Port: 5432
@@ -102,12 +108,10 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
      Username: postgres
      Password: localpsql
      ```
-
-
  
 6. Set up local python env:
 
-Create a virtual environment
+**Create a virtual environment**
 
 *Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).* 
 
@@ -115,7 +119,9 @@ Create a virtual environment
 python -m venv venv
 ```
 
-Activate the virtual environment. You will need to do this for every terminal session.
+**Activate the virtual environment.**
+The following steps assume the virtual environment is active. 
+You will need to do this for every terminal session.
 
 ```sh
 source venv/bin/activate
@@ -133,7 +139,7 @@ Or
 pip3 install --upgrade pip setuptools wheel
 ```
 
-Install requirements
+**Install requirements**
 
 ```sh
 pip install -r requirements.txt
@@ -145,23 +151,20 @@ Or
 pip3 install -r requirements.txt
 ```
 
+**Install dev requirements**
+`pip install -r dev-requirements.txt`
+
+
+**Install pre-commit hooks**
+`pre-commit install`
+
+
 7. Install GPG
 
 The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
 `gpg` is pre-installed on most linux distributions but must be installed on MacOs.
 
 Ensure that it is available by installing it via `brew` (if on a Mac) or the appropriate tool for your OS
-
-## Local Development Set-Up 
-All instructions assume your CWD is the "etl-pipeline" directory and you have activated the python venv in that directory.
-
-**Install dev requirements**
-`pip install -r dev-requirements.txt`
-
-**Install pre-commit hooks**
-`pre-commit install`
-
-
 
 
 ## Available Processes
@@ -197,6 +200,8 @@ python main.py -p RecordPipelineProcess -e local
 ```
 
 See `python main.py --help` for all available options.
+
+
 
 ## Formatting
 We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files. 
