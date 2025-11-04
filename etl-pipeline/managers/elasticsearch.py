@@ -1,6 +1,5 @@
 import os
 
-from elasticsearch.client.ingest import IngestClient
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from elasticsearch_dsl import connections, Index
@@ -10,6 +9,47 @@ from model import ESWork
 from logger import create_log
 
 logger = create_log(__name__)
+
+
+def load_connection_config(
+    scheme=None,
+    host=None,
+    port=None,
+    user=None,
+    pswd=None,
+    default_timeout=5,
+    max_retries=3,
+):
+    """Create ES connection config, reading defaults from the environment."""
+
+    scheme = scheme or os.environ.get("ELASTICSEARCH_SCHEME", None)
+    host = host or os.environ.get("ELASTICSEARCH_HOST", None)
+    port = port or os.environ.get("ELASTICSEARCH_PORT", None)
+    user = user or os.environ.get("ELASTICSEARCH_USER", None)
+    pswd = pswd or os.environ.get("ELASTICSEARCH_PSWD", None)
+    timeout = int(os.environ.get("ELASTICSEARCH_TIMEOUT", default_timeout))
+
+    creds = "{}:{}@".format(user, pswd) if user and pswd else ""
+
+    # Allowing multiple hosts for a ES connection
+    multi_hosts = []
+    if "," not in host:
+        host = "{}://{}{}:{}".format(scheme, creds, host, port)
+
+        multi_hosts.append(host)
+
+    else:
+        host_list = host.split(", ")
+
+        for i in host_list:
+            multi_hosts.append("{}://{}{}:{}".format(scheme, creds, i, port))
+
+    return {
+        "hosts": multi_hosts,
+        "timeout": timeout,
+        "retry_on_timeout": True,
+        "max_retries": max_retries,
+    }
 
 
 class ElasticsearchManager:
@@ -22,41 +62,16 @@ class ElasticsearchManager:
     def create_elastic_connection(
         self, scheme=None, host=None, port=None, user=None, pswd=None
     ):
-        scheme = scheme or os.environ.get("ELASTICSEARCH_SCHEME", None)
-        host = host or os.environ.get("ELASTICSEARCH_HOST", None)
-        port = port or os.environ.get("ELASTICSEARCH_PORT", None)
-        user = user or os.environ.get("ELASTICSEARCH_USER", None)
-        pswd = pswd or os.environ.get("ELASTICSEARCH_PSWD", None)
-        timeout = int(os.environ.get("ELASTICSEARCH_TIMEOUT", 5))
+        connection_config = load_connection_config(
+            scheme=scheme, host=host, port=port, user=user, pswd=pswd
+        )
 
-        creds = "{}:{}@".format(user, pswd) if user and pswd else ""
-
-        # Allowing multple hosts for a ES connection
-        multi_hosts = []
-
-        if "," not in host:
-            host = "{}://{}{}:{}".format(scheme, creds, host, port)
-
-            multi_hosts.append(host)
-
-        else:
-            host_list = host.split(", ")
-
-            for i in host_list:
-                multi_hosts.append("{}://{}{}:{}".format(scheme, creds, i, port))
-
-        connection_config = {
-            "hosts": multi_hosts,
-            "timeout": timeout,
-            "retry_on_timeout": True,
-            "max_retries": 3,
-        }
-
+        # configures a global default ES client with alias "default"
         self.client = connections.create_connection(**connection_config)
         self.es = Elasticsearch(**connection_config)
 
     def create_elastic_search_ingest_pipeline(self):
-        es_ingest_client = IngestClient(self.client)
+        es_ingest_client = self.client.ingest
 
         self.construct_language_pipeline(
             es_ingest_client,
