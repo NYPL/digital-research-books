@@ -43,10 +43,11 @@ This guide provides step-by-step instructions to set up local development and st
 
 - Docker Desktop
    - (optional) sign in with nypl.org email
-- AWS access:  
-   - submit [this ServiceNow request](https://nyplprod.service-now.com/nyplsp?id=sc_cat_item&sys_id=de6c50b21bc3455090088550cd4bcb4d&sysparm_category=f32c87c413262380c82e7e276144b004) to DevOps to get your Azure SSO connected to AWS. 
-   - Sign into AWS console at http://awsconsole.nypl.org/. 
-   - Choose account:`nypl-digital-dev`  
+- AWS access:
+   - Submit [a DevOps JIRA ticket](https://newyorkpubliclibrary.atlassian.net/jira/software/c/projects/DOPS/boards/14/backlog) to get your Azure SSO connected to AWS.
+      - [Sample ticket](https://newyorkpubliclibrary.atlassian.net/browse/DOPS-1756)
+   - Sign into AWS console at http://awsconsole.nypl.org/.
+   - Choose account:`nypl-digital-dev`
    - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . This authorization is temporary, to re-authenticate with SSO, run `aws sso login --profile your-profile-name`
 
 
