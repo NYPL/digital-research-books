@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FilterBarInline,
   SelectedItems,
@@ -29,6 +29,10 @@ const Filters: React.FC<{
 }) => {
     const [dateRangeError, setDateRangeError] = useState("");
     const [filters, setFilters] = useState(propFilters);
+
+    useEffect(() => {
+      setFilters(propFilters);
+    }, [propFilters]);
 
     const onLanguageChange = (languages: SelectedItems) => {
       const multiSelectId = isModal

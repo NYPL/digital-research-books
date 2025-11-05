@@ -94,13 +94,6 @@ const DownloadLink: React.FC<{
           borderColor="section.research.secondary"
           color="section.research.secondary"
         >
-          <Icon
-            name="download"
-            align="left"
-            size="small"
-            decorative
-            iconRotation="rotate0"
-          />
           {linkText}
         </Link>
         <Modal {...modalProps}></Modal>

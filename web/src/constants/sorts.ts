@@ -8,15 +8,43 @@ export const sortMap = {
   "Year Published (New-Old)": { field: "date", dir: "DESC" },
 };
 
-export const vraSortMap = {
-  Relevance: { field: "relevance", dir: "DESC" },
-  "Title (A - Z)": { field: "title", dir: "ASC" },
-  "Title (Z - A)": { field: "title", dir: "DESC" },
-  "Author (A - Z)": { field: "author", dir: "ASC" },
-  "Author (Z - A)": { field: "author", dir: "DESC" },
-  "Date (Old - New)": { field: "date", dir: "ASC" },
-  "Date (New - Old)": { field: "date", dir: "DESC" },
-};
+export const sortOptions = [
+  {
+    id: "relevance",
+    label: "Relevance",
+    value: { field: "relevance", dir: "DESC" },
+  },
+  {
+    id: "titleAsc",
+    label: "Title (A - Z)",
+    value: { field: "title", dir: "ASC" },
+  },
+  {
+    id: "titleDes",
+    label: "Title (Z - A)",
+    value: { field: "title", dir: "DESC" },
+  },
+  {
+    id: "authorAsc",
+    label: "Author (A - Z)",
+    value: { field: "author", dir: "ASC" },
+  },
+  {
+    id: "authorDes",
+    label: "Author (Z - A)",
+    value: { field: "author", dir: "DESC" },
+  },
+  {
+    id: "dateAsc",
+    label: "Date (Old - New)",
+    value: { field: "date", dir: "ASC" },
+  },
+  {
+    id: "dateDes",
+    label: "Date (New - Old)",
+    value: { field: "date", dir: "DESC" },
+  },
+];
 
 export const collectionSortMap = {
   Relevance: { field: "relevance", dir: "DESC" },

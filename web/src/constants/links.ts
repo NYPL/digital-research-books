@@ -5,4 +5,4 @@ export const LOGIN_LINK_BASE =
 export const RESEARCH_CATALOG_LINK =
   "https://www.nypl.org/research/research-catalog";
 export const ARTICLES_PLUS_LINK =
-  "https://research.ebsco.com/c/tvrejk/search";
+  "https://www.nypl.org/research/collections/online-resources-databases";

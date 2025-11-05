@@ -64,8 +64,8 @@ describe("Renders Search Results Page", () => {
     });
     test("clicking 'filters' button shows filters contents", async () => {
       await clickFiltersButton();
-      const modal = screen.getByTestId("filters-modal-content")
-      expect(within(modal).getByRole("combobox", { name: "Sort By" })).toHaveValue(
+      const modal = screen.getByTestId("filters-modal-content");
+      expect(within(modal).getByRole("button", { name: /Sort By:/i })).toHaveTextContent(
         "Relevance"
       );
       const languages = within(modal).getByRole("group", {
@@ -95,11 +95,11 @@ describe("Renders Search Results Page", () => {
     describe("Sorts filters", () => {
       test("Changing items sends new search ", async () => {
         await clickFiltersButton();
-        const allSorts = screen.getAllByLabelText("Sort By");
-        const sortBy = allSorts[1];
-        expect(sortBy).toBeVisible();
-        await userEvent.selectOptions(sortBy, "Title (A - Z)");
-        expect(sortBy).toHaveValue("Title (A - Z)");
+        const sortMenuButton = screen.getByRole("button", { name: /Sort By:/i });
+        expect(sortMenuButton).toBeInTheDocument();
+        await userEvent.click(sortMenuButton);
+        const sortOption = screen.getByRole("menuitem", { name: "Title (A - Z)" });
+        await userEvent.click(sortOption);
         expect(mockRouter).toMatchObject({
           pathname: "/keyword-search",
           query: {
@@ -107,7 +107,6 @@ describe("Renders Search Results Page", () => {
             sort: "title:ASC",
           },
         });
-
         await userEvent.click(screen.getByRole("button", { name: "Go Back" }));
         expect(
           screen.getByRole("button", { name: "Filter results" })
@@ -263,21 +262,8 @@ describe("Renders Search Results Page", () => {
       });
       test("Shows 'read online' as link", () => {
         expect(
-          screen.getAllByText("Read Online")[0].closest("a").href
+          screen.getAllByText("Read online")[0].closest("a").href
         ).toContain("read/3330416");
-      });
-      test("Number of editions links to work page", async () => {
-        const otherEditionsButton = screen.getAllByRole("button", { name: "Other editions"})[0];
-        await userEvent.click(otherEditionsButton);
-        expect(
-          screen.getByText("View All 3 Editions").closest("a").href
-        ).toContain("/work/test-uuid-1?showAll=true");
-        expect(
-          screen.getByText("View All 3 Editions").closest("a").href
-        ).toContain("#all-editions");
-        expect(
-          screen.getByText("View All 3 Editions").closest("a").href
-        ).toContain("featured=1453292");
       });
     });
     describe("Second result has no data", () => {
@@ -325,21 +311,8 @@ describe("Renders Search Results Page", () => {
       });
       test("Shows 'read online' as link", () => {
         expect(
-          screen.getAllByText("Read Online")[1].closest("a").href
+          screen.getAllByText("Read online")[1].closest("a").href
         ).toContain("read/3234");
-      });
-      test("Number of editions links to work page", async () => {
-        const otherEditionsButton = screen.getAllByRole("button", { name: "Other editions"})[1];
-        await userEvent.click(otherEditionsButton);
-        expect(
-          screen.getByText("View All 5 Editions").closest("a").href
-        ).toContain("/work/test-uuid-3?showAll=true");
-        expect(
-          screen.getByText("View All 5 Editions").closest("a").href
-        ).toContain("#all-editions");
-        expect(
-          screen.getByText("View All 5 Editions").closest("a").href
-        ).toContain("featured=1453292");
       });
     });
   });

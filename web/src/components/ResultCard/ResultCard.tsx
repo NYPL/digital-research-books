@@ -19,10 +19,14 @@ import CardRequiredBadge from "../EditionCard/CardRequiredBadge";
 import FeaturedEditionBadge from "../EditionCard/FeaturedEditionBadge";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
 import ViewEditionsLink from "../EditionCard/ViewEditionsLink";
-import { RESEARCH_CATALOG_LINK, SCAN_AND_DELIVER_LINK } from "~/src/constants/links";
+import {
+    RESEARCH_CATALOG_LINK,
+    SCAN_AND_DELIVER_LINK,
+} from "~/src/constants/links";
 import Ctas from "./Ctas";
 import { MAX_TITLE_LENGTH } from "~/src/constants/editioncard";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
+import EditionLinks from "./EditionLinks";
 
 interface ResultCardProps {
     authors: Agent[];
@@ -41,10 +45,14 @@ export const ResultCard: React.FC<ResultCardProps> = ({
     const previewItem = EditionCardUtils.getPreviewItem(edition.items);
 
     const editionYearElem = () => {
-        const editionDisplay = EditionCardUtils.editionYearText(edition);
-        const additionalEditions = isFeaturedEdition && page === "vra"
-            ? ` + ${work.edition_count - 1} more`
-            : "";
+        const editionDisplay =
+            edition && edition.publication_date
+                ? `${edition.publication_date} edition`
+                : "Edition year unknown";
+        const additionalEditions =
+            isFeaturedEdition && page === "vra"
+                ? ` + ${work.edition_count - 1} more`
+                : "";
 
         return (
             <>
@@ -77,8 +85,8 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                 <Box>
                     {edition.summary ||
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
-                    <Text size="caption" color="ui.gray.semi-dark" marginY="s">
-                        AI-generated. Verify results.
+                    <Text size="caption" color="ui.gray.dark" marginTop="s">
+                        AI-generated.
                     </Text>
                 </Box>
             ),
@@ -101,16 +109,16 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                     <Box>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                         eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                        <Text size="caption" color="ui.gray.semi-dark" marginY="s">
-                            AI-generated. Verify results.
+                        <Text size="caption" color="ui.gray.dark" marginTop="s">
+                            AI-generated.
                         </Text>
                     </Box>
                 ),
             });
-        } else if (work.edition_count > 1) {
+        } else if (work.editions.length > 1) {
             accordionData.push({
                 label: <Text>Other editions</Text>,
-                panel: <ViewEditionsLink work={work} />, // TODO: update to show other editions in accordion
+                panel: <EditionLinks work={work} />,
             });
         }
         return accordionData;
@@ -124,6 +132,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             backgroundColor="ui.white"
             borderTop="2px solid"
             borderTopColor="section.research.primary"
+            fontSize="desktop.body.body2"
         >
             <Flex gap="s" flexDirection="column">
                 <Flex
@@ -155,11 +164,13 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                 {truncateStringOnWhitespace(work.title, MAX_TITLE_LENGTH)}
                             </Link>
                         </Heading>
-                        {authors.length > 0 && (
-                            <Box>
-                                By <AuthorsList authors={authors} />
-                            </Box>
-                        )}
+                        <Box minHeight="1.5rem">
+                            {authors.length > 0 && (
+                                <>
+                                    By <AuthorsList authors={authors} />
+                                </>
+                            )}
+                        </Box>
                         <Box marginTop="m">
                             <PublisherAndLocation
                                 pubPlace={edition.publication_place}
@@ -169,14 +180,21 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                         <Box>{editionYearElem()}</Box>
                     </Box>
                 </Flex>
-                <Accordion
-                    width="100%"
-                    id={`accordion-summary-${edition.edition_id}`}
-                    accordionData={accordionSummaryData()}
-                />
+                {!isPhysicalEdition && (
+                    <Accordion
+                        width="100%"
+                        id={`accordion-summary-${edition.edition_id}`}
+                        accordionData={accordionSummaryData()}
+                        sx={{
+                            span: {
+                                fontSize: "desktop.body.body2"
+                            }
+                        }}
+
+                    />
+                )}
                 {isPhysicalEdition && (
                     <Banner
-                        variant="informative"
                         content={
                             <Text>
                                 This is a physical edition from our{" "}
@@ -190,6 +208,11 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                 .
                             </Text>
                         }
+                        sx={{
+                            a: {
+                                color: "ui.link.primary",
+                            }
+                        }}
                     />
                 )}
                 <Flex flexDir="row" gap="xs">

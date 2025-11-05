@@ -25,13 +25,13 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
       >
         <Box className={bubbleClasses} ref={ref}>
           {isUser ? (
-            <Text className={styles.messageContent}>
+            <Text>
               <b>You: </b>
               {message.data.content}
             </Text>
           ) : (
-            <Box className={styles.messageContent} display="flex" gap="xs">
-              <ResearchAssistantIcon />
+            <Box display="flex" gap="xs">
+              <ResearchAssistantIcon inCircle />
               <Box display="flex" flexDir="column" gap="12px">
                 <Box>
                   <Text color="section.research.primary" isBold>
