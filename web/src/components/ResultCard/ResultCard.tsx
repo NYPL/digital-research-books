@@ -18,7 +18,6 @@ import EditionCardUtils from "~/src/util/EditionCardUtils";
 import CardRequiredBadge from "../EditionCard/CardRequiredBadge";
 import FeaturedEditionBadge from "../EditionCard/FeaturedEditionBadge";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
-import ViewEditionsLink from "../EditionCard/ViewEditionsLink";
 import {
     RESEARCH_CATALOG_LINK,
     SCAN_AND_DELIVER_LINK,

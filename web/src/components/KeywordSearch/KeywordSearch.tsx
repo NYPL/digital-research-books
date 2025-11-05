@@ -14,7 +14,6 @@ import {
   TemplateContent,
   TemplateMain,
   TemplateSidebar,
-  Select,
   TemplateFull,
   SkeletonLoader,
   SimpleGrid,

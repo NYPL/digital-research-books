@@ -1,4 +1,4 @@
-import { Box, Icon, IconSizes } from "@nypl/design-system-react-components";
+import { Icon } from "@nypl/design-system-react-components";
 import React from "react";
 
 interface ResearchAssistantIconProps {
