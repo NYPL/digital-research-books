@@ -139,7 +139,7 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     sendSearchQuery(newSearchQuery);
   };
 
-  const onMenuClick = (id: string) => {
+  const onSortMenuClick = (id: string) => {
     const selected = sortOptions.find((opt) => opt.id === id);
     if (selected && selected.value !== searchQuery.sort) {
       const newSearchQuery = {
@@ -214,7 +214,7 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
                     type: "action",
                     id: opt.id,
                     label: opt.label,
-                    onClick: () => onMenuClick(opt.id),
+                    onClick: () => onSortMenuClick(opt.id),
                   }))}
                   selectedItem={currentSortId}
                   width="100%"
@@ -294,7 +294,7 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
               type: "action",
               id: opt.id,
               label: opt.label,
-              onClick: () => onMenuClick(opt.id),
+              onClick: () => onSortMenuClick(opt.id),
             }))}
             selectedItem={currentSortId}
           />
