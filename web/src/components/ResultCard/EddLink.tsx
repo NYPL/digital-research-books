@@ -8,6 +8,8 @@ const EddLink: React.FC<{
   isLoggedIn: boolean;
   title: string;
 }> = ({ eddLink, isLoggedIn, title }) => {
+  const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+
   if (isLoggedIn) {
     return (
       <>
@@ -28,7 +30,7 @@ const EddLink: React.FC<{
     return (
       <>
         <Link
-          to={`${LOGIN_LINK_BASE}${encodeURIComponent(window.location.href)}`}
+          to={`${LOGIN_LINK_BASE}${encodeURIComponent(currentUrl)}`}
           variant="buttonPrimary"
           aria-label={`Log in to request scan for ${title}`}
           bgColor="section.research.secondary"

@@ -3,7 +3,11 @@ import { StatusBadge } from "@nypl/design-system-react-components";
 
 const CardRequiredBadge: React.FC = () => {
   return (
-    <StatusBadge variant="warning" width={{ base: "100%", md: "fit-content" }}>
+    <StatusBadge
+      fontSize="desktop.caption"
+      variant="warning"
+      width={{ base: "100%", md: "fit-content" }}
+    >
       LIBRARY CARD REQUIRED
     </StatusBadge>
   );

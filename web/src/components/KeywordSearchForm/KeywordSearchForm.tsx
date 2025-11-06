@@ -15,7 +15,7 @@ import {
 } from "~/src/constants/labels";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import { Query, SearchField } from "~/src/types/DataModel";
-import KeywordSearchBanner from "../KeywordSearchLanding/KeywordSearchBanner";
+import ResultsBanner from "../ResearchAssistant/ResultsBanner";
 
 interface KeywordSearchFormProps {
     searchQuery?: SearchQuery;
@@ -110,6 +110,7 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({
                     value: shownQuery.field,
                 }}
                 textInputProps={{
+                    isClearable: true,
                     labelText: "Item Search",
                     name: "textInputName",
                     placeholder: SEARCH_FORM_OPTIONS[shownQuery.field].placeholder,
@@ -119,12 +120,12 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({
                 labelText="Search"
                 data-testid={SEARCH_BAR_TEST_ID}
                 sx={{
-                    button: {
+                    "button[type='submit']": {
                         bgColor: "section.research.secondary", // TODO: update hover state colors
                     },
                 }}
             />
-            <KeywordSearchBanner />
+            <ResultsBanner />
         </Flex>
     );
 };
