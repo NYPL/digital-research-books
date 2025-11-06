@@ -1,11 +1,11 @@
 import { Icon } from "@nypl/design-system-react-components";
 import React from "react";
 
-interface ResearchAssistantIconProps {
+interface KeywordSearchIconProps {
     color?: string;
 }
 
-const KeywordSearchIcon: React.FC<ResearchAssistantIconProps> = ({
+const KeywordSearchIcon: React.FC<KeywordSearchIconProps> = ({
     color,
 }) => {
     const svgIcon = (
