@@ -22,7 +22,9 @@ class GRINDownloadService:
         self.ssm_service = SSMService()
         self.bucket = bucket
 
-        self.grin_pass_key = self.ssm_service.get_parameter("grin-access-key")
+        self.grin_pass_key = self.ssm_service.get_parameter(
+            "grin-access-key", raise_on_error=True
+        )
 
     @profile(logger=logger)
     def download_barcode(self, barcode):

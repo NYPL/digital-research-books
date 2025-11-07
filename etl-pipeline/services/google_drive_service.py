@@ -17,7 +17,9 @@ class GoogleDriveService:
     def __init__(self):
         ssm_service = SSMService()
 
-        SERVICE_ACCOUNT_FILE = ssm_service.get_parameter("google-drive-service-key")
+        SERVICE_ACCOUNT_FILE = ssm_service.get_parameter(
+            "google-drive-service-key", raise_on_error=True
+        )
 
         service_account_info = json.loads(SERVICE_ACCOUNT_FILE)
         scopes = [

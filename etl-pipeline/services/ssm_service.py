@@ -21,7 +21,9 @@ class SSMService:
             else "qa"
         )
 
-    def get_parameter(self, parameter_name: str) -> dict | None:
+    def get_parameter(
+        self, parameter_name: str, raise_on_error: bool = False
+    ) -> dict | None:
         full_parameter_name = f"drb/{self.environment}/{parameter_name}"
         try:
             response = self.ssm_client.get_parameter(
@@ -34,4 +36,6 @@ class SSMService:
             logger.exception(
                 f"Parameter store retrieval for '{full_parameter_name}' failed"
             )
+            if raise_on_error:
+                raise
             return None
