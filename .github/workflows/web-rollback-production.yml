@@ -3,6 +3,10 @@ name: Web Rollback Production
 on:
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   # Rollback job in case of failure (Revert production to the previous task definition)
   rollback:

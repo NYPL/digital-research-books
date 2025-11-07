@@ -3,6 +3,10 @@ name: Deploy ETL Pipeline to Production
 on:
   workflow_call:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   publish_production:
     name: Publish image to ECR and update ECS stack
