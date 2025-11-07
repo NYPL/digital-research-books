@@ -2,11 +2,6 @@ name: 'ETL Pipeline CI (Self-Hosted)'
 
 on:
   workflow_call:
-    secrets:
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
 
 permissions:
   contents: read
@@ -16,8 +11,6 @@ jobs:
   run-tests:
     runs-on: self-hosted
     env:
-      AWS_ACCESS: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: us-east-1
       PRIMARY_AWS_ACCOUNTID: "491147561046"
       SECONDARY_AWS_ACCOUNTID: "946183545209"
