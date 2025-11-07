@@ -18,8 +18,6 @@ logger = create_log(__name__)
 class S3Manager:
     def __init__(self):
         self._client = None
-        self.aws_access_key_id = os.environ.get("AWS_ACCESS", None)
-        self.aws_secret_access_key = os.environ.get("AWS_SECRET", None)
         self.region_name = os.environ.get("AWS_REGION", None)
         self.endpoint_url = os.environ.get("S3_ENDPOINT_URL", None)
 
@@ -28,8 +26,6 @@ class S3Manager:
         if self._client is None:
             self._client = boto3.client(
                 "s3",
-                aws_access_key_id=self.aws_access_key_id,
-                aws_secret_access_key=self.aws_secret_access_key,
                 region_name=self.region_name,
                 endpoint_url=self.endpoint_url,
             )
