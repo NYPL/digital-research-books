@@ -49,7 +49,9 @@ This guide provides step-by-step instructions to set up local development and st
    - Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
    - Sign into AWS console at http://awsconsole.nypl.org/.
    - Choose account:`nypl-digital-dev`
-   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . This authorization is temporary, to re-authenticate with SSO, run `aws sso login --profile your-profile-name`
+   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . 
+      - When asked, set profile name to "default". This allows AWS DKs and CLI to authenticate without any extra arguments.
+      - This authorization is temporary, to re-authenticate with SSO, run `aws sso login`.
 
 
 ### Setup Steps
