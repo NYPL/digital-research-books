@@ -152,7 +152,7 @@ pip install -r dev-requirements.txt
 The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
 `gpg` is pre-installed on most linux distributions but must be installed on MacOs.
 
-Ensure that it is available by installing it via `brew` (if on a Mac) or the appropriate tool for your OS
+Ensure that it is available by installing it via `brew install gnupg` (if on a Mac) or the appropriate tool for your OS
 
 
 ## Available Processes
