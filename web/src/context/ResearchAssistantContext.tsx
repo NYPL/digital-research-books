@@ -76,6 +76,7 @@ export const ResearchAssistantProvider: React.FC<{
             {
                 results: results,
                 itemId: itemId,
+                pageId: pageId,
                 showWebReader: showWebReader,
                 pdfData: pdfData,
                 linkResults: linkResults,

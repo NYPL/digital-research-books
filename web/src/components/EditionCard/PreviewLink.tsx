@@ -1,10 +1,8 @@
-import { Box, Button } from "@nypl/design-system-react-components";
+import { Box } from "@nypl/design-system-react-components";
 import React from "react";
 import { ItemLink } from "~/src/types/DataModel";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
 import Link from "../Link/Link";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import { useRouter } from "next/router";
 
 interface PreviewLinkProps {
   previewLink: ItemLink;

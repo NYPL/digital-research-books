@@ -91,7 +91,7 @@ const ItemDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
   const loginCookie = cookies[NYPL_SESSION_ID];
   const isLoggedIn = !!loginCookie;
 
-  const onDownloadOptionChange = (value: string): void => {
+  const onDownloadOptionChange = (): void => {
     throw new Error("Function not implemented.");
   };
 

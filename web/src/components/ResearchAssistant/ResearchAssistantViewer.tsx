@@ -1,6 +1,5 @@
 import { Box } from "@nypl/design-system-react-components";
-import React, { useState } from "react";
-import Loading from "../Loading/Loading";
+import React from "react";
 import dynamic from "next/dynamic";
 const WebReader = dynamic(() => import("@nypl/web-reader"), { ssr: false });
 
@@ -8,8 +7,6 @@ const ResearchAssistantViewer: React.FC<{
   itemId: string;
   pageId: string;
 }> = ({ itemId, pageId }) => {
-  const [isLoading, setIsLoading] = useState(false);
-
   const protocol =
     typeof window !== "undefined" && window.location.protocol
       ? window.location.protocol
@@ -28,7 +25,6 @@ const ResearchAssistantViewer: React.FC<{
 
   return (
     <Box>
-      {isLoading && <Loading />}
       {manifestApiUrl && (
         <WebReader
           headerLeft={<></>}
