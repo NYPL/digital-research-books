@@ -2,9 +2,7 @@ import React, { useEffect } from "react";
 import {
   Box,
   Button,
-  Heading,
   Icon,
-  Text,
 } from "@nypl/design-system-react-components";
 import {
   ResearchAssistantProvider,
@@ -12,13 +10,10 @@ import {
 } from "~/src/context/ResearchAssistantContext";
 import CatalogResults from "./CatalogResults";
 import ItemResults from "./ItemResults";
-import ResearchAssistantViewer from "./ResearchAssistantViewer";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
-import ResearchAssistantIcon from "./ResearchAssistantIcon";
-import ResearchAssistantInput from "./ResearchAssistantInput";
-import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
+import ResearchAssistantPanel from "./ResearchAssistantPanel";
 
 const ResearchAssistantInner: React.FC = () => {
   const {
@@ -32,7 +27,6 @@ const ResearchAssistantInner: React.FC = () => {
     clearHistory,
     showWebReader,
     pdfData,
-    itemId,
     linkResults,
     handleReadOnline,
     handlePreview,
@@ -82,9 +76,7 @@ const ResearchAssistantInner: React.FC = () => {
             )}
             {showWebReader ? (
               <Box flex="1">
-                {pdfData ? (
-                  <ResearchAssistantViewer itemId={itemId} pdfData={pdfData} />
-                ) : (
+                {!pdfData && (
                   <ReaderLayout
                     linkResult={linkResults}
                     proxyUrl={proxyUrl}
@@ -109,53 +101,13 @@ const ResearchAssistantInner: React.FC = () => {
           </Box>
         )}
 
-        <Box
-          flex="1"
-          display="flex"
-          flexDirection="column"
-          bgColor="section.research.primary"
-          maxHeight="100vh"
-          position="sticky"
-          top="0"
-        >
-          <Box
-            bgColor="section.research.primary"
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            paddingX="l"
-            paddingY="s"
-            borderBottom="1px white solid"
-            position="sticky"
-            top="0"
-            zIndex="999"
-          >
-            <Heading
-              level="h2"
-              size="heading7"
-              color="ui.white"
-              display="flex"
-              alignItems="center"
-              gap="xs"
-            >
-              <ResearchAssistantIcon inCircle />
-              <span>Virtual Research Assistant</span>
-            </Heading>
-            <Button onClick={clearHistory} id="clear-history-button">
-              Clear chat
-            </Button>
-          </Box>
-
-          <ResearchAssistantWindow messages={messages} isLoading={isLoading} />
-
-          {error && <Text fontWeight="bold">{error}</Text>}
-
-          <ResearchAssistantInput
-            onSendMessage={sendMessage}
-            isDisabled={isLoading}
-            messages={messages}
-          />
-        </Box>
+        <ResearchAssistantPanel
+          messages={messages}
+          isLoading={isLoading}
+          error={error}
+          onSendMessage={sendMessage}
+          clearHistory={clearHistory}
+        />
       </Box>
     </ResultPageProvider>
   );

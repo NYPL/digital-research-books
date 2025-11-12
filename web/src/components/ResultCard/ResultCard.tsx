@@ -26,6 +26,7 @@ import Ctas from "./Ctas";
 import { MAX_TITLE_LENGTH } from "~/src/constants/editioncard";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import EditionLinks from "./EditionLinks";
+import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 
 interface ResultCardProps {
     authors: Agent[];
@@ -84,9 +85,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                 <Box>
                     {edition.summary ||
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
-                    <Text size="caption" color="ui.gray.dark" marginTop="s">
-                        AI-generated.
-                    </Text>
+                    <AiGeneratedText />
                 </Box>
             ),
         });
@@ -108,9 +107,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                     <Box>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                         eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                        <Text size="caption" color="ui.gray.dark" marginTop="s">
-                            AI-generated.
-                        </Text>
+                        <AiGeneratedText />
                     </Box>
                 ),
             });
@@ -153,7 +150,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                         <Heading size="heading7" marginBottom="xxs">
                             <Link
                                 to={{
-                                    pathname: `/work/${work.uuid}`,
+                                    pathname: `/item/${work.uuid}`,
                                     ...(previewItem
                                         ? { query: { featured: edition.edition_id } }
                                         : null),
@@ -186,10 +183,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                         accordionData={accordionSummaryData()}
                         sx={{
                             span: {
-                                fontSize: "desktop.body.body2"
-                            }
+                                fontSize: "desktop.body.body2",
+                            },
                         }}
-
                     />
                 )}
                 {isPhysicalEdition && (
@@ -210,12 +206,18 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                         sx={{
                             a: {
                                 color: "ui.link.primary",
-                            }
+                            },
                         }}
                     />
                 )}
                 <Flex flexDir="row" gap="xs">
-                    <Ctas authors={authors} item={previewItem} title={work.title} />
+                    <Ctas
+                        authors={authors}
+                        item={previewItem}
+                        title={work.title}
+                        workId={work.uuid}
+                        editionId={edition.edition_id}
+                    />
                 </Flex>
             </Flex>
         </Box>

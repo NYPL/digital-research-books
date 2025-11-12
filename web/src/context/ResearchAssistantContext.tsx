@@ -8,13 +8,13 @@ import {
     HistoryItem,
 } from "~/src/types/ResearchAssistant";
 import { LinkResult } from "~/src/types/LinkQuery";
-import { itemsReadFetcher } from "~/src/lib/api/ResearchAssistantApi";
 import { readFetcher } from "~/src/lib/api/SearchApi";
 
 interface ResearchAssistantViewState {
     showWebReader: boolean;
     pdfData: ApiItemsRead | null;
     itemId: string;
+    pageId: string;
     results: ChatResults | null;
     linkResults: LinkResult | null;
 }
@@ -39,6 +39,7 @@ interface PushNewStateArgs {
     pdfData: ApiItemsRead | null;
     linkResults: LinkResult | null;
     itemId?: string;
+    pageId?: string;
 }
 
 const ResearchAssistantContext = createContext<
@@ -57,6 +58,7 @@ export const ResearchAssistantProvider: React.FC<{
         showWebReader: false,
         pdfData: null,
         itemId: "",
+        pageId: "",
         results: null,
         linkResults: null,
     });
@@ -67,6 +69,7 @@ export const ResearchAssistantProvider: React.FC<{
         pdfData,
         linkResults,
         itemId = "",
+        pageId = "",
     }: PushNewStateArgs) => {
         setHistoryStack((prevStack) => [
             ...prevStack,
@@ -197,21 +200,22 @@ export const ResearchAssistantProvider: React.FC<{
     const handlePreview = async (url: string) => {
         const urlParts = url.split("/");
         const [itemId, pageId] = [urlParts.at(-3), urlParts.at(-1)];
-        const previewItemId = urlParts[urlParts.length - 3];
-        const itemsReadResults = await itemsReadFetcher(itemId, pageId);
+
         setViewState((prev) => ({
             ...prev,
             results: viewState.results,
-            pdfData: itemsReadResults.data,
-            itemId: previewItemId,
+            pdfData: null,
+            itemId: itemId,
+            pageId: pageId,
             showWebReader: true,
         }));
         pushNewState({
             results: null,
             showWebReader: true,
-            pdfData: itemsReadResults.data,
+            pdfData: null,
             linkResults: null,
-            itemId: previewItemId,
+            itemId: itemId,
+            pageId: pageId,
         });
     };
 

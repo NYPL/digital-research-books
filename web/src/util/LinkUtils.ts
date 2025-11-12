@@ -14,6 +14,14 @@ export const getBackToSearchUrl = (referer: string, host: string) => {
     : null;
 };
 
+export const getBackToVraUrl = (referer: string, host: string) => {
+  return isRefererInternal(referer, host) &&
+    (referer.includes("/keyword-search") ||
+      referer.includes("/research-assistant"))
+    ? referer
+    : null;
+};
+
 export const extractQueryParam = (
   query: ParsedUrlQuery,
   param: string
@@ -24,7 +32,7 @@ export const extractQueryParam = (
 };
 
 export const getHostname = () => {
-  return typeof window !== 'undefined' && window.location.origin
+  return typeof window !== "undefined" && window.location.origin
     ? window.location.origin
-    : '';
-}
+    : "";
+};
