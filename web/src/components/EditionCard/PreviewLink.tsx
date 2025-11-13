@@ -5,26 +5,25 @@ import { useResultPageContext } from "~/src/context/ResultPageContext";
 import Link from "../Link/Link";
 
 interface PreviewLinkProps {
-  previewLink: ItemLink;
-  workId?: string;
-  editionId?: number;
+    previewLink: ItemLink;
+    workId?: string;
+    editionId?: number;
 }
 
 const PreviewLink: React.FC<PreviewLinkProps> = ({
-  previewLink,
-  workId,
-  editionId,
-}) =>{
+    previewLink,
+    workId,
+    editionId,
+}) => {
     const { page } = useResultPageContext();
     const isResearchAssistant = page === "vra";
 
-    const itemPageUrl =
-        workId
-            ? {
-                pathname: `/item/${workId}`,
-                query: editionId ? { featured: editionId } : undefined,
-            }
-            : "#";
+    const itemPageUrl = workId
+        ? {
+            pathname: `/item/${workId}`,
+            query: editionId ? { featured: editionId } : undefined,
+        }
+        : "#";
 
     return (
         <>
@@ -45,6 +44,5 @@ const PreviewLink: React.FC<PreviewLinkProps> = ({
         </>
     );
 };
-
 
 export default PreviewLink;

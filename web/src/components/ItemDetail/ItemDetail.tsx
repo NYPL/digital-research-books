@@ -9,37 +9,31 @@ import {
   Radio,
   RadioGroup,
   SearchBar,
-  Template,
-  TemplateBreakout,
-  TemplateFull,
-  TemplateMain,
   Text,
   Toggle,
   VStack,
 } from "@nypl/design-system-react-components";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import AuthorsList from "../AuthorsList/AuthorsList";
-import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import DrbHero from "../DrbHero/DrbHero";
 import DownloadLink from "../ResultCard/DownloadLink";
 import EditionLinks from "../ResultCard/EditionLinks";
 import Link from "../Link/Link";
-import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
 import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel";
 import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
-import { MAX_TITLE_LENGTH } from "~/src/constants/editioncard";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
-import { truncateStringOnWhitespace } from "~/src/util/Util";
 import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
 import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
 
-const ItemDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
-  props
-) => {
-  const [vraEnabled, setVraEnabled] = useState(false);
+interface ItemDetailProps {
+  workResult: WorkResult;
+  backUrl?: string;
+}
+
+const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
+  const [vraEnabled, setVraEnabled] = useState(true);
   const [hasPreviewLoaded, setHasPreviewLoaded] = useState(false);
 
   const {
@@ -55,7 +49,7 @@ const ItemDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
 
   const { page } = useResultPageContext();
 
-  const work: ApiWork = props.workResult.data;
+  const work: ApiWork = workResult.data;
 
   const previewEdition = work.editions && work.editions[0];
   const previewItem = EditionCardUtils.getPreviewItem(previewEdition.items);
@@ -76,8 +70,10 @@ const ItemDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
   }, [previewLink, handlePreview, hasPreviewLoaded]);
 
   const gridColumns = vraEnabled
-    ? { base: "1fr", md: "1fr 2fr 1fr" }
-    : { base: "1fr", md: "1fr 2fr" };
+    ? { base: "1fr", md: "25% 50% 25%" }
+    : { base: "1fr", md: "33.33% 66.67%" };
+
+  const gridRows = backUrl ? "auto 1fr" : "1fr";
 
   const publisherNames = previewEdition.publishers.map(
     (pubAgent) => pubAgent && pubAgent.name
@@ -215,42 +211,52 @@ const ItemDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
     </VStack>
   );
 
-  const breakoutElement = (
-    <DrbBreakout
-      breadcrumbsData={[
-        {
-          url: `/work/${work.uuid}`,
-          text: truncateStringOnWhitespace(work.title, MAX_TITLE_LENGTH),
-        },
-      ]}
-    >
-      <DrbHero />
-      <ResearchAssistantNav activePage={page} />
-    </DrbBreakout>
-  );
-
-  const contentElement = (
-    <Box fontSize="desktop.body.body2" marginBottom="l">
-      <Flex alignItems="center" justifyContent="space-between" padding="s">
-        {props.backUrl && (
-          <Link
-            to={props.backUrl}
-            variant="backwards"
-            color="section.research.secondary"
+  return (
+    <Box fontSize="desktop.body.body2" marginBottom="l" bgColor="ui.bg.default" width="100%">
+      <Grid
+        templateColumns={gridColumns}
+        templateRows={gridRows}
+        gap="l"
+        marginBottom="xs"
+        maxWidth="1280px"
+        margin="0 auto"
+        paddingX={{ base: "1rem", md: "1.5rem", xl: "1rem" }}
+        width="100%"
+      >
+        {backUrl && (
+          <Flex
+            alignItems="center"
+            justifyContent="space-between"
+            padding="s"
+            bgColor="ui.white"
+            gridColumn="1 / span 2"
+            gridRow="1"
           >
-            Back to results
-          </Link>
+            <Link
+              to={backUrl}
+              variant="backwards"
+              color="section.research.secondary"
+              hasVisitedState={false}
+            >
+              Back to results
+            </Link>
+            {page === "vra" && (
+              <Toggle
+                isChecked={vraEnabled}
+                labelText="Use Virtual Research Assistant"
+                onChange={() => setVraEnabled((prev) => !prev)}
+              />
+            )}
+          </Flex>
         )}
-        {page === "vra" && (
-          <Toggle
-            isChecked={vraEnabled}
-            labelText="Use Virtual Research Assistant"
-            onChange={() => setVraEnabled((prev) => !prev)}
-          />
-        )}
-      </Flex>
-      <Grid templateColumns={gridColumns} gap="l" marginY="xs">
-        <VStack alignContent="left" alignItems="left">
+        <VStack
+          alignContent="left"
+          alignItems="left"
+          bgColor="ui.bg.default"
+          gridColumn="1"
+          gridRow={backUrl ? "2" : "1"}
+          marginTop="2rem"
+        >
           <Text size="caption" marginBottom="xxs">
             E-BOOK
           </Text>
@@ -310,31 +316,37 @@ const ItemDetail: React.FC<{ workResult: WorkResult; backUrl?: string }> = (
                 },
               ]}
               isDefaultOpen
+              bgColor="ui.white"
               id="item-detail-accordion"
             />
           </VStack>
         </VStack>
-        <ResearchAssistantViewer itemId={itemId} pageId={pageId} />
-        {vraEnabled && (
-          <ResearchAssistantPanel
-            messages={messages}
-            isLoading={isLoading}
-            error={error}
-            onSendMessage={sendMessage}
-            clearHistory={clearHistory}
-          />
-        )}
+        <Box
+          gridColumn="2"
+          gridRow={backUrl ? "2" : "1"}
+          marginRight="2rem"
+          marginTop="2rem"
+        >
+          <ResearchAssistantViewer itemId={itemId} pageId={pageId} />
+        </Box>
+        <Box
+          gridColumn="3"
+          gridRow={backUrl ? "1 / span 2" : "1"}
+          height="100%"
+          marginLeft="-2rem"
+        >
+          {vraEnabled && (
+            <ResearchAssistantPanel
+              messages={messages}
+              isLoading={isLoading}
+              error={error}
+              onSendMessage={sendMessage}
+              clearHistory={clearHistory}
+            />
+          )}
+        </Box>
       </Grid>
     </Box>
-  );
-
-  return (
-    <Template variant="narrow">
-      <TemplateBreakout>{breakoutElement}</TemplateBreakout>
-      <TemplateMain>
-        <TemplateFull>{contentElement}</TemplateFull>
-      </TemplateMain>
-    </Template>
   );
 };
 

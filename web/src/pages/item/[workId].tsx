@@ -9,8 +9,8 @@ import { getBackToVraUrl } from "~/src/util/LinkUtils";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import Error from "../_error";
 import ItemDetail from "~/src/components/ItemDetail/ItemDetail";
-import { ResearchAssistantProvider } from "~/src/context/ResearchAssistantContext";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
+import VRALayout from "~/src/components/VRALayout/VRALayout";
 
 export async function getServerSideProps(context: any) {
   const isResearchAssistantEnabled = process.env.APP_ENV !== "production";
@@ -41,6 +41,8 @@ const ItemPage: React.FC<any> = (props) => {
     return <Error statusCode={props.workResult.status} />;
   }
 
+  const activePage = props.backUrl && props.backUrl.includes("research-assistant") ? "vra" : "keyword";
+
   return (
     <Layout>
       <Head>
@@ -51,15 +53,15 @@ const ItemPage: React.FC<any> = (props) => {
           )} | ${documentTitles.workItem}`}
         </title>
       </Head>
-      <ResearchAssistantProvider>
+      <VRALayout activePage={activePage}>
         <ResultPageProvider value={{
-          page: props.backUrl && props.backUrl.includes("research-assistant") ? "vra" : "keyword",
+          page: activePage,
           onPreview: () => {},
           onReadOnline: () => {}
         }}>
           <ItemDetail workResult={props.workResult} backUrl={props.backUrl} />
         </ResultPageProvider>
-      </ResearchAssistantProvider>
+      </VRALayout>
     </Layout>
   );
 };

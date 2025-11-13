@@ -1,13 +1,6 @@
 import React, { useEffect } from "react";
-import {
-  Box,
-  Button,
-  Icon,
-} from "@nypl/design-system-react-components";
-import {
-  ResearchAssistantProvider,
-  useResearchAssistant,
-} from "~/src/context/ResearchAssistantContext";
+import { Box, Button, Icon } from "@nypl/design-system-react-components";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import CatalogResults from "./CatalogResults";
 import ItemResults from "./ItemResults";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
@@ -15,7 +8,7 @@ import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import ResearchAssistantPanel from "./ResearchAssistantPanel";
 
-const ResearchAssistantInner: React.FC = () => {
+const ResearchAssistant: React.FC = () => {
   const {
     messages,
     sendMessage,
@@ -85,7 +78,12 @@ const ResearchAssistantInner: React.FC = () => {
                 )}
               </Box>
             ) : (
-              <Box paddingX="l" paddingBottom="l" flex="1" bgColor="ui.bg.default">
+              <Box
+                paddingX="l"
+                paddingBottom="l"
+                flex="1"
+                bgColor="ui.bg.default"
+              >
                 {results && Object.keys(results).length > 0 && (
                   <>
                     {results.type === "catalog_search" && (
@@ -112,11 +110,5 @@ const ResearchAssistantInner: React.FC = () => {
     </ResultPageProvider>
   );
 };
-
-const ResearchAssistant: React.FC = () => (
-  <ResearchAssistantProvider>
-    <ResearchAssistantInner />
-  </ResearchAssistantProvider>
-);
 
 export default ResearchAssistant;
