@@ -17,17 +17,20 @@ def load_connection_config(
     port=None,
     user=None,
     pswd=None,
-    default_timeout=5,
+    timeout=None,
     max_retries=3,
 ):
-    """Create ES connection config, reading defaults from the environment."""
+    """Create ES connection config, reading defaults from the environment.
+
+    Args passed here override env vars.
+    """
 
     scheme = scheme or os.environ.get("ELASTICSEARCH_SCHEME", None)
     host = host or os.environ.get("ELASTICSEARCH_HOST", None)
     port = port or os.environ.get("ELASTICSEARCH_PORT", None)
     user = user or os.environ.get("ELASTICSEARCH_USER", None)
     pswd = pswd or os.environ.get("ELASTICSEARCH_PSWD", None)
-    timeout = int(os.environ.get("ELASTICSEARCH_TIMEOUT", default_timeout))
+    timeout = timeout or int(os.environ.get("ELASTICSEARCH_TIMEOUT", 5))
 
     creds = "{}:{}@".format(user, pswd) if user and pswd else ""
 
