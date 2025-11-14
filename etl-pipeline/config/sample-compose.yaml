@@ -26,8 +26,6 @@ ELASTICSEARCH_USER: elastic
 ELASTICSEARCH_PSWD: elastic
 
 # AWS CONFIGURATION
-AWS_ACCESS: test
-AWS_SECRET: test
 AWS_REGION: us-east-1
 FILE_BUCKET: drb-files-local
 S3_ENDPOINT_URL: http://drb-local-aws:4566

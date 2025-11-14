@@ -5,7 +5,7 @@ import inspect
 
 from args_parser import create_arg_parser
 from load_env import load_env_file
-from logger import create_log
+from logger import configure_loggers, create_log
 
 
 if os.environ.get("NEW_RELIC_LICENSE_KEY", None):
@@ -96,6 +96,7 @@ if __name__ == "__main__":
 
     load_env_file(args.environment, "./config/{}.yaml")
     os.environ["ENVIRONMENT"] = os.environ.get("ENVIRONMENT") or args.environment
+    configure_loggers()
 
     main(args)
     newrelic.agent.shutdown_agent()

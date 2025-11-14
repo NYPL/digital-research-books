@@ -7,8 +7,6 @@ from managers import SQSManager
 def sqs_manager(monkeypatch):
     """Fixture providing an SQSManager instance configured for LocalStack"""
     monkeypatch.setenv("AWS_REGION", "us-east-1")
-    monkeypatch.setenv("AWS_ACCESS", "test-access-key")
-    monkeypatch.setenv("AWS_SECRET", "test-secret-key")
     monkeypatch.setenv("S3_ENDPOINT_URL", "http://localhost:4566")
     manager = SQSManager("test-queue")
     return manager

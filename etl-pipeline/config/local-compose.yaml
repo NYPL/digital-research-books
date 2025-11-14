@@ -33,3 +33,8 @@ API_PROXY_CORS_ALLOWED: '*'
 
 READER_VERSION: v2
 DEFAULT_COVER_URL: https://drb-files-qa.s3.amazonaws.com/covers/default/defaultCover.png
+
+RECORD_PIPELINE_SQS_QUEUE: records
+GRIN_INGEST_SQS_QUEUE: grin-queue
+
+FILE_BUCKET: drb-files-local

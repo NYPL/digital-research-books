@@ -18,8 +18,6 @@ class TestHelpers:
         "ELASTICSEARCH_TIMEOUT": "test_es_timeout",
         "OCLC_API_KEY": "test_oclc_key",
         "OCLC_CLASSIFY_API_KEY": "test_classify_key",
-        "AWS_ACCESS": "test_aws_key",
-        "AWS_SECRET": "test_aws_secret",
         "AWS_REGION": "test_aws_region",
         "FILE_BUCKET": "test_aws_bucket",
         "NYPL_BIB_HOST": "test_bib_host",

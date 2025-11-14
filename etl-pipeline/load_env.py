@@ -3,7 +3,7 @@ import yaml
 from pathlib import Path
 from services.ssm_service import SSMService
 
-LOCAL_SECRETS_FILE = "config/local-secrets.yaml"
+LOCAL_SECRETS_FILE = str(Path(__file__, "../config/local-secrets.yaml").resolve())
 
 ENV_VAR_TO_SSM_NAME = {
     "CONTENT_CAFE_USER": "contentcafe/user",
