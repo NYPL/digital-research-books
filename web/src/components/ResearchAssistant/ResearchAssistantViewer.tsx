@@ -3,6 +3,11 @@ import React from "react";
 import dynamic from "next/dynamic";
 const WebReader = dynamic(() => import("@nypl/web-reader"), { ssr: false });
 
+const origin =
+  typeof window !== "undefined" && window.location?.origin
+    ? window.location.origin
+    : "";
+
 const injectables = [
   {
     type: "style",
