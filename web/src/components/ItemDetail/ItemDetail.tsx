@@ -72,8 +72,8 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   const gridColumns = vraEnabled
     ? { base: "1fr", md: "25% 50% 25%" }
     : { base: "1fr", md: "33.33% 66.67%" };
-
   const gridRows = backUrl ? "auto 1fr" : "1fr";
+  const gridPaddingX = { base: "1rem", md: "1.5rem", xl: "1rem" };
 
   const publisherNames = previewEdition.publishers.map(
     (pubAgent) => pubAgent && pubAgent.name
@@ -212,7 +212,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   );
 
   return (
-    <Box fontSize="desktop.body.body2" marginBottom="l" bgColor="ui.bg.default" width="100%">
+    <Box fontSize="desktop.body.body2" bgColor="ui.bg.default" width="100%">
       <Grid
         templateColumns={gridColumns}
         templateRows={gridRows}
@@ -220,7 +220,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         marginBottom="xs"
         maxWidth="1280px"
         margin="0 auto"
-        paddingX={{ base: "1rem", md: "1.5rem", xl: "1rem" }}
+        paddingX={gridPaddingX}
         width="100%"
       >
         {backUrl && (
@@ -256,6 +256,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           gridColumn="1"
           gridRow={backUrl ? "2" : "1"}
           marginTop="2rem"
+          paddingBottom="l"
         >
           <Text size="caption" marginBottom="xxs">
             E-BOOK
@@ -326,6 +327,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           gridRow={backUrl ? "2" : "1"}
           marginRight="2rem"
           marginTop="2rem"
+          paddingBottom="l"
         >
           <ResearchAssistantViewer itemId={itemId} pageId={pageId} />
         </Box>
@@ -334,6 +336,15 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           gridRow={backUrl ? "1 / span 2" : "1"}
           height="100%"
           marginLeft="-2rem"
+          marginRight={{
+            base: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.base})`,
+            md: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.md})`,
+            xl: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.xl})`,
+          }}
+          paddingRight={gridPaddingX}
+          display="flex" 
+          flexDirection="column"
+          
         >
           {vraEnabled && (
             <ResearchAssistantPanel

@@ -40,7 +40,7 @@ const ResearchAssistantViewer: React.FC<{
     typeof window !== "undefined" ? window.location.host : "localhost:3000";
   const manifestApiUrl = `${protocol}//${host}/api/manifest/${itemId}?pageId=${pageId}`;
 
-  if (!itemId || !pageId) {
+  if (!itemId || !pageId || !manifestApiUrl) {
     return (
       <Box height="90%" padding="m">
         <p>No PDF data available.</p>
@@ -56,6 +56,7 @@ const ResearchAssistantViewer: React.FC<{
           webpubManifestUrl={manifestApiUrl}
           pdfWorkerSrc="/pdf-worker/pdf.worker.min.js"
           injectablesFixed={injectables}
+          growWhenScrolling={false}
         />
       )}
     </Box>
