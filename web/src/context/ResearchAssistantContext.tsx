@@ -22,10 +22,12 @@ interface ResearchAssistantViewState {
 interface ResearchAssistantContextType extends ResearchAssistantViewState {
     messages: Message[];
     sendMessage: (message: string) => Promise<void>;
+    setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
     results: ChatResults | null;
     isLoading: boolean;
     error: string | null;
     historyStack: HistoryItem[];
+    setHistoryStack: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
     goToPreviousState: () => void;
     clearHistory: () => void;
     setViewState: React.Dispatch<React.SetStateAction<any | null>>;
@@ -280,9 +282,11 @@ export const ResearchAssistantProvider: React.FC<{
     const value: ResearchAssistantContextType = {
         messages,
         sendMessage,
+        setMessages,
         isLoading,
         error,
         historyStack,
+        setHistoryStack,
         goToPreviousState,
         clearHistory,
         ...viewState,

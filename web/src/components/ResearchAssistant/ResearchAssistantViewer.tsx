@@ -56,7 +56,6 @@ const ResearchAssistantViewer: React.FC<{
           webpubManifestUrl={manifestApiUrl}
           pdfWorkerSrc="/pdf-worker/pdf.worker.min.js"
           injectablesFixed={injectables}
-          growWhenScrolling={false}
         />
       )}
     </Box>

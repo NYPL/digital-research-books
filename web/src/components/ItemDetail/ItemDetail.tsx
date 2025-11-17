@@ -1,31 +1,34 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useCookies } from "react-cookie";
+import { useRouter } from "next/router";
 import {
   Accordion,
   Box,
   Flex,
   Grid,
   Heading,
-  Radio,
-  RadioGroup,
-  SearchBar,
   Text,
   Toggle,
   VStack,
 } from "@nypl/design-system-react-components";
-import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import AuthorsList from "../AuthorsList/AuthorsList";
+import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import DownloadLink from "../ResultCard/DownloadLink";
-import EditionLinks from "../ResultCard/EditionLinks";
-import Link from "../Link/Link";
+import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
 import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel";
 import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
+import EditionCardUtils from "~/src/util/EditionCardUtils";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
-import EditionCardUtils from "~/src/util/EditionCardUtils";
 import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
-import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
+import { MessageStatus, MessageType } from "~/src/types/ResearchAssistant";
+import AboutItemPanel from "./AboutItemPanel";
+import SummaryPanel from "./SummaryPanel";
+import SearchPanel from "./SearchPanel";
+import DownloadOptionsPanel from "./DownloadOptionsPanel";
+import DetailsPanel from "./DetailsPanel";
+import OtherEditionsPanel from "./OtherEditionsPanel";
 
 interface ItemDetailProps {
   workResult: WorkResult;
@@ -35,19 +38,27 @@ interface ItemDetailProps {
 const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   const [vraEnabled, setVraEnabled] = useState(true);
   const [hasPreviewLoaded, setHasPreviewLoaded] = useState(false);
+  const [shouldNavigate, setShouldNavigate] = useState(false);
 
   const {
     clearHistory,
     isLoading,
     messages,
     sendMessage,
+    setMessages,
     itemId,
     pageId,
     handlePreview,
+    goToPreviousState,
+    setViewState,
+    historyStack,
+    setHistoryStack,
     error,
   } = useResearchAssistant();
 
   const { page } = useResultPageContext();
+
+  const router = useRouter();
 
   const work: ApiWork = workResult.data;
 
@@ -60,20 +71,76 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
 
   useEffect(() => {
     setHasPreviewLoaded(false);
-  }, [previewLink?.url]);
-
-  useEffect(() => {
     if (previewLink && !hasPreviewLoaded) {
       handlePreview(previewLink.url);
       setHasPreviewLoaded(true);
     }
-  }, [previewLink, handlePreview, hasPreviewLoaded]);
+  }, [previewLink, handlePreview]);
+
+  useEffect(() => {
+    if (previewLink?.url && router.pathname.startsWith("/item")) {
+      const urlParts = previewLink.url.split("/");
+      const [itemId, pageId] = [urlParts.at(-3), urlParts.at(-1)];
+
+      sessionStorage.setItem("vraHistoryStack", JSON.stringify(historyStack));
+      sessionStorage.setItem("vraMessages", JSON.stringify(messages));
+
+      clearHistory();
+      setViewState((prev) => ({
+        ...prev,
+        itemId,
+        pageId,
+        showWebReader: false,
+        results: null,
+        linkResults: null,
+        pdfData: null,
+      }));
+
+      setMessages([
+        {
+          id: "assistant-initial",
+          data: {
+            content:
+              "I can help you find relevant content in this book. Ask me a question, or try the suggestions below.",
+          },
+          status: MessageStatus.Sent,
+          type: MessageType.Ai,
+        },
+      ]);
+    }
+  }, [previewLink?.url, router.pathname]);
 
   const gridColumns = vraEnabled
     ? { base: "1fr", md: "25% 50% 25%" }
     : { base: "1fr", md: "33.33% 66.67%" };
   const gridRows = backUrl ? "auto 1fr" : "1fr";
   const gridPaddingX = { base: "1rem", md: "1.5rem", xl: "1rem" };
+
+  const outerMarginCalc = "calc((100vw - 1280px) / 2)";
+  const headerMarginLeft = {
+    base: `calc(${outerMarginCalc} * -1 + ${gridPaddingX.base})`,
+    md: `calc(${outerMarginCalc} * -1 + ${gridPaddingX.md})`,
+    xl: `calc(${outerMarginCalc} * -1 + ${gridPaddingX.xl})`,
+  };
+  const headerMarginRight = vraEnabled ? "0" : headerMarginLeft;
+
+  const handleBackToResults = () => {
+    const storedHistory = sessionStorage.getItem("vraHistoryStack");
+    const storedMessages = sessionStorage.getItem("vraMessages");
+    if (storedHistory) setHistoryStack(JSON.parse(storedHistory));
+    if (storedMessages) setMessages(JSON.parse(storedMessages));
+    sessionStorage.removeItem("vraHistoryStack");
+    sessionStorage.removeItem("vraMessages");
+    setShouldNavigate(true);
+  };
+
+  useEffect(() => {
+    if (shouldNavigate) {
+      goToPreviousState();
+      router.push("/research-assistant");
+      setShouldNavigate(false);
+    }
+  }, [shouldNavigate, router]);
 
   const publisherNames = previewEdition.publishers.map(
     (pubAgent) => pubAgent && pubAgent.name
@@ -87,130 +154,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   const loginCookie = cookies[NYPL_SESSION_ID];
   const isLoggedIn = !!loginCookie;
 
-  const onDownloadOptionChange = (): void => {
-    throw new Error("Function not implemented.");
-  };
-
-  const aboutThisItemPanel = (
-    <VStack alignItems="left" gap="xs">
-      <Box>
-        <Text fontWeight="bold">Copyright</Text>
-        <Link to="/copyright" isUnderlined={false}>
-          {previewItem && previewItem.rights && previewItem.rights.length > 0
-            ? `${previewItem.rights[0].rightsStatement}`
-            : "Unknown"}
-        </Link>
-      </Box>
-      <Box>
-        <Text fontWeight="bold">Edition</Text>
-        <Text>{previewEdition.publication_date || "Unknown date"}</Text>
-      </Box>
-      <Box>
-        <Text fontWeight="bold">Publisher</Text>
-        <Text>{publisherNames.join(", ") || "Publisher unknown"}</Text>
-      </Box>
-      <Box>
-        <Text fontWeight="bold">Place of publication</Text>
-        <Text>
-          {previewEdition.publication_place || "Place of publication unknown"}
-        </Text>
-      </Box>
-    </VStack>
-  );
-
-  const summaryPanel = (
-    <VStack alignItems="left" gap="xs">
-      {previewEdition.summary || "No summary available."}
-      <AiGeneratedText />
-    </VStack>
-  );
-
-  const downloadOptionsPanel = (
-    <Box>
-      <RadioGroup
-        defaultValue="full"
-        labelText="Range"
-        onChange={onDownloadOptionChange}
-        name="downloadOptionRange"
-      >
-        <Radio labelText="Entire e-book" value="full" />
-        <Radio labelText="Current page" value="page" />
-      </RadioGroup>
-      <DownloadLink
-        authors={authorNames}
-        downloadLink={downloadLink}
-        title={work.title}
-        isLoggedIn={isLoggedIn}
-      />
-    </Box>
-  );
-
-  const searchPanel = (
-    <Box>
-      {/* TODO: Implement search functionality */}
-      <SearchBar
-        labelText="Search inside this item"
-        textInputProps={{
-          isClearable: true,
-          labelText: "Item Search",
-          name: "textInputName",
-          placeholder: "Enter keywords",
-        }}
-        sx={{
-          "button[type='submit']": {
-            bgColor: "section.research.secondary", // TODO: update hover state colors
-          },
-        }}
-      />
-    </Box>
-  );
-
-  const otherEditionsPanel = (
-    <Box>
-      {work.editions.length > 1 ? (
-        <EditionLinks work={work} />
-      ) : (
-        <Text>No other editions available.</Text>
-      )}
-    </Box>
-  );
-
-  const detailsPanel = (
-    <VStack alignItems="left" gap="xs">
-      <Box>
-        <Text fontWeight="bold">Authors</Text>
-        <AuthorsList authors={work.authors} />
-      </Box>
-      <Box>
-        <Text fontWeight="bold">Subjects</Text>
-        {work.subjects && work.subjects.length > 0 ? (
-          <VStack alignItems="left" gap="xxs">
-            {work.subjects
-              .filter((subject) => subject.heading)
-              .map((subject, i) => (
-                <Link
-                  key={`subject-link-${i}`}
-                  to={{
-                    pathname: "/keyword-search",
-                    query: { query: `subject:${subject.heading}` },
-                  }}
-                  isUnderlined={false}
-                >
-                  {subject.heading}
-                </Link>
-              ))}
-          </VStack>
-        ) : (
-          <Text>Unknown subjects</Text>
-        )}
-      </Box>
-      <Box>
-        <Text fontWeight="bold">Languages</Text>
-        <Text>{work.languages.join(", ") || "Unknown languages"}</Text>
-      </Box>
-    </VStack>
-  );
-
   return (
     <Box fontSize="desktop.body.body2" bgColor="ui.bg.default" width="100%">
       <Grid
@@ -220,7 +163,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         marginBottom="xs"
         maxWidth="1280px"
         margin="0 auto"
-        paddingX={gridPaddingX}
         width="100%"
       >
         {backUrl && (
@@ -231,15 +173,25 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             bgColor="ui.white"
             gridColumn="1 / span 2"
             gridRow="1"
+            borderBottom="1px solid"
+            borderColor="ui.border.default"
+            marginLeft={headerMarginLeft}
+            marginRight={headerMarginRight}
+            paddingLeft={outerMarginCalc}
+            paddingRight={{
+              base: vraEnabled
+                ? gridPaddingX.base
+                : `calc(${outerMarginCalc} + ${gridPaddingX.base} * 2)`,
+              md: vraEnabled
+                ? gridPaddingX.md
+                : `calc(${outerMarginCalc} + ${gridPaddingX.md} * 2)`,
+              xl: vraEnabled
+                ? gridPaddingX.xl
+                : `calc(${outerMarginCalc} + ${gridPaddingX.xl} * 2)`,
+            }}
+            paddingY="s"
           >
-            <Link
-              to={backUrl}
-              variant="backwards"
-              color="section.research.secondary"
-              hasVisitedState={false}
-            >
-              Back to results
-            </Link>
+            <BackToResultsButton handleBackToResults={handleBackToResults} />
             {page === "vra" && (
               <Toggle
                 isChecked={vraEnabled}
@@ -257,6 +209,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           gridRow={backUrl ? "2" : "1"}
           marginTop="2rem"
           paddingBottom="l"
+          paddingLeft={gridPaddingX}
         >
           <Text size="caption" marginBottom="xxs">
             E-BOOK
@@ -279,7 +232,13 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                 {
                   ariaLabel: "About this item",
                   label: "About this item",
-                  panel: aboutThisItemPanel,
+                  panel: (
+                    <AboutItemPanel
+                      previewItem={previewItem}
+                      previewEdition={previewEdition}
+                      publisherNames={publisherNames}
+                    />
+                  ),
                 },
                 {
                   ariaLabel: "Read summary",
@@ -293,27 +252,34 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                       <span>Read summary</span>
                     </Box>
                   ),
-                  panel: summaryPanel,
+                  panel: <SummaryPanel previewEdition={previewEdition} />,
                 },
                 {
                   ariaLabel: "Download options",
                   label: "Download options",
-                  panel: downloadOptionsPanel,
+                  panel: (
+                    <DownloadOptionsPanel
+                      authorNames={authorNames}
+                      downloadLink={downloadLink}
+                      title={work.title}
+                      isLoggedIn={isLoggedIn}
+                    />
+                  ),
                 },
                 {
                   ariaLabel: "Search inside this item",
                   label: "Search inside this item",
-                  panel: searchPanel,
+                  panel: <SearchPanel />,
                 },
                 {
                   ariaLabel: "Other editions",
                   label: "Other editions",
-                  panel: otherEditionsPanel,
+                  panel: <OtherEditionsPanel work={work} />,
                 },
                 {
                   ariaLabel: "Details",
                   label: "Details",
-                  panel: detailsPanel,
+                  panel: <DetailsPanel work={work} />,
                 },
               ]}
               isDefaultOpen
@@ -328,6 +294,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           marginRight="2rem"
           marginTop="2rem"
           paddingBottom="l"
+          paddingRight={vraEnabled ? "0" : gridPaddingX}
         >
           <ResearchAssistantViewer itemId={itemId} pageId={pageId} />
         </Box>
@@ -337,14 +304,13 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           height="100%"
           marginLeft="-2rem"
           marginRight={{
-            base: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.base})`,
-            md: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.md})`,
-            xl: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.xl})`,
+            base: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.base} * 2)`,
+            md: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.md} * 2)`,
+            xl: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.xl} * 2)`,
           }}
           paddingRight={gridPaddingX}
-          display="flex" 
+          display="flex"
           flexDirection="column"
-          
         >
           {vraEnabled && (
             <ResearchAssistantPanel

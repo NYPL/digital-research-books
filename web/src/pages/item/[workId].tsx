@@ -56,7 +56,6 @@ const ItemPage: React.FC<any> = (props) => {
       <VRALayout activePage={activePage}>
         <ResultPageProvider value={{
           page: activePage,
-          onPreview: () => {},
           onReadOnline: () => {}
         }}>
           <ItemDetail workResult={props.workResult} backUrl={props.backUrl} />
