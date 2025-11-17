@@ -22,6 +22,7 @@ interface ResearchAssistantViewState {
 interface ResearchAssistantContextType extends ResearchAssistantViewState {
     messages: Message[];
     sendMessage: (message: string) => Promise<void>;
+    sendMessageStream: (text: string, onPartial?: (partial: string) => void) => Promise<void>;
     results: ChatResults | null;
     isLoading: boolean;
     error: string | null;
@@ -194,6 +195,183 @@ export const ResearchAssistantProvider: React.FC<{
         }
     };
 
+    // Streaming message function (per-chunk setMessages updates)
+    const sendMessageStream = async (
+      text: string,
+      onPartial?: (partial: string) => void
+    ) => {
+      if (!text.trim()) return;
+
+      setError(null);
+
+      const newUserMessage: Message = {
+        id: `${Date.now()}-user`,
+        data: { content: text },
+        status: MessageStatus.Sending,
+        type: MessageType.Human,
+      };
+      setMessages((prev) => [...prev, newUserMessage]);
+
+      // Create a placeholder assistant message that will be populated as chunks arrive
+      const assistantId = `${Date.now()}-assistant`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: assistantId,
+          data: { content: "" },
+          status: MessageStatus.Sending,
+          type: MessageType.Ai,
+        },
+      ]);
+
+      let textToSend = text;
+      if (viewState.itemId !== "") {
+        textToSend += `<ItemId>${viewState.itemId}</ItemId>`;
+      }
+
+      const messagesForBackend = [
+        ...messages.map((msg) => ({
+          type: msg.type,
+          data: { content: msg.data.content },
+        })),
+        { type: MessageType.Human, data: { content: textToSend } },
+      ];
+
+      let streamedContent = "";
+      let finalResults: any = null;
+
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await fetch("/api/research-assistant-stream", {
+          method: "PUT",
+          headers: {
+            Authorization: `Basic ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ messages: messagesForBackend }),
+        });
+
+        if (response.status === 403) {
+          throw new Error("Research Assistant is not enabled in this environment.");
+        }
+        if (!response.ok) {
+          const errorText = await response.text();
+          try {
+            const errorData = JSON.parse(errorText);
+            throw new Error(errorData.error || "Streaming backend error");
+          } catch {
+            throw new Error(errorText);
+          }
+        }
+        if (!response.body) {
+          throw new Error("No response body.");
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        let currentChunk = "";
+
+        // Per-chunk UI update
+        const pushChunk = async (content: string) => {
+          console.log(content);
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantId
+                  ? { ...m, data: { content }, status: MessageStatus.Sending }
+                  : m
+              )
+            );
+        };
+
+
+        while (!done) {
+          const { value, done: streamDone } = await reader.read();
+          done = streamDone;
+
+          if (value) {
+            currentChunk += decoder.decode(value, { stream: !done });
+            const lines = currentChunk.split("\n");
+            currentChunk = lines.pop() || ""; // keep possibly incomplete tail
+
+            for (const line of lines) {
+              if (!line.trim()) continue;
+              try {
+                const parsed = JSON.parse(line);
+
+                if (parsed.data?.message) {
+                  streamedContent += parsed.data.message;
+                  if (onPartial) onPartial(streamedContent);
+                  // Immediate UI update per parsed chunk
+                  await pushChunk(streamedContent);
+                }
+
+                if (parsed.data?.results) {
+                  finalResults = parsed.data.results;
+                }
+              } catch {
+                // Ignore malformed lines
+              }
+            }
+          }
+        }
+
+        // Finalize statuses
+        setMessages((prev) =>
+          prev.map((m) => {
+            if (m.id === newUserMessage.id) {
+              return { ...m, status: MessageStatus.Sent };
+            }
+            if (m.id === assistantId) {
+              return {
+                ...m,
+                data: { content: streamedContent || "No response provided!!" },
+                status: MessageStatus.Sent,
+              };
+            }
+            return m;
+          })
+        );
+
+        setViewState((prev) => ({
+          ...prev,
+          results: finalResults,
+          showWebReader: false,
+        }));
+
+        if (finalResults?.type === "catalog_search") {
+          setHistoryStack([]);
+          pushNewState({
+            results: finalResults,
+            showWebReader: false,
+            pdfData: null,
+            linkResults: null,
+            itemId: "",
+          });
+        } else if (finalResults?.type === "item_search" && viewState.itemId) {
+          pushNewState({
+            results: finalResults,
+            showWebReader: false,
+            pdfData: null,
+            linkResults: null,
+            itemId: viewState.itemId,
+          });
+        }
+      } catch (err: any) {
+        console.error("Streaming error:", err);
+        setError(err.message || "An unknown error occurred.");
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === newUserMessage.id
+              ? { ...m, status: MessageStatus.Error }
+              : m.id === assistantId
+              ? { ...m, status: MessageStatus.Error }
+              : m
+          )
+        );
+      }
+    };
+
     const handlePreview = async (url: string) => {
         const urlParts = url.split("/");
         const [itemId, pageId] = [urlParts.at(-3), urlParts.at(-1)];
@@ -275,6 +453,7 @@ export const ResearchAssistantProvider: React.FC<{
     const value: ResearchAssistantContextType = {
         messages,
         sendMessage,
+        sendMessageStream,
         isLoading,
         error,
         historyStack,
