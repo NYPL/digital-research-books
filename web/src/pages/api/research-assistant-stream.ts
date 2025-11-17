@@ -72,6 +72,8 @@ export default async function handler(
 
     // Pipe the stream to the response
     const reader = streamRes.body.getReader();
+
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
