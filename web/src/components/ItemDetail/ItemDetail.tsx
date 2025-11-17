@@ -70,7 +70,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   );
 
   useEffect(() => {
-    setHasPreviewLoaded(false);
     if (previewLink && !hasPreviewLoaded) {
       handlePreview(previewLink.url);
       setHasPreviewLoaded(true);

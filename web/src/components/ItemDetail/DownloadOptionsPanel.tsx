@@ -2,12 +2,9 @@ import {
     Box,
     Radio,
     RadioGroup,
-    SearchBar,
 } from "@nypl/design-system-react-components";
 import DownloadLink from "../EditionCard/DownloadLink";
-import { ApiWork } from "~/src/types/WorkQuery";
-import EditionCardUtils from "~/src/util/EditionCardUtils";
-import { ItemLink, WorkEdition } from "~/src/types/DataModel";
+import { ItemLink } from "~/src/types/DataModel";
 
 const onDownloadOptionChange = (): void => {
     throw new Error("Function not implemented.");
