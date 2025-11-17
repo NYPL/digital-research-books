@@ -150,7 +150,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                         <Heading size="heading7" marginBottom="xxs">
                             <Link
                                 to={{
-                                    pathname: `/item/${work.uuid}`,
+                                    pathname: page === "vra"
+                                        ? `/item/${work.uuid}`
+                                        : `/work/${work.uuid}`,
                                     ...(previewItem
                                         ? { query: { featured: edition.edition_id } }
                                         : null),
