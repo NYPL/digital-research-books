@@ -24,6 +24,7 @@ const ResearchAssistantInner: React.FC = () => {
   const {
     messages,
     sendMessage,
+    sendMessageStream,
     results,
     isLoading,
     error,
@@ -151,7 +152,7 @@ const ResearchAssistantInner: React.FC = () => {
           {error && <Text fontWeight="bold">{error}</Text>}
 
           <ResearchAssistantInput
-            onSendMessage={sendMessage}
+            onSendMessage={sendMessageStream}
             isDisabled={isLoading}
             messages={messages}
           />
