@@ -20,7 +20,7 @@ class PublisherBacklistService(SourceService):
     def __init__(self):
         self.ssm_service = SSMService()
         self.airtable_auth_token = self.ssm_service.get_parameter(
-            "airtable/pub-backlist/api-key"
+            "airtable/pub-backlist/api-key", raise_on_error=True
         )
 
     def get_records(

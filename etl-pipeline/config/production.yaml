@@ -26,7 +26,7 @@ GRIN_INGEST_SQS_QUEUE: drb-grin-ingest-queue-production-tf
 OCLC_QUERY_LIMIT: '390000'
 
 # AWS CONFIGURATION
-# AWS_ACCESS and AWS_SECRET must be configured in secrets file
+# authenticate AWS via CLI (see README for details)
 AWS_REGION: us-east-1
 FILE_BUCKET: drb-files-production
 PRIVATE_FILE_BUCKET: drb-files-limited-production

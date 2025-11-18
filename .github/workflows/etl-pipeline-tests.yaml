@@ -18,18 +18,26 @@ on:
       - "etl-pipeline/Makefile"
       - "etl-pipeline/Dockerfile"
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
     env:
       IS_CI: "true"
-      AWS_ACCESS: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       DOCKER_BUILDKIT: 1
       COMPOSE_DOCKER_CLI_BUILD: 1
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::946183545209:role/GithubActionsDeployerRole
+          aws-region: us-east-1
 
       - name: Install build essentials
         run: |

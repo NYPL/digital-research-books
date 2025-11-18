@@ -46,9 +46,12 @@ This guide provides step-by-step instructions to set up local development and st
 - AWS access:
    - Submit [a DevOps JIRA ticket](https://newyorkpubliclibrary.atlassian.net/jira/software/c/projects/DOPS/boards/14/backlog) to get your Azure SSO connected to AWS.
       - [Sample ticket](https://newyorkpubliclibrary.atlassian.net/browse/DOPS-1756)
+   - Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
    - Sign into AWS console at http://awsconsole.nypl.org/.
    - Choose account:`nypl-digital-dev`
-   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . This authorization is temporary, to re-authenticate with SSO, run `aws sso login --profile your-profile-name`
+   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . 
+      - When asked, set profile name to "default". This allows AWS DKs and CLI to authenticate without any extra arguments.
+      - This authorization is temporary, to re-authenticate with SSO, run `aws sso login`.
 
 
 ### Setup Steps
@@ -149,7 +152,7 @@ pip install -r dev-requirements.txt
 The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
 `gpg` is pre-installed on most linux distributions but must be installed on MacOs.
 
-Ensure that it is available by installing it via `brew` (if on a Mac) or the appropriate tool for your OS
+Ensure that it is available by installing it via `brew install gnupg` (if on a Mac) or the appropriate tool for your OS
 
 
 ## Available Processes

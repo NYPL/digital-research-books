@@ -57,7 +57,7 @@ def main():
             .join(GRINStatus, GRINStatus.record_id == Record.id)
             .filter(
                 Record.source == "grin",
-                func.lower(Record.rights).contains("public domain"),
+                func.split_part(Record.rights, "|", 2) == "public_domain",
                 or_(Record.has_part == "{}", Record.has_part.is_(None)),
                 GRINStatus.state == GRINState.DOWNLOADED.value,
             )

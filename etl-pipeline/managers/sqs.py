@@ -18,8 +18,6 @@ class SQSManager:
     ):
         self.region_name = os.environ.get("AWS_REGION", "us-east-1")
         self.endpoint_url = os.environ.get("S3_ENDPOINT_URL")
-        self.aws_access_key_id = os.environ.get("AWS_ACCESS")
-        self.aws_secret_access_key = os.environ.get("AWS_SECRET")
         self.queue_name = queue_name
         self.visibility_timeout = visibility_timeout
         self.max_receive_count = max_receive_count
@@ -34,10 +32,6 @@ class SQSManager:
 
         if self.endpoint_url:
             client_params["endpoint_url"] = self.endpoint_url
-
-        if self.aws_access_key_id and self.aws_secret_access_key:
-            client_params["aws_access_key_id"] = self.aws_access_key_id
-            client_params["aws_secret_access_key"] = self.aws_secret_access_key
 
         self.client = boto3.client("sqs", **client_params)
         self.queue_url = self.client.get_queue_url(QueueName=self.queue_name)[

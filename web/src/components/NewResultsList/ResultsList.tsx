@@ -10,9 +10,7 @@ const ResultsList: React.FC<{ works: ApiWork[] }> = ({ works }) => {
     return (
       <Box>
         <EmptySearchSvg />
-        <Box>
-          No results were found.
-        </Box>
+        <Box>No results were found.</Box>
       </Box>
     );
   }

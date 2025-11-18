@@ -20,8 +20,9 @@ class GRINClient(object):
 
     def load_creds(self):
         ssm_service = SSMService()
-        # TODO: handle case where get_parameter() returns None
-        service_account_file = ssm_service.get_parameter("grin-auth")
+        service_account_file = ssm_service.get_parameter(
+            "grin-auth", raise_on_error=True
+        )
         service_account_info = json.loads(service_account_file)
 
         scopes = [

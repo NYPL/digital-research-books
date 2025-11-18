@@ -1,16 +1,16 @@
 import React from "react";
 import { StatusBadge } from "@nypl/design-system-react-components";
 
-const PublicDomainBadge: React.FC = () => {
+const PhysicalEditionBadge: React.FC = () => {
   return (
     <StatusBadge
       fontSize="desktop.caption"
-      variant="positive"
+      variant="informative"
       width={{ base: "100%", md: "fit-content" }}
     >
-      Public domain
+      Physical edition
     </StatusBadge>
   );
 };
 
-export default PublicDomainBadge;
+export default PhysicalEditionBadge;

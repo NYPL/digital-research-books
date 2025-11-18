@@ -2,6 +2,10 @@ name: Deploy Web to Production
 on:
   workflow_call:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   tag_release:
     name: Tag and Release

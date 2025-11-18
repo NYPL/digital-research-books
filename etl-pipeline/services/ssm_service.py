@@ -10,8 +10,6 @@ class SSMService:
     def __init__(self, environment: str = None):
         self.ssm_client = boto3.client(
             "ssm",
-            aws_access_key_id=os.environ.get("AWS_ACCESS", None),
-            aws_secret_access_key=os.environ.get("AWS_SECRET", None),
             region_name=os.environ.get("AWS_REGION", None),
         )
 
@@ -21,7 +19,9 @@ class SSMService:
                 "Environment must be provided either as a parameter or via ENVIRONMENT environment variable"
             )
 
-    def get_parameter(self, parameter_name: str) -> dict | None:
+    def get_parameter(
+        self, parameter_name: str, raise_on_error: bool = False
+    ) -> dict | None:
         full_parameter_name = f"drb/{self.environment}/{parameter_name}"
         try:
             response = self.ssm_client.get_parameter(
@@ -34,4 +34,6 @@ class SSMService:
             logger.exception(
                 f"Parameter store retrieval for '{full_parameter_name}' failed"
             )
+            if raise_on_error:
+                raise
             return None

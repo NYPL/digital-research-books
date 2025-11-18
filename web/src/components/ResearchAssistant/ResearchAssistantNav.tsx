@@ -1,7 +1,14 @@
-import React from "react";
-import { Icon, SubNav, SubNavLink } from "@nypl/design-system-react-components";
+import React, { useEffect, useState } from "react";
+import {
+    Box,
+    Icon,
+    SubNav,
+    SubNavLink,
+    Text,
+} from "@nypl/design-system-react-components";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import { PageType } from "~/src/types/ResearchAssistant";
+import KeywordSearchIcon from "./KeywordSearchIcon";
 
 interface ResearchAssistantNavProps {
     activePage: PageType;
@@ -10,7 +17,13 @@ interface ResearchAssistantNavProps {
 const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
     activePage,
 }) => {
-    const token = localStorage.getItem("authToken");
+    const [token, setToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            setToken(localStorage.getItem("authToken"));
+        }
+    }, []);
 
     return (
         <SubNav
@@ -23,20 +36,31 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
                         isSelected={activePage === "vra"}
                         id="subnav-vra"
                     >
-                        <ResearchAssistantIcon />
-                        Virtual Research Assistant
+                        <Box>
+                            <ResearchAssistantIcon
+                                color={activePage === "vra" ? "#006166" : "ui.black"}
+                                size="small"
+                            />
+                        </Box>
+                        <>Virtual Research Assistant</>
+                        <Text
+                            padding="2px 8px"
+                            bg="#F9E08E"
+                            borderRadius="24px"
+                            color="ui.black"
+                            fontSize="10px"
+                        >
+                            BETA
+                        </Text>
                     </SubNavLink>
                     <SubNavLink
                         href="/keyword-search-landing"
                         isSelected={activePage === "keyword"}
                         id="subnav-keyword-search"
                     >
-                        <Icon
-                            color="section.research.secondary"
-                            name="search"
-                            align="left"
-                            size="medium"
-                        />
+                        <Box>
+                            <KeywordSearchIcon color="section.research.secondary" />
+                        </Box>
                         Keyword search
                     </SubNavLink>
                 </>
@@ -58,6 +82,23 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
                 </>
             }
             padding="0"
+            sx={{
+                a: {
+                    gap: "xxs",
+                },
+                "#keyword-search-icon": {
+                    fill: "none !important",
+                },
+                'a:not(.ds-subNav-selectedItem) [id$="-icon"]': {
+                    color: "ui.black",
+                    path: {
+                        stroke: "ui.black",
+                    },
+                },
+                "a:not(.ds-subNav-selectedItem) #research-assistant-icon path": {
+                    fill: "ui.black",
+                },
+            }}
         />
     );
 };
