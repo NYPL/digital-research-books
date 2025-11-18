@@ -70,11 +70,7 @@ const Ctas: React.FC<CtasProps> = ({
 
     // Offer EDD if available
     if (eddLink !== undefined) {
-        return (
-            <>
-                <EddLink eddLink={eddLink} isLoggedIn={isLoggedIn} title={title} />
-            </>
-        );
+        return <EddLink eddLink={eddLink} isLoggedIn={isLoggedIn} title={title} />;
     }
 
     return <>Not yet available</>;

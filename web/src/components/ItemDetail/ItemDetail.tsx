@@ -22,7 +22,7 @@ import { useResultPageContext } from "~/src/context/ResultPageContext";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
 import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
-import { MessageStatus, MessageType } from "~/src/types/ResearchAssistant";
+import { HistoryItem, MessageStatus, MessageType } from "~/src/types/ResearchAssistant";
 import AboutItemPanel from "./AboutItemPanel";
 import SummaryPanel from "./SummaryPanel";
 import SearchPanel from "./SearchPanel";
@@ -38,7 +38,6 @@ interface ItemDetailProps {
 const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   const [vraEnabled, setVraEnabled] = useState(true);
   const [hasPreviewLoaded, setHasPreviewLoaded] = useState(false);
-  const [shouldNavigate, setShouldNavigate] = useState(false);
 
   const {
     clearHistory,
@@ -126,20 +125,17 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   const handleBackToResults = () => {
     const storedHistory = sessionStorage.getItem("vraHistoryStack");
     const storedMessages = sessionStorage.getItem("vraMessages");
-    if (storedHistory) setHistoryStack(JSON.parse(storedHistory));
+    let parsedHistory: HistoryItem[] = [];
+    if (storedHistory) {
+      parsedHistory = JSON.parse(storedHistory);
+      setHistoryStack(parsedHistory);
+    }
     if (storedMessages) setMessages(JSON.parse(storedMessages));
     sessionStorage.removeItem("vraHistoryStack");
     sessionStorage.removeItem("vraMessages");
-    setShouldNavigate(true);
+    goToPreviousState(parsedHistory);
+    router.push("/research-assistant");
   };
-
-  useEffect(() => {
-    if (shouldNavigate) {
-      goToPreviousState();
-      router.push("/research-assistant");
-      setShouldNavigate(false);
-    }
-  }, [shouldNavigate, router]);
 
   const publisherNames = previewEdition.publishers.map(
     (pubAgent) => pubAgent && pubAgent.name

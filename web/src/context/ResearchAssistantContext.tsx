@@ -28,7 +28,7 @@ interface ResearchAssistantContextType extends ResearchAssistantViewState {
     error: string | null;
     historyStack: HistoryItem[];
     setHistoryStack: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
-    goToPreviousState: () => void;
+    goToPreviousState: (restoredStack?: HistoryItem[]) => void;
     clearHistory: () => void;
     setViewState: React.Dispatch<React.SetStateAction<any | null>>;
     handlePreview: (url: string) => Promise<void>;
@@ -118,7 +118,7 @@ export const ResearchAssistantProvider: React.FC<{
             const response = await fetch("/api/research-assistant", {
                 method: "PUT",
                 headers: {
-                    "Authorization": `Basic ${token}`,
+                    Authorization: `Basic ${token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -239,10 +239,11 @@ export const ResearchAssistantProvider: React.FC<{
         });
     };
 
-    const goToPreviousState = () => {
+    const goToPreviousState = (restoredStack?: HistoryItem[]) => {
         setHistoryStack((prevStack) => {
-            if (prevStack.length > 1) {
-                const prevState = prevStack[prevStack.length - 2];
+            const stack = restoredStack ?? prevStack;
+            if (stack.length > 0) {
+                const prevState = stack.length > 1 ? stack[stack.length - 2] : stack[0];
                 setViewState((prev) => ({
                     ...prev,
                     results: prevState.results,
@@ -251,9 +252,8 @@ export const ResearchAssistantProvider: React.FC<{
                     showWebReader: prevState.showWebReader,
                     linkResults: prevState.linkResults,
                 }));
-                return prevStack.slice(0, -1);
+                return stack.length > 1 ? stack.slice(0, -1) : [];
             }
-
             setViewState((prev) => ({
                 ...prev,
                 results: null,

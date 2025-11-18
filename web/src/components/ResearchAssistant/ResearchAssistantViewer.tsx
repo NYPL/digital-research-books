@@ -32,13 +32,7 @@ const ResearchAssistantViewer: React.FC<{
   itemId: string;
   pageId: string;
 }> = ({ itemId, pageId }) => {
-  const protocol =
-    typeof window !== "undefined" && window.location.protocol
-      ? window.location.protocol
-      : "http:";
-  const host =
-    typeof window !== "undefined" ? window.location.host : "localhost:3000";
-  const manifestApiUrl = `${protocol}//${host}/api/manifest/${itemId}?pageId=${pageId}`;
+  const manifestApiUrl = `${origin}/api/manifest/${itemId}?pageId=${pageId}`;
 
   if (!itemId || !pageId || !manifestApiUrl) {
     return (

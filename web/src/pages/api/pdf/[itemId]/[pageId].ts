@@ -12,6 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const pdfBuffer = Buffer.from(itemReadResult.data.pageData, "base64");
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", "inline; filename=document.pdf");
+  res.setHeader("Content-Disposition", `inline; filename=${itemId}-${pageId}.pdf`);
   return res.status(200).send(pdfBuffer);
 }
