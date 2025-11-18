@@ -15,8 +15,8 @@ import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
 import { ApiWork } from "~/src/types/WorkQuery";
 import { Agent, WorkEdition } from "~/src/types/DataModel";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
-import CardRequiredBadge from "../EditionCard/CardRequiredBadge";
-import FeaturedEditionBadge from "../EditionCard/FeaturedEditionBadge";
+import CardRequiredBadge from "./CardRequiredBadge";
+import FeaturedEditionBadge from "./FeaturedEditionBadge";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
 import {
     RESEARCH_CATALOG_LINK,
@@ -26,6 +26,7 @@ import Ctas from "./Ctas";
 import { MAX_TITLE_LENGTH } from "~/src/constants/editioncard";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import EditionLinks from "./EditionLinks";
+import PhysicalEditionBadge from "./PhysicalEditionBadge";
 
 interface ResultCardProps {
     authors: Agent[];
@@ -116,7 +117,12 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             });
         } else if (work.editions.length > 1) {
             accordionData.push({
-                label: <Text>Other editions</Text>,
+                label: (
+                    <Text>
+                        {work.editions.length - 1} other edition
+                        {work.editions.length - 1 !== 1 ? "s" : ""}
+                    </Text>
+                ),
                 panel: <EditionLinks work={work} />,
             });
         }
@@ -141,8 +147,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                     marginBottom="xs"
                 >
                     {isPublicDomain && <PublicDomainBadge />}
-                    {isLoginRequired && <CardRequiredBadge />}
                     {isFeaturedEdition && <FeaturedEditionBadge />}
+                    {isPhysicalEdition && <PhysicalEditionBadge />}
+                    {isLoginRequired && <CardRequiredBadge />}
                 </Flex>
                 <Flex gap="s" flexDirection="row">
                     <Box width="120px" bgColor="ui.gray.light-cool" flexShrink="0" />
@@ -186,10 +193,16 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                         accordionData={accordionSummaryData()}
                         sx={{
                             span: {
-                                fontSize: "desktop.body.body2"
-                            }
+                                fontSize: "desktop.body.body2",
+                            },
+                            button: {
+                                paddingX: "s",
+                                paddingY: "xs",
+                            },
+                            "button[aria-expanded='true'], button[aria-expanded='true']:hover": {
+                                backgroundColor: "section.research.primary-05",
+                            },
                         }}
-
                     />
                 )}
                 {isPhysicalEdition && (
@@ -210,7 +223,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                         sx={{
                             a: {
                                 color: "ui.link.primary",
-                            }
+                            },
                         }}
                     />
                 )}
