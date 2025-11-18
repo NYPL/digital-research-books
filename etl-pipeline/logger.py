@@ -20,7 +20,7 @@ def create_log(module):
 
 
 def configure_loggers():
-    """Read LOG_LEVEL from environment, and configure 'drb' application
+    """Read LOG_LEVEL and STAGE from environment, and configure 'drb' application
     root logger.
     """
     logger = logging.getLogger("drb")
