@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useRouter } from "next/router";
 import {
     Flex,
     Icon,
@@ -13,17 +12,18 @@ import {
     inputTerms,
     SEARCH_FORM_OPTIONS,
 } from "~/src/constants/labels";
-import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 import { Query, SearchField } from "~/src/types/DataModel";
 import ResultsBanner from "../ResearchAssistant/ResultsBanner";
 
 interface KeywordSearchFormProps {
     searchQuery?: SearchQuery;
+    onSearch?: (query: SearchQuery) => void;
     [x: string]: any; // for ds styling props
 }
 
 const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({
     searchQuery,
+    onSearch,
     ...rest
 }) => {
     const initialDefaultQuery: Query = { query: "", field: SearchField.Keyword };
@@ -46,8 +46,6 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({
     );
     const [isFormError, setFormError] = useState(false);
 
-    const router = useRouter();
-
     const submitSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (!shownQuery.query) {
@@ -55,13 +53,11 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({
             return;
         }
 
-        const searchQuery = SearchQueryDefaults;
-        searchQuery.queries = [shownQuery];
+        const newSearchQuery = { ...SearchQueryDefaults, queries: [shownQuery] };
 
-        router.push({
-            pathname: "/keyword-search",
-            query: toLocationQuery(toApiQuery(searchQuery)),
-        });
+        if (onSearch) {
+            onSearch(newSearchQuery);
+        }
     };
 
     const onQueryChange = (

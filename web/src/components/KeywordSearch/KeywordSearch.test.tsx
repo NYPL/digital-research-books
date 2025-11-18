@@ -65,7 +65,7 @@ describe("Renders Search Results Page", () => {
     test("clicking 'filters' button shows filters contents", async () => {
       await clickFiltersButton();
       const modal = screen.getByTestId("filters-modal-content");
-      expect(within(modal).getByRole("button", { name: /Sort By:/i })).toHaveTextContent(
+      expect(within(modal).getByRole("button", { name: /Sort by:/i })).toHaveTextContent(
         "Relevance"
       );
       const languages = within(modal).getByRole("group", {
@@ -95,7 +95,7 @@ describe("Renders Search Results Page", () => {
     describe("Sorts filters", () => {
       test("Changing items sends new search ", async () => {
         await clickFiltersButton();
-        const sortMenuButton = screen.getByRole("button", { name: /Sort By:/i });
+        const sortMenuButton = screen.getByRole("button", { name: /Sort by:/i });
         expect(sortMenuButton).toBeInTheDocument();
         await userEvent.click(sortMenuButton);
         const sortOption = screen.getByRole("menuitem", { name: "Title (A - Z)" });

@@ -57,8 +57,8 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
       let labelStr = capitalizeFirstLetter(filter.value.toString());
 
       if (filter.value === "onlyGovDoc") labelStr = "Limit to US gov docs";
-      else if (filter.field === "startYear") labelStr = `After ${filter.value}`;
-      else if (filter.field === "endYear") labelStr = `Before ${filter.value}`;
+      else if (filter.field === "startYear") labelStr = `From ${filter.value}`;
+      else if (filter.field === "endYear") labelStr = `To ${filter.value}`;
 
       return {
         id: `${filter.field}-${filter.value}`,
@@ -171,9 +171,15 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
     }
   };
 
+  const handleSearch = (newSearchQuery: SearchQuery) => {
+    setTagSetData(buildTagSetData(newSearchQuery.filters));
+    setSearchQuery(newSearchQuery);
+    sendSearchQuery(newSearchQuery);
+  };
+
   const breakoutElement = (
     <>
-      <KeywordSearchForm searchQuery={searchQuery} />
+      <KeywordSearchForm searchQuery={searchQuery} onSearch={handleSearch} />
       <Flex
         flexDir={{ base: "column", md: "row" }}
         padding="s"
@@ -209,7 +215,7 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
               <Box>
                 <Menu
                   bg="ui.white"
-                  labelText={`Sort By: ${currentSortLabel}`}
+                  labelText={`Sort by: ${currentSortLabel}`}
                   listItemsData={sortOptions.map((opt) => ({
                     type: "action",
                     id: opt.id,
@@ -279,29 +285,12 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
           <TotalWorks totalWorks={numberOfWorks} />
         </Box>
       )}
-      {tagSetData.length > 0 && (
-        <ActiveFilters onClick={onTagSetClear} tagSetData={tagSetData} />
-      )}
-      <Flex justify="space-between" align="center" marginBottom="l">
-        <Heading size="heading5" role="alert">
-          {resultsPagingText}
-        </Heading>
-        <Box display={["none", "none", "block"]}>
-          <Menu
-            bg="ui.white"
-            labelText={`Sort By: ${currentSortLabel}`}
-            listItemsData={sortOptions.map((opt) => ({
-              type: "action",
-              id: opt.id,
-              label: opt.label,
-              onClick: () => onSortMenuClick(opt.id),
-            }))}
-            selectedItem={currentSortId}
-          />
-        </Box>
-      </Flex>
       {isLoading ? (
         <SimpleGrid columns={1}>
+          {tagSetData.length > 0 && (
+            <SkeletonLoader layout="row" showImage={false} showContent={false} />
+          )}
+          <SkeletonLoader layout="row" showImage={false} showContent={false} />
           <SkeletonLoader layout="row" showButton />
           <SkeletonLoader layout="row" showButton />
           <SkeletonLoader layout="row" showButton />
@@ -309,7 +298,30 @@ const KeywordSearch: React.FC<KeywordSearchProps> = (props) => {
           <SkeletonLoader layout="row" showButton />
         </SimpleGrid>
       ) : (
-        <ResultsList works={works} />
+        <>
+          {tagSetData.length > 0 && (
+            <ActiveFilters onClick={onTagSetClear} tagSetData={tagSetData} />
+          )}
+          <Flex justify="space-between" align="center" marginBottom="l">
+            <Heading size="heading5" role="alert">
+              {resultsPagingText}
+            </Heading>
+            <Box display={["none", "none", "block"]}>
+              <Menu
+                bg="ui.white"
+                labelText={`Sort by: ${currentSortLabel}`}
+                listItemsData={sortOptions.map((opt) => ({
+                  type: "action",
+                  id: opt.id,
+                  label: opt.label,
+                  onClick: () => onSortMenuClick(opt.id),
+                }))}
+                selectedItem={currentSortId}
+              />
+            </Box>
+          </Flex>
+          <ResultsList works={works} />
+        </>
       )}
       <Pagination
         pageCount={searchPaging.lastPage ? searchPaging.lastPage : 1}
