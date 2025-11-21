@@ -4,13 +4,13 @@ import {
   Button,
   Text,
 } from "@nypl/design-system-react-components";
-import { useResultPageContext } from "~/src/context/ResultPageContext";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { ItemSearchResults } from "~/src/types/ResearchAssistant";
 
 const ItemResults: React.FC<{
   results: ItemSearchResults[];
 }> = ({ results }) => {
-  const { onPreview } = useResultPageContext();
+  const { handlePreview } = useResearchAssistant();
 
   return (
     <Box>
@@ -34,7 +34,7 @@ const ItemResults: React.FC<{
               ))}
             </Box>
             <Button
-              onClick={() => onPreview(item.readLink)}
+              onClick={() => handlePreview(item.readLink)}
               id={`read-preview-${index}`}
             >
               Go to Page

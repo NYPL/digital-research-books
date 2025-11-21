@@ -1,27 +1,42 @@
-import { Box, Button } from "@nypl/design-system-react-components";
+import { Box } from "@nypl/design-system-react-components";
 import React from "react";
 import { ItemLink } from "~/src/types/DataModel";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
+import Link from "../Link/Link";
 
-const PreviewLink: React.FC<{
+interface PreviewLinkProps {
     previewLink: ItemLink;
-}> = ({ previewLink }) => {
-    const { onPreview, page } = useResultPageContext();
+    workId?: string;
+    editionId?: number;
+}
+
+const PreviewLink: React.FC<PreviewLinkProps> = ({
+    previewLink,
+    workId,
+    editionId,
+}) => {
+    const { page } = useResultPageContext();
     const isResearchAssistant = page === "vra";
 
-    const linkText = "Preview";
+    const itemPageUrl = workId
+        ? {
+            pathname: `/item/${workId}`,
+            query: editionId ? { featured: editionId } : undefined,
+        }
+        : "#";
 
     return (
         <>
-            {isResearchAssistant && previewLink ? (
+            {isResearchAssistant && previewLink && workId ? (
                 <Box>
-                    <Button
-                        id={`preview-button-${previewLink.link_id}`}
-                        onClick={() => onPreview(previewLink.url)}
+                    <Link
+                        to={itemPageUrl}
+                        variant="buttonPrimary"
                         width="100%"
+                        aria-label="Preview item"
                     >
-                        {linkText}
-                    </Button>
+                        Preview
+                    </Link>
                 </Box>
             ) : (
                 <>Not yet available</>
