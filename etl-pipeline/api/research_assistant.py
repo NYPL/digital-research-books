@@ -3,9 +3,13 @@ from flask import current_app
 from .elastic import ElasticClient, SearchParams
 from langgraph.prebuilt import create_react_agent
 from langchain.chat_models import init_chat_model
-from langchain.schema.messages import SystemMessage, ToolMessage
-from langchain_core.messages import messages_to_dict, messages_from_dict
-from langchain.agents import tool
+from langchain_core.messages import (
+    SystemMessage,
+    ToolMessage,
+    messages_to_dict,
+    messages_from_dict,
+)
+from langchain.tools import tool
 from logger import create_log
 from .utils import APIUtils
 from .db import DBClient

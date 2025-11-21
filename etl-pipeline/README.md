@@ -1,10 +1,15 @@
-# Digital Research Books ETL Pipeline
+# Digital Research Books 
 
 ![ETL_Pipeline_Tests](https://github.com/NYPL/drb-etl-pipeline/workflows/ETL_Pipeline_Tests/badge.svg)
 
+This directory contains the ETL pipeline, API server, and other deployable processes related to the DRB project (including GRIN books ingestion).
+
+
+## ETL Pipeline 
+
 A containerized python application for importing data from multiple source projects and transforming this data into a unified format that can be accessed via an API (which powers [Digital Research Books Beta](http://digital-research-books-beta.nypl.org/)).
 
-## Process Overview
+### Process Overview
 
 This ETL pipeline transforms data from various sources into a unified "FRBRized" format where:
 
@@ -32,13 +37,22 @@ Both endpoints provide Swagger documentation at `/apidocs/`.
 
 ## Quickstart Guide
 
-This guide provides step-by-step instructions to get the DRB ETL pipeline running locally.
+This guide provides step-by-step instructions to set up local development and start the DRB API server running locally in a docker container. 
 
 ### Prerequisites
 
 - Docker Desktop
-- AWS access to the `nypl-digital-dev` account (submit ServiceNow request to DevOps)
-- Access to required AWS parameter store secrets - ask a team member
+   - (optional) sign in with nypl.org email
+- AWS access:
+   - Submit [a DevOps JIRA ticket](https://newyorkpubliclibrary.atlassian.net/jira/software/c/projects/DOPS/boards/14/backlog) to get your Azure SSO connected to AWS.
+      - [Sample ticket](https://newyorkpubliclibrary.atlassian.net/browse/DOPS-1756)
+   - Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+   - Sign into AWS console at http://awsconsole.nypl.org/.
+   - Choose account:`nypl-digital-dev`
+   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . 
+      - When asked, set profile name to "default". This allows AWS DKs and CLI to authenticate without any extra arguments.
+      - This authorization is temporary, to re-authenticate with SSO, run `aws sso login`.
+
 
 ### Setup Steps
 
@@ -51,20 +65,19 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
 
 2. Configure secrets:
 
-   - Create `config/local-secrets.yaml` with the following (get values from team member):
-     ```yaml
-     AWS_SECRET: xxx
-     AWS_ACCESS: xxx
-     ```
+   - Create `config/local-secrets.yaml`
+      - Nothing needs to be added at this point
+      - This file is not tracked in the repo and its contents are loaded as env vars when `load_env.load_env_file()` is executed. Thus it can be used for locally configured secrets as needed.
 
-3. Initial Setup (one-time only):
+
+3. Seed data in the local dockerized DB instance (one-time only):
 
    ```bash
    # Run the database seeding process
    docker compose -f docker-compose.setup.yml up --abort-on-container-exit
    ```
 
-4. Regular Startup:
+4. Startup Docker Services:
 
    ```bash
    docker compose up
@@ -78,10 +91,12 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
    - LocalStack (S3 and SQS)
    - API service
 
+
+
 5. Verify the setup:
 
-   - API Documentation: http://127.0.0.1:5050/apidocs/
-   - Database: Use PGAdmin4 or your preferred PostgreSQL client:
+   - Check the API server is up. Navigate to http://127.0.0.1:5050/apidocs/ in your browser.
+   - Check the local, dockerized DB instance is available. Connect to the local DB using PGAdmin4 or your preferred PostgreSQL client, with the following config:
      ```
      Host: localhost
      Port: 5432
@@ -89,12 +104,10 @@ This guide provides step-by-step instructions to get the DRB ETL pipeline runnin
      Username: postgres
      Password: localpsql
      ```
-
-
  
 6. Set up local python env:
 
-Create a virtual environment
+**Create a virtual environment**
 
 *Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).* 
 
@@ -102,7 +115,9 @@ Create a virtual environment
 python -m venv venv
 ```
 
-Activate the virtual environment. You will need to do this for every terminal session.
+**Activate the virtual environment.**
+The following steps assume the virtual environment is active. 
+You will need to do this for every terminal session.
 
 ```sh
 source venv/bin/activate
@@ -120,35 +135,44 @@ Or
 pip3 install --upgrade pip setuptools wheel
 ```
 
-Install requirements
+**Install requirements**
 
 ```sh
 pip install -r requirements.txt
-```
-
-Or
-
-```sh
-pip3 install -r requirements.txt
+pip install -r dev-requirements.txt
 ```
 
 
+**Install pre-commit hooks**
+`pre-commit install`
 
-## Set AWS Config  
-Request AWS credentials, example ticket here (https://newyorkpubliclibrary.atlassian.net/browse/DOPS-1503)
 
-Execute the command in your terminal. You will be prompted to enter your credentials
+7. Install GPG
 
-```
-aws configure 
-```
+The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
+`gpg` is pre-installed on most linux distributions but must be installed on MacOs.
 
-## Install GPG (if working with Google Books)
-The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`
+Ensure that it is available by installing it via `brew install gnupg` (if on a Mac) or the appropriate tool for your OS
 
-Ensure that it is available by installing it via `brew` (if on a Mac) or the appropiate tool for your OS
 
-### Running Individual Processes
+## Available Processes
+
+The main processes available in this pipeline are:
+
+- `LocalDevelopmentSetupProcess`: Initialize development database
+- `SeedLocalDataProcess`: Import sample data
+- `APIProcess`: Run the DRB API server
+- `IngestProcess`: This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
+- `RecordFileSaver`: Store any associated content files (PDFs, etc) in our s3 bucket (this is a more supporting step).
+- `RecordEmbellisher`: Using any standard numbers (ISBNs, etc) fetch additional metadata from 3rd parties and add it to the record being processed.
+- `RecordClusterer`: Using KMeans clustering to create our work/edition/item data structure.
+- `LinkFulfiller`: Ensure that the work record has displayable links via WebPub Manifests.
+- `RecordPipelineProcess`: The DRB ETL pipeline. A meta-process that calls the following processes: `RecordEmbellisher`, `RecordClusterer`, `RecordFileSaver`, and `LinkFulfiller`.
+
+Source code for each process can be found from "[processes/\_\_init\_\_.py](processes/__init__.py)"
+
+
+## Running Individual Processes
 
 While Docker handles the main services, you can run individual processes using:
 
@@ -165,27 +189,15 @@ python main.py -p RecordPipelineProcess -e local
 
 See `python main.py --help` for all available options.
 
-## Available Processes
 
-The main processes available in this pipeline are:
-
-Core Setup:
-
-- `LocalDevelopmentSetupProcess`: Initialize development database
-- `SeedLocalDataProcess`: Import sample data
-- `APIProcess`: Run the DRB API
-
-Data Ingestion:
-All data ingestion can be done via `IngestProcess`. This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
-
-Processing:
-
-- `RecordPipelineProcess`: Process records.
 
 ## Formatting
-We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` to format the files. 
+We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files. 
 
-We also check formatting before committing. From the root directory, run `pre-commit install` to setup the pre-commit hooks. 
+
+
+We also check formatting before committing. If you followed to the set up steps to install the pre-commit hooks, formatting of changed files will be performed at each commit.
+
 
 ## Testing
 
@@ -206,9 +218,6 @@ python -m pytest -v                  # Run tests with verbose output
 
 For more options and detailed usage of pytest, see the [pytest documentation](https://docs.pytest.org/en/stable/how-to/usage.html).
 
-## Formatting
-
-To format new changes, run `ruff format` in the /etl-pipeline directory.
 
 ## Deployment
 

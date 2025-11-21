@@ -1,4 +1,4 @@
-from glob import glob
+from pathlib import Path
 import json
 import re
 
@@ -6,8 +6,9 @@ import re
 def get_constants():
     constants = {}
 
-    for path in glob("./constants/*.json"):
-        file_name = re.search(r"[\\/]+([a-z0-9]+)\.json", path).group(1)
+    constants_dir = Path(__file__).parent
+    for path in constants_dir.glob("*.json"):
+        file_name = re.search(r"[\\/]+([a-z0-9]+)\.json", str(path)).group(1)
 
         with open(path, "r") as constants_file:
             file_constants = json.load(constants_file)
