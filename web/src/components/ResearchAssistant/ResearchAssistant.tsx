@@ -59,7 +59,7 @@ const ResearchAssistantInner: React.FC = () => {
         page: "vra",
       }}
     >
-      <Box display="flex" flexDir="row">
+      <Box display="flex" flexDir="row" maxWidth="1280px" margin="0 auto">
         {((results && Object.keys(results).length > 0) || showWebReader) && (
           <Box display="flex" flexDirection="column" flex="1">
             {historyStack.length > 1 && (
