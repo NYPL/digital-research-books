@@ -163,11 +163,12 @@ The main processes available in this pipeline are:
 - `SeedLocalDataProcess`: Import sample data
 - `APIProcess`: Run the DRB API server
 - `IngestProcess`: This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
-- `RecordFileSaver`: Store any associated content files (PDFs, etc) in our s3 bucket (this is a more supporting step).
-- `RecordEmbellisher`: Using any standard numbers (ISBNs, etc) fetch additional metadata from 3rd parties and add it to the record being processed.
-- `RecordClusterer`: Using KMeans clustering to create our work/edition/item data structure.
-- `LinkFulfiller`: Ensure that the work record has displayable links via WebPub Manifests.
-- `RecordPipelineProcess`: The DRB ETL pipeline. A meta-process that calls the following processes: `RecordEmbellisher`, `RecordClusterer`, `RecordFileSaver`, and `LinkFulfiller`.
+- `GRINConversion`: update our DB and ingest queues with the current status of books sent to Google for digitization.
+- `RecordPipelineProcess`: The DRB ETL pipeline. A meta-process that calls the below stand alone processes:
+   - `RecordClusterer`: Using KMeans clustering to create our work/edition/item data structure. Indexes "Works" into elastic search for keyword search.
+   - `LinkFulfiller`: Ensure that the work record has displayable links via WebPub Manifests.
+   - `RecordFileSaver`: Store any associated content files (PDFs, etc) in our s3 bucket (this is a more supporting step).
+   - `RecordEmbellisher`: Using any standard numbers (ISBNs, etc) fetch additional metadata from 3rd parties and add it to the record being processed.
 
 Source code for each process can be found from "[processes/\_\_init\_\_.py](processes/__init__.py)"
 

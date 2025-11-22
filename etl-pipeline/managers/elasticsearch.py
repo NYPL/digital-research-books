@@ -18,12 +18,13 @@ def load_connection_config(
     user=None,
     pswd=None,
     timeout=None,
-    max_retries=3,
+    es_version=7,
 ):
     """Create ES connection config, reading defaults from the environment.
 
     Args passed here override env vars.
     """
+    # TODO: refactor timeout code param not env var
 
     scheme = scheme or os.environ.get("ELASTICSEARCH_SCHEME", None)
     host = host or os.environ.get("ELASTICSEARCH_HOST", None)
@@ -31,27 +32,30 @@ def load_connection_config(
     user = user or os.environ.get("ELASTICSEARCH_USER", None)
     pswd = pswd or os.environ.get("ELASTICSEARCH_PSWD", None)
     timeout = timeout or int(os.environ.get("ELASTICSEARCH_TIMEOUT", 5))
+    assert port is not None, (
+        "Elasticsearch port must be provided as an argument or ELASTICSEARCH_PORT environment variable"
+    )
+    assert scheme is not None, (
+        "Elasticsearch scheme must be provided as argument or ELASTICSEARCH_SCHEME environment variable"
+    )
+    assert host is not None, (
+        "Elasticsearch host must be provided as an argument or ELASTICSEARCH_HOST environment variable"
+    )
 
     creds = "{}:{}@".format(user, pswd) if user and pswd else ""
 
     # Allowing multiple hosts for a ES connection
-    multi_hosts = []
+    hosts = []
     if "," not in host:
         host = "{}://{}{}:{}".format(scheme, creds, host, port)
-
-        multi_hosts.append(host)
-
+        hosts.append(host)
     else:
-        host_list = host.split(", ")
-
-        for i in host_list:
-            multi_hosts.append("{}://{}{}:{}".format(scheme, creds, i, port))
+        for _host in host.split(", "):
+            hosts.append("{}://{}{}:{}".format(scheme, creds, _host, port))
 
     return {
-        "hosts": multi_hosts,
-        "timeout": timeout,
-        "retry_on_timeout": True,
-        "max_retries": max_retries,
+        "hosts": hosts,
+        "request_timeout" if es_version >= 8 else "timeout": timeout,
     }
 
 
@@ -67,6 +71,12 @@ class ElasticsearchManager:
     ):
         connection_config = load_connection_config(
             scheme=scheme, host=host, port=port, user=user, pswd=pswd
+        )
+        connection_config.update(
+            {
+                "max_retries": 3,
+                "retry_on_timeout": True,
+            }
         )
 
         # configures a global default ES client with alias "default"
