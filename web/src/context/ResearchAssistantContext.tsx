@@ -48,7 +48,14 @@ const ResearchAssistantContext = createContext<
 export const ResearchAssistantProvider: React.FC<{
     children: React.ReactNode;
 }> = ({ children }) => {
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<Message[]>([
+        {
+            id: "assistant-initial",
+            data: { content: "What research topic would you like to explore?" },
+            status: MessageStatus.Sent,
+            type: MessageType.Ai,
+        },
+    ]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -112,7 +119,7 @@ export const ResearchAssistantProvider: React.FC<{
             const response = await fetch("/api/research-assistant", {
                 method: "PUT",
                 headers: {
-                    "Authorization": `Basic ${token}`,
+                    Authorization: `Basic ${token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -260,7 +267,14 @@ export const ResearchAssistantProvider: React.FC<{
     };
 
     const clearHistory = () => {
-        setMessages([]);
+        setMessages([
+            {
+                id: "assistant-initial",
+                data: { content: "What research topic would you like to explore?" },
+                status: MessageStatus.Sent,
+                type: MessageType.Ai,
+            },
+        ]);
         setError(null);
         setViewState((prev) => ({
             ...prev,

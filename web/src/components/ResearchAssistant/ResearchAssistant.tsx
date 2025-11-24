@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import {
   Box,
   Button,
+  Flex,
   Heading,
   Icon,
   Text,
@@ -17,6 +18,7 @@ import ReaderLayout from "../ReaderLayout/ReaderLayout";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import ResearchAssistantInput from "./ResearchAssistantInput";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
+import RewindIcon from "./RewindIcon";
 import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
 
@@ -93,7 +95,12 @@ const ResearchAssistantInner: React.FC = () => {
                 )}
               </Box>
             ) : (
-              <Box paddingX="l" paddingBottom="l" flex="1" bgColor="ui.bg.default">
+              <Box
+                paddingX="l"
+                paddingBottom="l"
+                flex="1"
+                bgColor="ui.bg.default"
+              >
                 {results && Object.keys(results).length > 0 && (
                   <>
                     {results.type === "catalog_search" && (
@@ -141,8 +148,24 @@ const ResearchAssistantInner: React.FC = () => {
               <ResearchAssistantIcon inCircle />
               <span>Virtual Research Assistant</span>
             </Heading>
-            <Button onClick={clearHistory} id="clear-history-button">
-              Clear chat
+            <Button
+              onClick={clearHistory}
+              variant="text"
+              color="ui.white"
+              fontSize="0"
+              id="clear-history-button"
+              sx={{
+                "&:hover": {
+                  color: "ui.link.secondary",
+                  path: {
+                    stroke: "ui.link.secondary",
+                  },
+                },
+              }}
+            >
+              <Flex gap="xxs" alignItems="center">
+                <RewindIcon /> <Text>Start over</Text>
+              </Flex>
             </Button>
           </Box>
 

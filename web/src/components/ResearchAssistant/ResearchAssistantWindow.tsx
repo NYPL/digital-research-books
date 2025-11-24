@@ -27,6 +27,7 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
     <Box
       display="flex"
       flexDir="column"
+      fontSize="desktop.body.body2"
       overflowY="auto"
       paddingLeft="l"
       paddingRight="xxxl"
@@ -34,12 +35,6 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
       gap="s"
       marginBottom="s"
     >
-      {messages.length === 0 && !isLoading && (
-        <Box color="ui.white" margin="0 auto">
-          What research topic would you like to explore?
-        </Box>
-      )}
-
       {messages.map((message, index) => (
         <MessageBubble
           key={message.id}

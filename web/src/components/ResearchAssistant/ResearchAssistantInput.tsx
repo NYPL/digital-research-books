@@ -20,6 +20,7 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
   isDisabled,
   messages,
 }) => {
+  const [isFocused, setIsFocused] = useState(false);
   const [inputText, setInputText] = useState("");
   const inputRef = useRef<TextInputRefType>(null);
 
@@ -112,6 +113,16 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
         flexDir="row"
         gap="0"
         padding="s"
+        sx={
+          isFocused
+            ? {
+              boxShadow: "none",
+              outline: "2px solid",
+              outlineOffset: "2px",
+              outlineColor: "ui.focus",
+            }
+            : {}
+        }
       >
         <TextInput
           autoComplete="off"
@@ -121,6 +132,8 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
           onChange={(e) => setInputText(e.target.value)}
           onInput={(e) => updateTextareaHeight(e)}
           onKeyDown={(e) => handleKeyDown(e)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           placeholder={placeholderValue}
           ref={inputRef}
           type="textarea"
@@ -135,10 +148,11 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
               minHeight: "1.375rem",
               maxHeight: "132px", // 6 rows
               resize: "none",
-              padding: 0
+              padding: 0,
             },
             "textarea:focus": {
-              outlineOffset: "14px",
+              outline: "none",
+              boxShadow: "none",
             },
           }}
         />
@@ -159,7 +173,9 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
             backgroundColor: "transparent",
           }}
         >
-          <ResearchAssistantSendIcon isDisabled={isDisabled || inputText === ""} />
+          <ResearchAssistantSendIcon
+            isDisabled={isDisabled || inputText === ""}
+          />
         </Button>
       </Box>
     </Form>
