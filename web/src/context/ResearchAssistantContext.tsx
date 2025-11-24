@@ -8,13 +8,13 @@ import {
     HistoryItem,
 } from "~/src/types/ResearchAssistant";
 import { LinkResult } from "~/src/types/LinkQuery";
-import { itemsReadFetcher } from "~/src/lib/api/ResearchAssistantApi";
 import { readFetcher } from "~/src/lib/api/SearchApi";
 
 interface ResearchAssistantViewState {
     showWebReader: boolean;
     pdfData: ApiItemsRead | null;
     itemId: string;
+    pageId: string;
     results: ChatResults | null;
     linkResults: LinkResult | null;
 }
@@ -22,11 +22,13 @@ interface ResearchAssistantViewState {
 interface ResearchAssistantContextType extends ResearchAssistantViewState {
     messages: Message[];
     sendMessage: (message: string) => Promise<void>;
+    setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
     results: ChatResults | null;
     isLoading: boolean;
     error: string | null;
     historyStack: HistoryItem[];
-    goToPreviousState: () => void;
+    setHistoryStack: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
+    goToPreviousState: (restoredStack?: HistoryItem[]) => void;
     clearHistory: () => void;
     setViewState: React.Dispatch<React.SetStateAction<any | null>>;
     handlePreview: (url: string) => Promise<void>;
@@ -39,6 +41,7 @@ interface PushNewStateArgs {
     pdfData: ApiItemsRead | null;
     linkResults: LinkResult | null;
     itemId?: string;
+    pageId?: string;
 }
 
 const ResearchAssistantContext = createContext<
@@ -64,6 +67,7 @@ export const ResearchAssistantProvider: React.FC<{
         showWebReader: false,
         pdfData: null,
         itemId: "",
+        pageId: "",
         results: null,
         linkResults: null,
     });
@@ -74,12 +78,14 @@ export const ResearchAssistantProvider: React.FC<{
         pdfData,
         linkResults,
         itemId = "",
+        pageId = "",
     }: PushNewStateArgs) => {
         setHistoryStack((prevStack) => [
             ...prevStack,
             {
                 results: results,
                 itemId: itemId,
+                pageId: pageId,
                 showWebReader: showWebReader,
                 pdfData: pdfData,
                 linkResults: linkResults,
@@ -204,21 +210,22 @@ export const ResearchAssistantProvider: React.FC<{
     const handlePreview = async (url: string) => {
         const urlParts = url.split("/");
         const [itemId, pageId] = [urlParts.at(-3), urlParts.at(-1)];
-        const previewItemId = urlParts[urlParts.length - 3];
-        const itemsReadResults = await itemsReadFetcher(itemId, pageId);
+
         setViewState((prev) => ({
             ...prev,
             results: viewState.results,
-            pdfData: itemsReadResults.data,
-            itemId: previewItemId,
+            pdfData: null,
+            itemId: itemId,
+            pageId: pageId,
             showWebReader: true,
         }));
         pushNewState({
             results: null,
             showWebReader: true,
-            pdfData: itemsReadResults.data,
+            pdfData: null,
             linkResults: null,
-            itemId: previewItemId,
+            itemId: itemId,
+            pageId: pageId,
         });
     };
 
@@ -239,10 +246,11 @@ export const ResearchAssistantProvider: React.FC<{
         });
     };
 
-    const goToPreviousState = () => {
+    const goToPreviousState = (restoredStack?: HistoryItem[]) => {
         setHistoryStack((prevStack) => {
-            if (prevStack.length > 1) {
-                const prevState = prevStack[prevStack.length - 2];
+            const stack = restoredStack ?? prevStack;
+            if (stack.length > 0) {
+                const prevState = stack.length > 1 ? stack[stack.length - 2] : stack[0];
                 setViewState((prev) => ({
                     ...prev,
                     results: prevState.results,
@@ -251,9 +259,8 @@ export const ResearchAssistantProvider: React.FC<{
                     showWebReader: prevState.showWebReader,
                     linkResults: prevState.linkResults,
                 }));
-                return prevStack.slice(0, -1);
+                return stack.length > 1 ? stack.slice(0, -1) : [];
             }
-
             setViewState((prev) => ({
                 ...prev,
                 results: null,
@@ -289,9 +296,11 @@ export const ResearchAssistantProvider: React.FC<{
     const value: ResearchAssistantContextType = {
         messages,
         sendMessage,
+        setMessages,
         isLoading,
         error,
         historyStack,
+        setHistoryStack,
         goToPreviousState,
         clearHistory,
         ...viewState,

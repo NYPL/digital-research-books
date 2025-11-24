@@ -1,28 +1,15 @@
 import React, { useEffect } from "react";
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Icon,
-  Text,
-} from "@nypl/design-system-react-components";
-import {
-  ResearchAssistantProvider,
-  useResearchAssistant,
-} from "~/src/context/ResearchAssistantContext";
+import { Box } from "@nypl/design-system-react-components";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import CatalogResults from "./CatalogResults";
 import ItemResults from "./ItemResults";
-import ResearchAssistantViewer from "./ResearchAssistantViewer";
+import ResearchAssistantPanel from "./ResearchAssistantPanel";
+import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
-import ResearchAssistantIcon from "./ResearchAssistantIcon";
-import ResearchAssistantInput from "./ResearchAssistantInput";
-import ResearchAssistantWindow from "./ResearchAssistantWindow";
-import RewindIcon from "./RewindIcon";
 import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
 
-const ResearchAssistantInner: React.FC = () => {
+const ResearchAssistant: React.FC = () => {
   const {
     messages,
     sendMessage,
@@ -34,21 +21,21 @@ const ResearchAssistantInner: React.FC = () => {
     clearHistory,
     showWebReader,
     pdfData,
-    itemId,
     linkResults,
     handleReadOnline,
-    handlePreview,
   } = useResearchAssistant();
 
   useEffect(() => {
-    const initialMessage = sessionStorage.getItem(
-      "researchAssistantInitialMessage"
-    );
-    if (initialMessage) {
-      sendMessage(initialMessage);
-      sessionStorage.removeItem("researchAssistantInitialMessage");
+    if (!messages || messages.length === 0) {
+      const initialMessage = sessionStorage.getItem(
+        "researchAssistantInitialMessage"
+      );
+      if (initialMessage) {
+        sendMessage(initialMessage);
+        sessionStorage.removeItem("researchAssistantInitialMessage");
+      }
     }
-  }, [sendMessage]);
+  }, [messages, sendMessage]);
 
   const proxyUrl: string = proxyUrlConstructor();
   const backUrl = "/research-assistant";
@@ -56,7 +43,6 @@ const ResearchAssistantInner: React.FC = () => {
   return (
     <ResultPageProvider
       value={{
-        onPreview: handlePreview,
         onReadOnline: handleReadOnline,
         page: "vra",
       }}
@@ -66,27 +52,12 @@ const ResearchAssistantInner: React.FC = () => {
           <Box display="flex" flexDirection="column" flex="1">
             {historyStack.length > 1 && (
               <Box padding="s" borderBottom="1px solid" borderColor="ui.border">
-                <Button
-                  variant="text"
-                  id="back-button"
-                  color="section.research.secondary"
-                  onClick={goToPreviousState}
-                >
-                  <Icon
-                    name="arrow"
-                    iconRotation="rotate90"
-                    align="left"
-                    size="small"
-                  />
-                  Back to results
-                </Button>
+                <BackToResultsButton handleBackToResults={goToPreviousState} />
               </Box>
             )}
             {showWebReader ? (
               <Box flex="1">
-                {pdfData ? (
-                  <ResearchAssistantViewer itemId={itemId} pdfData={pdfData} />
-                ) : (
+                {!pdfData && (
                   <ReaderLayout
                     linkResult={linkResults}
                     proxyUrl={proxyUrl}
@@ -116,78 +87,16 @@ const ResearchAssistantInner: React.FC = () => {
           </Box>
         )}
 
-        <Box
-          flex="1"
-          display="flex"
-          flexDirection="column"
-          bgColor="section.research.primary"
-          maxHeight="100vh"
-          position="sticky"
-          top="0"
-        >
-          <Box
-            bgColor="section.research.primary"
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            paddingX="l"
-            paddingY="s"
-            borderBottom="1px white solid"
-            position="sticky"
-            top="0"
-            zIndex="999"
-          >
-            <Heading
-              level="h2"
-              size="heading7"
-              color="ui.white"
-              display="flex"
-              alignItems="center"
-              gap="xs"
-            >
-              <ResearchAssistantIcon inCircle />
-              <span>Virtual Research Assistant</span>
-            </Heading>
-            <Button
-              onClick={clearHistory}
-              variant="text"
-              color="ui.white"
-              fontSize="0"
-              id="clear-history-button"
-              sx={{
-                "&:hover": {
-                  color: "ui.link.secondary",
-                  path: {
-                    stroke: "ui.link.secondary",
-                  },
-                },
-              }}
-            >
-              <Flex gap="xxs" alignItems="center">
-                <RewindIcon /> <Text>Start over</Text>
-              </Flex>
-            </Button>
-          </Box>
-
-          <ResearchAssistantWindow messages={messages} isLoading={isLoading} />
-
-          {error && <Text fontWeight="bold">{error}</Text>}
-
-          <ResearchAssistantInput
-            onSendMessage={sendMessage}
-            isDisabled={isLoading}
-            messages={messages}
-          />
-        </Box>
+        <ResearchAssistantPanel
+          messages={messages}
+          isLoading={isLoading}
+          error={error}
+          onSendMessage={sendMessage}
+          clearHistory={clearHistory}
+        />
       </Box>
     </ResultPageProvider>
   );
 };
-
-const ResearchAssistant: React.FC = () => (
-  <ResearchAssistantProvider>
-    <ResearchAssistantInner />
-  </ResearchAssistantProvider>
-);
 
 export default ResearchAssistant;

@@ -7,16 +7,19 @@ import {
     Heading,
     Banner,
 } from "@nypl/design-system-react-components";
+import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import AuthorsList from "../AuthorsList/AuthorsList";
+import EditionCardUtils from "~/src/util/EditionCardUtils";
+import EditionLinks from "./EditionLinks";
 import Link from "../Link/Link";
 import PublisherAndLocation from "../EditionCard/PublisherAndLocation";
 import PublicDomainBadge from "../ResearchAssistant/PublicDomainBadge";
 import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
-import { ApiWork } from "~/src/types/WorkQuery";
-import { Agent, WorkEdition } from "~/src/types/DataModel";
-import EditionCardUtils from "~/src/util/EditionCardUtils";
 import CardRequiredBadge from "./CardRequiredBadge";
 import FeaturedEditionBadge from "./FeaturedEditionBadge";
+import PhysicalEditionBadge from "./PhysicalEditionBadge";
+import { ApiWork } from "~/src/types/WorkQuery";
+import { Agent, WorkEdition } from "~/src/types/DataModel";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
 import {
     RESEARCH_CATALOG_LINK,
@@ -25,8 +28,6 @@ import {
 import Ctas from "./Ctas";
 import { MAX_TITLE_LENGTH } from "~/src/constants/editioncard";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
-import EditionLinks from "./EditionLinks";
-import PhysicalEditionBadge from "./PhysicalEditionBadge";
 
 interface ResultCardProps {
     authors: Agent[];
@@ -85,9 +86,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                 <Box>
                     {edition.summary ||
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
-                    <Text size="caption" color="ui.gray.dark" marginTop="s">
-                        AI-generated.
-                    </Text>
+                    <AiGeneratedText />
                 </Box>
             ),
         });
@@ -109,9 +108,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                     <Box>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                         eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                        <Text size="caption" color="ui.gray.dark" marginTop="s">
-                            AI-generated.
-                        </Text>
+                        <AiGeneratedText />
                     </Box>
                 ),
             });
@@ -160,7 +157,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                         <Heading size="heading7" marginBottom="xxs">
                             <Link
                                 to={{
-                                    pathname: `/work/${work.uuid}`,
+                                    pathname: page === "vra"
+                                        ? `/item/${work.uuid}`
+                                        : `/work/${work.uuid}`,
                                     ...(previewItem
                                         ? { query: { featured: edition.edition_id } }
                                         : null),
@@ -228,7 +227,13 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                     />
                 )}
                 <Flex flexDir="row" gap="xs">
-                    <Ctas authors={authors} item={previewItem} title={work.title} />
+                    <Ctas
+                        authors={authors}
+                        item={previewItem}
+                        title={work.title}
+                        workId={work.uuid}
+                        editionId={edition.edition_id}
+                    />
                 </Flex>
             </Flex>
         </Box>
