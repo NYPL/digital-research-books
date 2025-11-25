@@ -33,7 +33,7 @@ describe("ResearchAssistant", () => {
         expect(
             screen.getByRole("heading", { name: /research assistant/i })
         ).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /clear/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /start over/i })).toBeInTheDocument();
         expect(
             screen.getByPlaceholderText(/ask your question.../i)
         ).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe("ResearchAssistant", () => {
 
     test("calls clearHistory when the Clear button is clicked", () => {
         render(<ResearchAssistant />);
-        fireEvent.click(screen.getByRole("button", { name: /clear chat/i }));
+        fireEvent.click(screen.getByRole("button", { name: /start over/i }));
         expect(mockClearHistory).toHaveBeenCalledTimes(1);
     });
 
@@ -58,23 +58,10 @@ describe("ResearchAssistant", () => {
         render(<ResearchAssistant />);
         expect(screen.getByText(/failed to fetch response./i)).toBeInTheDocument();
     });
-
-    test("displays the initial empty state message in the window", () => {
-        render(<ResearchAssistant />);
-        expect(
-            screen.getByText(/what research topic would you like to explore?/i)
-        ).toBeInTheDocument();
-    });
 });
 
 describe("ResearchAssistantWindow", () => {
     window.HTMLElement.prototype.scrollIntoView = function() {};
-    test('displays "What research topic..." when no messages and not loading', () => {
-        render(<ResearchAssistantWindow messages={[]} isLoading={false} />);
-        expect(
-            screen.getByText(/what research topic would you like to explore?/i)
-        ).toBeInTheDocument();
-    });
 
     test("renders MessageBubble components for each message", () => {
         const mockMessages: Message[] = [

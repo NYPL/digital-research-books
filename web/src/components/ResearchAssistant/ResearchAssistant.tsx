@@ -44,8 +44,6 @@ const ResearchAssistant: React.FC = () => {
   const hasResults =
     (results && Object.keys(results).length > 0) || showWebReader;
   const vraColumnSpan = hasResults ? "3 / span 2" : "2 / span 3";
-  const contentPaddingValue = "2rem"; 
-  const outerMarginCalc = "calc((100vw - 1280px) / 2)";
 
   return (
     <ResultPageProvider
