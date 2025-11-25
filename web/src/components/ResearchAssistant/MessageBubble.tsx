@@ -5,6 +5,7 @@ import { Message } from "~/src/types/ResearchAssistant";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import ThumbsUpIcon from "./ThumbsUpIcon";
 import ThumbsDownIcon from "./ThumbsDownIcon";
+import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 
 interface MessageBubbleProps {
   message: Message;
@@ -45,9 +46,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                 </Box>
                 {message.id !== "assistant-initial" && (
                   <Flex alignItems="center" justifyContent="space-between">
-                    <Text size="caption" color="ui.gray.semi-dark">
-                      AI-generated. Verify results.
-                    </Text>
+                    <AiGeneratedText />
                     <Flex>
                       {/* TODO: Add functionality for thumbs up/down buttons */}
                       <Button

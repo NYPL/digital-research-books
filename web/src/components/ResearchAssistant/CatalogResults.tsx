@@ -21,7 +21,7 @@ import EmptySearchSvg from "../Svgs/EmptySearchSvg";
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;
 }> = ({ results }) => {
-  const { setViewState, showWebReader } = useResearchAssistant();
+  const { setViewState } = useResearchAssistant();
 
   const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
 
@@ -75,7 +75,9 @@ const CatalogResults: React.FC<{
       results: chatResult,
     }));
   };
-  console.log(results);
+  
+  const contentPaddingValue = "2rem"; 
+  const outerMarginCalc = "calc((100vw - 1280px) / 2)";
 
   return (
     <Flex flexDir="column" bgColor="ui.bg.default" gap="s">
@@ -93,6 +95,8 @@ const CatalogResults: React.FC<{
         position="sticky"
         top="0"
         zIndex="999"
+        marginLeft={`calc(${outerMarginCalc} * -1 - ${contentPaddingValue})`}
+        paddingLeft={`calc(${outerMarginCalc} + ${contentPaddingValue})`}
       >
         {resultsPagingText}
       </Text>

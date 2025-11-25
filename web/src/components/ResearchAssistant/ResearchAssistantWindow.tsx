@@ -30,7 +30,6 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
       fontSize="desktop.body.body2"
       overflowY="auto"
       paddingLeft="l"
-      paddingRight="xxxl"
       paddingY="s"
       gap="s"
       marginBottom="s"

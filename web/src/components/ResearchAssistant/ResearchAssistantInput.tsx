@@ -70,15 +70,19 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
       ? "Ask your question..."
       : "Type your response here";
 
+  const contentPaddingValue = "2rem";
+  const outerMarginCalc = "calc((100vw - 1280px) / 2)";
+
   return (
     <Form
       id="research-assistant-form"
       onSubmit={handleSubmit}
       borderTop="1px white solid"
+      marginRight={`calc(${outerMarginCalc} * -1 - ${contentPaddingValue})`}
+      paddingRight={`calc(${outerMarginCalc} + ${contentPaddingValue})`}
       // @ts-expect-error: Override gap value type
       gap="0"
       paddingLeft="l"
-      paddingRight="xxxl"
       paddingY="s"
     >
       {/* TODO: Replace with actual related items and logic when available */}

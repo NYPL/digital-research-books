@@ -4,7 +4,7 @@ import React from "react";
 const AiGeneratedText: React.FC = () => {
   return (
     <Text size="caption" color="ui.gray.dark" marginTop="s">
-        AI-generated.
+        AI-generated. Verify results.
     </Text>
   );
 };
