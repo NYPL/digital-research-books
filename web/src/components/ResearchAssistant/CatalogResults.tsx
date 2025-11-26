@@ -17,6 +17,7 @@ import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ResultsBanner from "./ResultsBanner";
 import ResultsList from "../NewResultsList/ResultsList";
 import EmptySearchSvg from "../Svgs/EmptySearchSvg";
+import { MARGIN_BLEED, PADDING_COUNTER } from "~/src/constants/researchAssistant";
 
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;
@@ -75,9 +76,6 @@ const CatalogResults: React.FC<{
       results: chatResult,
     }));
   };
-  
-  const contentPaddingValue = "2rem"; 
-  const outerMarginCalc = "calc((100vw - 1280px) / 2)";
 
   return (
     <Flex flexDir="column" bgColor="ui.bg.default" gap="s">
@@ -95,8 +93,8 @@ const CatalogResults: React.FC<{
         position="sticky"
         top="0"
         zIndex="999"
-        marginLeft={`calc(${outerMarginCalc} * -1 - ${contentPaddingValue})`}
-        paddingLeft={`calc(${outerMarginCalc} + ${contentPaddingValue})`}
+        marginLeft={MARGIN_BLEED}
+        paddingLeft={PADDING_COUNTER}
       >
         {resultsPagingText}
       </Text>

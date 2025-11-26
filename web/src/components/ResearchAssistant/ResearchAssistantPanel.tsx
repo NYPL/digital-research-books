@@ -10,24 +10,25 @@ import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import ResearchAssistantInput from "./ResearchAssistantInput";
 import RewindIcon from "./RewindIcon";
+import {
+  getPanelLayout,
+  PADDING_COUNTER,
+} from "~/src/constants/researchAssistant";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 
-type ResearchAssistantPanelProps = {
-  messages: any[];
-  isLoading: boolean;
-  error?: string;
-  onSendMessage: (msg: string) => void;
-  clearHistory: () => void;
-};
+const ResearchAssistantPanel: React.FC = () => {
+  const {
+    isLoading,
+    results,
+    error,
+    clearHistory,
+    showWebReader,
+  } = useResearchAssistant();
 
-const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
-  messages,
-  isLoading,
-  error,
-  onSendMessage,
-  clearHistory,
-}) => {
-  const contentPaddingValue = "2rem";
-  const outerMarginCalc = "calc((100vw - 1280px) / 2)";
+  const hasResults =
+    (results && Object.keys(results).length > 0) || (showWebReader && !isLoading);
+  const { marginX, paddingX, marginRight } = getPanelLayout(hasResults);
+
   return (
     <Box
       flex="1"
@@ -37,20 +38,24 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
       maxHeight="100vh"
       position="sticky"
       top="0"
+      width="100%"
+      paddingLeft={paddingX}
+      paddingRight={paddingX}
     >
       <Box
         bgColor="section.research.primary"
         display="flex"
         justifyContent="space-between"
         alignItems="center"
-        paddingX="l"
-        paddingY="s"
         borderBottom="1px white solid"
+        marginLeft={marginX}
+        marginRight={marginRight}
+        paddingLeft={paddingX}
+        paddingRight={`calc(${PADDING_COUNTER} * 2)`}
         position="sticky"
+        paddingY="s"
         top="0"
         zIndex="999"
-        marginRight={`calc(${outerMarginCalc} * -1 - ${contentPaddingValue})`}
-        paddingRight={`calc(${outerMarginCalc} + ${contentPaddingValue})`}
       >
         <Heading
           level="h2"
@@ -84,15 +89,11 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
         </Button>
       </Box>
 
-      <ResearchAssistantWindow messages={messages} isLoading={isLoading} />
+      <ResearchAssistantWindow />
 
       {error && <Text fontWeight="bold">{error}</Text>}
 
-      <ResearchAssistantInput
-        onSendMessage={onSendMessage}
-        isDisabled={isLoading}
-        messages={messages}
-      />
+      <ResearchAssistantInput />
     </Box>
   );
 };

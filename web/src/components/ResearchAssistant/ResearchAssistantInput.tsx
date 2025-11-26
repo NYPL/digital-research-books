@@ -6,28 +6,32 @@ import {
   TextInput,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
-import { Message } from "~/src/types/ResearchAssistant";
 import ResearchAssistantSendIcon from "./ResearchAssistantSendIcon";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { getPanelLayout, PADDING_COUNTER } from "~/src/constants/researchAssistant";
 
-interface ResearchAssistantInputProps {
-  onSendMessage: (text: string) => void;
-  isDisabled: boolean;
-  messages: Message[];
-}
+const ResearchAssistantInput: React.FC = () => {
+  const {
+    messages,
+    sendMessage,
+    isLoading,
+    results,
+    showWebReader,
+  } = useResearchAssistant();
 
-const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
-  onSendMessage,
-  isDisabled,
-  messages,
-}) => {
   const [isFocused, setIsFocused] = useState(false);
   const [inputText, setInputText] = useState("");
   const inputRef = useRef<TextInputRefType>(null);
+  const isDisabled = isLoading;
+
+  const hasResults =
+    (results && Object.keys(results).length > 0) || (showWebReader && !isLoading);
+  const { marginX, paddingX, marginRight } = getPanelLayout(hasResults);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputText.trim() && !isDisabled) {
-      onSendMessage(inputText);
+      sendMessage(inputText);
       setInputText("");
 
       if (inputRef.current && inputRef.current) {
@@ -70,20 +74,18 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
       ? "Ask your question..."
       : "Type your response here";
 
-  const contentPaddingValue = "2rem";
-  const outerMarginCalc = "calc((100vw - 1280px) / 2)";
-
   return (
     <Form
       id="research-assistant-form"
       onSubmit={handleSubmit}
       borderTop="1px white solid"
-      marginRight={`calc(${outerMarginCalc} * -1 - ${contentPaddingValue})`}
-      paddingRight={`calc(${outerMarginCalc} + ${contentPaddingValue})`}
+      marginLeft={marginX}
+      marginRight={marginRight}
+      paddingLeft={paddingX}
+      paddingRight={`calc(${PADDING_COUNTER} * 2)`}
+      paddingY="s"
       // @ts-expect-error: Override gap value type
       gap="0"
-      paddingLeft="l"
-      paddingY="s"
     >
       {/* TODO: Replace with actual related items and logic when available */}
       {messages.length > 1 && (
@@ -155,8 +157,8 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
               padding: 0,
             },
             "textarea:focus": {
-              outline: "none",
-              boxShadow: "none",
+              outline: "none !important",
+              boxShadow: "none !important",
             },
           }}
         />

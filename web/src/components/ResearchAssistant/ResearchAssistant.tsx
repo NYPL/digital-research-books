@@ -14,11 +14,8 @@ const ResearchAssistant: React.FC = () => {
     messages,
     sendMessage,
     results,
-    isLoading,
-    error,
     historyStack,
     goToPreviousState,
-    clearHistory,
     showWebReader,
     pdfData,
     linkResults,
@@ -43,7 +40,7 @@ const ResearchAssistant: React.FC = () => {
   const gridTemplateColumns = "1fr 640px 640px 1fr";
   const hasResults =
     (results && Object.keys(results).length > 0) || showWebReader;
-  const vraColumnSpan = hasResults ? "3 / span 2" : "2 / span 3";
+  const vraColumnSpan = hasResults ? "3 / span 2" : "1 / span 4";
 
   return (
     <ResultPageProvider
@@ -96,11 +93,7 @@ const ResearchAssistant: React.FC = () => {
                     )}
                   </Box>
                 ) : (
-                  <Box
-                    paddingX="l"
-                    paddingBottom="l"
-                    flex="1"
-                  >
+                  <Box paddingX="l" paddingBottom="l" flex="1">
                     {results && Object.keys(results).length > 0 && (
                       <>
                         {results.type === "catalog_search" && (
@@ -130,19 +123,13 @@ const ResearchAssistant: React.FC = () => {
           alignItems="flex-start"
         >
           <Flex
-            width="640px"
+            width={hasResults ? "640px" : "1280px"}
             flexDirection="column"
             height="100%"
             justifyContent="flex-start"
             alignItems="flex-start"
           >
-            <ResearchAssistantPanel
-              messages={messages}
-              isLoading={isLoading}
-              error={error}
-              onSendMessage={sendMessage}
-              clearHistory={clearHistory}
-            />
+            <ResearchAssistantPanel />
           </Flex>
         </Flex>
       </Box>
