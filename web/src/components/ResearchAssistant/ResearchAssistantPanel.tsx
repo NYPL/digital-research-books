@@ -1,5 +1,10 @@
 import React from "react";
-import { Box, Button, Heading, Text } from "@nypl/design-system-react-components";
+import {
+  Box,
+  Button,
+  Heading,
+  Text,
+} from "@nypl/design-system-react-components";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import ResearchAssistantInput from "./ResearchAssistantInput";
@@ -56,15 +61,22 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
       </Button>
     </Box>
 
-    <ResearchAssistantWindow messages={messages} isLoading={isLoading} />
+    <Box flex="1" overflowY="auto">
+      <ResearchAssistantWindow messages={messages} isLoading={isLoading} />
+      {error && <Text fontWeight="bold">{error}</Text>}
+    </Box>
 
-    {error && <Text fontWeight="bold">{error}</Text>}
-
-    <ResearchAssistantInput
-      onSendMessage={onSendMessage}
-      isDisabled={isLoading}
-      messages={messages}
-    />
+    <Box
+      position="sticky"
+      bottom="0"
+      zIndex="1000"
+    >
+      <ResearchAssistantInput
+        onSendMessage={onSendMessage}
+        isDisabled={isLoading}
+        messages={messages}
+      />
+    </Box>
   </Box>
 );
 

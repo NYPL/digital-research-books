@@ -53,7 +53,7 @@ const ItemPage: React.FC<any> = (props) => {
           )} | ${documentTitles.workItem}`}
         </title>
       </Head>
-      <VRALayout activePage={activePage}>
+      <VRALayout activePage="none">
         <ResultPageProvider value={{
           page: activePage,
           onReadOnline: () => {}

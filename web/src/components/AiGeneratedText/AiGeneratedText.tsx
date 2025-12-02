@@ -3,8 +3,8 @@ import React from "react";
 
 const AiGeneratedText: React.FC = () => {
   return (
-    <Text size="caption" color="ui.gray.dark" marginTop="s">
-        AI-generated.
+    <Text fontSize="desktop.caption" fontWeight="medium" color="ui.gray.dark">
+        AI-generated. Verify results.
     </Text>
   );
 };
