@@ -167,6 +167,8 @@ class ResearchAssistant:
     def get_chat_completion(self, messages):
         parsed_messages = self._parse_messages(messages)
         response = self.agent.invoke({"messages": parsed_messages})
+
+        answer = ""
         results = None
 
         for message in response["messages"]:
@@ -175,8 +177,13 @@ class ResearchAssistant:
             if isinstance(message, ToolMessage):
                 results = json.loads(message.content)
 
+        last_content = response["messages"][-1].content
+        answer = "".join(
+            block["text"] for block in last_content if block.get("type") == "text"
+        )
+
         return {
-            "answer": response["messages"][-1].content,
+            "answer": answer,
             "results": results,
             "messages": messages_to_dict(parsed_messages),
         }
