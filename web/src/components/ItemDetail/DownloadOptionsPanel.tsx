@@ -1,8 +1,4 @@
-import {
-    Box,
-    Radio,
-    RadioGroup,
-} from "@nypl/design-system-react-components";
+import { Box, Radio, RadioGroup } from "@nypl/design-system-react-components";
 import { ItemLink } from "~/src/types/DataModel";
 import Link from "../Link/Link";
 
@@ -17,12 +13,14 @@ interface DownloadOptionsPanelProps {
     isLoggedIn: boolean;
 }
 
-const DownloadOptionsPanel: React.FC<DownloadOptionsPanelProps> = ({
-    authorNames,
-    downloadLink,
-    title,
-    isLoggedIn,
-}) => {
+const DownloadOptionsPanel: React.FC<DownloadOptionsPanelProps> = () =>
+//     {
+//     authorNames,
+//     downloadLink,
+//     title,
+//     isLoggedIn,
+// }
+{
     return (
         <Box>
             <RadioGroup

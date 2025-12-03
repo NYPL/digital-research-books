@@ -83,7 +83,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                 </Box>
             ),
             panel: (
-                <Box>
+                <Box display="flex" flexDir="column" gap="xs">
                     {edition.summary ||
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
                     <AiGeneratedText />

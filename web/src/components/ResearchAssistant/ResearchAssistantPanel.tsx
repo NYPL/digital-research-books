@@ -67,6 +67,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
     </Box>
 
     <Box
+      backgroundColor="section.research.primary"
       position="sticky"
       bottom="0"
       zIndex="1000"
