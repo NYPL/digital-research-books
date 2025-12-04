@@ -180,7 +180,9 @@ class ResearchAssistant:
         last_content = response["messages"][-1].content
         if isinstance(last_content, list):
             answer = "".join(
-                block["text"] for block in last_content if isinstance(block, dict) and block.get("type") == "text"
+                block["text"]
+                for block in last_content
+                if isinstance(block, dict) and block.get("type") == "text"
             )
         else:
             answer = str(last_content)
