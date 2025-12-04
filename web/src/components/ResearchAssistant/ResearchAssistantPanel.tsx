@@ -4,17 +4,19 @@ import {
   Button,
   Flex,
   Heading,
+  Icon,
   Text,
 } from "@nypl/design-system-react-components";
-import ResearchAssistantIcon from "./ResearchAssistantIcon";
+import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import ResearchAssistantInput from "./ResearchAssistantInput";
-import RewindIcon from "./RewindIcon";
+import RewindIcon from "./icons/RewindIcon";
 import {
   getPanelLayout,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import ArrowIcon from "./icons/ArrowIcon";
 
 const ResearchAssistantPanel: React.FC = () => {
   const {
@@ -31,6 +33,8 @@ const ResearchAssistantPanel: React.FC = () => {
   const { marginX, paddingX, marginRight, paddingRight } = getPanelLayout(
     hasResults
   );
+
+  const hideChat = () => { };
 
   return (
     <Box
@@ -71,25 +75,49 @@ const ResearchAssistantPanel: React.FC = () => {
           <ResearchAssistantIcon inCircle />
           <span>Virtual Research Assistant</span>
         </Heading>
-        <Button
-          onClick={clearHistory}
-          variant="text"
-          color="ui.white"
-          fontSize="0"
-          id="clear-history-button"
-          sx={{
-            "&:hover": {
-              color: "ui.link.secondary",
-              path: {
-                stroke: "ui.link.secondary",
+        <Flex>
+          <Button
+            onClick={clearHistory}
+            variant="text"
+            size="small"
+            color="ui.white"
+            fontSize="0"
+            id="clear-history-button"
+            sx={{
+              "&:hover": {
+                color: "ui.link.secondary",
+                path: {
+                  stroke: "ui.link.secondary",
+                },
               },
-            },
-          }}
-        >
-          <Flex gap="xxs" alignItems="center">
-            <RewindIcon /> <Text>Start over</Text>
-          </Flex>
-        </Button>
+            }}
+          >
+            <Flex gap="xxs" alignItems="center">
+              <RewindIcon /> <Text>Start over</Text>
+            </Flex>
+          </Button>
+          <Button
+            onClick={hideChat}
+            variant="text"
+            size="small"
+            color="ui.white"
+            fontSize="0"
+            id="hide-chat-button"
+            sx={{
+              "&:hover": {
+                color: "ui.link.secondary",
+                path: {
+                  stroke: "ui.link.secondary",
+                },
+              },
+            }}
+          >
+            <Flex gap="xxs" alignItems="center">
+              <Text>Hide chat</Text>
+              <ArrowIcon />
+            </Flex>
+          </Button>
+        </Flex>
       </Box>
 
       <ResearchAssistantWindow />

@@ -13,7 +13,7 @@ import {
 } from "@nypl/design-system-react-components";
 import AuthorsList from "../AuthorsList/AuthorsList";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
-import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
+import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel";
 import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
 import EditionCardUtils from "~/src/util/EditionCardUtils";

@@ -6,9 +6,9 @@ import {
     SubNavLink,
     Text,
 } from "@nypl/design-system-react-components";
-import ResearchAssistantIcon from "./ResearchAssistantIcon";
+import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 import { PageType } from "~/src/types/ResearchAssistant";
-import KeywordSearchIcon from "./KeywordSearchIcon";
+import KeywordSearchIcon from "./icons/KeywordSearchIcon";
 
 interface ResearchAssistantNavProps {
     activePage: PageType;

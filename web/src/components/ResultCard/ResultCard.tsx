@@ -14,7 +14,7 @@ import EditionLinks from "./EditionLinks";
 import Link from "../Link/Link";
 import PublisherAndLocation from "../EditionCard/PublisherAndLocation";
 import PublicDomainBadge from "../ResearchAssistant/PublicDomainBadge";
-import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
+import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import CardRequiredBadge from "./CardRequiredBadge";
 import FeaturedEditionBadge from "./FeaturedEditionBadge";
 import PhysicalEditionBadge from "./PhysicalEditionBadge";
