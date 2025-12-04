@@ -27,7 +27,7 @@ const ResearchAssistantPanel: React.FC = () => {
 
   const hasResults =
     (results && Object.keys(results).length > 0) || (showWebReader && !isLoading);
-  const { marginX, paddingX, marginRight } = getPanelLayout(hasResults);
+  const { marginX, paddingX, marginRight, paddingRight } = getPanelLayout(hasResults);
 
   return (
     <Box
@@ -40,7 +40,7 @@ const ResearchAssistantPanel: React.FC = () => {
       top="0"
       width="100%"
       paddingLeft={paddingX}
-      paddingRight={paddingX}
+      paddingRight={paddingRight}
     >
       <Box
         bgColor="section.research.primary"

@@ -93,7 +93,7 @@ const ResearchAssistant: React.FC = () => {
                     )}
                   </Box>
                 ) : (
-                  <Box paddingX="l" paddingBottom="l" flex="1">
+                  <Box paddingLeft="s" paddingRight="l" paddingBottom="l" flex="1">
                     {results && Object.keys(results).length > 0 && (
                       <>
                         {results.type === "catalog_search" && (
