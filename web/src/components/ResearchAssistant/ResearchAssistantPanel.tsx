@@ -4,7 +4,6 @@ import {
   Button,
   Flex,
   Heading,
-  Icon,
   Text,
 } from "@nypl/design-system-react-components";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
