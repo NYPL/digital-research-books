@@ -22,7 +22,6 @@ const ResultsBanner: React.FC = () => {
             content={bannerContent}
             variant="warning"
             marginRight="l"
-            marginTop="s"
             sx={{
                 a: {color: "ui.link.primary"}
             }}

@@ -5,6 +5,7 @@ import { Message } from "~/src/types/ResearchAssistant";
 import ResearchAssistantIcon from "./ResearchAssistantIcon";
 import ThumbsUpIcon from "./ThumbsUpIcon";
 import ThumbsDownIcon from "./ThumbsDownIcon";
+import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 
 interface MessageBubbleProps {
   message: Message;
@@ -30,43 +31,47 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               {message.data.content}
             </Text>
           ) : (
-            <Box display="flex" gap="xs">
+            <Flex gap="xs" alignItems={message.id === "assistant-initial" ? "center" : "flex-start"}>
               <ResearchAssistantIcon inCircle />
-              <Box display="flex" flexDir="column" gap="12px">
+              <Flex flexDir="column" gap="12px">
                 <Box>
-                  <Text color="section.research.primary" isBold>
-                    Virtual Research Assistant:
+                  <Text
+                    color="section.research.secondary"
+                    isBold
+                    display="inline"
+                  >
+                    VRA:{" "}
                   </Text>
                   {message.data.content}
                 </Box>
-                <Flex alignItems="center" justifyContent="space-between">
-                  <Text size="caption" color="ui.gray.semi-dark">
-                    AI-generated. Verify results.
-                  </Text>
-                  <Flex>
-                    {/* TODO: Add functionality for thumbs up/down buttons */}
-                    <Button
-                      id="thumbs-up-button"
-                      variant="text"
-                      aria-label="Thumbs up"
-                      padding="xs"
-                      minWidth="18px"
-                    >
-                      <ThumbsUpIcon />
-                    </Button>
-                    <Button
-                      id="thumbs-down-button"
-                      variant="text"
-                      aria-label="Thumbs down"
-                      padding="xs"
-                      minWidth="18px"
-                    >
-                      <ThumbsDownIcon />
-                    </Button>
+                {message.id !== "assistant-initial" && (
+                  <Flex alignItems="center" justifyContent="space-between">
+                    <AiGeneratedText />
+                    <Flex>
+                      {/* TODO: Add functionality for thumbs up/down buttons */}
+                      <Button
+                        id="thumbs-up-button"
+                        variant="text"
+                        aria-label="Thumbs up"
+                        padding="xs"
+                        minWidth="18px"
+                      >
+                        <ThumbsUpIcon />
+                      </Button>
+                      <Button
+                        id="thumbs-down-button"
+                        variant="text"
+                        aria-label="Thumbs down"
+                        padding="xs"
+                        minWidth="18px"
+                      >
+                        <ThumbsDownIcon />
+                      </Button>
+                    </Flex>
                   </Flex>
-                </Flex>
-              </Box>
-            </Box>
+                )}
+              </Flex>
+            </Flex>
           )}
         </Box>
       </Box>

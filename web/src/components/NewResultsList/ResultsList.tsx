@@ -1,6 +1,11 @@
 import React from "react";
-import { Box, VStack } from "@nypl/design-system-react-components";
-import EmptySearchSvg from "../Svgs/EmptySearchSvg";
+import {
+  Box,
+  Flex,
+  Heading,
+  Icon,
+  VStack,
+} from "@nypl/design-system-react-components";
 import ResultCard from "../ResultCard/ResultCard";
 import { ApiWork } from "~/src/types/WorkQuery";
 
@@ -8,10 +13,31 @@ import { ApiWork } from "~/src/types/WorkQuery";
 const ResultsList: React.FC<{ works: ApiWork[] }> = ({ works }) => {
   if (works.length === 0) {
     return (
-      <Box>
-        <EmptySearchSvg />
-        <Box>No results were found.</Box>
-      </Box>
+      <Flex gap="s" bgColor="ui.bg.default" alignItems="center">
+        <Flex
+          alignItems="center"
+          flex="1"
+          flexDir="column"
+          gap="xs"
+          height="100%"
+          margin="0 auto"
+          maxWidth="1280px"
+          padding="xl"
+        >
+          <Icon
+            color="section.research.secondary"
+            name="search"
+            size="xlarge"
+          />
+          <Heading
+            color="section.research.secondary"
+            size="heading6"
+            textAlign="center"
+          >
+            No results found. Try a different topic.
+          </Heading>
+        </Flex>
+      </Flex>
     );
   }
   return (
