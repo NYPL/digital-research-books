@@ -21,7 +21,6 @@ const ResearchAssistantPanel: React.FC = () => {
   const {
     isLoading,
     results,
-    error,
     clearHistory,
     showWebReader,
   } = useResearchAssistant();
@@ -113,15 +112,13 @@ const ResearchAssistantPanel: React.FC = () => {
           >
             <Flex gap="xxs" alignItems="center">
               <Text>Hide chat</Text>
-              <ArrowIcon />
+              <ArrowIcon color="#FFF" />
             </Flex>
           </Button>
         </Flex>
       </Box>
 
       <ResearchAssistantWindow />
-
-      {error && <Text fontWeight="bold">{error}</Text>}
 
       <Box
         backgroundColor="section.research.primary"

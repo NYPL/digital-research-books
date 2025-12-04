@@ -14,6 +14,6 @@ export function getPanelLayout(hasResults: boolean) {
         marginX: hasResults ? MARGIN_COMPACT : MARGIN_BLEED,
         paddingX: hasResults ? PADDING_COMPACT : PADDING_COUNTER,
         marginRight: hasResults ? MARGIN_RIGHT_COMPACT : MARGIN_RIGHT_BLEED,
-        paddingRight: hasResults ? undefined : OUTER_MARGIN_CALC,
+        paddingRight: hasResults ? undefined : PADDING_COUNTER,
     };
 }
