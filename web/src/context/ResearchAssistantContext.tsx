@@ -51,7 +51,14 @@ const ResearchAssistantContext = createContext<
 export const ResearchAssistantProvider: React.FC<{
     children: React.ReactNode;
 }> = ({ children }) => {
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<Message[]>([
+        {
+            id: "assistant-initial",
+            data: { content: "What research topic would you like to explore?" },
+            status: MessageStatus.Sent,
+            type: MessageType.Ai,
+        },
+    ]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -267,7 +274,14 @@ export const ResearchAssistantProvider: React.FC<{
     };
 
     const clearHistory = () => {
-        setMessages([]);
+        setMessages([
+            {
+                id: "assistant-initial",
+                data: { content: "What research topic would you like to explore?" },
+                status: MessageStatus.Sent,
+                type: MessageType.Ai,
+            },
+        ]);
         setError(null);
         setViewState((prev) => ({
             ...prev,

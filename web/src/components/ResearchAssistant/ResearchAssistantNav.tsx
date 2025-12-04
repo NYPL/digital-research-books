@@ -69,7 +69,7 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
                 <>
                     {/* TODO: add real links to help and account pages */}
                     <SubNavLink href="#help" id="subnav-help">
-                        Get help
+                        Contact us
                     </SubNavLink>
                     <SubNavLink
                         isOutlined

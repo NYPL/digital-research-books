@@ -45,9 +45,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
 
   const {
     clearHistory,
-    isLoading,
     messages,
-    sendMessage,
     setMessages,
     itemId,
     pageId,
@@ -56,7 +54,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     setViewState,
     historyStack,
     setHistoryStack,
-    error,
   } = useResearchAssistant();
 
   const { page } = useResultPageContext();
@@ -92,7 +89,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         ...prev,
         itemId,
         pageId,
-        showWebReader: false,
+        showWebReader: true,
         results: null,
         linkResults: null,
         pdfData: null,
@@ -333,15 +330,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           display="flex"
           flexDirection="column"
         >
-          {vraEnabled && (
-            <ResearchAssistantPanel
-              messages={messages}
-              isLoading={isLoading}
-              error={error}
-              onSendMessage={sendMessage}
-              clearHistory={clearHistory}
-            />
-          )}
+          {vraEnabled && <ResearchAssistantPanel />}
         </Box>
       </Grid>
     </Box>

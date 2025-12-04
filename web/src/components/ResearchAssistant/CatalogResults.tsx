@@ -1,4 +1,9 @@
-import { Box, Pagination, Text } from "@nypl/design-system-react-components";
+import {
+  Box,
+  Flex,
+  Pagination,
+  Text,
+} from "@nypl/design-system-react-components";
 import { useState } from "react";
 import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
@@ -11,11 +16,13 @@ import { toApiQuery } from "~/src/util/apiConversion";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ResultsBanner from "./ResultsBanner";
 import ResultsList from "../NewResultsList/ResultsList";
+import EmptySearchSvg from "../Svgs/EmptySearchSvg";
+import { MARGIN_BLEED, PADDING_COUNTER } from "~/src/constants/researchAssistant";
 
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;
 }> = ({ results }) => {
-  const { setViewState, showWebReader } = useResearchAssistant();
+  const { setViewState } = useResearchAssistant();
 
   const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
 
@@ -33,7 +40,7 @@ const CatalogResults: React.FC<{
         ? numberOfWorks.toLocaleString()
         : lastElement.toLocaleString()
       } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
-      : "Viewing 0 items";
+      : "No results matching your research criteria";
 
   const onPageChange = async (select: number) => {
     const newSearchQuery: SearchQuery = {
@@ -71,29 +78,30 @@ const CatalogResults: React.FC<{
   };
 
   return (
-    <>
-      {((results && Object.keys(results).length > 0) || showWebReader) && (
-        <Box bgColor="ui.bg.default">
-          <Text
-            bgColor="ui.bg.default"
-            borderBottom="1px solid"
-            borderColor="ui.border.default"
-            boxSizing="content-box"
-            fontSize="2"
-            fontWeight="semibold"
-            lineHeight="40px"
-            marginX="-2rem"
-            paddingX="l"
-            paddingY="s"
-            position="sticky"
-            top="0"
-            zIndex="999"
-          >
-            {resultsPagingText}
-          </Text>
-          <ResultsBanner />
+    <Flex flexDir="column" bgColor="ui.bg.default" gap="s">
+      <Text
+        bgColor="ui.bg.default"
+        borderBottom="1px solid"
+        borderColor="ui.border.default"
+        boxSizing="content-box"
+        fontSize="desktop.heading.heading7"
+        fontWeight="bold"
+        lineHeight="40px"
+        marginX="-2rem"
+        paddingX="l"
+        paddingY="s"
+        position="sticky"
+        top="0"
+        zIndex="999"
+        marginLeft={MARGIN_BLEED}
+        paddingLeft={PADDING_COUNTER}
+      >
+        {resultsPagingText}
+      </Text>
+      <ResultsBanner />
+      {Object.keys(results).length > 0 ? (
+        <>
           <ResultsList works={results.works} />
-
           <Pagination
             pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
             initialPage={resultsPaging.currentPage}
@@ -102,7 +110,8 @@ const CatalogResults: React.FC<{
               paddingTop: "m",
               "a, li > a[aria-current='page']": {
                 color: "var(--nypl-colors-section-research-secondary)",
-                borderColor: "var(--nypl-colors-section-research-secondary)",
+                borderColor:
+                  "var(--nypl-colors-section-research-secondary)",
                 svg: {
                   fill: "var(--nypl-colors-section-research-secondary)",
                 },
@@ -115,9 +124,16 @@ const CatalogResults: React.FC<{
               },
             }}
           />
-        </Box>
+        </>
+      ) : (
+        <>
+          <Box>
+            <EmptySearchSvg />
+            <Box>No results were found.</Box>
+          </Box>
+        </>
       )}
-    </>
+    </Flex>
   );
 };
 
