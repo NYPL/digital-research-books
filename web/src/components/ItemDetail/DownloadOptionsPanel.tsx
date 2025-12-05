@@ -28,6 +28,7 @@ const DownloadOptionsPanel: React.FC<DownloadOptionsPanelProps> = () =>
                 labelText="Range"
                 onChange={onDownloadOptionChange}
                 name="downloadOptionRange"
+                sx={{ ".ds-radioGroup-stack" : { gap: "xs" } }}
             >
                 <Radio labelText="Entire e-book" value="full" />
                 <Radio labelText="Current page" value="page" />
