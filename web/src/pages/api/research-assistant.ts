@@ -30,11 +30,11 @@ export default async function handler(
 
         const { messages } = req.body;
 
-        if (!messages || !Array.isArray(messages) || messages.length === 0) {
+        if (!messages || !Array.isArray(messages)) {
             return res
                 .status(400)
                 .json({
-                    error: 'Request body must contain a non-empty "messages" array.',
+                    error: 'Request body must contain a "messages" array.',
                 });
         }
         

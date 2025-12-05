@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import {
     ChatResults,
     ApiItemsRead,
@@ -51,14 +51,7 @@ const ResearchAssistantContext = createContext<
 export const ResearchAssistantProvider: React.FC<{
     children: React.ReactNode;
 }> = ({ children }) => {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: "assistant-initial",
-            data: { content: "What research topic would you like to explore?" },
-            status: MessageStatus.Sent,
-            type: MessageType.Ai,
-        },
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -71,6 +64,38 @@ export const ResearchAssistantProvider: React.FC<{
         results: null,
         linkResults: null,
     });
+
+    useEffect(() => {
+        async function fetchInitialMessage() {
+            setIsLoading(true);
+            try {
+                const token = localStorage.getItem("authToken");
+                const res = await fetch("/api/research-assistant", {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `Basic ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ messages: [] }),
+                });
+                const data = await res.json();
+                setMessages([
+                    {
+                        id: "assistant-initial",
+                        data: { content: data.answer },
+                        status: MessageStatus.Sent,
+                        type: MessageType.Ai,
+                    },
+                ]);
+            } catch (e) {
+                console.error("Error getting initial message:", e);
+                setError(e.message || "An unknown error occurred.");
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchInitialMessage();
+    }, []);
 
     const pushNewState = ({
         results,

@@ -25,9 +25,9 @@ def update_chat(user=None):
     messages = request.json.get("messages")
 
     if not messages:
-        return APIUtils.formatResponseObject(
-            400, RESPONSE_TYPE, {"message": f"Chat request is missing messages"}
-        )
+        initial_message = research_assistant.get_initial_message()
+        return APIUtils.formatResponseObject(200, RESPONSE_TYPE, initial_message)
+
 
     response = research_assistant.get_chat_completion(messages)
 
