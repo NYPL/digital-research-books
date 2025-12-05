@@ -196,9 +196,13 @@ class ResearchAssistant:
             "messages": messages_to_dict(parsed_messages),
         }
 
-    def get_initial_message(self):
+    def get_initial_message(self, initial_message_type="vra"):
+        if initial_message_type == "item":
+            answer = "I can help you find relevant content in this book. Ask me a question, or try the suggestions below."
+        else:
+            answer = "What research topic can I help you explore today?"
         return {
-            "answer": "What research topic can I help you explore today?",
+            "answer": answer,
             "results": None,
             "messages": messages_to_dict([self.system_prompt]),
         }

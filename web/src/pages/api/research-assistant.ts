@@ -1,5 +1,6 @@
 import appConfig from "~/config/appConfig";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 export default async function handler(
     req: NextApiRequest,
@@ -28,7 +29,7 @@ export default async function handler(
             return res.status(500).json({ error: "Server configuration error." });
         }
 
-        const { messages } = req.body;
+        const { messages, initialMessageType } = req.body;
 
         if (!messages || !Array.isArray(messages)) {
             return res
@@ -47,7 +48,7 @@ export default async function handler(
                 "X-API-KEY": apiKey,
                 "Authorization": authorization
             },
-            body: JSON.stringify({ messages }),
+            body: JSON.stringify({ messages, initialMessageType }),
         });
 
         if (!chatsResponse.ok && chatsResponse.status !== 201) {

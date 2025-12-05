@@ -9,6 +9,7 @@ import {
 } from "~/src/types/ResearchAssistant";
 import { LinkResult } from "~/src/types/LinkQuery";
 import { readFetcher } from "~/src/lib/api/SearchApi";
+import { useRouter } from "next/router";
 
 interface ResearchAssistantViewState {
     showWebReader: boolean;
@@ -65,6 +66,9 @@ export const ResearchAssistantProvider: React.FC<{
         linkResults: null,
     });
 
+    const router = useRouter();
+    const initialMessageType = router.pathname.startsWith("/item/") ? "item" : "vra";
+
     useEffect(() => {
         async function fetchInitialMessage() {
             setIsLoading(true);
@@ -76,7 +80,7 @@ export const ResearchAssistantProvider: React.FC<{
                         Authorization: `Basic ${token}`,
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ messages: [] }),
+                    body: JSON.stringify({ messages: [], initialMessageType }),
                 });
                 const data = await res.json();
                 setMessages([
