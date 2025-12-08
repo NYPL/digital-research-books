@@ -215,7 +215,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           gridRow={backUrl ? "2" : "1"}
           paddingBottom="l"
           paddingLeft={gridPaddingX}
-          marginTop={vraEnabled ? "0" : "l"}
+          marginTop={backUrl ? "0" : "l"}
         >
           <Text size="caption" marginBottom="xxs">
             E-BOOK
@@ -320,7 +320,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           gridColumn="3"
           gridRow={backUrl ? "2" : "1"}
           marginRight={vraEnabled ? "l" : "0"}
-          marginTop={vraEnabled ? "0" : "l"}
+          marginTop={backUrl ? "0" : "l"}
           paddingBottom="l"
         >
           <ResearchAssistantViewer itemId={itemId} pageId={pageId} />
