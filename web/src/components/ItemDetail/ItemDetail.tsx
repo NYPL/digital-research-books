@@ -6,6 +6,7 @@ import {
   Box,
   Flex,
   Grid,
+  GridItem,
   Heading,
   Text,
   Toggle,
@@ -109,19 +110,35 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     }
   }, [previewLink?.url, router.pathname]);
 
+  const GAP_SIZE = 32;
+  const CONTENT_TOTAL = 1280;
+  const NET_CONTENT = CONTENT_TOTAL - 2 * GAP_SIZE;
+  const NET_DISABLED = CONTENT_TOTAL - GAP_SIZE;
+
   const gridColumns = vraEnabled
-    ? { base: "1fr", md: "25% 50% 25%" }
-    : { base: "1fr", md: "33.33% 66.67%" };
+    ? {
+      base: "1fr",
+      md: `
+        1fr 
+        ${NET_CONTENT * 0.25}px
+        ${NET_CONTENT * 0.5}px
+        ${NET_CONTENT * 0.25}px
+        1fr
+      `,
+    }
+    : {
+      base: "1fr",
+      md: `
+        1fr                           
+        ${NET_DISABLED * 0.3333}px  
+        ${NET_DISABLED * 0.6666}px    
+        1fr                            
+      `,
+    };
   const gridRows = backUrl ? "auto 1fr" : "1fr";
   const gridPaddingX = { base: "1rem", md: "1.5rem", xl: "1rem" };
 
-  const outerMarginCalc = "calc((100vw - 1280px) / 2)";
-  const headerMarginLeft = {
-    base: `calc(${outerMarginCalc} * -1 + ${gridPaddingX.base})`,
-    md: `calc(${outerMarginCalc} * -1 + ${gridPaddingX.md})`,
-    xl: `calc(${outerMarginCalc} * -1 + ${gridPaddingX.xl})`,
-  };
-  const headerMarginRight = vraEnabled ? "0" : headerMarginLeft;
+  const outerMarginCalc = "calc((100vw - 1280px) / 2 + 2rem)";
 
   const handleBackToResults = () => {
     const storedHistory = sessionStorage.getItem("vraHistoryStack");
@@ -157,35 +174,28 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         templateRows={gridRows}
         gap="l"
         marginBottom="xs"
-        maxWidth="1280px"
         margin="0 auto"
         width="100%"
       >
+        <GridItem colSpan={1} gridRow={2} />
         {backUrl && (
           <Flex
             alignItems="center"
             justifyContent="space-between"
             padding="s"
             bgColor="ui.white"
-            gridColumn="1 / span 2"
+            gridColumn={vraEnabled ? "1 / span 3" : "1 / span 4"}
             gridRow="1"
             borderBottom="1px solid"
             borderColor="ui.border.default"
-            marginLeft={headerMarginLeft}
-            marginRight={headerMarginRight}
-            paddingLeft={outerMarginCalc}
+            paddingLeft="calc((100vw - 1280px) / 2)"
             paddingRight={{
-              base: vraEnabled
-                ? gridPaddingX.base
-                : `calc(${outerMarginCalc} + ${gridPaddingX.base} * 2)`,
-              md: vraEnabled
-                ? gridPaddingX.md
-                : `calc(${outerMarginCalc} + ${gridPaddingX.md} * 2)`,
-              xl: vraEnabled
-                ? gridPaddingX.xl
-                : `calc(${outerMarginCalc} + ${gridPaddingX.xl} * 2)`,
+              base: vraEnabled ? gridPaddingX.base : outerMarginCalc,
+              md: vraEnabled ? gridPaddingX.md : outerMarginCalc,
+              xl: vraEnabled ? gridPaddingX.xl : outerMarginCalc,
             }}
             paddingY="s"
+            marginRight={vraEnabled ? "0" : "-2rem"}
           >
             <BackToResultsButton handleBackToResults={handleBackToResults} />
             {page === "vra" && (
@@ -201,9 +211,8 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           alignContent="left"
           alignItems="left"
           bgColor="ui.bg.default"
-          gridColumn="1"
+          gridColumn="2"
           gridRow={backUrl ? "2" : "1"}
-          marginTop="2rem"
           paddingBottom="l"
           paddingLeft={gridPaddingX}
         >
@@ -285,26 +294,18 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           </VStack>
         </VStack>
         <Box
-          gridColumn="2"
+          gridColumn="3"
           gridRow={backUrl ? "2" : "1"}
-          marginRight="2rem"
-          marginTop="2rem"
+          marginRight={vraEnabled ? "2rem" : "0"}
           paddingBottom="l"
-          paddingRight={vraEnabled ? "0" : gridPaddingX}
         >
           <ResearchAssistantViewer itemId={itemId} pageId={pageId} />
         </Box>
         <Box
-          gridColumn="3"
+          gridColumn={vraEnabled ? "4 / span 2" : "4"}
           gridRow={backUrl ? "1 / span 2" : "1"}
           height="100%"
           marginLeft="-2rem"
-          marginRight={{
-            base: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.base} * 2)`,
-            md: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.md} * 2)`,
-            xl: `calc(-1 * (100vw - 1280px)/2 + ${gridPaddingX.xl} * 2)`,
-          }}
-          paddingRight={gridPaddingX}
           display="flex"
           flexDirection="column"
         >
