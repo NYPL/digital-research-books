@@ -6,7 +6,7 @@ import {
   TextInput,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
-import ResearchAssistantSendIcon from "./ResearchAssistantSendIcon";
+import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { getPanelLayout, PADDING_COUNTER } from "~/src/constants/researchAssistant";
 

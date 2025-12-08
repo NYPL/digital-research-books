@@ -6,10 +6,10 @@ import {
     Icon,
     Flex,
 } from "@nypl/design-system-react-components";
-import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
+import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import ResearchAssistantSendIcon from "../ResearchAssistant/ResearchAssistantSendIcon";
+import ResearchAssistantSendIcon from "../ResearchAssistant/icons/ResearchAssistantSendIcon";
 
 interface SearchSectionProps {
     helpSectionRef: React.RefObject<HTMLDivElement>;

@@ -13,8 +13,7 @@ import {
 } from "@nypl/design-system-react-components";
 import AuthorsList from "../AuthorsList/AuthorsList";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
-import DownloadLink from "../ResultCard/DownloadLink";
-import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
+import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel";
 import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
@@ -33,6 +32,7 @@ import SearchPanel from "./SearchPanel";
 import DownloadOptionsPanel from "./DownloadOptionsPanel";
 import DetailsPanel from "./DetailsPanel";
 import OtherEditionsPanel from "./OtherEditionsPanel";
+import Link from "../Link/Link";
 
 interface ItemDetailProps {
   workResult: WorkResult;
@@ -217,12 +217,25 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             {work.authors && work.authors.length > 0 && (
               <AuthorsList authors={work.authors} />
             )}
+            {/* TODO: Re-add after download is implemented on the backend
             <DownloadLink
               authors={authorNames}
               downloadLink={downloadLink}
               title={work.title}
               isLoggedIn={isLoggedIn}
-            />
+            /> 
+            Placeholder for Download Link
+            */}
+            <Link
+              to="#"
+              variant="buttonSecondary"
+              backgroundColor="ui.white"
+              borderColor="section.research.secondary"
+              color="section.research.secondary"
+              width="fit-content"
+            >
+              Download PDF
+            </Link>
             <Accordion
               accordionData={[
                 {
@@ -241,10 +254,11 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                   label: (
                     <Box
                       display="flex"
+                      alignItems="center"
                       gap="xxs"
                       __css={{ svg: { marginInlineStart: "0 !important" } }}
                     >
-                      <ResearchAssistantIcon />
+                      <ResearchAssistantIcon inCircle />
                       <span>Read summary</span>
                     </Box>
                   ),
@@ -281,6 +295,14 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
               isDefaultOpen
               bgColor="ui.white"
               id="item-detail-accordion"
+              sx={{
+                "button[aria-expanded=true]": {
+                  bgColor: "ui.link.primary-05",
+                },
+                ".chakra-collapse": {
+                  bgColor: "ui.white",
+                },
+              }}
             />
           </VStack>
         </VStack>

@@ -2,9 +2,9 @@ import React, { forwardRef } from "react";
 import styles from "../../../styles/components/MessageBubble.module.scss";
 import { Box, Button, Flex, Text } from "@nypl/design-system-react-components";
 import { Message } from "~/src/types/ResearchAssistant";
-import ResearchAssistantIcon from "./ResearchAssistantIcon";
-import ThumbsUpIcon from "./ThumbsUpIcon";
-import ThumbsDownIcon from "./ThumbsDownIcon";
+import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
+import ThumbsUpIcon from "./icons/ThumbsUpIcon";
+import ThumbsDownIcon from "./icons/ThumbsDownIcon";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 
 interface MessageBubbleProps {
