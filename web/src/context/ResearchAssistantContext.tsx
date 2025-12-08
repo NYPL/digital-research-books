@@ -306,20 +306,12 @@ export const ResearchAssistantProvider: React.FC<{
     };
 
     const clearHistory = () => {
-        setMessages([
-            {
-                id: "assistant-initial",
-                data: { content: "What research topic would you like to explore?" },
-                status: MessageStatus.Sent,
-                type: MessageType.Ai,
-            },
-        ]);
+        setMessages([]);
         setError(null);
         setViewState((prev) => ({
             ...prev,
             results: null,
             showWebReader: false,
-            pdfData: null,
             itemId: "",
             linkResults: null,
         }));
