@@ -1,5 +1,6 @@
-import { Button, Icon } from "@nypl/design-system-react-components";
+import { Button, Flex } from "@nypl/design-system-react-components";
 import React from "react";
+import ArrowIcon from "../ResearchAssistant/icons/ArrowIcon";
 
 interface BackToResultsButtonProps {
     handleBackToResults: () => void;
@@ -15,8 +16,10 @@ const BackToResultsButton: React.FC<BackToResultsButtonProps> = ({
             color="section.research.secondary"
             onClick={handleBackToResults}
         >
-            <Icon name="arrow" iconRotation="rotate90" align="left" size="small" />
-            Back to results
+            <Flex alignItems="center" gap="xs">
+                <ArrowIcon direction="left" color="#006166" />
+                <span>Back to results</span>
+            </Flex>
         </Button>
     );
 };

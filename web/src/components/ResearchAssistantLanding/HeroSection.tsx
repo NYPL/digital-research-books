@@ -1,5 +1,5 @@
 import { Box, Heading } from "@nypl/design-system-react-components";
-import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
+import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import SearchSection from "./SearchSection";
 import { forwardRef } from "react";
 import SectionContainer from "./SectionContainer";

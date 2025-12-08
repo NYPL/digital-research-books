@@ -41,8 +41,6 @@ const ItemPage: React.FC<any> = (props) => {
     return <Error statusCode={props.workResult.status} />;
   }
 
-  const activePage = props.backUrl && props.backUrl.includes("research-assistant") ? "vra" : "keyword";
-
   return (
     <Layout>
       <Head>
@@ -53,9 +51,9 @@ const ItemPage: React.FC<any> = (props) => {
           )} | ${documentTitles.workItem}`}
         </title>
       </Head>
-      <VRALayout activePage={activePage}>
+      <VRALayout activePage="item">
         <ResultPageProvider value={{
-          page: activePage,
+          page: "item",
           onReadOnline: () => {}
         }}>
           <ItemDetail workResult={props.workResult} backUrl={props.backUrl} />
