@@ -1,6 +1,5 @@
 import appConfig from "~/config/appConfig";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { init } from "next/dist/compiled/webpack/webpack";
 
 export default async function handler(
     req: NextApiRequest,

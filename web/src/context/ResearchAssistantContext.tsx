@@ -67,39 +67,42 @@ export const ResearchAssistantProvider: React.FC<{
     });
 
     const router = useRouter();
-    const initialMessageType = router.pathname.startsWith("/item/") ? "item" : "vra";
+    const initialMessageType = router.pathname.startsWith("/item/")
+        ? "item"
+        : "vra";
+
+    const fetchInitialMessage = async (initialMessageType: string) => {
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem("authToken");
+            const res = await fetch("/api/research-assistant", {
+                method: "PUT",
+                headers: {
+                    Authorization: `Basic ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ messages: [], initialMessageType }),
+            });
+            const data = await res.json();
+            setMessages([
+                {
+                    id: "assistant-initial",
+                    data: { content: data.answer },
+                    status: MessageStatus.Sent,
+                    type: MessageType.Ai,
+                },
+            ]);
+        } catch (e) {
+            console.error("Error getting initial message:", e);
+            setError(e.message || "An unknown error occurred.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        async function fetchInitialMessage() {
-            setIsLoading(true);
-            try {
-                const token = localStorage.getItem("authToken");
-                const res = await fetch("/api/research-assistant", {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Basic ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ messages: [], initialMessageType }),
-                });
-                const data = await res.json();
-                setMessages([
-                    {
-                        id: "assistant-initial",
-                        data: { content: data.answer },
-                        status: MessageStatus.Sent,
-                        type: MessageType.Ai,
-                    },
-                ]);
-            } catch (e) {
-                console.error("Error getting initial message:", e);
-                setError(e.message || "An unknown error occurred.");
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchInitialMessage();
-    }, []);
+        if (messages.length === 0) fetchInitialMessage(initialMessageType);
+    }, [initialMessageType, messages]);
 
     const pushNewState = ({
         results,
