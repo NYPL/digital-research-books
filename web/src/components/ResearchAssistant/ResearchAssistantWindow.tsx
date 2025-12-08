@@ -13,6 +13,7 @@ const ResearchAssistantWindow: React.FC = () => {
   const {
     messages,
     isLoading,
+    error,
     results,
     showWebReader,
   } = useResearchAssistant();
@@ -68,6 +69,8 @@ const ResearchAssistantWindow: React.FC = () => {
           </Text>
         </Box>
       )}
+
+      {error && <Text fontWeight="bold" position="relative" bottom="0">{error}</Text>}
     </Box>
   );
 };

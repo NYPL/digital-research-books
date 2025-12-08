@@ -14,7 +14,7 @@ import EditionLinks from "./EditionLinks";
 import Link from "../Link/Link";
 import PublisherAndLocation from "../EditionCard/PublisherAndLocation";
 import PublicDomainBadge from "../ResearchAssistant/PublicDomainBadge";
-import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
+import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import CardRequiredBadge from "./CardRequiredBadge";
 import FeaturedEditionBadge from "./FeaturedEditionBadge";
 import PhysicalEditionBadge from "./PhysicalEditionBadge";
@@ -83,7 +83,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                 </Box>
             ),
             panel: (
-                <Box>
+                <Box display="flex" flexDir="column" gap="xs">
                     {edition.summary ||
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
                     <AiGeneratedText />

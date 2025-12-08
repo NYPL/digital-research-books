@@ -30,6 +30,7 @@ const DownloadLink: React.FC<{
     closeButtonLabel: "",
     headingText: null,
   });
+
   if (downloadLink && downloadLink.url) {
     let linkText = "Download PDF";
     let linkUrl = formatUrl(downloadLink.url);
