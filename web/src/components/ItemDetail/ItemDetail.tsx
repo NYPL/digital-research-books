@@ -215,6 +215,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           gridRow={backUrl ? "2" : "1"}
           paddingBottom="l"
           paddingLeft={gridPaddingX}
+          marginTop={vraEnabled ? "0" : "l"}
         >
           <Text size="caption" marginBottom="xxs">
             E-BOOK
@@ -318,7 +319,8 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         <Box
           gridColumn="3"
           gridRow={backUrl ? "2" : "1"}
-          marginRight={vraEnabled ? "2rem" : "0"}
+          marginRight={vraEnabled ? "l" : "0"}
+          marginTop={vraEnabled ? "0" : "l"}
           paddingBottom="l"
         >
           <ResearchAssistantViewer itemId={itemId} pageId={pageId} />
@@ -331,7 +333,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           display="flex"
           flexDirection="column"
         >
-          {vraEnabled && <ResearchAssistantPanel />}
+          {vraEnabled && <ResearchAssistantPanel variant="item-view" />}
         </Box>
       </Grid>
     </Box>

@@ -17,7 +17,13 @@ import {
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ArrowIcon from "./icons/ArrowIcon";
 
-const ResearchAssistantPanel: React.FC = () => {
+interface ResearchAssistantPanelProps {
+  variant?: "search-view" | "item-view";
+}
+
+const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
+  variant = "search-view",
+}) => {
   const {
     isLoading,
     results,
@@ -45,7 +51,7 @@ const ResearchAssistantPanel: React.FC = () => {
       top="0"
       width="100%"
       paddingLeft={paddingX}
-      paddingRight={paddingRight}
+      paddingRight={variant === "item-view" ? "l" : paddingRight}
     >
       <Box
         bgColor="section.research.primary"
