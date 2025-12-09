@@ -41,7 +41,6 @@ export interface HistoryItem {
   results: ChatResults;
   itemId?: string;
   showWebReader: boolean;
-  pdfData: ApiItemsRead | null;
   linkResults: LinkResult | null;
 }
 

@@ -85,7 +85,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
       sessionStorage.setItem("vraHistoryStack", JSON.stringify(historyStack));
       sessionStorage.setItem("vraMessages", JSON.stringify(messages));
 
-      clearHistory();
+      clearHistory(page);
       setViewState((prev) => ({
         ...prev,
         itemId,
@@ -93,7 +93,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         showWebReader: true,
         results: null,
         linkResults: null,
-        pdfData: null,
       }));
 
       setMessages([
@@ -333,7 +332,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           display="flex"
           flexDirection="column"
         >
-          {vraEnabled && <ResearchAssistantPanel variant="item-view" />}
+          {vraEnabled && <ResearchAssistantPanel />}
         </Box>
       </Grid>
     </Box>

@@ -8,7 +8,10 @@ import {
 } from "@nypl/design-system-react-components";
 import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import { getPanelLayout, PADDING_COUNTER } from "~/src/constants/researchAssistant";
+import {
+  getPanelLayout,
+  PADDING_COUNTER,
+} from "~/src/constants/researchAssistant";
 
 const ResearchAssistantInput: React.FC = () => {
   const {
@@ -25,7 +28,7 @@ const ResearchAssistantInput: React.FC = () => {
   const isDisabled = isLoading;
 
   const hasResults =
-    (results && Object.keys(results).length > 0) || (showWebReader && !isLoading);
+    (results && Object.keys(results).length > 0) || showWebReader;
   const { marginX, paddingX, marginRight } = getPanelLayout(hasResults);
 
   const handleSubmit = (e: React.FormEvent) => {

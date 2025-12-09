@@ -17,7 +17,6 @@ const ResearchAssistant: React.FC = () => {
     historyStack,
     goToPreviousState,
     showWebReader,
-    pdfData,
     linkResults,
     handleReadOnline,
   } = useResearchAssistant();
@@ -84,13 +83,13 @@ const ResearchAssistant: React.FC = () => {
                 )}
                 {showWebReader ? (
                   <Box flex="1">
-                    {!pdfData && (
+                    (
                       <ReaderLayout
                         linkResult={linkResults}
                         proxyUrl={proxyUrl}
                         backUrl={backUrl}
                       />
-                    )}
+                    )
                   </Box>
                 ) : (
                   <Box paddingLeft="s" paddingRight="l" paddingBottom="l" flex="1">

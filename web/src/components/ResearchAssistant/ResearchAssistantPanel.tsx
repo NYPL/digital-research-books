@@ -16,24 +16,16 @@ import {
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ArrowIcon from "./icons/ArrowIcon";
+import { useResultPageContext } from "~/src/context/ResultPageContext";
 
-interface ResearchAssistantPanelProps {
-  variant?: "search-view" | "item-view";
-}
+const ResearchAssistantPanel: React.FC = () => {
+  const { results, clearHistory, showWebReader } = useResearchAssistant();
 
-const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
-  variant = "search-view",
-}) => {
-  const {
-    isLoading,
-    results,
-    clearHistory,
-    showWebReader,
-  } = useResearchAssistant();
+  const { page } = useResultPageContext();
 
   const hasResults =
-    (results && Object.keys(results).length > 0) ||
-    (showWebReader && !isLoading);
+    (results && Object.keys(results).length > 0) || showWebReader;
+
   const { marginX, paddingX, marginRight, paddingRight } = getPanelLayout(
     hasResults
   );
@@ -51,7 +43,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
       top="0"
       width="100%"
       paddingLeft={paddingX}
-      paddingRight={variant === "item-view" ? "l" : paddingRight}
+      paddingRight={page === "item" ? "l" : paddingRight}
     >
       <Box
         bgColor="section.research.primary"
@@ -81,7 +73,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
         </Heading>
         <Flex>
           <Button
-            onClick={clearHistory}
+            onClick={() => clearHistory(page)}
             variant="text"
             size="small"
             color="ui.white"
