@@ -25,6 +25,11 @@ const CONTENT_TOTAL = 1280;
 const NET_CONTENT = CONTENT_TOTAL - 2 * GAP_SIZE;
 const NET_DISABLED = CONTENT_TOTAL - GAP_SIZE;
 const ITEM_OUTER_MARGIN_CALC = "calc((100vw - 1280px) / 2 + 2rem)";
+export const GRID_PADDING_X = {
+    base: "1rem",
+    md: "2rem",
+    xl: "2rem",
+};
 
 export const getGridColumns = (vraEnabled: boolean) => {
     return vraEnabled
@@ -53,10 +58,6 @@ export const getGridRows = (backUrl?: string) => {
     return backUrl ? "auto 1fr" : "1fr";
 };
 
-export const getGridPaddingX = (vraEnabled: boolean) => {
-    return {
-        base: vraEnabled ? "1rem" : ITEM_OUTER_MARGIN_CALC,
-        md: vraEnabled ? "1.5rem" : ITEM_OUTER_MARGIN_CALC,
-        xl: vraEnabled ? "1rem" : ITEM_OUTER_MARGIN_CALC,
-    };
+export const getHeaderPaddingRight = (vraEnabled: boolean) => {
+    return vraEnabled ? GRID_PADDING_X : ITEM_OUTER_MARGIN_CALC;
 };

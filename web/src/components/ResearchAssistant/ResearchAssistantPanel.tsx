@@ -67,6 +67,7 @@ const ResearchAssistantPanel: React.FC = () => {
           display="flex"
           alignItems="center"
           gap="xs"
+          height="40px"
         >
           <ResearchAssistantIcon inCircle />
           <span>Virtual Research Assistant</span>

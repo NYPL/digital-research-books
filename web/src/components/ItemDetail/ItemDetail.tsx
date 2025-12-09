@@ -36,8 +36,9 @@ import OtherEditionsPanel from "./OtherEditionsPanel";
 import Link from "../Link/Link";
 import {
   getGridColumns,
-  getGridPaddingX,
+  getHeaderPaddingRight,
   getGridRows,
+  GRID_PADDING_X,
 } from "~/src/constants/researchAssistant";
 
 interface ItemDetailProps {
@@ -163,18 +164,16 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             borderBottom="1px solid"
             borderColor="ui.border.default"
             paddingLeft="calc((100vw - 1280px) / 2)"
-            paddingRight={getGridPaddingX(vraEnabled)}
+            paddingRight={getHeaderPaddingRight(vraEnabled)}
             paddingY="s"
             marginRight={vraEnabled ? "0" : "-2rem"}
           >
             <BackToResultsButton handleBackToResults={handleBackToResults} />
-            {page === "vra" && (
-              <Toggle
-                isChecked={vraEnabled}
-                labelText="Use Virtual Research Assistant"
-                onChange={() => setVraEnabled((prev) => !prev)}
-              />
-            )}
+            <Toggle
+              isChecked={vraEnabled}
+              labelText="Use Virtual Research Assistant"
+              onChange={() => setVraEnabled((prev) => !prev)}
+            />
           </Flex>
         )}
         <VStack
@@ -184,7 +183,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           gridColumn="2"
           gridRow={backUrl ? "2" : "1"}
           paddingBottom="l"
-          paddingLeft={getGridPaddingX(vraEnabled)}
+          paddingLeft={GRID_PADDING_X}
           marginTop={backUrl ? "0" : "l"}
         >
           <Text size="caption" marginBottom="xxs">
