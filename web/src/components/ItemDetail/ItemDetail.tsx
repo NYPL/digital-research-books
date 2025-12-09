@@ -34,6 +34,11 @@ import DownloadOptionsPanel from "./DownloadOptionsPanel";
 import DetailsPanel from "./DetailsPanel";
 import OtherEditionsPanel from "./OtherEditionsPanel";
 import Link from "../Link/Link";
+import {
+  getGridColumns,
+  getGridPaddingX,
+  getGridRows,
+} from "~/src/constants/researchAssistant";
 
 interface ItemDetailProps {
   workResult: WorkResult;
@@ -109,36 +114,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     }
   }, [previewLink?.url, router.pathname]);
 
-  const GAP_SIZE = 32;
-  const CONTENT_TOTAL = 1280;
-  const NET_CONTENT = CONTENT_TOTAL - 2 * GAP_SIZE;
-  const NET_DISABLED = CONTENT_TOTAL - GAP_SIZE;
-
-  const gridColumns = vraEnabled
-    ? {
-      base: "1fr",
-      md: `
-        1fr 
-        ${NET_CONTENT * 0.25}px
-        ${NET_CONTENT * 0.5}px
-        ${NET_CONTENT * 0.25}px
-        1fr
-      `,
-    }
-    : {
-      base: "1fr",
-      md: `
-        1fr                           
-        ${NET_DISABLED * 0.3333}px  
-        ${NET_DISABLED * 0.6666}px    
-        1fr                            
-      `,
-    };
-  const gridRows = backUrl ? "auto 1fr" : "1fr";
-  const gridPaddingX = { base: "1rem", md: "1.5rem", xl: "1rem" };
-
-  const outerMarginCalc = "calc((100vw - 1280px) / 2 + 2rem)";
-
   const handleBackToResults = () => {
     const storedHistory = sessionStorage.getItem("vraHistoryStack");
     const storedMessages = sessionStorage.getItem("vraMessages");
@@ -169,8 +144,8 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   return (
     <Box fontSize="desktop.body.body2" bgColor="ui.bg.default" width="100%">
       <Grid
-        templateColumns={gridColumns}
-        templateRows={gridRows}
+        templateColumns={getGridColumns(vraEnabled)}
+        templateRows={getGridRows(backUrl)}
         gap="l"
         marginBottom="xs"
         margin="0 auto"
@@ -188,11 +163,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             borderBottom="1px solid"
             borderColor="ui.border.default"
             paddingLeft="calc((100vw - 1280px) / 2)"
-            paddingRight={{
-              base: vraEnabled ? gridPaddingX.base : outerMarginCalc,
-              md: vraEnabled ? gridPaddingX.md : outerMarginCalc,
-              xl: vraEnabled ? gridPaddingX.xl : outerMarginCalc,
-            }}
+            paddingRight={getGridPaddingX(vraEnabled)}
             paddingY="s"
             marginRight={vraEnabled ? "0" : "-2rem"}
           >
@@ -213,7 +184,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           gridColumn="2"
           gridRow={backUrl ? "2" : "1"}
           paddingBottom="l"
-          paddingLeft={gridPaddingX}
+          paddingLeft={getGridPaddingX(vraEnabled)}
           marginTop={backUrl ? "0" : "l"}
         >
           <Text size="caption" marginBottom="xxs">
