@@ -1,18 +1,18 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import {
     ChatResults,
-    ApiItemsRead,
     Message,
     MessageStatus,
     MessageType,
     HistoryItem,
+    PageType,
 } from "~/src/types/ResearchAssistant";
 import { LinkResult } from "~/src/types/LinkQuery";
 import { readFetcher } from "~/src/lib/api/SearchApi";
+import { useRouter } from "next/router";
 
 interface ResearchAssistantViewState {
     showWebReader: boolean;
-    pdfData: ApiItemsRead | null;
     itemId: string;
     pageId: string;
     results: ChatResults | null;
@@ -29,7 +29,7 @@ interface ResearchAssistantContextType extends ResearchAssistantViewState {
     historyStack: HistoryItem[];
     setHistoryStack: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
     goToPreviousState: (restoredStack?: HistoryItem[]) => void;
-    clearHistory: () => void;
+    clearHistory: (page: PageType) => void;
     setViewState: React.Dispatch<React.SetStateAction<any | null>>;
     handlePreview: (url: string) => Promise<void>;
     handleReadOnline: (linkId: number) => Promise<void>;
@@ -38,7 +38,6 @@ interface ResearchAssistantContextType extends ResearchAssistantViewState {
 interface PushNewStateArgs {
     results: ChatResults | null;
     showWebReader: boolean;
-    pdfData: ApiItemsRead | null;
     linkResults: LinkResult | null;
     itemId?: string;
     pageId?: string;
@@ -51,31 +50,60 @@ const ResearchAssistantContext = createContext<
 export const ResearchAssistantProvider: React.FC<{
     children: React.ReactNode;
 }> = ({ children }) => {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: "assistant-initial",
-            data: { content: "What research topic would you like to explore?" },
-            status: MessageStatus.Sent,
-            type: MessageType.Ai,
-        },
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [historyStack, setHistoryStack] = useState<HistoryItem[]>([]);
     const [viewState, setViewState] = useState<ResearchAssistantViewState>({
         showWebReader: false,
-        pdfData: null,
         itemId: "",
         pageId: "",
         results: null,
         linkResults: null,
     });
 
+    const router = useRouter();
+    const initialMessageType = router.pathname.startsWith("/item/")
+        ? "item"
+        : "vra";
+
+    const fetchInitialMessage = async (initialMessageType: string) => {
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem("authToken");
+            const res = await fetch("/api/research-assistant", {
+                method: "PUT",
+                headers: {
+                    Authorization: `Basic ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ messages: [], initialMessageType }),
+            });
+            const data = await res.json();
+            setMessages([
+                {
+                    id: "assistant-initial",
+                    data: { content: data.answer },
+                    status: MessageStatus.Sent,
+                    type: MessageType.Ai,
+                },
+            ]);
+        } catch (e) {
+            console.error("Error getting initial message:", e);
+            setError(e.message || "An unknown error occurred.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (messages.length === 0) fetchInitialMessage(initialMessageType);
+    }, [initialMessageType, messages]);
+
     const pushNewState = ({
         results,
         showWebReader,
-        pdfData,
         linkResults,
         itemId = "",
         pageId = "",
@@ -87,7 +115,6 @@ export const ResearchAssistantProvider: React.FC<{
                 itemId: itemId,
                 pageId: pageId,
                 showWebReader: showWebReader,
-                pdfData: pdfData,
                 linkResults: linkResults,
             },
         ]);
@@ -178,7 +205,6 @@ export const ResearchAssistantProvider: React.FC<{
                 pushNewState({
                     results: data.results,
                     showWebReader: false,
-                    pdfData: null,
                     linkResults: null,
                     itemId: "",
                 });
@@ -186,7 +212,6 @@ export const ResearchAssistantProvider: React.FC<{
                 pushNewState({
                     results: data.results,
                     showWebReader: false,
-                    pdfData: null,
                     linkResults: null,
                     itemId: viewState.itemId,
                 });
@@ -214,7 +239,6 @@ export const ResearchAssistantProvider: React.FC<{
         setViewState((prev) => ({
             ...prev,
             results: viewState.results,
-            pdfData: null,
             itemId: itemId,
             pageId: pageId,
             showWebReader: true,
@@ -222,7 +246,6 @@ export const ResearchAssistantProvider: React.FC<{
         pushNewState({
             results: null,
             showWebReader: true,
-            pdfData: null,
             linkResults: null,
             itemId: itemId,
             pageId: pageId,
@@ -240,7 +263,6 @@ export const ResearchAssistantProvider: React.FC<{
         pushNewState({
             results: null,
             showWebReader: true,
-            pdfData: null,
             linkResults: linkResult,
             itemId: "",
         });
@@ -255,7 +277,6 @@ export const ResearchAssistantProvider: React.FC<{
                     ...prev,
                     results: prevState.results,
                     itemId: prevState.itemId || "",
-                    pdfData: prevState.pdfData,
                     showWebReader: prevState.showWebReader,
                     linkResults: prevState.linkResults,
                 }));
@@ -265,7 +286,6 @@ export const ResearchAssistantProvider: React.FC<{
                 ...prev,
                 results: null,
                 itemId: "",
-                pdfData: null,
                 showWebReader: false,
                 linkResults: null,
             }));
@@ -273,24 +293,18 @@ export const ResearchAssistantProvider: React.FC<{
         });
     };
 
-    const clearHistory = () => {
-        setMessages([
-            {
-                id: "assistant-initial",
-                data: { content: "What research topic would you like to explore?" },
-                status: MessageStatus.Sent,
-                type: MessageType.Ai,
-            },
-        ]);
+    const clearHistory = (page: PageType) => {
+        setMessages([]);
         setError(null);
-        setViewState((prev) => ({
-            ...prev,
-            results: null,
-            showWebReader: false,
-            pdfData: null,
-            itemId: "",
-            linkResults: null,
-        }));
+        if (page !== "item") {
+            setViewState((prev) => ({
+                ...prev,
+                results: null,
+                showWebReader: false,
+                itemId: "",
+                linkResults: null,
+            }));
+        }
     };
 
     const value: ResearchAssistantContextType = {

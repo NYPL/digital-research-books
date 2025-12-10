@@ -23,11 +23,11 @@ def update_chat(user=None):
         DBClient(current_app.config["DB_CLIENT"]),
     )
     messages = request.json.get("messages")
+    initial_message_type = request.json.get("initialMessageType", "vra")
 
     if not messages:
-        return APIUtils.formatResponseObject(
-            400, RESPONSE_TYPE, {"message": f"Chat request is missing messages"}
-        )
+        initial_message = research_assistant.get_initial_message(initial_message_type)
+        return APIUtils.formatResponseObject(200, RESPONSE_TYPE, initial_message)
 
     response = research_assistant.get_chat_completion(messages)
 

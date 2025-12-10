@@ -8,7 +8,10 @@ import {
 } from "@nypl/design-system-react-components";
 import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import { getPanelLayout, PADDING_COUNTER } from "~/src/constants/researchAssistant";
+import {
+  getPanelLayout,
+  PADDING_COUNTER,
+} from "~/src/constants/researchAssistant";
 
 const ResearchAssistantInput: React.FC = () => {
   const {

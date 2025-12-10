@@ -16,13 +16,14 @@ import {
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ArrowIcon from "./icons/ArrowIcon";
+import { useResultPageContext } from "~/src/context/ResultPageContext";
 
 const ResearchAssistantPanel: React.FC = () => {
-  const {
-    clearHistory,
-  } = useResearchAssistant();
+  const { clearHistory } = useResearchAssistant();
 
   const { marginX, paddingX, marginRight } = getPanelLayout();
+
+  const { page } = useResultPageContext();
 
   const hideChat = () => { };
 
@@ -60,13 +61,14 @@ const ResearchAssistantPanel: React.FC = () => {
           display="flex"
           alignItems="center"
           gap="xs"
+          height="40px"
         >
           <ResearchAssistantIcon inCircle />
           <span>Virtual Research Assistant</span>
         </Heading>
         <Flex>
           <Button
-            onClick={clearHistory}
+            onClick={() => clearHistory(page)}
             variant="text"
             size="small"
             color="ui.white"

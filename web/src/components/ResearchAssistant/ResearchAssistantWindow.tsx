@@ -8,7 +8,6 @@ import {
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 
-
 const ResearchAssistantWindow: React.FC = () => {
   const {
     messages,
@@ -66,7 +65,11 @@ const ResearchAssistantWindow: React.FC = () => {
         </Box>
       )}
 
-      {error && <Text fontWeight="bold" position="relative" bottom="0">{error}</Text>}
+      {error && (
+        <Text fontWeight="bold" position="relative" bottom="0">
+          {error}
+        </Text>
+      )}
     </Box>
   );
 };

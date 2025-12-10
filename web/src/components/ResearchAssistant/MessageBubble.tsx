@@ -31,7 +31,10 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               {message.data.content}
             </Text>
           ) : (
-            <Flex gap="xs" alignItems={message.id === "assistant-initial" ? "center" : "flex-start"}>
+            <Flex
+              gap="xs"
+              alignItems="flex-start"
+            >
               <ResearchAssistantIcon inCircle />
               <Flex flexDir="column" gap="12px">
                 <Box>
@@ -44,7 +47,9 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                   </Text>
                   {message.data.content}
                 </Box>
-                {message.id !== "assistant-initial" && (
+                {message.id === "assistant-initial" ? (
+                  <AiGeneratedText isInitial/>
+                ) : (
                   <Flex alignItems="center" justifyContent="space-between">
                     <AiGeneratedText />
                     <Flex>
