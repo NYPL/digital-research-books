@@ -38,6 +38,7 @@ const ResearchAssistantPanel: React.FC = () => {
       top="0"
       width="100%"
       paddingLeft={paddingX}
+      paddingRight={page === "item" ? "l" : undefined}
     >
       <Box
         bgColor="section.research.primary"
