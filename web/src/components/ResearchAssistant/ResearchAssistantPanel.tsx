@@ -16,18 +16,16 @@ import {
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ArrowIcon from "./icons/ArrowIcon";
+import { useResultPageContext } from "~/src/context/ResultPageContext";
 
 const ResearchAssistantPanel: React.FC = () => {
-  const {
-    isLoading,
-    results,
-    clearHistory,
-    showWebReader,
-  } = useResearchAssistant();
+  const { results, clearHistory, showWebReader } = useResearchAssistant();
+
+  const { page } = useResultPageContext();
 
   const hasResults =
-    (results && Object.keys(results).length > 0) ||
-    (showWebReader && !isLoading);
+    (results && Object.keys(results).length > 0) || showWebReader;
+
   const { marginX, paddingX, marginRight, paddingRight } = getPanelLayout(
     hasResults
   );
@@ -45,7 +43,7 @@ const ResearchAssistantPanel: React.FC = () => {
       top="0"
       width="100%"
       paddingLeft={paddingX}
-      paddingRight={paddingRight}
+      paddingRight={page === "item" ? "l" : paddingRight}
     >
       <Box
         bgColor="section.research.primary"
@@ -69,13 +67,14 @@ const ResearchAssistantPanel: React.FC = () => {
           display="flex"
           alignItems="center"
           gap="xs"
+          height="40px"
         >
           <ResearchAssistantIcon inCircle />
           <span>Virtual Research Assistant</span>
         </Heading>
         <Flex>
           <Button
-            onClick={clearHistory}
+            onClick={() => clearHistory(page)}
             variant="text"
             size="small"
             color="ui.white"

@@ -8,7 +8,6 @@ import {
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 
-
 const ResearchAssistantWindow: React.FC = () => {
   const {
     messages,
@@ -29,10 +28,9 @@ const ResearchAssistantWindow: React.FC = () => {
   }, [messages]);
 
   const hasResults =
-    (results && Object.keys(results).length > 0) ||
-    (showWebReader && !isLoading);
+    (results && Object.keys(results).length > 0) || showWebReader;
   const { marginX, paddingX, marginRight } = getPanelLayout(hasResults);
-
+  
   return (
     <Box
       display="flex"
@@ -70,7 +68,11 @@ const ResearchAssistantWindow: React.FC = () => {
         </Box>
       )}
 
-      {error && <Text fontWeight="bold" position="relative" bottom="0">{error}</Text>}
+      {error && (
+        <Text fontWeight="bold" position="relative" bottom="0">
+          {error}
+        </Text>
+      )}
     </Box>
   );
 };
