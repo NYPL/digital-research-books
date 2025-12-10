@@ -24,8 +24,6 @@ import { NYPL_SESSION_ID } from "~/src/constants/auth";
 import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
 import {
   HistoryItem,
-  MessageStatus,
-  MessageType,
 } from "~/src/types/ResearchAssistant";
 import AboutItemPanel from "./AboutItemPanel";
 import SummaryPanel from "./SummaryPanel";
