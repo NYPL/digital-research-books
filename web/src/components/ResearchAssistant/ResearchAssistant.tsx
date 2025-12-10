@@ -10,7 +10,10 @@ import ReaderLayout from "../ReaderLayout/ReaderLayout";
 import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
 import ResultsBanner from "./ResultsBanner";
-import { MARGIN_BLEED, PADDING_COUNTER } from "~/src/constants/researchAssistant";
+import {
+  MARGIN_BLEED,
+  PADDING_COUNTER,
+} from "~/src/constants/researchAssistant";
 
 const ResearchAssistant: React.FC = () => {
   const {
@@ -69,15 +72,18 @@ const ResearchAssistant: React.FC = () => {
             justifyContent="flex-end"
             alignItems="flex-end"
           >
-            <Flex flexDirection="column" flex="1">
-              {historyStack.length > 1 && (
+            <Flex flexDirection="column" flex="1" width="100%">
+              {results && historyStack.length > 1 && (
                 <Box
                   padding="s"
                   borderBottom="1px solid"
-                  borderColor="ui.border"
+                  borderColor="ui.border.default"
+                  height="58px"
+                  marginLeft={MARGIN_BLEED}
+                  paddingLeft={PADDING_COUNTER}
                 >
                   <BackToResultsButton
-                    handleBackToResults={goToPreviousState}
+                    handleBackToResults={() => goToPreviousState()}
                   />
                 </Box>
               )}
@@ -92,7 +98,7 @@ const ResearchAssistant: React.FC = () => {
                 />
               )}
               {showWebReader ? (
-                <Box flex="1">
+                <Box flex="1" marginTop="s" marginRight="s">
                   {!pdfData && (
                     <ReaderLayout
                       linkResult={linkResults}
