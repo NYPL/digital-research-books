@@ -55,6 +55,14 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                         aria-label="Thumbs up"
                         padding="xs"
                         minWidth="18px"
+                        sx={{
+                          "&:hover": {
+                            bgColor: "transparent",
+                            svg: {
+                              fill: "section.research.primary-05",
+                            },
+                          },
+                        }}
                       >
                         <ThumbsUpIcon />
                       </Button>
@@ -64,6 +72,14 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                         aria-label="Thumbs down"
                         padding="xs"
                         minWidth="18px"
+                        sx={{
+                          "&:hover": {
+                            bgColor: "transparent",
+                            svg: {
+                              fill: "section.research.primary-05",
+                            },
+                          },
+                        }}
                       >
                         <ThumbsDownIcon />
                       </Button>

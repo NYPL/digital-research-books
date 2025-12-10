@@ -1,7 +1,7 @@
 import { Banner, Text } from "@nypl/design-system-react-components";
 import React from "react";
 import Link from "../Link/Link";
-import { ARTICLES_PLUS_LINK, RESEARCH_CATALOG_LINK } from "~/src/constants/links";
+import { ARTICLE_PLUS_LINK, RESEARCH_CATALOG_LINK } from "~/src/constants/links";
 
 const ResultsBanner: React.FC = () => {
     const bannerContent = (
@@ -13,7 +13,7 @@ const ResultsBanner: React.FC = () => {
                 Research Catalog
             </Link>{" "}
             (for physical research books) or{" "}
-            <Link to={ARTICLES_PLUS_LINK} hasVisitedState={false}>Articles Plus</Link>{" "}
+            <Link to={ARTICLE_PLUS_LINK} hasVisitedState={false}>Article Plus</Link>{" "}
             (for digital research journals, articles, and databases).
         </Text>
     );

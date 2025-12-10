@@ -34,6 +34,7 @@ const PreviewLink: React.FC<PreviewLinkProps> = ({
                         variant="buttonPrimary"
                         width="100%"
                         aria-label="Preview item"
+                        _hover={{ bgColor: "section.research.primary" }}
                     >
                         Preview
                     </Link>

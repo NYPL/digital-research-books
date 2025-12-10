@@ -19,18 +19,10 @@ import ArrowIcon from "./icons/ArrowIcon";
 
 const ResearchAssistantPanel: React.FC = () => {
   const {
-    isLoading,
-    results,
     clearHistory,
-    showWebReader,
   } = useResearchAssistant();
 
-  const hasResults =
-    (results && Object.keys(results).length > 0) ||
-    (showWebReader && !isLoading);
-  const { marginX, paddingX, marginRight, paddingRight } = getPanelLayout(
-    hasResults
-  );
+  const { marginX, paddingX, marginRight } = getPanelLayout();
 
   const hideChat = () => { };
 
@@ -45,7 +37,6 @@ const ResearchAssistantPanel: React.FC = () => {
       top="0"
       width="100%"
       paddingLeft={paddingX}
-      paddingRight={paddingRight}
     >
       <Box
         bgColor="section.research.primary"
@@ -83,9 +74,10 @@ const ResearchAssistantPanel: React.FC = () => {
             id="clear-history-button"
             sx={{
               "&:hover": {
-                color: "ui.link.secondary",
+                color: "ui.white",
+                opacity: 0.8,
                 path: {
-                  stroke: "ui.link.secondary",
+                  stroke: "ui.white",
                 },
               },
             }}
@@ -103,9 +95,10 @@ const ResearchAssistantPanel: React.FC = () => {
             id="hide-chat-button"
             sx={{
               "&:hover": {
-                color: "ui.link.secondary",
+                color: "ui.white",
+                opacity: 0.8,
                 path: {
-                  stroke: "ui.link.secondary",
+                  stroke: "ui.white",
                 },
               },
             }}

@@ -117,7 +117,10 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({
                 data-testid={SEARCH_BAR_TEST_ID}
                 sx={{
                     "button[type='submit']": {
-                        bgColor: "section.research.secondary", // TODO: update hover state colors
+                        bgColor: "section.research.secondary",
+                    },
+                    "button[type='submit']:hover": {
+                        bgColor: "section.research.primary",
                     },
                 }}
                 marginBottom="s"

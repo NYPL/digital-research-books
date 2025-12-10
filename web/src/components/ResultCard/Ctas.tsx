@@ -33,7 +33,6 @@ const Ctas: React.FC<CtasProps> = ({
 
     const authorNames = authors ? authors.map((author) => author.name) : [];
 
-    // TODO: update hover styles for CTAs
     if (readOnlineLink || downloadLink) {
         return (
             <>

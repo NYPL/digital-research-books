@@ -54,6 +54,7 @@ const ReadOnlineLink: React.FC<{
             onClick={() => onReadOnline(readOnlineLink.link_id)}
             width="100%"
             bgColor="section.research.secondary"
+            _hover={{ bgColor: "section.research.primary" }}
           >
             {linkText}
           </Button>

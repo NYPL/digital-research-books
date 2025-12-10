@@ -7,13 +7,11 @@ export const PADDING_COUNTER = `calc(${OUTER_MARGIN_CALC} + ${CONTENT_PADDING_VA
 const MARGIN_COMPACT = "-2rem";
 const PADDING_COMPACT = "l";
 const MARGIN_RIGHT_COMPACT = `calc(calc(${OUTER_MARGIN_CALC} * -1 - ${CONTENT_PADDING_VALUE}) * 2)`;
-const MARGIN_RIGHT_BLEED = `calc(calc(${OUTER_MARGIN_CALC} * -1 - ${PADDING_COUNTER}) * 2)`;
 
-export function getPanelLayout(hasResults: boolean) {
+export function getPanelLayout() {
     return {
-        marginX: hasResults ? MARGIN_COMPACT : MARGIN_BLEED,
-        paddingX: hasResults ? PADDING_COMPACT : PADDING_COUNTER,
-        marginRight: hasResults ? MARGIN_RIGHT_COMPACT : MARGIN_RIGHT_BLEED,
-        paddingRight: hasResults ? undefined : PADDING_COUNTER,
+        marginX: MARGIN_COMPACT,
+        paddingX: PADDING_COMPACT,
+        marginRight: MARGIN_RIGHT_COMPACT,
     };
 }

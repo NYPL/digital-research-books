@@ -14,8 +14,6 @@ const ResearchAssistantWindow: React.FC = () => {
     messages,
     isLoading,
     error,
-    results,
-    showWebReader,
   } = useResearchAssistant();
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -28,13 +26,11 @@ const ResearchAssistantWindow: React.FC = () => {
     }
   }, [messages]);
 
-  const hasResults =
-    (results && Object.keys(results).length > 0) ||
-    (showWebReader && !isLoading);
-  const { marginX, paddingX, marginRight } = getPanelLayout(hasResults);
+  const { marginX, paddingX, marginRight } = getPanelLayout();
 
   return (
     <Box
+      flex="1"
       display="flex"
       flexDir="column"
       fontSize="desktop.body.body2"
