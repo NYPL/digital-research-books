@@ -142,7 +142,9 @@ class GRINIngestProcess:
 
         return publication_date < public_domain_threshold_date or is_public_domain
 
-    def _create_first_page_part(self, barcode: str, mets_file: mets_parser.METSFile) -> Part:
+    def _create_first_page_part(
+        self, barcode: str, mets_file: mets_parser.METSFile
+    ) -> Part:
         if not mets_file:
             return None
 
