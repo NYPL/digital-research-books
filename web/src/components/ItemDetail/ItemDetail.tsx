@@ -101,17 +101,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         linkResults: null,
       }));
 
-      setMessages([
-        {
-          id: "assistant-initial",
-          data: {
-            content:
-              "I can help you find relevant content in this book. Ask me a question, or try the suggestions below.",
-          },
-          status: MessageStatus.Sent,
-          type: MessageType.Ai,
-        },
-      ]);
+      setMessages([]);
     }
   }, [previewLink?.url, router.pathname]);
 
