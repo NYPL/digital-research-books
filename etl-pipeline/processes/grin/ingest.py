@@ -2,8 +2,8 @@ import io
 import json
 import os
 import re
+import datetime
 
-from datetime import datetime
 from logger import create_log
 from .download import GRINDownloadService
 from managers import SQSManager, S3Manager
