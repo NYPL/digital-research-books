@@ -1,170 +1,139 @@
 import React, { useEffect } from "react";
-import {
-  Box,
-  Button,
-  Heading,
-  Icon,
-  Text,
-} from "@nypl/design-system-react-components";
-import {
-  ResearchAssistantProvider,
-  useResearchAssistant,
-} from "~/src/context/ResearchAssistantContext";
+import { Box, Flex } from "@nypl/design-system-react-components";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import CatalogResults from "./CatalogResults";
 import ItemResults from "./ItemResults";
-import ResearchAssistantViewer from "./ResearchAssistantViewer";
+import ResearchAssistantPanel from "./ResearchAssistantPanel";
+import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
-import ResearchAssistantIcon from "./ResearchAssistantIcon";
-import ResearchAssistantInput from "./ResearchAssistantInput";
-import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
 
-const ResearchAssistantInner: React.FC = () => {
+const ResearchAssistant: React.FC = () => {
   const {
     messages,
     sendMessage,
     results,
-    isLoading,
-    error,
     historyStack,
     goToPreviousState,
-    clearHistory,
     showWebReader,
-    pdfData,
-    itemId,
     linkResults,
     handleReadOnline,
-    handlePreview,
   } = useResearchAssistant();
 
   useEffect(() => {
-    const initialMessage = sessionStorage.getItem(
-      "researchAssistantInitialMessage"
-    );
-    if (initialMessage) {
-      sendMessage(initialMessage);
-      sessionStorage.removeItem("researchAssistantInitialMessage");
+    if (!messages || messages.length === 0) {
+      const initialMessage = sessionStorage.getItem(
+        "researchAssistantInitialMessage"
+      );
+      if (initialMessage) {
+        sendMessage(initialMessage);
+        sessionStorage.removeItem("researchAssistantInitialMessage");
+      }
     }
-  }, [sendMessage]);
+  }, [messages, sendMessage]);
 
   const proxyUrl: string = proxyUrlConstructor();
   const backUrl = "/research-assistant";
 
+  const gridTemplateColumns = "1fr 640px 640px 1fr";
+  const hasResults =
+    (results && Object.keys(results).length > 0) || showWebReader;
+  const vraColumnSpan = hasResults ? "3 / span 2" : "1 / span 4";
+
   return (
     <ResultPageProvider
       value={{
-        onPreview: handlePreview,
         onReadOnline: handleReadOnline,
         page: "vra",
       }}
     >
-      <Box display="flex" flexDir="row">
-        {((results && Object.keys(results).length > 0) || showWebReader) && (
-          <Box display="flex" flexDirection="column" flex="1">
-            {historyStack.length > 1 && (
-              <Box padding="s" borderBottom="1px solid" borderColor="ui.border">
-                <Button
-                  variant="text"
-                  id="back-button"
-                  color="section.research.secondary"
-                  onClick={goToPreviousState}
-                >
-                  <Icon
-                    name="arrow"
-                    iconRotation="rotate90"
-                    align="left"
-                    size="small"
-                  />
-                  Back to results
-                </Button>
-              </Box>
-            )}
-            {showWebReader ? (
-              <Box flex="1">
-                {pdfData ? (
-                  <ResearchAssistantViewer itemId={itemId} pdfData={pdfData} />
+      <Box
+        display="grid"
+        gridTemplateColumns={gridTemplateColumns}
+        width="100%"
+      >
+        {hasResults && (
+          <Flex
+            gridColumn="1 / span 2"
+            flexDirection="column"
+            minWidth="0"
+            justifyContent="flex-end"
+            alignItems="flex-end"
+            bgColor="ui.bg.default"
+          >
+            <Flex
+              width="640px"
+              flexDirection="column"
+              height="100%"
+              justifyContent="flex-end"
+              alignItems="flex-end"
+            >
+              <Flex flexDirection="column" flex="1">
+                {historyStack.length > 1 && (
+                  <Box
+                    padding="s"
+                    borderBottom="1px solid"
+                    borderColor="ui.border"
+                  >
+                    <BackToResultsButton
+                      handleBackToResults={goToPreviousState}
+                    />
+                  </Box>
+                )}
+                {showWebReader ? (
+                  <Box flex="1">
+                    (
+                      <ReaderLayout
+                        linkResult={linkResults}
+                        proxyUrl={proxyUrl}
+                        backUrl={backUrl}
+                      />
+                    )
+                  </Box>
                 ) : (
-                  <ReaderLayout
-                    linkResult={linkResults}
-                    proxyUrl={proxyUrl}
-                    backUrl={backUrl}
-                  />
-                )}
-              </Box>
-            ) : (
-              <Box paddingX="l" paddingBottom="l" flex="1" bgColor="ui.bg.default">
-                {results && Object.keys(results).length > 0 && (
-                  <>
-                    {results.type === "catalog_search" && (
-                      <CatalogResults results={results.data} />
+                  <Box paddingLeft="s" paddingRight="l" paddingBottom="l" flex="1">
+                    {results && Object.keys(results).length > 0 && (
+                      <>
+                        {results.type === "catalog_search" && (
+                          <CatalogResults results={results.data} />
+                        )}
+                        {results.type === "item_search" && (
+                          <ItemResults results={results.data} />
+                        )}
+                      </>
                     )}
-                    {results.type === "item_search" && (
-                      <ItemResults results={results.data} />
-                    )}
-                  </>
+                  </Box>
                 )}
-              </Box>
-            )}
-          </Box>
+              </Flex>
+            </Flex>
+          </Flex>
         )}
-
-        <Box
-          flex="1"
-          display="flex"
+        <Flex
+          gridColumn={vraColumnSpan}
           flexDirection="column"
           bgColor="section.research.primary"
           maxHeight="100vh"
           position="sticky"
           top="0"
+          zIndex="1000"
+          minWidth="0"
+          justifyContent="flex-start"
+          alignItems="flex-start"
         >
-          <Box
-            bgColor="section.research.primary"
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            paddingX="l"
-            paddingY="s"
-            borderBottom="1px white solid"
-            position="sticky"
-            top="0"
-            zIndex="999"
+          <Flex
+            width={hasResults ? "640px" : "1280px"}
+            flexDirection="column"
+            height="100%"
+            justifyContent="flex-start"
+            alignItems="flex-start"
           >
-            <Heading
-              level="h2"
-              size="heading7"
-              color="ui.white"
-              display="flex"
-              alignItems="center"
-              gap="xs"
-            >
-              <ResearchAssistantIcon inCircle />
-              <span>Virtual Research Assistant</span>
-            </Heading>
-            <Button onClick={clearHistory} id="clear-history-button">
-              Clear chat
-            </Button>
-          </Box>
-
-          <ResearchAssistantWindow messages={messages} isLoading={isLoading} />
-
-          {error && <Text fontWeight="bold">{error}</Text>}
-
-          <ResearchAssistantInput
-            onSendMessage={sendMessage}
-            isDisabled={isLoading}
-            messages={messages}
-          />
-        </Box>
+            <ResearchAssistantPanel />
+          </Flex>
+        </Flex>
       </Box>
     </ResultPageProvider>
   );
 };
-
-const ResearchAssistant: React.FC = () => (
-  <ResearchAssistantProvider>
-    <ResearchAssistantInner />
-  </ResearchAssistantProvider>
-);
 
 export default ResearchAssistant;

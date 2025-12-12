@@ -29,6 +29,9 @@ VRA_SYSTEM_PROMPT_V0 = SystemMessage(
         "- Respond politely with a brief description of what you did.\n"
         "- Do not summarize the search results.\n"
         "- If the inquiry is not research-related or not related to a particular item, politely decline to answer."
+        "- If a catalog search returns no results, respond in a friendly and apologetic tone."
+        "Refer to the user's search term in your response. For example: "
+        "\"Sorry, we don't currently have any items on the topic '{search term}'. Ask me about another topic, or try the suggestions below.\""
     )
 )
 
@@ -167,6 +170,8 @@ class ResearchAssistant:
     def get_chat_completion(self, messages):
         parsed_messages = self._parse_messages(messages)
         response = self.agent.invoke({"messages": parsed_messages})
+
+        answer = ""
         results = None
 
         for message in response["messages"]:
@@ -175,10 +180,31 @@ class ResearchAssistant:
             if isinstance(message, ToolMessage):
                 results = json.loads(message.content)
 
+        last_content = response["messages"][-1].content
+        if isinstance(last_content, list):
+            answer = "".join(
+                block["text"]
+                for block in last_content
+                if isinstance(block, dict) and block.get("type") == "text"
+            )
+        else:
+            answer = str(last_content)
+
         return {
-            "answer": response["messages"][-1].content,
+            "answer": answer,
             "results": results,
             "messages": messages_to_dict(parsed_messages),
+        }
+
+    def get_initial_message(self, initial_message_type="vra"):
+        if initial_message_type == "item":
+            answer = "I can help you find relevant content in this book. Ask me a question, or try the suggestions below."
+        else:
+            answer = "What research topic can I help you explore today?"
+        return {
+            "answer": answer,
+            "results": None,
+            "messages": messages_to_dict([self.system_prompt]),
         }
 
     def _parse_messages(self, messages):

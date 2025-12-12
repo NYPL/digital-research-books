@@ -6,9 +6,9 @@ import {
     SubNavLink,
     Text,
 } from "@nypl/design-system-react-components";
-import ResearchAssistantIcon from "./ResearchAssistantIcon";
+import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 import { PageType } from "~/src/types/ResearchAssistant";
-import KeywordSearchIcon from "./KeywordSearchIcon";
+import KeywordSearchIcon from "./icons/KeywordSearchIcon";
 
 interface ResearchAssistantNavProps {
     activePage: PageType;
@@ -69,7 +69,7 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
                 <>
                     {/* TODO: add real links to help and account pages */}
                     <SubNavLink href="#help" id="subnav-help">
-                        Get help
+                        Contact us
                     </SubNavLink>
                     <SubNavLink
                         isOutlined

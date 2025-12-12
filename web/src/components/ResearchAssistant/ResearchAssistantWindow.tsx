@@ -2,17 +2,21 @@ import React, { useEffect, useRef } from "react";
 import MessageBubble from "./MessageBubble";
 import styles from "../../../styles/components/ResearchAssistantWindow.module.scss";
 import { Box, Text } from "@nypl/design-system-react-components";
-import { Message } from "~/src/types/ResearchAssistant";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import {
+  getPanelLayout,
+  PADDING_COUNTER,
+} from "~/src/constants/researchAssistant";
 
-interface ResearchAssistantWindowProps {
-  messages: Message[];
-  isLoading: boolean;
-}
+const ResearchAssistantWindow: React.FC = () => {
+  const {
+    messages,
+    isLoading,
+    error,
+    results,
+    showWebReader,
+  } = useResearchAssistant();
 
-const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
-  messages,
-  isLoading,
-}) => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -23,23 +27,24 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
     }
   }, [messages]);
 
+  const hasResults =
+    (results && Object.keys(results).length > 0) || showWebReader;
+  const { marginX, paddingX, marginRight } = getPanelLayout(hasResults);
+  
   return (
     <Box
       display="flex"
       flexDir="column"
+      fontSize="desktop.body.body2"
       overflowY="auto"
-      paddingLeft="l"
-      paddingRight="xxxl"
       paddingY="s"
       gap="s"
       marginBottom="s"
+      marginLeft={marginX}
+      marginRight={marginRight}
+      paddingLeft={paddingX}
+      paddingRight={`calc(${PADDING_COUNTER} * 2)`}
     >
-      {messages.length === 0 && !isLoading && (
-        <Box color="ui.white" margin="0 auto">
-          What research topic would you like to explore?
-        </Box>
-      )}
-
       {messages.map((message, index) => (
         <MessageBubble
           key={message.id}
@@ -61,6 +66,12 @@ const ResearchAssistantWindow: React.FC<ResearchAssistantWindowProps> = ({
             Assistant thinking...
           </Text>
         </Box>
+      )}
+
+      {error && (
+        <Text fontWeight="bold" position="relative" bottom="0">
+          {error}
+        </Text>
       )}
     </Box>
   );

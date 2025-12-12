@@ -17,6 +17,7 @@ import ErrorBoundary from "../components/ErrorBoundary";
 import { FeedbackProvider } from "../context/FeedbackContext";
 import { ParsedUrlQuery } from "querystring";
 import Script from "next/script";
+import { ResearchAssistantProvider } from "../context/ResearchAssistantContext";
 
 if (process.env.APP_ENV === "testing") {
   const { initMocks } = await import("mocks");
@@ -103,14 +104,16 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
 
         <link rel="icon" href={appConfig.favIconPath} />
       </Head>
-      <FeedbackProvider>
-        <ErrorBoundary>
-          <NewRelicSnippet />
-          <FeatureFlagProvider>
-            <Component {...pageProps} />
-          </FeatureFlagProvider>
-        </ErrorBoundary>
-      </FeedbackProvider>
+      <ResearchAssistantProvider>
+        <FeedbackProvider>
+          <ErrorBoundary>
+            <NewRelicSnippet />
+            <FeatureFlagProvider>
+              <Component {...pageProps} />
+            </FeatureFlagProvider>
+          </ErrorBoundary>
+        </FeedbackProvider>
+      </ResearchAssistantProvider>
     </>
   );
 };

@@ -1,20 +1,20 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import {
     ChatResults,
-    ApiItemsRead,
     Message,
     MessageStatus,
     MessageType,
     HistoryItem,
+    PageType,
 } from "~/src/types/ResearchAssistant";
 import { LinkResult } from "~/src/types/LinkQuery";
-import { itemsReadFetcher } from "~/src/lib/api/ResearchAssistantApi";
 import { readFetcher } from "~/src/lib/api/SearchApi";
+import { useRouter } from "next/router";
 
 interface ResearchAssistantViewState {
     showWebReader: boolean;
-    pdfData: ApiItemsRead | null;
     itemId: string;
+    pageId: string;
     results: ChatResults | null;
     linkResults: LinkResult | null;
 }
@@ -22,12 +22,14 @@ interface ResearchAssistantViewState {
 interface ResearchAssistantContextType extends ResearchAssistantViewState {
     messages: Message[];
     sendMessage: (message: string) => Promise<void>;
+    setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
     results: ChatResults | null;
     isLoading: boolean;
     error: string | null;
     historyStack: HistoryItem[];
-    goToPreviousState: () => void;
-    clearHistory: () => void;
+    setHistoryStack: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
+    goToPreviousState: (restoredStack?: HistoryItem[]) => void;
+    clearHistory: (page: PageType) => void;
     setViewState: React.Dispatch<React.SetStateAction<any | null>>;
     handlePreview: (url: string) => Promise<void>;
     handleReadOnline: (linkId: number) => Promise<void>;
@@ -36,9 +38,9 @@ interface ResearchAssistantContextType extends ResearchAssistantViewState {
 interface PushNewStateArgs {
     results: ChatResults | null;
     showWebReader: boolean;
-    pdfData: ApiItemsRead | null;
     linkResults: LinkResult | null;
     itemId?: string;
+    pageId?: string;
 }
 
 const ResearchAssistantContext = createContext<
@@ -55,26 +57,64 @@ export const ResearchAssistantProvider: React.FC<{
     const [historyStack, setHistoryStack] = useState<HistoryItem[]>([]);
     const [viewState, setViewState] = useState<ResearchAssistantViewState>({
         showWebReader: false,
-        pdfData: null,
         itemId: "",
+        pageId: "",
         results: null,
         linkResults: null,
     });
 
+    const router = useRouter();
+    const initialMessageType = router.pathname.startsWith("/item/")
+        ? "item"
+        : "vra";
+
+    const fetchInitialMessage = async (initialMessageType: string) => {
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem("authToken");
+            const res = await fetch("/api/research-assistant", {
+                method: "PUT",
+                headers: {
+                    Authorization: `Basic ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ messages: [], initialMessageType }),
+            });
+            const data = await res.json();
+            setMessages([
+                {
+                    id: "assistant-initial",
+                    data: { content: data.answer },
+                    status: MessageStatus.Sent,
+                    type: MessageType.Ai,
+                },
+            ]);
+        } catch (e) {
+            console.error("Error getting initial message:", e);
+            setError(e.message || "An unknown error occurred.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (messages.length === 0) fetchInitialMessage(initialMessageType);
+    }, [initialMessageType, messages]);
+
     const pushNewState = ({
         results,
         showWebReader,
-        pdfData,
         linkResults,
         itemId = "",
+        pageId = "",
     }: PushNewStateArgs) => {
         setHistoryStack((prevStack) => [
             ...prevStack,
             {
                 results: results,
                 itemId: itemId,
+                pageId: pageId,
                 showWebReader: showWebReader,
-                pdfData: pdfData,
                 linkResults: linkResults,
             },
         ]);
@@ -112,7 +152,7 @@ export const ResearchAssistantProvider: React.FC<{
             const response = await fetch("/api/research-assistant", {
                 method: "PUT",
                 headers: {
-                    "Authorization": `Basic ${token}`,
+                    Authorization: `Basic ${token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -165,7 +205,6 @@ export const ResearchAssistantProvider: React.FC<{
                 pushNewState({
                     results: data.results,
                     showWebReader: false,
-                    pdfData: null,
                     linkResults: null,
                     itemId: "",
                 });
@@ -173,7 +212,6 @@ export const ResearchAssistantProvider: React.FC<{
                 pushNewState({
                     results: data.results,
                     showWebReader: false,
-                    pdfData: null,
                     linkResults: null,
                     itemId: viewState.itemId,
                 });
@@ -197,21 +235,20 @@ export const ResearchAssistantProvider: React.FC<{
     const handlePreview = async (url: string) => {
         const urlParts = url.split("/");
         const [itemId, pageId] = [urlParts.at(-3), urlParts.at(-1)];
-        const previewItemId = urlParts[urlParts.length - 3];
-        const itemsReadResults = await itemsReadFetcher(itemId, pageId);
+
         setViewState((prev) => ({
             ...prev,
             results: viewState.results,
-            pdfData: itemsReadResults.data,
-            itemId: previewItemId,
+            itemId: itemId,
+            pageId: pageId,
             showWebReader: true,
         }));
         pushNewState({
             results: null,
             showWebReader: true,
-            pdfData: itemsReadResults.data,
             linkResults: null,
-            itemId: previewItemId,
+            itemId: itemId,
+            pageId: pageId,
         });
     };
 
@@ -226,32 +263,29 @@ export const ResearchAssistantProvider: React.FC<{
         pushNewState({
             results: null,
             showWebReader: true,
-            pdfData: null,
             linkResults: linkResult,
             itemId: "",
         });
     };
 
-    const goToPreviousState = () => {
+    const goToPreviousState = (restoredStack?: HistoryItem[]) => {
         setHistoryStack((prevStack) => {
-            if (prevStack.length > 1) {
-                const prevState = prevStack[prevStack.length - 2];
+            const stack = restoredStack ?? prevStack;
+            if (stack.length > 0) {
+                const prevState = stack.length > 1 ? stack[stack.length - 2] : stack[0];
                 setViewState((prev) => ({
                     ...prev,
                     results: prevState.results,
                     itemId: prevState.itemId || "",
-                    pdfData: prevState.pdfData,
                     showWebReader: prevState.showWebReader,
                     linkResults: prevState.linkResults,
                 }));
-                return prevStack.slice(0, -1);
+                return stack.length > 1 ? stack.slice(0, -1) : [];
             }
-
             setViewState((prev) => ({
                 ...prev,
                 results: null,
                 itemId: "",
-                pdfData: null,
                 showWebReader: false,
                 linkResults: null,
             }));
@@ -259,25 +293,28 @@ export const ResearchAssistantProvider: React.FC<{
         });
     };
 
-    const clearHistory = () => {
+    const clearHistory = (page: PageType) => {
         setMessages([]);
         setError(null);
-        setViewState((prev) => ({
-            ...prev,
-            results: null,
-            showWebReader: false,
-            pdfData: null,
-            itemId: "",
-            linkResults: null,
-        }));
+        if (page !== "item") {
+            setViewState((prev) => ({
+                ...prev,
+                results: null,
+                showWebReader: false,
+                itemId: "",
+                linkResults: null,
+            }));
+        }
     };
 
     const value: ResearchAssistantContextType = {
         messages,
         sendMessage,
+        setMessages,
         isLoading,
         error,
         historyStack,
+        setHistoryStack,
         goToPreviousState,
         clearHistory,
         ...viewState,

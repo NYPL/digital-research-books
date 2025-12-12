@@ -4,11 +4,12 @@ import {
     TextInput,
     Button,
     Icon,
+    Flex,
 } from "@nypl/design-system-react-components";
-import ResearchAssistantIcon from "../ResearchAssistant/ResearchAssistantIcon";
+import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import ResearchAssistantSendIcon from "../ResearchAssistant/ResearchAssistantSendIcon";
+import ResearchAssistantSendIcon from "../ResearchAssistant/icons/ResearchAssistantSendIcon";
 
 interface SearchSectionProps {
     helpSectionRef: React.RefObject<HTMLDivElement>;
@@ -112,11 +113,16 @@ const SearchSection: React.FC<SearchSectionProps> = ({ helpSectionRef }) => {
                             backgroundColor: "#f3f7fc",
                         }}
                     >
-                        <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                            <Box display="flex" alignItems="center" alignSelf="flex-start">
+                        <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            width="100%"
+                        >
+                            <Flex alignItems="center" alignSelf="flex-start" gap="xxs">
                                 <ResearchAssistantIcon />
                                 <span>{suggestion}</span>
-                            </Box>
+                            </Flex>
                             <Icon align="right" name="search" size="large" />
                         </Box>
                     </Button>
@@ -130,7 +136,9 @@ const SearchSection: React.FC<SearchSectionProps> = ({ helpSectionRef }) => {
                 variant="secondary"
                 margin="0 auto"
                 borderWidth="2px"
-                onClick={() => helpSectionRef.current?.scrollIntoView({ behavior: "smooth" })}
+                onClick={() =>
+                    helpSectionRef.current?.scrollIntoView({ behavior: "smooth" })
+                }
             >
                 Learn more ↓
             </Button>

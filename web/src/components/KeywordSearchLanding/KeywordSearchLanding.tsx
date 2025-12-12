@@ -1,11 +1,21 @@
 import React from "react";
 import { Flex, Heading, Icon } from "@nypl/design-system-react-components";
 import KeywordSearchForm from "../KeywordSearchForm/KeywordSearchForm";
+import router from "next/router";
+import { SearchQuery } from "~/src/types/SearchQuery";
+import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
 
 const KeywordSearchLanding: React.FC = () => {
+    const handleSearch = (query: SearchQuery) => {
+        router.push({
+            pathname: "/keyword-search",
+            query: toLocationQuery(toApiQuery(query)),
+        });
+    };
+
     return (
         <>
-            <KeywordSearchForm paddingBottom="l" />
+            <KeywordSearchForm onSearch={handleSearch} paddingBottom="l" />
             <Flex gap="s" bgColor="ui.bg.default" alignItems="center">
                 <Flex
                     alignItems="center"

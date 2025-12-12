@@ -6,27 +6,35 @@ import {
   TextInput,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
-import { Message } from "~/src/types/ResearchAssistant";
-import ResearchAssistantSendIcon from "./ResearchAssistantSendIcon";
+import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import {
+  getPanelLayout,
+  PADDING_COUNTER,
+} from "~/src/constants/researchAssistant";
 
-interface ResearchAssistantInputProps {
-  onSendMessage: (text: string) => void;
-  isDisabled: boolean;
-  messages: Message[];
-}
+const ResearchAssistantInput: React.FC = () => {
+  const {
+    messages,
+    sendMessage,
+    isLoading,
+    results,
+    showWebReader,
+  } = useResearchAssistant();
 
-const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
-  onSendMessage,
-  isDisabled,
-  messages,
-}) => {
+  const [isFocused, setIsFocused] = useState(false);
   const [inputText, setInputText] = useState("");
   const inputRef = useRef<TextInputRefType>(null);
+  const isDisabled = isLoading;
+
+  const hasResults =
+    (results && Object.keys(results).length > 0) || showWebReader;
+  const { marginX, paddingX, marginRight } = getPanelLayout(hasResults);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputText.trim() && !isDisabled) {
-      onSendMessage(inputText);
+      sendMessage(inputText);
       setInputText("");
 
       if (inputRef.current && inputRef.current) {
@@ -74,11 +82,13 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
       id="research-assistant-form"
       onSubmit={handleSubmit}
       borderTop="1px white solid"
+      marginLeft={marginX}
+      marginRight={marginRight}
+      paddingLeft={paddingX}
+      paddingRight={`calc(${PADDING_COUNTER} * 2)`}
+      paddingY="s"
       // @ts-expect-error: Override gap value type
       gap="0"
-      paddingLeft="l"
-      paddingRight="xxxl"
-      paddingY="s"
     >
       {/* TODO: Replace with actual related items and logic when available */}
       {messages.length > 1 && (
@@ -112,6 +122,16 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
         flexDir="row"
         gap="0"
         padding="s"
+        sx={
+          isFocused
+            ? {
+              boxShadow: "none",
+              outline: "2px solid",
+              outlineOffset: "2px",
+              outlineColor: "ui.focus",
+            }
+            : {}
+        }
       >
         <TextInput
           autoComplete="off"
@@ -121,6 +141,8 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
           onChange={(e) => setInputText(e.target.value)}
           onInput={(e) => updateTextareaHeight(e)}
           onKeyDown={(e) => handleKeyDown(e)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           placeholder={placeholderValue}
           ref={inputRef}
           type="textarea"
@@ -135,10 +157,11 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
               minHeight: "1.375rem",
               maxHeight: "132px", // 6 rows
               resize: "none",
-              padding: 0
+              padding: 0,
             },
             "textarea:focus": {
-              outlineOffset: "14px",
+              outline: "none !important",
+              boxShadow: "none !important",
             },
           }}
         />
@@ -159,7 +182,9 @@ const ResearchAssistantInput: React.FC<ResearchAssistantInputProps> = ({
             backgroundColor: "transparent",
           }}
         >
-          <ResearchAssistantSendIcon isDisabled={isDisabled || inputText === ""} />
+          <ResearchAssistantSendIcon
+            isDisabled={isDisabled || inputText === ""}
+          />
         </Button>
       </Box>
     </Form>

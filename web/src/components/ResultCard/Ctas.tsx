@@ -6,12 +6,23 @@ import EditionCardUtils from "~/src/util/EditionCardUtils";
 import DownloadLink from "./DownloadLink";
 import EddLink from "./EddLink";
 import ReadOnlineLink from "./ReadOnlineLink";
+import PreviewLink from "../EditionCard/PreviewLink";
 
-const Ctas: React.FC<{
+interface CtasProps {
     authors: Agent[];
     item: ApiItem | undefined;
     title: string;
-}> = ({ authors, item, title }) => {
+    workId?: string;
+    editionId?: number;
+}
+
+const Ctas: React.FC<CtasProps> = ({
+    authors,
+    item,
+    title,
+    workId,
+    editionId,
+}) => {
     // cookies defaults to be undefined if not fonud
     const [cookies] = useCookies([NYPL_SESSION_ID]);
     const loginCookie = cookies[NYPL_SESSION_ID];
@@ -26,14 +37,21 @@ const Ctas: React.FC<{
     if (readOnlineLink || downloadLink) {
         return (
             <>
-                {readOnlineLink && (
-                    <ReadOnlineLink
-                        authors={authorNames}
-                        isLoggedIn={isLoggedIn}
-                        readOnlineLink={readOnlineLink}
-                        title={title}
-                    />
-                )}
+                {readOnlineLink &&
+                    (readOnlineLink.mediaType !== "application/ocr" ? (
+                        <ReadOnlineLink
+                            authors={authorNames}
+                            isLoggedIn={isLoggedIn}
+                            readOnlineLink={readOnlineLink}
+                            title={title}
+                        />
+                    ) : (
+                        <PreviewLink
+                            previewLink={readOnlineLink}
+                            workId={workId}
+                            editionId={editionId}
+                        />
+                    ))}
                 {downloadLink && (
                     <DownloadLink
                         authors={authorNames}
@@ -52,7 +70,7 @@ const Ctas: React.FC<{
 
     // Offer EDD if available
     if (eddLink !== undefined) {
-        return <><EddLink eddLink={eddLink} isLoggedIn={isLoggedIn} title={title} /></>;
+        return <EddLink eddLink={eddLink} isLoggedIn={isLoggedIn} title={title} />;
     }
 
     return <>Not yet available</>;

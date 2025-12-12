@@ -424,7 +424,7 @@ describe("Renders No Results when no results are shown", () => {
   test("No Results message appears", () => {
     expect(
       screen.getByText(
-        "No results were found."
+        "No results found. Try a different topic."
       )
     ).toBeInTheDocument();
   });

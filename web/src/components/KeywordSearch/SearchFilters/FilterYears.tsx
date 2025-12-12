@@ -112,7 +112,7 @@ const FilterYears: React.FC<{
       isDefaultOpen
       sx={{
         "button[aria-expanded=true]": {
-          bgColor: "ui.link.primary-05"
+          bgColor: "#F2F9F9"
         },
         ".chakra-collapse": {
           bgColor: "ui.white"

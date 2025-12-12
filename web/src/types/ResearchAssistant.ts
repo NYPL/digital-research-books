@@ -41,7 +41,6 @@ export interface HistoryItem {
   results: ChatResults;
   itemId?: string;
   showWebReader: boolean;
-  pdfData: ApiItemsRead | null;
   linkResults: LinkResult | null;
 }
 
@@ -55,7 +54,7 @@ export type SearchParams = {
   filters?: [string, string][];
 };
 
-export type PageType = "vra" | "keyword";
+export type PageType = "vra" | "keyword" | "item";
 
 export type ItemReadResults = {
   data: ApiItemsRead;

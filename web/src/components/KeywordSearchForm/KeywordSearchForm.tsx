@@ -120,6 +120,7 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({
                         bgColor: "section.research.secondary", // TODO: update hover state colors
                     },
                 }}
+                marginBottom="s"
             />
             <ResultsBanner />
         </Flex>
