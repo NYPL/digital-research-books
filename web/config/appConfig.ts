@@ -28,7 +28,6 @@ const appConfig = {
     formUrl: "https://api.airtable.com/v0/appFLZEc3LmVZCRxn/Requests",
     experimentName: "RequestDigital",
   },
-  analytics: process.env["NEXT_PUBLIC_ADOBE_ANALYTICS"],
   feedback: {
     formURL: "https://api.airtable.com/v0/appFLZEc3LmVZCRxn/Feedback",
   },
