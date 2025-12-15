@@ -8,6 +8,12 @@ import ResearchAssistantPanel from "./ResearchAssistantPanel";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
 import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
+import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
+import ResultsBanner from "./ResultsBanner";
+import {
+  MARGIN_BLEED,
+  PADDING_COUNTER,
+} from "~/src/constants/researchAssistant";
 
 const ResearchAssistant: React.FC = () => {
   const {
@@ -37,9 +43,6 @@ const ResearchAssistant: React.FC = () => {
   const backUrl = "/research-assistant";
 
   const gridTemplateColumns = "1fr 640px 640px 1fr";
-  const hasResults =
-    (results && Object.keys(results).length > 0) || showWebReader;
-  const vraColumnSpan = hasResults ? "3 / span 2" : "1 / span 4";
 
   return (
     <ResultPageProvider
@@ -53,64 +56,83 @@ const ResearchAssistant: React.FC = () => {
         gridTemplateColumns={gridTemplateColumns}
         width="100%"
       >
-        {hasResults && (
+        <Flex
+          gridColumn="1 / span 2"
+          flexDirection="column"
+          minWidth="0"
+          justifyContent="flex-end"
+          alignItems="flex-end"
+          bgColor="ui.bg.default"
+        >
           <Flex
-            gridColumn="1 / span 2"
+            width="640px"
             flexDirection="column"
-            minWidth="0"
+            height="100%"
             justifyContent="flex-end"
             alignItems="flex-end"
-            bgColor="ui.bg.default"
           >
-            <Flex
-              width="640px"
-              flexDirection="column"
-              height="100%"
-              justifyContent="flex-end"
-              alignItems="flex-end"
-            >
-              <Flex flexDirection="column" flex="1">
-                {historyStack.length > 1 && (
-                  <Box
-                    padding="s"
-                    borderBottom="1px solid"
-                    borderColor="ui.border"
-                  >
-                    <BackToResultsButton
-                      handleBackToResults={goToPreviousState}
-                    />
-                  </Box>
-                )}
-                {showWebReader ? (
-                  <Box flex="1">
-                    (
-                      <ReaderLayout
-                        linkResult={linkResults}
-                        proxyUrl={proxyUrl}
-                        backUrl={backUrl}
-                      />
-                    )
-                  </Box>
-                ) : (
-                  <Box paddingLeft="s" paddingRight="l" paddingBottom="l" flex="1">
-                    {results && Object.keys(results).length > 0 && (
-                      <>
-                        {results.type === "catalog_search" && (
-                          <CatalogResults results={results.data} />
-                        )}
-                        {results.type === "item_search" && (
-                          <ItemResults results={results.data} />
-                        )}
-                      </>
-                    )}
-                  </Box>
-                )}
-              </Flex>
+            <Flex flexDirection="column" flex="1" width="100%">
+              {results && historyStack.length > 1 && (
+                <Box
+                  padding="s"
+                  borderBottom="1px solid"
+                  borderColor="ui.border.default"
+                  height="58px"
+                  marginLeft={MARGIN_BLEED}
+                  paddingLeft={PADDING_COUNTER}
+                >
+                  <BackToResultsButton
+                    handleBackToResults={() => goToPreviousState()}
+                  />
+                </Box>
+              )}
+              {!results && (
+                <Box
+                  padding="s"
+                  borderBottom="1px solid"
+                  borderColor="ui.border.default"
+                  height="58px"
+                  marginLeft={MARGIN_BLEED}
+                  paddingLeft={PADDING_COUNTER}
+                />
+              )}
+              {showWebReader ? (
+                <Box flex="1" marginTop="s" marginRight="s">
+                  <ReaderLayout
+                    linkResult={linkResults}
+                    proxyUrl={proxyUrl}
+                    backUrl={backUrl}
+                  />
+                </Box>
+              ) : (
+                <Box
+                  paddingLeft="s"
+                  paddingRight="l"
+                  paddingBottom="l"
+                  flex="1"
+                >
+                  {results && Object.keys(results).length > 0 ? (
+                    <>
+                      {results.type === "catalog_search" && (
+                        <CatalogResults results={results.data} />
+                      )}
+                      {results.type === "item_search" && (
+                        <ItemResults results={results.data} />
+                      )}
+                    </>
+                  ) : (
+                    <Box width="100%" marginTop="s">
+                      <ResultsBanner />
+                      <EmptySearchPrompt />
+                    </Box>
+                  )}
+                </Box>
+              )}
             </Flex>
           </Flex>
-        )}
+        </Flex>
         <Flex
-          gridColumn={vraColumnSpan}
+          gridColumn="3 / span 2"
           flexDirection="column"
           bgColor="section.research.primary"
           maxHeight="100vh"
@@ -122,7 +144,7 @@ const ResearchAssistant: React.FC = () => {
           alignItems="flex-start"
         >
           <Flex
-            width={hasResults ? "640px" : "1280px"}
+            width="640px"
             flexDirection="column"
             height="100%"
             justifyContent="flex-start"

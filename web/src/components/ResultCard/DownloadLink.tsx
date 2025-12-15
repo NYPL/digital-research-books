@@ -94,6 +94,7 @@ const DownloadLink: React.FC<{
           aria-label={`${title} Download PDF`}
           borderColor="section.research.secondary"
           color="section.research.secondary"
+          _hover={{ bgColor: "section.research.primary-05" }}
         >
           {linkText}
         </Link>

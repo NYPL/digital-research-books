@@ -1,9 +1,9 @@
 import React from "react";
-import { Flex, Heading, Icon } from "@nypl/design-system-react-components";
 import KeywordSearchForm from "../KeywordSearchForm/KeywordSearchForm";
 import router from "next/router";
 import { SearchQuery } from "~/src/types/SearchQuery";
 import { toLocationQuery, toApiQuery } from "~/src/util/apiConversion";
+import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
 
 const KeywordSearchLanding: React.FC = () => {
     const handleSearch = (query: SearchQuery) => {
@@ -16,33 +16,7 @@ const KeywordSearchLanding: React.FC = () => {
     return (
         <>
             <KeywordSearchForm onSearch={handleSearch} paddingBottom="l" />
-            <Flex gap="s" bgColor="ui.bg.default" alignItems="center">
-                <Flex
-                    alignItems="center"
-                    flex="1"
-                    flexDir="column"
-                    gap="xs"
-                    height="100%"
-                    margin="0 auto"
-                    maxWidth="1280px"
-                    padding="xxxl"
-                >
-                    <Icon
-                        color="section.research.secondary"
-                        name="search"
-                        size="xlarge"
-                    />
-                    <Heading
-                        color="section.research.secondary"
-                        size="heading6"
-                        textAlign="center"
-                        width="600px"
-                    >
-                        Start searching to see results from over 1 million scholarly e-books
-                        in the public domain
-                    </Heading>
-                </Flex>
-            </Flex>
+            <EmptySearchPrompt />
         </>
     );
 };

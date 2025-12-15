@@ -19,16 +19,11 @@ import ArrowIcon from "./icons/ArrowIcon";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
 
 const ResearchAssistantPanel: React.FC = () => {
-  const { results, clearHistory, showWebReader } = useResearchAssistant();
+  const { clearHistory } = useResearchAssistant();
+
+  const { marginX, paddingX, marginRight } = getPanelLayout();
 
   const { page } = useResultPageContext();
-
-  const hasResults =
-    (results && Object.keys(results).length > 0) || showWebReader;
-
-  const { marginX, paddingX, marginRight, paddingRight } = getPanelLayout(
-    hasResults
-  );
 
   const hideChat = () => { };
 
@@ -43,7 +38,7 @@ const ResearchAssistantPanel: React.FC = () => {
       top="0"
       width="100%"
       paddingLeft={paddingX}
-      paddingRight={page === "item" ? "l" : paddingRight}
+      paddingRight={page === "item" ? "l" : undefined}
     >
       <Box
         bgColor="section.research.primary"
@@ -82,9 +77,10 @@ const ResearchAssistantPanel: React.FC = () => {
             id="clear-history-button"
             sx={{
               "&:hover": {
-                color: "ui.link.secondary",
+                color: "ui.white",
+                opacity: 0.8,
                 path: {
-                  stroke: "ui.link.secondary",
+                  stroke: "ui.white",
                 },
               },
             }}
@@ -102,9 +98,10 @@ const ResearchAssistantPanel: React.FC = () => {
             id="hide-chat-button"
             sx={{
               "&:hover": {
-                color: "ui.link.secondary",
+                color: "ui.white",
+                opacity: 0.8,
                 path: {
-                  stroke: "ui.link.secondary",
+                  stroke: "ui.white",
                 },
               },
             }}

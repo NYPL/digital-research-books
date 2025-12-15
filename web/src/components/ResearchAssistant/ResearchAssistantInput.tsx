@@ -18,8 +18,6 @@ const ResearchAssistantInput: React.FC = () => {
     messages,
     sendMessage,
     isLoading,
-    results,
-    showWebReader,
   } = useResearchAssistant();
 
   const [isFocused, setIsFocused] = useState(false);
@@ -27,9 +25,7 @@ const ResearchAssistantInput: React.FC = () => {
   const inputRef = useRef<TextInputRefType>(null);
   const isDisabled = isLoading;
 
-  const hasResults =
-    (results && Object.keys(results).length > 0) || showWebReader;
-  const { marginX, paddingX, marginRight } = getPanelLayout(hasResults);
+  const { marginX, paddingX, marginRight } = getPanelLayout();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

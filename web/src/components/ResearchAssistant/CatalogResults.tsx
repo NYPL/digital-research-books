@@ -83,10 +83,9 @@ const CatalogResults: React.FC<{
         bgColor="ui.bg.default"
         borderBottom="1px solid"
         borderColor="ui.border.default"
-        boxSizing="content-box"
         fontSize="desktop.heading.heading7"
         fontWeight="bold"
-        lineHeight="40px"
+        lineHeight="125%"
         marginX="-2rem"
         paddingX="l"
         paddingY="s"
@@ -95,6 +94,7 @@ const CatalogResults: React.FC<{
         zIndex="999"
         marginLeft={MARGIN_BLEED}
         paddingLeft={PADDING_COUNTER}
+        height="58px"
       >
         {resultsPagingText}
       </Text>
