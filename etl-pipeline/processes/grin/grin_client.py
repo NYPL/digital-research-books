@@ -97,7 +97,9 @@ class GRINClient(object):
             "_all_books?execute_query=true&format=text&last_scan_date_start=%s&last_scan_date_end=%s"
             % (range_start, range_end)
         )
-        barcodes = [b for b in barcodes.decode("utf8").strip().split("\n") if b.strip()]
+        if not barcodes:
+            return []
+        barcodes = barcodes.decode("utf8").strip().split("\n")
         return barcodes
 
     def _for_state(self, state, *args, **kwargs):
