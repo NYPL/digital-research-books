@@ -85,7 +85,7 @@ class ElasticsearchManager:
         self.es = Elasticsearch(**connection_config)
 
     def create_elastic_search_ingest_pipeline(self):
-        es_ingest_client = self.client.ingest
+        es_ingest_client = IngestClient(self.client)
 
         self.construct_language_pipeline(
             es_ingest_client,
