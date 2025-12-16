@@ -25,6 +25,7 @@ const ResearchAssistant: React.FC = () => {
     showWebReader,
     linkResults,
     handleReadOnline,
+    showChat,
   } = useResearchAssistant();
 
   useEffect(() => {
@@ -42,7 +43,9 @@ const ResearchAssistant: React.FC = () => {
   const proxyUrl: string = proxyUrlConstructor();
   const backUrl = "/research-assistant";
 
-  const gridTemplateColumns = "1fr 640px 640px 1fr";
+  const gridTemplateColumns = showChat
+    ? "1fr 640px 640px 1fr"
+    : "1fr 1152px 128px 1fr";
 
   return (
     <ResultPageProvider
@@ -65,7 +68,7 @@ const ResearchAssistant: React.FC = () => {
           bgColor="ui.bg.default"
         >
           <Flex
-            width="640px"
+            width={showChat ? "640px" : "1152px"}
             flexDirection="column"
             height="100%"
             justifyContent="flex-end"

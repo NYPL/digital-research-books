@@ -155,6 +155,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             paddingRight={getHeaderPaddingRight(vraEnabled)}
             paddingY="s"
             marginRight={vraEnabled ? "0" : "-2rem"}
+            height="58px"
           >
             <BackToResultsButton handleBackToResults={handleBackToResults} />
             <Toggle
