@@ -24,6 +24,7 @@ describe("ResearchAssistant", () => {
             isLoading: false,
             error: null,
             clearHistory: mockClearHistory,
+            showChat: true,
         });
     });
 
@@ -55,6 +56,7 @@ describe("ResearchAssistant", () => {
             isLoading: false,
             error: "Failed to fetch response.",
             clearHistory: jest.fn(),
+            showChat: true,
         });
 
         render(<ResearchAssistant />);
