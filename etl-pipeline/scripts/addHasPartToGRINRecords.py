@@ -50,6 +50,7 @@ def main():
     record_pipeline_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
     sqs_manager = SQSManager(record_pipeline_queue)
     s3_client = boto3.client("s3")
+    bucket = os.environ["PRIVATE_FILE_BUCKET"]
 
     with DBManager() as db_manager:
         query = (
@@ -58,34 +59,56 @@ def main():
             .filter(
                 Record.source == "grin",
                 func.split_part(Record.rights, "|", 2) == "public_domain",
-                or_(Record.has_part == "{}", Record.has_part.is_(None)),
                 GRINStatus.state == GRINState.DOWNLOADED.value,
+                Record.state == "ingested",
             )
         )
 
+        logger.info(f"Found {query.count()} GRIN records to process")
+
         total_updated = 0
+        total_has_first_page = 0
 
         for record in query.yield_per(BATCH_SIZE):
             try:
+                logger.info(f"Processing record with source_id {record.source_id}")
                 barcode = record.source_id.split("|")[0]
-                mets_file = get_mets_file_from_s3(s3_client, barcode)
+                first_page_url = (
+                    f"https://{bucket}.s3.amazonaws.com/grin/{barcode}/00000001"
+                )
 
-                if mets_file:
-                    first_page_part = create_first_page_part(barcode, mets_file)
-                    record.has_part = [str(first_page_part)]
-                    db_manager.session.add(record)
-                    total_updated += 1
+                has_first_page = record.has_part and any(
+                    first_page_url in str(part) for part in record.has_part
+                )
 
-                    sqs_manager.send_message_to_queue(
-                        message={"source_id": record.source_id, "source": record.source}
+                if not has_first_page:
+                    mets_file = get_mets_file_from_s3(s3_client, barcode)
+                    if mets_file:
+                        first_page_part = create_first_page_part(barcode, mets_file)
+                        record.has_part.append(str(first_page_part))
+
+                        db_manager.session.add(record)
+                        total_updated += 1
+                else:
+                    total_has_first_page += 1
+                    logger.info(
+                        f"Record {record.source_id} already has first_page_part"
                     )
+
+                sqs_manager.send_message_to_queue(
+                    message={"source_id": record.source_id, "source": record.source}
+                )
+
+                logger.info(f"Sent record {record.source_id} to queue")
             except Exception as e:
                 logger.error(
                     f"Failed to process record with source_id {record.source_id}: {e}"
                 )
 
         db_manager.session.commit()
-        logger.info(f"Updated {total_updated} GRIN records with has_part")
+        logger.info(
+            f"Updated {total_updated} GRIN records with has_part, {total_has_first_page} already had first_page_part"
+        )
 
 
 if __name__ == "__main__":
