@@ -1,5 +1,6 @@
 import os
 
+from elasticsearch.client.ingest import IngestClient
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from elasticsearch_dsl import connections, Index
