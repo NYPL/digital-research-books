@@ -97,6 +97,8 @@ class GRINClient(object):
             "_all_books?execute_query=true&format=text&last_scan_date_start=%s&last_scan_date_end=%s"
             % (range_start, range_end)
         )
+        if not barcodes:
+            return []
         barcodes = barcodes.decode("utf8").strip().split("\n")
         return barcodes
 
