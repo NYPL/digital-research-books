@@ -18,7 +18,7 @@ class GoogleDriveService:
         ssm_service = SSMService()
 
         SERVICE_ACCOUNT_FILE = ssm_service.get_parameter(
-            "google-drive-service-key",  # raise_on_error=True
+            "google-drive-service-key", raise_on_error=True
         )
 
         service_account_info = json.loads(SERVICE_ACCOUNT_FILE)
