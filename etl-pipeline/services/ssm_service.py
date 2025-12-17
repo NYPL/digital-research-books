@@ -7,17 +7,17 @@ logger = create_log(__name__)
 
 
 class SSMService:
-    def __init__(self):
+    def __init__(self, environment: str = None):
         self.ssm_client = boto3.client(
             "ssm",
             region_name=os.environ.get("AWS_REGION", None),
         )
 
-        self.environment = (
-            "production"
-            if os.environ.get("ENVIRONMENT", "qa") == "production"
-            else "qa"
-        )
+        self.environment = environment or os.environ.get("ENVIRONMENT")
+        if not self.environment:
+            raise ValueError(
+                "Environment must be provided either as a parameter or via ENVIRONMENT environment variable"
+            )
 
     def get_parameter(
         self, parameter_name: str, raise_on_error: bool = False
