@@ -11,10 +11,10 @@ from langchain_core.messages import (
 )
 from langchain.tools import tool
 from logger import create_log
-from .utils import APIUtils
-from .db import DBClient
+from ...utils import APIUtils
+from ...db import DBClient
 from uuid import UUID
-from .blueprints.item_search import get_search_results, QueryMode
+from .item_search import item_full_text_search, QueryMode
 
 import json
 
@@ -57,7 +57,7 @@ class ResearchAssistant:
             semantic_query: Optional[str] = None,
             size: int = 10,
         ):
-            item_results = get_search_results(
+            item_results = item_full_text_search(
                 item_id,
                 query_mode,
                 keyword,

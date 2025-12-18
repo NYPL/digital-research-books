@@ -81,9 +81,7 @@ class Searcher:
 
         resp = search.execute()
         print(f"Server-side search took: {resp.took / 1000} (seconds)")
-        # NOTE: enrich hits inside search so that we only do I/O to retrieve book metadata once
-        enriched_hits = enrich_hits(search)
-        return enriched_hits
+        return search
 
     def keyword_search(self, query, topk=10):
         search = (
@@ -96,15 +94,10 @@ class Searcher:
         search = search[:topk]
         resp = search.execute()
         print(f"search took: {resp.took}")
-        # NOTE: enrich hits inside search so that we only do I/O to retrieve book metadata once
-        enriched_hits = enrich_hits(search)
-        return enriched_hits
         return search
 
 
-def enrich_hits(hits):
-    # TODO: move so we are not reading the file each time results are displayed.
-    # MAYBE: add to Searcher (if that would muddy single purpose or reuse of searcher in different contexts)
+def get_book_metadata(record_ids):
     barcode_data = read_barcode_data()
 
     hit_data = []
@@ -113,13 +106,6 @@ def enrich_hits(hits):
         extra = barcode_data.query("barcode == @barcode").squeeze().to_dict()
         enriched_hit = {**hit.to_dict(), **{"meta": hit.meta.to_dict()}, **extra}
 
-        # chunk id as page num for chunks and dummy page for summaries
-        enriched_hit["page_number"] = (
-            enriched_hit["meta"]["id"].split("_")[1]
-            if "_" in enriched_hit["meta"]["id"]
-            else 1
-        )
-
         hit_data.append(enriched_hit)
 
     return hit_data
@@ -127,6 +113,9 @@ def enrich_hits(hits):
 
 def get_score(entry):
     return entry.get("meta", {}).get("score", float("-inf"))
+
+
+# TODO: add dummy page number (p1) for book summary index chunks....
 
 
 def verbose_display(entries, query, as_str=False):
