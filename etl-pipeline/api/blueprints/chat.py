@@ -1,23 +1,27 @@
 from flask import Blueprint, current_app, request
+
+# shared code
+from logger import create_log
+
+# API code
+from ..utils import APIUtils
 from ..elastic import ElasticClient
 from ..db import DBClient
-
-from ..utils import APIUtils
-from logger import create_log
 from ..research_assistant import ResearchAssistant
 from ..auth import require_api_key
 from ..decorators import require_token
 
+
 logger = create_log(__name__)
 
-chats_blueprint = Blueprint("chats", __name__, url_prefix="/chats")
-RESPONSE_TYPE = "chats"
+chat_blueprint = Blueprint("chat", __name__, url_prefix="/chat")
+RESPONSE_TYPE = "chat"
 
 
-@chats_blueprint.route("", methods=["PUT"])
+@chat_blueprint.route("/", methods=["POST"])
 @require_api_key
 @require_token
-def update_chat(user=None):
+def chat(user=None):
     research_assistant = ResearchAssistant(
         ElasticClient(current_app.config["REDIS_CLIENT"]),
         DBClient(current_app.config["DB_CLIENT"]),
