@@ -9,6 +9,10 @@ from logger import create_log
 logger = create_log(__name__)
 
 
+def get_database_url(user, pswd, host, port, db):
+    return "postgresql://{}:{}@{}:{}/{}".format(user, pswd, host, port, db)
+
+
 class DBManager:
     def __init__(self, user=None, pswd=None, host=None, port=None, db=None):
         super(DBManager, self).__init__()
@@ -31,9 +35,7 @@ class DBManager:
     def generate_engine(self):
         try:
             self.engine = create_engine(
-                "postgresql://{}:{}@{}:{}/{}".format(
-                    self.user, self.pswd, self.host, self.port, self.db
-                )
+                get_database_url(self.user, self.pswd, self.host, self.port, self.db)
             )
 
             return self.engine
