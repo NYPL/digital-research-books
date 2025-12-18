@@ -85,6 +85,10 @@ class ResearchAssistant:
             page: int = 0,
             size: int = 10,
         ):
+            """
+            Perform a keyword search on DRB catalog. This is the same search backend
+            as used in the DRB site.
+            """
             params = SearchParams(
                 title=title,
                 keyword=keyword,
