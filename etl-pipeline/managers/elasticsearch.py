@@ -1,9 +1,9 @@
 import os
 
-from elasticsearch.client.ingest import IngestClient
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
-from elasticsearch_dsl import connections, Index
+from elasticsearch7.client.ingest import IngestClient
+from elasticsearch7 import Elasticsearch
+from elasticsearch7.helpers import bulk
+from elasticsearch7_dsl import connections, Index
 from elastic_transport import ConnectionTimeout
 
 from model import ESWork

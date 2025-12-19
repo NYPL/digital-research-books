@@ -1,4 +1,4 @@
-from elasticsearch.exceptions import RequestError
+from elasticsearch7.exceptions import RequestError
 from flasgger import Swagger
 from flask import Flask
 from flask_cors import CORS

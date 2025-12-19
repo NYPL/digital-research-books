@@ -33,6 +33,7 @@ from vector_indexing.embedding import GoogleEmbedder
 # - read system prompt
 
 
+# ALT: ApiWorkerContext
 class AssistantWorkerContext:
     def __init__(self, index_name):
         # TODO: get embedder from index_name config

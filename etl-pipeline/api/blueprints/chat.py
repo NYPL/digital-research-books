@@ -15,11 +15,12 @@ from ..assistant.agent import update_chat, AssistantWorkerContext
 logger = create_log(__name__)
 
 chat_blueprint = Blueprint("chat", __name__, url_prefix="/chat")
+
 RESPONSE_TYPE = "chat"
-
 INDEX_NAME = "vra_chunks_gemini-embedding-001"
-
-WORKER_CONTEXT = AssistantWorkerContext(index_name=INDEX_NAME)
+WORKER_CONTEXT = AssistantWorkerContext(
+    index_name=INDEX_NAME
+)  # Q: is there a more flask idomatic way to do this?
 
 
 @chat_blueprint.route("/", methods=["POST"])

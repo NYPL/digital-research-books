@@ -2,7 +2,7 @@ import os
 
 from model import Work
 from managers import DBManager, ElasticsearchManager
-from elasticsearch_dsl import Search
+from elasticsearch7_dsl import Search
 
 
 def main():

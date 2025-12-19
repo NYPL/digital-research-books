@@ -1,5 +1,5 @@
 from copy import deepcopy
-from elasticsearch_dsl import Search, Q, A
+from elasticsearch7_dsl import Search, Q, A
 from hashlib import sha1
 import json
 import os

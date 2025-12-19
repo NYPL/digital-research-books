@@ -1,4 +1,4 @@
-from elasticsearch_dsl import Text, Keyword, Boolean, Nested, Object
+from elasticsearch7_dsl import Text, Keyword, Boolean, Nested, Object
 import os
 
 from .base import BaseDoc, PerLanguageField

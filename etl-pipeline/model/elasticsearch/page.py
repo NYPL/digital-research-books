@@ -1,4 +1,4 @@
-from elasticsearch_dsl import Document, Text, Integer, Keyword, DenseVector
+from elasticsearch7_dsl import Document, Text, Integer, Keyword, DenseVector
 
 
 class Page(Document):

@@ -1,4 +1,4 @@
-from elasticsearch_dsl import InnerDoc, Document, Date, analyzer, Keyword, Text
+from elasticsearch7_dsl import InnerDoc, Document, Date, analyzer, Keyword, Text
 
 
 plain_ascii = analyzer(

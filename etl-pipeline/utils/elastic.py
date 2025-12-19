@@ -48,7 +48,8 @@ def get_or_create_default_connection(*args, **kwargs):
     """
     assert kwargs.get("es_version", 9) == 9, "only elasticsearch 9.X supported"
     from elasticsearch.dsl import connections
-    # from elasticsearch_dsl import connections
+    # from elasticsearch9.dsl import connections
+    # from elasticsearch7_dsl import connections
 
     if "default" not in connections.connections._conns.keys():
         # register global default client
@@ -58,17 +59,3 @@ def get_or_create_default_connection(*args, **kwargs):
         return client
     else:
         return connections.get_connection("default")
-
-
-def delete_index(index_name):
-    from elasticsearch.dsl import Index
-    # from elasticsearch_dsl import Index
-
-    get_or_create_default_connection()
-
-    index = Index(index_name)
-    print(f"Deleting index {index_name}...")
-    index.delete()
-    if index.exists() is not False:
-        raise Exception(f"Failed to delete index {index_name}")
-    print(f"Deleted index {index_name}.")
