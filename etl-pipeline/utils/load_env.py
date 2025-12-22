@@ -8,39 +8,40 @@ def load_secrets(path, override=False):
     """
     Load secrets from AWS Parameter Store based on a .env file containing ARNs.
 
-    Duplicate env var names are overwritten by the later name in the env file.
-
-    aws region relies on the default configuration of the AWS client.
-
-    No error is raised if <path> does not exist.
+    - Duplicate env var names are overwritten by the later name in the env file.
+    - aws region relies on the default configuration of the AWS client.
+    - No error is raised if <path> does not exist.
 
     Args:
         path (str): Path to the .env file containing ARNs.
-        override (bool): Whether to override existing environment variables. Defaults to False.
-
-    Returns:
-        dict: A dictionary of secrets where keys are the environment variable names
-              and values are the retrieved secrets.
+        override (bool): Whether to override existing environment variables.
+            Secrets are not retrieved if the var name is already in the env and
+            override is False. Defaults to False.
 
     Raises:
         ValueError: If any parameters are invalid.
     """
     # Load the .env file
     env_vars = dotenv_values(path)
-    # Create a mapping of ARN to environment variable name (for selecting return value)
+    # Map ARN to environment variable name (for map retrieved values)
+    # NOTE: list of tup instead of dict allows the same ARN for multiple env vars
+    # ignore variables already in env if override=False
     # ignore variables that have an empty value
-    arn_to_envvar = {v: k for k, v in env_vars.items() if v}
-    # early return if .env is empty
+    arn_to_envvar = [
+        (v, k) for k, v in env_vars.items() if (override or (k not in os.environ)) and v
+    ]
+    # early return if nothing to fetch
     if not arn_to_envvar:
-        return {}
+        return
 
     ssm = boto3.client("ssm")
     secrets = {}
 
     # get-parameters API method can only handle 10 params at a time
-    for batch in batched(arn_to_envvar.items(), 10):
-        batch = dict(batch)
-        response = ssm.get_parameters(Names=list(batch.keys()), WithDecryption=True)
+    for batch in batched(arn_to_envvar, 10):
+        # Retrieve param values
+        unique_arns = list({arn for arn, _ in batch})
+        response = ssm.get_parameters(Names=unique_arns, WithDecryption=True)
 
         # Error for unfetched params
         invalid_params = response.get("InvalidParameters", [])
@@ -49,18 +50,18 @@ def load_secrets(path, override=False):
                 f"The following names could not be retrieved from SSM Parameter Store: {invalid_params}"
             )
 
-        # Map retrieved values back to environment variable names
-        for param in response.get("Parameters", []):
-            arn = param["ARN"]
-            env_name = arn_to_envvar[arn]
-            secrets[env_name] = param["Value"]
+        # Map param values back to environment variable names (via ARN)
+        param_values = {
+            param["ARN"]: param["Value"] for param in response.get("Parameters", [])
+        }
+        for arn, env_name in batch:
+            if (
+                arn in param_values
+            ):  # gives flexibility to we switch to not erroring for invalid params in future
+                secrets[env_name] = param_values[arn]
 
-    # Load fetched secrets into env
-    for key, value in secrets.items():
-        if override or (key not in os.environ):
-            os.environ[key] = value
-
-    return secrets
+    # Load fetched secrets into env (overrides existing)
+    os.environ.update(secrets)
 
 
 def load_env(env_path, secrets_path=None, override=False):
