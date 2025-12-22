@@ -18,6 +18,21 @@ CONVERSION_LIMIT = 5000
 
 
 class GRINConversion:
+    """
+    Check the GRIN API for the state of books in the digitization process and
+    update their states in the GRIN STATUSES DB table. If the books have finished
+    digitization (i.e. converted) and are ready for ingest, send to the GRIN
+    ingest SQS queue.
+
+    If process_type='daily', check the status of barcodes which started
+    conversion/digitization in the last 24 hrs and barcodes which are currently
+    listed by GRIN as failed.
+
+    Otherwise, keep polling the GRIN API for current status until no rows in
+    the grin_statuses table are "PENDING_CONVERSION" or "CONVERTING" status
+    (i.e. all have succeeded or failed).
+    """
+
     def __init__(self, *args, batch_limit=1000):
         self.params = utils.parse_process_args(*args)
         self.client = GRINClient()

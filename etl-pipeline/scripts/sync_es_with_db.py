@@ -1,3 +1,7 @@
+"""
+Delete "work"'s in works ES index that are missing from "works" DB tabke
+"""
+
 import os
 
 from model import Work
