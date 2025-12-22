@@ -2,18 +2,6 @@ import os
 from pathlib import Path
 
 
-def read_env(var, require=True):
-    """Read env var with an informative error.
-
-    Optionally return None if var does not exist.
-    """
-    try:
-        return os.environ[var]
-    except KeyError:
-        if require:
-            raise ValueError(f'Environment variable "{var}" must be available.')
-
-
 def build_hosts(scheme, host, port, user=None, pswd=None):
     creds = "{}:{}@".format(user, pswd) if user and pswd else ""
 
