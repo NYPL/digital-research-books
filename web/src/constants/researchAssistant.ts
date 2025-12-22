@@ -29,15 +29,21 @@ export const GRID_PADDING_X = {
     xl: "2rem",
 };
 
-export const getGridColumns = (vraEnabled: boolean) => {
+export const getGridColumns = (vraEnabled: boolean, showChat: boolean) => {
     return vraEnabled
         ? {
             base: "1fr",
-            md: `
+            md: showChat ? `
                 1fr 
                 ${NET_CONTENT * 0.25}px
                 ${NET_CONTENT * 0.5}px
                 ${NET_CONTENT * 0.25}px
+                1fr
+            ` : `
+                1fr 
+                ${NET_CONTENT * 0.25}px
+                ${NET_CONTENT * 0.65}px
+                ${NET_CONTENT * 0.1}px
                 1fr
             `,
         }

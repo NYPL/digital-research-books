@@ -59,6 +59,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     setViewState,
     historyStack,
     setHistoryStack,
+    showChat,
   } = useResearchAssistant();
 
   const { page } = useResultPageContext();
@@ -133,7 +134,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   return (
     <Box fontSize="desktop.body.body2" bgColor="ui.bg.default" width="100%">
       <Grid
-        templateColumns={getGridColumns(vraEnabled)}
+        templateColumns={getGridColumns(vraEnabled, showChat)}
         templateRows={getGridRows(backUrl)}
         gap="l"
         marginBottom="xs"
