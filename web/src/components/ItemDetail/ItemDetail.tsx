@@ -37,6 +37,7 @@ import {
   getHeaderPaddingRight,
   getGridRows,
   GRID_PADDING_X,
+  HEADER_HEIGHT,
 } from "~/src/constants/researchAssistant";
 
 interface ItemDetailProps {
@@ -59,6 +60,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     setViewState,
     historyStack,
     setHistoryStack,
+    showChat,
   } = useResearchAssistant();
 
   const { page } = useResultPageContext();
@@ -133,7 +135,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   return (
     <Box fontSize="desktop.body.body2" bgColor="ui.bg.default" width="100%">
       <Grid
-        templateColumns={getGridColumns(vraEnabled)}
+        templateColumns={getGridColumns(vraEnabled, showChat)}
         templateRows={getGridRows(backUrl)}
         gap="l"
         marginBottom="xs"
@@ -155,6 +157,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             paddingRight={getHeaderPaddingRight(vraEnabled)}
             paddingY="s"
             marginRight={vraEnabled ? "0" : "-2rem"}
+            height={HEADER_HEIGHT}
           >
             <BackToResultsButton handleBackToResults={handleBackToResults} />
             <Toggle

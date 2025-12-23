@@ -11,6 +11,7 @@ import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
 import ResultsBanner from "./ResultsBanner";
 import {
+  HEADER_HEIGHT,
   MARGIN_BLEED,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
@@ -25,6 +26,7 @@ const ResearchAssistant: React.FC = () => {
     showWebReader,
     linkResults,
     handleReadOnline,
+    showChat,
   } = useResearchAssistant();
 
   useEffect(() => {
@@ -42,7 +44,9 @@ const ResearchAssistant: React.FC = () => {
   const proxyUrl: string = proxyUrlConstructor();
   const backUrl = "/research-assistant";
 
-  const gridTemplateColumns = "1fr 640px 640px 1fr";
+  const gridTemplateColumns = showChat
+    ? "1fr 640px 640px 1fr"
+    : "1fr 1152px 128px 1fr";
 
   return (
     <ResultPageProvider
@@ -65,7 +69,7 @@ const ResearchAssistant: React.FC = () => {
           bgColor="ui.bg.default"
         >
           <Flex
-            width="640px"
+            width={showChat ? "640px" : "1152px"}
             flexDirection="column"
             height="100%"
             justifyContent="flex-end"
@@ -77,7 +81,7 @@ const ResearchAssistant: React.FC = () => {
                   padding="s"
                   borderBottom="1px solid"
                   borderColor="ui.border.default"
-                  height="58px"
+                  height={HEADER_HEIGHT}
                   marginLeft={MARGIN_BLEED}
                   paddingLeft={PADDING_COUNTER}
                 >
@@ -91,7 +95,7 @@ const ResearchAssistant: React.FC = () => {
                   padding="s"
                   borderBottom="1px solid"
                   borderColor="ui.border.default"
-                  height="58px"
+                  height={HEADER_HEIGHT}
                   marginLeft={MARGIN_BLEED}
                   paddingLeft={PADDING_COUNTER}
                 />

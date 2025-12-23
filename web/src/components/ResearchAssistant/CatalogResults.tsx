@@ -17,7 +17,7 @@ import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ResultsBanner from "./ResultsBanner";
 import ResultsList from "../NewResultsList/ResultsList";
 import EmptySearchSvg from "../Svgs/EmptySearchSvg";
-import { MARGIN_BLEED, PADDING_COUNTER } from "~/src/constants/researchAssistant";
+import { HEADER_HEIGHT, MARGIN_BLEED, PADDING_COUNTER } from "~/src/constants/researchAssistant";
 
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;
@@ -94,7 +94,7 @@ const CatalogResults: React.FC<{
         zIndex="999"
         marginLeft={MARGIN_BLEED}
         paddingLeft={PADDING_COUNTER}
-        height="58px"
+        height={HEADER_HEIGHT}
       >
         {resultsPagingText}
       </Text>

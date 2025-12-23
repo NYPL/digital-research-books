@@ -33,6 +33,8 @@ interface ResearchAssistantContextType extends ResearchAssistantViewState {
     setViewState: React.Dispatch<React.SetStateAction<any | null>>;
     handlePreview: (url: string) => Promise<void>;
     handleReadOnline: (linkId: number) => Promise<void>;
+    showChat: boolean;
+    toggleChat: () => void;
 }
 
 interface PushNewStateArgs {
@@ -53,6 +55,7 @@ export const ResearchAssistantProvider: React.FC<{
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showChat, setShowChat] = useState(true);
 
     const [historyStack, setHistoryStack] = useState<HistoryItem[]>([]);
     const [viewState, setViewState] = useState<ResearchAssistantViewState>({
@@ -307,6 +310,8 @@ export const ResearchAssistantProvider: React.FC<{
         }
     };
 
+    const toggleChat = () => setShowChat((prev) => !prev);
+
     const value: ResearchAssistantContextType = {
         messages,
         sendMessage,
@@ -321,6 +326,8 @@ export const ResearchAssistantProvider: React.FC<{
         setViewState,
         handlePreview,
         handleReadOnline,
+        showChat,
+        toggleChat,
     };
 
     return (
