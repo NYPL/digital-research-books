@@ -10,18 +10,16 @@ import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 import ResearchAssistantInput from "./ResearchAssistantInput";
 import RewindIcon from "./icons/RewindIcon";
-import {
-  getPanelLayout,
-  PADDING_COUNTER,
-} from "~/src/constants/researchAssistant";
+import { getPanelLayout } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ArrowIcon from "./icons/ArrowIcon";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
+import ResearchAssistantHeader from "./ResearchAssistantHeader";
 
 const ResearchAssistantPanel: React.FC = () => {
   const { clearHistory, showChat, toggleChat } = useResearchAssistant();
 
-  const { marginX, paddingX, marginRight } = getPanelLayout();
+  const { paddingX } = getPanelLayout();
 
   const { page } = useResultPageContext();
 
@@ -40,22 +38,7 @@ const ResearchAssistantPanel: React.FC = () => {
     >
       {showChat ? (
         <>
-          <Box
-            bgColor="section.research.primary"
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            borderBottom="1px white solid"
-            marginLeft={marginX}
-            marginRight={marginRight}
-            paddingLeft={paddingX}
-            paddingRight={`calc(${PADDING_COUNTER} * 2)`}
-            position="sticky"
-            paddingY="s"
-            top="0"
-            zIndex="999"
-            height="58px"
-          >
+          <ResearchAssistantHeader>
             <Heading
               level="h2"
               size="heading7"
@@ -113,7 +96,8 @@ const ResearchAssistantPanel: React.FC = () => {
                 </Flex>
               </Button>
             </Flex>
-          </Box>
+          </ResearchAssistantHeader>
+
           <ResearchAssistantWindow />
           <Box
             backgroundColor="section.research.primary"
@@ -125,22 +109,7 @@ const ResearchAssistantPanel: React.FC = () => {
           </Box>
         </>
       ) : (
-        <Box
-          bgColor="section.research.primary"
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          borderBottom="1px white solid"
-          marginLeft={marginX}
-          marginRight={marginRight}
-          paddingLeft={paddingX}
-          paddingRight={`calc(${PADDING_COUNTER} * 2)`}
-          position="sticky"
-          paddingY="s"
-          top="0"
-          zIndex="999"
-          height="58px"
-        >
+        <ResearchAssistantHeader>
           <Button
             onClick={toggleChat}
             variant="text"
@@ -163,7 +132,7 @@ const ResearchAssistantPanel: React.FC = () => {
               <Text>Show chat</Text>
             </Flex>
           </Button>
-        </Box>
+        </ResearchAssistantHeader>
       )}
     </Box>
   );

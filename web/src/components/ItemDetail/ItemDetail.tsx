@@ -37,6 +37,7 @@ import {
   getHeaderPaddingRight,
   getGridRows,
   GRID_PADDING_X,
+  HEADER_HEIGHT,
 } from "~/src/constants/researchAssistant";
 
 interface ItemDetailProps {
@@ -156,7 +157,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             paddingRight={getHeaderPaddingRight(vraEnabled)}
             paddingY="s"
             marginRight={vraEnabled ? "0" : "-2rem"}
-            height="58px"
+            height={HEADER_HEIGHT}
           >
             <BackToResultsButton handleBackToResults={handleBackToResults} />
             <Toggle

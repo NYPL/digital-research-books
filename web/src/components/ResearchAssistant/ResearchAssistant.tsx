@@ -11,6 +11,7 @@ import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
 import ResultsBanner from "./ResultsBanner";
 import {
+  HEADER_HEIGHT,
   MARGIN_BLEED,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
@@ -80,7 +81,7 @@ const ResearchAssistant: React.FC = () => {
                   padding="s"
                   borderBottom="1px solid"
                   borderColor="ui.border.default"
-                  height="58px"
+                  height={HEADER_HEIGHT}
                   marginLeft={MARGIN_BLEED}
                   paddingLeft={PADDING_COUNTER}
                 >
@@ -94,7 +95,7 @@ const ResearchAssistant: React.FC = () => {
                   padding="s"
                   borderBottom="1px solid"
                   borderColor="ui.border.default"
-                  height="58px"
+                  height={HEADER_HEIGHT}
                   marginLeft={MARGIN_BLEED}
                   paddingLeft={PADDING_COUNTER}
                 />

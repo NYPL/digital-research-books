@@ -1,3 +1,5 @@
+export const HEADER_HEIGHT = "58px";
+
 // ResearchAssistantPanel
 const CONTENT_PADDING_VALUE = "1rem";
 const OUTER_MARGIN_CALC = "calc((100vw - 1280px) / 2)";
