@@ -68,6 +68,8 @@ def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:
     return new_record
 
 
+# NOTE: autouse=True does not guarantee execution before other session scoped \
+# fixtures unless an explicit dependency on setup_env is specified.
 @pytest.fixture(scope="session", autouse=True)
 def setup_env(pytestconfig, request):
     is_unit_test = any("unit" in item.keywords for item in request.session.items)
@@ -85,7 +87,7 @@ def setup_env(pytestconfig, request):
 
 
 @pytest.fixture(scope="session")
-def db_manager():
+def db_manager(setup_env):
     db_manager = DBManager()
 
     try:
@@ -100,7 +102,7 @@ def db_manager():
 
 
 @pytest.fixture(scope="session")
-def s3_manager():
+def s3_manager(setup_env):
     try:
         s3_manager = S3Manager()
 
@@ -110,7 +112,7 @@ def s3_manager():
 
 
 @pytest.fixture(scope="session")
-def redis_manager():
+def redis_manager(setup_env):
     try:
         manager = RedisManager()
         manager.create_client()
