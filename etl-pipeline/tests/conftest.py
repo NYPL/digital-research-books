@@ -70,13 +70,17 @@ def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_env(pytestconfig, request):
-    environment = (
-        os.environ.get("ENVIRONMENT") or pytestconfig.getoption("--env") or "local"
-    )
+    is_unit_test = any("unit" in item.keywords for item in request.session.items)
 
-    running_unit_tests = any("unit" in item.keywords for item in request.session.items)
-
-    if not running_unit_tests and environment in ["local", "local-qa", "qa"]:
+    # Q: re:removed code: any reason why we should be prevented from running integration tests on PRODUCTION?
+    if not is_unit_test:
+        environment = (
+            # NOAH RECOMMENDS: choose one source of end or the other
+            os.environ.get("ENVIRONMENT") or pytestconfig.getoption("--env")
+        )
+        assert environment is not None, (
+            "an execution environment must be specified if not running unit tests."
+        )
         load_env(f"config/env.{environment}")
 
 
