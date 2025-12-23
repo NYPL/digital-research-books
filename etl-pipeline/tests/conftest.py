@@ -26,7 +26,7 @@ from model import (
 from model.postgres.item import ITEM_LINKS
 from logger import create_log
 from managers import DBManager, RedisManager, S3Manager
-from load_env import load_env_file
+from utils.load_env import load_env
 from tests.fixtures.generate_test_data import generate_test_data
 
 
@@ -77,7 +77,7 @@ def setup_env(pytestconfig, request):
     running_unit_tests = any("unit" in item.keywords for item in request.session.items)
 
     if not running_unit_tests and environment in ["local", "local-qa", "qa"]:
-        load_env_file(environment, file_string=f"config/{environment}.yaml")
+        load_env(f"config/env.{environment}")
 
 
 @pytest.fixture(scope="session")

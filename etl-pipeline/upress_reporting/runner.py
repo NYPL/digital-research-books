@@ -2,11 +2,11 @@ import sys
 
 from counter_5_controller import Counter5Controller
 from datetime import datetime
-from main import load_env_file
+from utils.load_env import load_env
 
 
 def main():
-    load_env_file("local-qa", file_string="config/local-qa.yaml")
+    load_env("config/env.local-qa")
 
     if len(sys.argv) <= 1:
         print(

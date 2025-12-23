@@ -63,21 +63,16 @@ This guide provides step-by-step instructions to set up local development and st
    cd etl-pipeline
    ```
 
-2. Configure secrets:
-
-   - Create `config/local-secrets.yaml`
-      - Nothing needs to be added at this point
-      - This file is not tracked in the repo and its contents are loaded as env vars when `load_env.load_env_file()` is executed. Thus it can be used for locally configured secrets as needed.
 
 
-3. Seed data in the local dockerized DB instance (one-time only):
+2. Seed data in the local dockerized DB instance (one-time only):
 
    ```bash
    # Run the database seeding process
    docker compose -f docker-compose.setup.yml up --abort-on-container-exit
    ```
 
-4. Startup Docker Services:
+3. Startup Docker Services:
 
    ```bash
    docker compose up
@@ -93,7 +88,7 @@ This guide provides step-by-step instructions to set up local development and st
 
 
 
-5. Verify the setup:
+4. Verify the setup:
 
    - Check the API server is up. Navigate to http://127.0.0.1:5050/apidocs/ in your browser.
    - Check the local, dockerized DB instance is available. Connect to the local DB using PGAdmin4 or your preferred PostgreSQL client, with the following config:
@@ -105,7 +100,7 @@ This guide provides step-by-step instructions to set up local development and st
      Password: localpsql
      ```
  
-6. Set up local python env:
+5. Set up local python env:
 
 **Create a virtual environment**
 
@@ -147,7 +142,7 @@ pip install -r dev-requirements.txt
 `pre-commit install`
 
 
-7. Install GPG
+6. Install GPG
 
 The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
 `gpg` is pre-installed on most linux distributions but must be installed on MacOs.

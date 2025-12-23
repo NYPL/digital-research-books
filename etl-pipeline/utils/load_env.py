@@ -6,17 +6,22 @@ from .utils import batched
 
 def load_secrets(path, override=False):
     """
-    Load secrets from AWS Parameter Store based on a .env file containing ARNs.
+    Load secrets from AWS Parameter Store based on a .env file containing
+    AWS Parameter Store parameters.
 
+    .env File:
+    - Env var values should be either parameter full ARNs or simply parameter
+      names. If parameter names only are used AWS account and region are
+      inferred from the default config of the AWS client. If full ARN is used,
+      AWS region relies on the default configuration of the AWS client.
     - Duplicate env var names are overwritten by the later name in the env file.
-    - aws region relies on the default configuration of the AWS client.
-    - No error is raised if <path> does not exist.
+
+    No error is raised if <path> does not exist.
 
     Args:
         path (str): Path to the .env file containing ARNs.
         override (bool): Whether to override existing environment variables.
-            Secrets are not retrieved if the var name is already in the env and
-            override is False. Defaults to False.
+            Defaults to False.
 
     Raises:
         ValueError: If any parameters are invalid.
@@ -27,21 +32,21 @@ def load_secrets(path, override=False):
     # NOTE: list of tup instead of dict allows the same ARN for multiple env vars
     # ignore variables already in env if override=False
     # ignore variables that have an empty value
-    arn_to_envvar = [
+    arn_to_key_pairs = [
         (v, k) for k, v in env_vars.items() if (override or (k not in os.environ)) and v
     ]
     # early return if nothing to fetch
-    if not arn_to_envvar:
+    if not arn_to_key_pairs:
         return
 
     ssm = boto3.client("ssm")
-    secrets = {}
+    arn_to_value = {}
 
-    # get-parameters API method can only handle 10 params at a time
-    for batch in batched(arn_to_envvar, 10):
+    unique_arns = set(arn for arn, _ in arn_to_key_pairs)
+    # get-parameters API method only handles 10 params at a time (and does not support pagination)
+    for batch in batched(unique_arns, 10):
         # Retrieve param values
-        unique_arns = list({arn for arn, _ in batch})
-        response = ssm.get_parameters(Names=unique_arns, WithDecryption=True)
+        response = ssm.get_parameters(Names=batch, WithDecryption=True)
 
         # Error for unfetched params
         invalid_params = response.get("InvalidParameters", [])
@@ -51,16 +56,14 @@ def load_secrets(path, override=False):
             )
 
         # Map param values back to environment variable names (via ARN)
-        param_values = {
-            param["ARN"]: param["Value"] for param in response.get("Parameters", [])
-        }
-        for arn, env_name in batch:
-            if (
-                arn in param_values
-            ):  # gives flexibility to we switch to not erroring for invalid params in future
-                secrets[env_name] = param_values[arn]
+        arn_to_value.update(
+            {param["ARN"]: param["Value"] for param in response.get("Parameters", [])}
+        )
 
-    # Load fetched secrets into env (overrides existing)
+    secrets = {name: arn_to_value[arn] for arn, name in arn_to_key_pairs}
+    # ALT: if we switch to not erroring for invalid params in future, check if ARN is in `arn_to_value`
+
+    # Load fetched secrets into env (overrides existing env vars)
     os.environ.update(secrets)
 
 

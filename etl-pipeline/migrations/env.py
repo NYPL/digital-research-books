@@ -6,10 +6,10 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from load_env import load_env_file
+from utils.load_env import load_env
 
-# set config file here, e.g. local-qa.yaml to run migrations in QA
-load_env_file("sample-compose", file_string="config/{}.yaml")
+# set config file here, e.g. .env.local-qa to run migrations in QA
+load_env("config/env.sample-compose")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

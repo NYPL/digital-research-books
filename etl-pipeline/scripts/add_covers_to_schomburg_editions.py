@@ -4,7 +4,7 @@ import os
 import boto3
 
 from digital_assets.utils.get_stored_file_url import get_stored_file_url
-from load_env import load_env_file
+from utils.load_env import load_env
 from model import Collection, Edition, Link
 from managers import DBManager
 
@@ -15,7 +15,7 @@ def main():
     parser.add_argument("--env", default="qa")
     args = parser.parse_args()
     env = args.env
-    load_env_file(f"local-{env}", file_string="config/{}.yaml")
+    load_env(f"config/env.local-{env}")
     db_manager = DBManager(
         user=os.environ["POSTGRES_USER"],
         pswd=os.environ["POSTGRES_PSWD"],
