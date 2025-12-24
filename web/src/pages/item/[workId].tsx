@@ -19,7 +19,7 @@ export async function getServerSideProps(context: any) {
       notFound: true,
     };
   }
-  
+
   const workQuery: WorkQuery = {
     identifier: context.query.workId,
     showAll: context.query.showAll,
@@ -41,21 +41,33 @@ const ItemPage: React.FC<any> = (props) => {
     return <Error statusCode={props.workResult.status} />;
   }
 
+  const truncatedTitle = truncateStringOnWhitespace(
+    props.workResult.data.title,
+    MAX_PAGE_TITLE_LENGTH
+  );
+
   return (
     <Layout>
       <Head>
         <title>
-          {`${truncateStringOnWhitespace(
-            props.workResult.data.title,
-            MAX_PAGE_TITLE_LENGTH
-          )} | ${documentTitles.workItem}`}
+          {`${truncatedTitle} | ${documentTitles.workItem}`}
         </title>
       </Head>
-      <VRALayout activePage="item">
-        <ResultPageProvider value={{
-          page: "item",
-          onReadOnline: () => {}
-        }}>
+      <VRALayout
+        activePage="item"
+        breadcrumbsData={[
+          {
+            url: `/item/${props.workResult.data.uuid}`,
+            text: props.workResult.data.title,
+          },
+        ]}
+      >
+        <ResultPageProvider
+          value={{
+            page: "item",
+            onReadOnline: () => { },
+          }}
+        >
           <ItemDetail workResult={props.workResult} backUrl={props.backUrl} />
         </ResultPageProvider>
       </VRALayout>
