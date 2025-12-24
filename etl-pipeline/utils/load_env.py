@@ -1,10 +1,13 @@
-import boto3
 import os
-from dotenv import dotenv_values, load_dotenv
+from pathlib import Path
+
+import boto3
+from dotenv import dotenv_values, find_dotenv, load_dotenv
+
 from .utils import batched
 
 
-def load_secrets(path, override=False):
+def load_secrets(path, raise_if_no_file=False, override=False):
     """
     Load secrets from AWS Parameter Store based on a .env file containing
     AWS Parameter Store parameters.
@@ -16,16 +19,21 @@ def load_secrets(path, override=False):
       AWS region relies on the default configuration of the AWS client.
     - Duplicate env var names are overwritten by the later name in the env file.
 
-    No error is raised if <path> does not exist.
-
     Args:
         path (str): Path to the .env file containing ARNs.
+        raise_if_no_file (bool): If True, raises FileNotFoundError when the file
+            does not exist. Defaults to False.
         override (bool): Whether to override existing environment variables.
             Defaults to False.
 
     Raises:
-        ValueError: If any parameters are invalid.
+        FileNotFoundError: If raise_if_no_file is True and the file does not exist.
+        ValueError: If any parameters cannot be fetched.
     """
+
+    if raise_if_no_file and (not Path(path).exists()):
+        raise FileNotFoundError(f"Secrets file {path} does not exist")
+
     # Load the .env file
     env_vars = dotenv_values(path)
     # Map ARN to environment variable name (for map retrieved values)
@@ -67,14 +75,18 @@ def load_secrets(path, override=False):
     os.environ.update(secrets)
 
 
-def load_env(env_path, secrets_path=None, override=False):
+def load_env(
+    env_path: str | os.PathLike,
+    secrets_path: str | os.PathLike = None,
+    override: bool = False,
+    raise_if_no_file=False,
+):
     """
     Load environment variables and secrets values in from .env file(s).
 
     Secrets are loaded from AWS Parameter Store using ARNs configured as the values in secrets_path.
 
     - Duplicate env var names in each .env file are overwritten by the later name.
-    - No error is raised if the .env files do not exist.
     - For secrets, AWS region relies on the default configuration of the AWS client.
 
     Args:
@@ -83,12 +95,19 @@ def load_env(env_path, secrets_path=None, override=False):
                                       Defaults to `env_path` with a '.secrets' suffix.
         override (bool): Whether to override existing environment variables. Defaults to False.
                          This applies to both standard environment variables and secrets.
+        raise_if_no_file (bool): If True, raises FileNotFoundError when either file
+            does not exist. Defaults to False.
+    Raises:
+        FileNotFoundError: If raise_if_no_file is True and either file does not exist.
     """
-    # MAYBE: raise error if paths do not exist
 
     if secrets_path is None:
-        secrets_path = env_path + ".secrets"
+        secrets_path = str(env_path) + ".secrets"
 
+    print(f"reading env at {env_path}")
+    if raise_if_no_file and (not Path(env_path).exists()):
+        raise FileNotFoundError(f"Env file {env_path} does not exist")
     load_dotenv(env_path, override=override)
 
-    load_secrets(secrets_path, override=override)
+    print(f"reading env at {secrets_path}")
+    load_secrets(secrets_path, override=override, raise_if_no_file=raise_if_no_file)

@@ -15,7 +15,7 @@ def main():
     parser.add_argument("--env", default="qa")
     args = parser.parse_args()
     env = args.env
-    load_env(f"config/env.local-{env}")
+    load_env(f"config/.env.local-{env}")
     db_manager = DBManager(
         user=os.environ["POSTGRES_USER"],
         pswd=os.environ["POSTGRES_PSWD"],

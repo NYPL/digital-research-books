@@ -6,7 +6,7 @@ from utils.load_env import load_env
 
 
 def main():
-    load_env("config/env.local-qa")
+    load_env("config/.env.local-qa")
 
     if len(sys.argv) <= 1:
         print(

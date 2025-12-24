@@ -1,16 +1,11 @@
 import os
 
 
-def read_env(var, require=True):
-    """Read env var with an informative error.
-
-    Optionally return None if var does not exist.
-    """
-    try:
-        return os.environ[var]
-    except KeyError:
-        if require:
-            raise ValueError(f'Environment variable "{var}" must be available.')
+def read_env(var):
+    """Read env var with an informative error"""
+    if var not in os.environ:
+        raise ValueError(f'Environment variable "{var}" not available.')
+    return os.environ[var]
 
 
 def batched(generator, batch_size):

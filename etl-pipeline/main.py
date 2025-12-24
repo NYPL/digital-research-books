@@ -94,7 +94,7 @@ if __name__ == "__main__":
     parser = create_arg_parser()
     args = parser.parse_args()
 
-    load_env(f"./config/env.{args.environment}")
+    load_env(f"./config/.env.{args.environment}")
     if os.environ.get("ENVIRONMENT") is None:
         # MAYBE: remove  this...
         os.environ["ENVIRONMENT"] = args.environment

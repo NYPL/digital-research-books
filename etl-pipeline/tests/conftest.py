@@ -1,16 +1,16 @@
 import os
-import pytest
 import random
 import re
 from datetime import datetime, timedelta, timezone
 import json
+from uuid import uuid4
+from pathlib import Path
+
 import requests_mock
 from sqlalchemy import text, delete
-from uuid import uuid4
+import pytest
 from unittest.mock import patch, MagicMock
 from processes.grin.grin_client import GRINClient
-
-
 from processes import RecordClusterer
 from model import (
     Collection,
@@ -83,13 +83,14 @@ def setup_env(pytestconfig, request):
         assert environment is not None, (
             "an execution environment must be specified if not running unit tests."
         )
-        load_env(f"config/env.{environment}")
+
+        config_dir = Path(__file__).parent.parent / "config"
+        load_env(config_dir / f".env.{environment}")
 
 
 @pytest.fixture(scope="session")
 def db_manager(setup_env):
     db_manager = DBManager()
-
     try:
         db_manager.create_session()
         db_manager.session.execute(text("SELECT 1"))
@@ -98,6 +99,10 @@ def db_manager(setup_env):
 
         db_manager.close_connection()
     except:
+        print("db_manager error")
+        import traceback
+
+        traceback.print_exc()
         yield None
 
 
@@ -460,7 +465,7 @@ def mock_sqs_manager():
 
 
 @pytest.fixture(scope="module")
-def grin_client():
+def grin_client(setup_env):
     client = GRINClient()
 
     yield client

@@ -30,7 +30,7 @@ def setup_env(parser):
         def wrapper(*args, **kwargs):
             parsed_args = parser.parse_args()
 
-            load_env(f"./config/env.{parsed_args.environment}")
+            load_env(f"./config/.env.{parsed_args.environment}")
             os.environ["ENVIRONMENT"] = (
                 os.environ.get("ENVIRONMENT") or parsed_args.environment
             )
