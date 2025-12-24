@@ -83,7 +83,7 @@ def setup_env(pytestconfig, request):
         assert environment is not None, (
             "an execution environment must be specified if not running unit tests."
         )
-
+        print(f'Loading environment: "{environment}" during test setup')
         config_dir = Path(__file__).parent.parent / "config"
         load_env(config_dir / f".env.{environment}")
 

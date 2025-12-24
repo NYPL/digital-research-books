@@ -72,6 +72,8 @@ This guide provides step-by-step instructions to set up local development and st
    docker compose -f docker-compose.setup.yml up --abort-on-container-exit
    ```
 
+   Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
+
 3. Startup Docker Services:
 
    ```bash
@@ -85,8 +87,8 @@ This guide provides step-by-step instructions to set up local development and st
    - Redis
    - LocalStack (S3 and SQS)
    - API service
-
-
+  
+   Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
 
 4. Verify the setup:
 

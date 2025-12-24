@@ -10,9 +10,9 @@ services:
       POSTGRES_PASSWORD: localpsql
 
   elasticsearch:
-    # Use the latest version of Elasticsearch supported by Amazon AWS ES.
     container_name: drb_local_es
-    image: elasticsearch:8.15.0
+    # use same ES version as in QA/Prod servers
+    image: elasticsearch:7.17.6
     ports:
       - 9200:9200
     environment:
@@ -77,6 +77,8 @@ services:
       context: .
     command: -e local-compose -p LocalDevelopmentSetupProcess
     volumes:
+      # this overrides `ADD . /src` in the DockerFile, mapping the \
+      # current local filesystem to "/src" in the docker image.
       - type: bind
         source: .
         target: /src

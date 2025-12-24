@@ -3,6 +3,29 @@ services:
     extends:
       file: docker-compose.yml
       service: devsetup
+    depends_on:
+      - database
+      - elasticsearch
+      - aws_services
+      - redis # extra (required for SeedLocalDataProcess)
+    # Override the ENTRYPOINT from Dockerfile so we can run a shell command
+    entrypoint: []
+    # ALT: put LocalDevelopmentSetupProcess().run() in SeedLocalDataProcess and just call SeedLocalDataProcess
+    
+    # Run setup AND seed sequentially. If setup fails, seed won't run. And seed won't start until set up finishes.
+    command: > 
+      /bin/sh -c "python3 main.py -e local-compose -p LocalDevelopmentSetupProcess &&
+      python3 main.py -e local-compose -p SeedLocalDataProcess -i daily"
+    # Q: Why not make LocalDevelopmentSetupProcess and SeedLocalDataProcess both fully idempotent, merge them, \
+    # and just have a single docker compose. Otherwise, why not fully split the docker composes into a set up \
+    # (onetime) and runtime (regular) file (move devsetup into this file). 
+    # To make SeedLocalDataProcess idempotent just  check if there are the same number of records present \
+    # in the db as the seed process fetches (50 records) and only call SeedLocalDataProcess if not (the same way \
+    # in LocalDevelopmentSetupProcess the database and ES index isn't recreated internally if it exists )
+
+    # ALT: revert seeddb and use `depends_on: devsetup; condition: service_completed_successfully`
+    # MAYBE: use a depends_on: elasticsearch; condition: service_healthy, with a specified healthcheck: (to avoid \
+    # the work around in at processes/local_development/local_development_setup.py:92)
 
   database:
     extends:
@@ -23,29 +46,6 @@ services:
     extends:
       file: docker-compose.yml
       service: aws_services
-
-  seeddb:
-    container_name: drb_local_seed
-    depends_on:
-      devsetup:
-        condition: service_started
-      database:
-        condition: service_started
-      elasticsearch:
-        condition: service_started
-      aws_services:
-        condition: service_started
-      redis:
-        condition: service_started
-
-    build:
-      context: .
-    command: -e local-compose -p SeedLocalDataProcess -i daily
-    volumes:
-      - type: bind
-        source: .
-        target: /src
-        read_only: true
 
 volumes:
   drb_local_dbdata:
