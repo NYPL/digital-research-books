@@ -7,6 +7,11 @@ from api.blueprints.drbInfo import info
 
 
 class TestInfoBlueprint:
+    """Tests that "/" path returns a success code with html content (with redirects)
+
+    Smoke test for swagger UI content
+    """
+
     def test_apiInfo(self, mocker):
         mocker.patch.dict("os.environ", {"ENVIRONMENT": "test"})
 

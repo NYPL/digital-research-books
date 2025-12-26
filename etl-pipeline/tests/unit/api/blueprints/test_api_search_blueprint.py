@@ -93,7 +93,7 @@ class TestSearchBlueprint:
         mock_response.aggregations = mock_agg
         mock_es.searchQuery.return_value = mock_response
 
-        mock_db.fetchSearchedWorks.return_value = [
+        mock_db.get_metadata_by_edition_ids.return_value = [
             "work1",
             "work2",
             "work3",
@@ -137,7 +137,7 @@ class TestSearchBlueprint:
                 ("uuid4", ["ed7"], {}),
                 ("uuid5", ["ed8"], {"field": ["highlight_uuid5"]}),
             ]
-            mock_db.fetchSearchedWorks.assert_called_once_with(test_result_ids)
+            mock_db.get_metadata_by_edition_ids.assert_called_once_with(test_result_ids)
             mock_utils["formatAggregationResult"].assert_called_once_with({"aggs": []})
             mock_utils["formatPagingOptions"].assert_called_once_with(1, 5, 5)
             mock_utils["formatWorkOutput"].assert_called_once_with(
@@ -212,7 +212,7 @@ class TestSearchBlueprint:
         mock_utils["formatPagingOptions"].return_value = "testPaging"
         mock_utils["formatResponseObject"].return_value = "mockAPIResponse"
 
-        mock_db.fetchSearchedWorks.side_effect = Exception("Database error")
+        mock_db.get_metadata_by_edition_ids.side_effect = Exception("Database error")
 
         with test_app.test_request_context("/?testing=true"):
             test_api_response = query()

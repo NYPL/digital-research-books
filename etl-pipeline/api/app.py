@@ -57,6 +57,7 @@ class API:
         CORS(self.app)
         Swagger(self.app, template=json.load(open("swagger.v4.json", "r")))
 
+        # TODO: rename "SQL_ENGINE"
         self.app.config["DB_CLIENT"] = db_engine
         self.app.config["REDIS_CLIENT"] = redis_client
         self.app.config["READER_VERSION"] = os.environ["READER_VERSION"]

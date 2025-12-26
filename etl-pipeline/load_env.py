@@ -61,7 +61,7 @@ def load_env_file(run_type: str, file_string: str | None = None) -> None:
 
     except FileNotFoundError as err:
         print("Missing config YAML file! Check directory")
-        raise err
+        # raise err
 
     if env_dict:
         for key, value in env_dict.items():

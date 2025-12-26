@@ -27,63 +27,11 @@ WORKER_CONTEXT = AssistantWorkerContext(
 @require_api_key
 @require_token
 def chat(user=None):
-    context = request.json.get("context")
+    conversation_type = request.json.get("context")
     conversation = request.json.get("messages")
     item_id = request.json.get("itemId")
 
-    new_items = update_chat(conversation, context, item_id=item_id)
+    with DBClient(current_app.config["DB_CLIENT"]) as db_client:
+        response_data = update_chat(conversation, conversation_type, item_id=item_id)
 
-    return {"output": new_items}
-
-
-## catalogSearch
-# Enrich hits with book metadata + format result
-db_client.createSession()
-results = []
-for res in search_result.hits:
-    edition_ids = [e.edition_id for e in res.meta.inner_hits.editions.hits]
-
-    try:
-        highlights = {
-            key: list(set(res.meta.highlight[key])) for key in res.meta.highlight
-        }
-    except AttributeError:
-        highlights = {}
-
-    results.append((res.uuid, edition_ids, highlights))
-
-if es_client.sortReversed is True:
-    results = [r for r in reversed(results)]
-
-works = db_client.fetchSearchedWorks(results)
-
-# Depending on the version of elastic search, hits will either be an integer or a dictionary
-total_hits = (
-    search_result.hits.total
-    if isinstance(search_result.hits.total, int)
-    else search_result.hits.total.value
-)
-
-facets = APIUtils.formatAggregationResult(search_result.aggregations.to_dict())
-paging = APIUtils.formatPagingOptions(params.page + 1, params.size, total_hits)
-
-search_results = {
-    "totalWorks": total_hits,
-    "works": APIUtils.formatWorkOutput(
-        works,
-        results,
-        request=None,
-        dbClient=db_client,
-        formats=None,
-        reader=reader_version,
-    ),
-    "paging": paging,
-    "facets": facets,
-    "searchParams": params.to_query_filters(),
-}
-
-data_block = {"data": search_results, "type": "catalog_search"}
-
-db_client.closeSession()
-
-return json.dumps(data_block, default=json_serial_uuid)
+        return APIUtils.formatResponseObject(200, RESPONSE_TYPE, response_data)
