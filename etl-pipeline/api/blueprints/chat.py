@@ -31,7 +31,6 @@ def chat(user=None):
     conversation = request.json.get("messages")
     item_id = request.json.get("itemId")
 
-    with DBClient(current_app.config["DB_CLIENT"]) as db_client:
-        response_data = update_chat(conversation, conversation_type, item_id=item_id)
+    response_data = update_chat(conversation, conversation_type, item_id=item_id)
 
-        return APIUtils.formatResponseObject(200, RESPONSE_TYPE, response_data)
+    return APIUtils.formatResponseObject(200, RESPONSE_TYPE, response_data)

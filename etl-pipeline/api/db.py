@@ -401,3 +401,39 @@ class DBClient:
 
     def fetchUser(self, user):
         return self.session.query(User).filter(User.user == user).one_or_none()
+
+
+def get_frbr_data_by_edition(edition_ids):
+    """
+    Return (Work, Edition) pairs for the passed edition_ids with the following
+    eager loaded relationships for Edition: Edition.items.links,
+    Edition.items.rights, Edition.links/
+    """
+
+    edition_link_alias = aliased(Link)
+    item_link_alias = aliased(Link)
+
+    with Session() as session:
+        rows = (
+            session.query(Work, Edition)
+            .join(Work.editions)  # Work → Edition
+            # Edition.links (draws from aliased Link via edition_links crosswalk)
+            .outerjoin(Edition.links.of_type(edition_link_alias))
+            .outerjoin(Edition.items)  # Edition → Item
+            # Item.links (draws from aliased Link via item_links crosswalk)
+            .outerjoin(Item.links.of_type(item_link_alias))
+            .outerjoin(Item.rights)
+            .filter(Edition.id.in_(edition_ids))
+            .options(
+                # Eager-load Edition.items.links (Item.links)
+                contains_eager(Edition.items).contains_eager(
+                    Item.links.of_type(item_link_alias)
+                ),
+                # Eager-load Edition.items.rights (Item.rights)
+                contains_eager(Edition.items).contains_eager(Item.rights),
+                # Eager-load Edition.links (Edition.links)
+                contains_eager(Edition.links.of_type(edition_link_alias)),
+            )
+            .all()
+        )
+    return rows

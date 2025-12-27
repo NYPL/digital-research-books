@@ -97,55 +97,88 @@ class Searcher:
         return search
 
 
-def get_book_metadata(record_ids):
-    barcode_data = read_barcode_data()
+# TODO: move to agent.py
+def verbose_display(edition_data, query, as_str=False):
+    """
+    Display edition search results with detailed information.
 
-    hit_data = []
-    for hit in hits:
-        barcode = int(hit.meta.id.split("_")[0])
-        extra = barcode_data.query("barcode == @barcode").squeeze().to_dict()
-        enriched_hit = {**hit.to_dict(), **{"meta": hit.meta.to_dict()}, **extra}
-
-        hit_data.append(enriched_hit)
-
-    return hit_data
-
-
-def get_score(entry):
-    return entry.get("meta", {}).get("score", float("-inf"))
-
-
-# TODO: add dummy page number (p1) for book summary index chunks....
-
-
-def verbose_display(entries, query, as_str=False):
-    # Sort entries by ['meta']['score'] descending, missing scores last
-    sorted_entries = sorted(entries, key=get_score, reverse=True)
-
+    Args:
+        edition_data: List of tuples (orm_work, orm_edition, edition_hit)
+                     where edition_hit contains work_id, edition_id, and chunk_hits
+        query: The search query string
+        as_str: If True, return as string; otherwise print
+    """
     lines = []
     lines.append(f'QUERY: "{wrap(query)}"')
     lines.append("\n")
 
-    for i, entry in enumerate(sorted_entries, 1):
-        title = entry.get("title", "(No Title)")
-        text = entry.get("text", "(No Text)")
-        subjects = entry.get("subjects", "(None)")
-        dates = entry.get("dates", "(None)")
-        score = get_score(entry)
+    for i, (orm_work, orm_edition, edition_hit) in enumerate(edition_data, 1):
+        # Extract work and edition metadata
+        title = orm_work.title or "(No Title)"
+        authors = orm_work.authors or []
+        author_names = (
+            ", ".join([a.get("name", "") for a in authors if isinstance(a, dict)])
+            if authors
+            else "(No Authors)"
+        )
+        subjects = orm_work.subjects or []
+        subject_list = (
+            ", ".join([s.get("subject", "") for s in subjects if isinstance(s, dict)])
+            if subjects
+            else "(None)"
+        )
 
-        # chunk id as page num for chunks and dummy page for summaries
-        page = entry["meta"]["id"].split("_")[1] if "_" in entry["meta"]["id"] else 1
+        # Extract edition metadata
+        pub_date = (
+            str(orm_edition.publication_date)
+            if orm_edition.publication_date
+            else "(No Date)"
+        )
+        publishers = orm_edition.publishers or []
+        publisher_names = (
+            ", ".join([p.get("name", "") for p in publishers if isinstance(p, dict)])
+            if publishers
+            else "(No Publisher)"
+        )
 
-        lines.append(f"RESULT {i}:")
-        lines.append(f"  ID: {entry['meta']['id']}")
+        # Get chunk hits for this edition
+        chunk_hits = edition_hit.get("chunk_hits", [])
+        max_score = (
+            max([h.get("meta", {}).get("score", 0) for h in chunk_hits])
+            if chunk_hits
+            else 0
+        )
+
+        lines.append(f"EDITION {i}:")
+        lines.append(f"  WORK ID: {orm_work.id} | EDITION ID: {orm_edition.id}")
         lines.append(f"  TITLE: {title}")
-        lines.append(f"  PAGE: {page}")
-        lines.append(f"  SUBJECTS: {subjects}")
-        lines.append(f"  DATES: {dates}")
-        lines.append(f"  SCORE: {score}")
-        lines.append("  TEXT:")
-        lines.append(f"{wrap(text)}\n")
-        lines.append("-" * 60)
+        lines.append(f"  AUTHORS: {author_names}")
+        lines.append(f"  PUBLISHER: {publisher_names}")
+        lines.append(f"  DATE: {pub_date}")
+        lines.append(f"  SUBJECTS: {subject_list}")
+        lines.append(f"  MAX SCORE: {max_score:.4f}")
+        lines.append(f"  CHUNKS FOUND: {len(chunk_hits)}")
+        lines.append("")
+
+        # Display top chunk hits for this edition
+        for j, chunk_hit in enumerate(chunk_hits[:3], 1):  # Show top 3 chunks
+            text = chunk_hit.get("text", "(No Text)")
+            score = chunk_hit.get("meta", {}).get("score", 0)
+            chunk_id = chunk_hit.get("meta", {}).get("id", "unknown")
+
+            # Extract page number from chunk id
+            page = chunk_id.split("_")[1] if "_" in chunk_id else "?"
+
+            lines.append(f"    CHUNK {j}:")
+            lines.append(f"      ID: {chunk_id}")
+            lines.append(f"      PAGE: {page}")
+            lines.append(f"      SCORE: {score:.4f}")
+            lines.append(
+                f"      TEXT: {wrap(text)}"
+            )  # TODO: I don't think this will indent all lines
+            lines.append("")
+
+        lines.append("-" * 80)
 
     msg = "\n".join(lines)
     if as_str:
@@ -154,16 +187,34 @@ def verbose_display(entries, query, as_str=False):
         print(msg)
 
 
-def compact_display(entries, query, as_str=False):
-    # Sort entries by ['meta']['score'] descending, missing scores last
-    sorted_entries = sorted(entries, key=get_score, reverse=True)
+def compact_display(edition_data, query, as_str=False):
+    """
+    Display edition search results in compact format.
 
+    Args:
+        edition_data: List of tuples (orm_work, orm_edition, edition_hit)
+                     where edition_hit contains work_id, edition_id, and chunk_hits
+        query: The search query string
+        as_str: If True, return as string; otherwise print
+    """
     lines = []
     lines.append(f'QUERY: "{wrap(query)}"')
     lines.append("RESULTS:")
-    for i, entry in enumerate(sorted_entries, 1):
+
+    for i, (orm_work, orm_edition, edition_hit) in enumerate(edition_data, 1):
+        title = orm_work.title or "(No Title)"
+        chunk_hits = edition_hit.get("chunk_hits", [])
+        max_score = (
+            max([h.get("meta", {}).get("score", 0) for h in chunk_hits])
+            if chunk_hits
+            else 0
+        )
+
+        # Truncate title if too long
+        title_display = title[:60] + "..." if len(title) > 60 else title
+
         lines.append(
-            f" {i:>3}:  ({get_score(entry):.3f}) {entry['meta']['id']:<19} -  {entry['title']}"
+            f" {i:>3}:  ({max_score:.3f}) Ed:{orm_edition.id:<6} W:{orm_work.id:<6} [{len(chunk_hits)} chunks] - {title_display}"
         )
 
     msg = "\n".join(lines)
@@ -173,6 +224,7 @@ def compact_display(entries, query, as_str=False):
         print(msg)
 
 
+# OLD idea for search funcs
 # query = 'hello'
 def search(
     query,

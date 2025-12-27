@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import json
 from pathlib import Path
 import traceback
 from typing import Dict
@@ -6,6 +7,7 @@ import uuid
 import sys
 import os
 import asyncio
+import numpy as np
 import pandas as pd
 
 from agents import (
@@ -19,11 +21,14 @@ from agents import (
 from agents.tool_context import ToolContext
 from agents.extensions.memory import SQLAlchemySession
 from openai.types.shared import Reasoning
+from sqlalchemy import text
+
+from api.db import get_frbr_data_by_edition
 # from sqlalchemy.ext.asyncio import create_async_engine
 
 # api code
 from .search import Searcher, get_book_metadata, verbose_display
-from ..utils import hit_to_dict
+from ..utils import APIUtils, hit_to_dict
 
 # shared code
 from vector_indexing.embedding import GoogleEmbedder
@@ -68,7 +73,7 @@ class ExecutionContext:
 def map_record_id_to_edition_id(record_ids):
     # record_id -> edition id
 
-    query = text(f"""
+    query = text("""
     SELECT
         r.id AS record_id,
         i.id as item_id,
@@ -114,88 +119,109 @@ def search_library(
         A formatted string containing search results with book titles, page numbers,
         subjects, dates, and text excerpts.
     """
+
+    PAGE_SIZE = 10
+
+    # MAYBE: turn the below into 2 functions: group_by_edition_and_sort() and enrich_edition_hits()
+
     try:
         print(f"LLM QUERY: {query}")
         # print(f"tool call id = {ctx.tool_call_id}")
 
         # Execute vector search
+        # take top 100 chunks and group by edition (then take top 10 editions)
         search_obj = ctx.context.searcher.vector_search(query, topk=100)
         # TODO: s.params(track_total_hits=True)
 
-        if not len(search_obj):  # search_obj.total_hits
+        if not len(search_obj):  # ? search_obj.total_hits
             return "No results found for your query."
 
-        # Group chunk level hits by edition
-        # Sort by score (as returned from ES)
+        # chunk hits
+        chunk_hits = []
+        for chunk_hit in search_obj:
+            chunk_hit = hit_to_dict(chunk_hit)
+            chunk_hits.append(chunk_hit)
 
-        record_ids = set(hit.book_id for hit in search_obj)
-
+        # Join work/edition/item ids to chunk hits
+        record_ids = set(hit["book_id"] for hit in chunk_hits)
         mapper = map_record_id_to_edition_id(record_ids)
+        for chunk_hit in chunk_hits:
+            chunk_hit.update(**mapper[chunk_hit.book_id])
 
-        # hit = {meta.score, meta.id text, book_id, chunk_start_page, chunk_end_page}
-        # TODO: add edition_id, work_id, item_id
+        # hit = {meta.score, meta.id, text, book_id, chunk_start_page, chunk_end_page,  edition_id, work_id, item_id}
 
         # group by edition and sort at the ES hit level (before adding FRBR data)
 
-        # chunk hits
-        hits = []
-        for hit in search_obj:
-            hit = hit_to_dict(hit)
-            # hit['extra']['edition']['chunk_hits']. text, score, page_start, page_end
-            hits.append(hit)
-
-        # Join work/edition/item ids to hits
-        hits = pd.merge(
-            pd.DataFrame(hits), df, left_on="book_id", right_on="record_id"
-        ).to_records()
-
+        # Group chunk level hits by Edition
         # edition hits
-        # group chunk_hits by edition and sort (by...)
+        edition_hits = {}
+        for chunk_hit in chunk_hits:
+            if chunk_hit.edition_id not in edition_hits:
+                edition_hits[chunk_hit.edition_id] = {
+                    "work_id": chunk_hit.work_id,
+                    "edition_id": chunk_hit.edition_id,
+                    "chunk_hits": [chunk_hit],
+                }
+            else:
+                edition_hits[chunk_hit.edition_id]["chunk_hits"].append(chunk_hit)
 
-        # TEMP: we are limiting results to top 10 editions
-        edition_ids = edition_ids[10:]
+        # Sort editions (by aggregate chunk score)
+        # max chunk score
+        def sort_key(edition_hit):
+            scores = [h["meta"]["score"] for h in edition_hit["chunk_hits"]]
+            return max(scores)
 
-        from managers import DBManager
-        from ..db import DBClient
-        from ..utils import APIUtils
+        # # mean chunk score
+        # def sort_key(edition_row):
+        #     scores = [h['meta']['score'] for h in edition_hit['chunk_hits']]
+        #     return np.mean(scores)
 
-        with DBClient(
-            DBManager(host=os.environ.get("POSTGRES_READ_HOST")).generate_engine()
-        ) as db_client:
-            # NOTE: the biggest difference btw VRA (current state) serach and DRB search is that VRA search does FRBR obj sorting of results outside/after ES and does not purely rely of ES search to determine search result order
+        edition_hits = sorted(edition_hits, key=sort_key)
 
-            response_works = APIUtils.generate_response(
-                db_client, hits, reader=reader_version, request=None, formats=None
-            )
+        # TODO: if fewer than 10 editions, re-query more chunks until 10 editions are retrieved
 
-        # collapse_works_to_editions()
+        # Limit results to top 10 editions
+        logger.info(
+            f"{len(edition_hits)} editions retrieved by vector search of top {100} chunks"
+        )
+        logger.info("limiting results to top 10 editions")
+        edition_hits = edition_hits[PAGE_SIZE:]
+        # TODO: handle paginating or providing more edition hits
 
-        # sort_editions_by_chunk_score()
+        # Fetch FRBR data (from DB) for editions in search result (page)
+        edition_ids = [h.edition_id for h in edition_hits]
+        frbr_data = get_frbr_data_by_edition(edition_ids)
 
-        total_works = ...  # len(set(record['uuid'] for record in edition_data))
+        # Merge ES hit data and FRBR metadata (maintaining edition hit sort order)
+        edition_data = []  # (ORM work, ORM edition, ES edition_hit)
+        for edition_hit in edition_hits:
+            orm_work, orm_edition = [
+                (w, e) for w, e in frbr_data if e.id == edition_hit.edition_id
+            ][0]
+            edition_data.append((orm_work, orm_edition, edition_hit))
 
-        # Group chunks by edition(item?)
+        # NOTE: the biggest difference btw VRA (current state) search and DRB search is that VRA search does FRBR obj sorting of results outside/after ES and does not purely rely on ES search to determine search result order
 
+        # Format editions for API response
+        # MAYBE: save raw merged FRBR and ES data and format in view func
+        response_editions = ...
         search_result = {
-            "totalWorks": len(response_works),
-            "works": response_works,
-            # NOTE: paginated search not yet implemented
+            "edition_data": response_editions,
+            # NOTE: paginated search not yet implemented, only 1 fixed result set size
             "paging": APIUtils.formatPagingOptions(
-                page=1, pageSize=search_obj.size, totalHits=total_hits
+                page=1, pageSize=PAGE_SIZE, totalHits=PAGE_SIZE
             ),
-            "facets": {},
-            # Q: is this needed for VRA?
-            "searchParams": json.loads(ctx.tool_arguments),
+            "search_params": json.loads(ctx.tool_arguments),
         }
-        # Store raw results in context for later use
-        # ADD ticket to sprint..... on grouping results by book
+        # Store API formatted json results for later reference
         ctx.context.search_results[ctx.tool_call_id] = search_result
 
-        # ALT : just send the JSON to the model (simpler than saving the raw results separately)
-        # Q: return enriched hits as JSON? (add page)
-        return verbose_display(enriched_hits, query, as_str=True)
+        # Format editions for LLM
+        # ALT : convert edition data to json and send (full) JSON to LLM (simpler than saving JSON/API response separately)
+        return verbose_display(edition_data, query, as_str=True)
+
     except Exception as e:
-        traceback.print_exc(file=sys.stdout)
+        logger.exception("Error during search_library tool execution.")
         raise e
 
 
@@ -207,11 +233,7 @@ def search_in_book():
     # get metadata for single edition id
 
 
-# TODO: context is getting overloaded, serverWorkerContext, executionContext, http method context....
-# rename http method context to conversation_type?
-
-
-def update_chat(conversation, context, item_id=None):
+def update_chat(conversation, conversation_type, item_id=None):
     """
     Send a message to the conversation and get the agent's response.
 
@@ -225,10 +247,11 @@ def update_chat(conversation, context, item_id=None):
         The agent's RunResult obj.
     """
 
-    assert context in ["contentSearch", "catalogSearch"]
+    assert conversation_type in ["contentSearch", "catalogSearch"]
     # MAYBE: other data validation approach?
 
-    if context == "contentSearch":
+    # Search for books
+    if conversation_type == "contentSearch":
         assert item_id is not None, (
             'item_id is required for conversation_type="contentSearch"'
         )
@@ -252,7 +275,8 @@ def update_chat(conversation, context, item_id=None):
             tools=[search_library],
         )
 
-    if context == "catalogSearch":
+    # Search within single book
+    if conversation_type == "catalogSearch":
         exec_context = ExecutionContext(searcher=WORKER_CONTEXT.searcher)
 
         CATALOG_SEARCH_SYSTEM_PROMPT
@@ -276,11 +300,18 @@ def update_chat(conversation, context, item_id=None):
 
     run_result = self._loop.run_until_complete(_run())
 
+    # Extract new messages in conversation
     messages = run_result.new_items
-    # TODO: if  multiple search results/tool calls per update... merge into a single result
-    result = list(context.search_results.values())[0]
 
-    {
+    # Extract (single) search tool result
+    result = list(conversation_type.search_results.values())[0]
+    # TODO: if  multiple search results/tool calls per update... merge into a single result
+    if len(conversation_type.search_results) > 1:
+        logger.warning(
+            f"{len(len(conversation_type.search_results))} tool calls during agent response."
+        )
+
+    return {
         "messages": messages,
         "result": result,
     }
