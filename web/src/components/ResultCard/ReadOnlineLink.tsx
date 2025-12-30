@@ -16,10 +16,10 @@ const ReadOnlineLink: React.FC<{
   title: string;
   loginCookie?: any;
 }> = ({ authors, isLoggedIn, readOnlineLink, title }) => {
-  if (!readOnlineLink) return null;
-  
   const { onReadOnline, page } = useResultPageContext();
   const isResearchAssistant = page === "vra";
+
+  if (!readOnlineLink) return null;
 
   let linkText = "Read online";
   let linkUrl: any = {
