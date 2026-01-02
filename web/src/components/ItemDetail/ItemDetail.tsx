@@ -38,6 +38,7 @@ import {
   GRID_PADDING_X,
   HEADER_HEIGHT,
 } from "~/src/constants/researchAssistant";
+import { ACCORDION_EXPANDED_BG } from "~/src/constants/colors";
 
 interface ItemDetailProps {
   workResult: WorkResult;
@@ -277,7 +278,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
               id="item-detail-accordion"
               sx={{
                 "button[aria-expanded=true]": {
-                  bgColor: "#F2F9F9",
+                  bgColor: ACCORDION_EXPANDED_BG,
                 },
                 ".chakra-collapse": {
                   bgColor: "ui.white",

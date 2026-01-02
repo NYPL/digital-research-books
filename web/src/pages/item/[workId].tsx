@@ -27,7 +27,7 @@ export async function getServerSideProps(context: any) {
 
   const backUrl = getBackToVraUrl(
     context.req.headers.referer,
-    context.req.headers.host
+    context.req.headers.host,
   );
 
   const workResult: WorkResult = await workFetcher(workQuery);
@@ -43,15 +43,13 @@ const ItemPage: React.FC<any> = (props) => {
 
   const truncatedTitle = truncateStringOnWhitespace(
     props.workResult.data.title,
-    MAX_PAGE_TITLE_LENGTH
+    MAX_PAGE_TITLE_LENGTH,
   );
 
   return (
     <Layout>
       <Head>
-        <title>
-          {`${truncatedTitle} | ${documentTitles.workItem}`}
-        </title>
+        <title>{`${truncatedTitle} | ${documentTitles.workItem}`}</title>
       </Head>
       <VRALayout
         activePage="item"
@@ -65,7 +63,7 @@ const ItemPage: React.FC<any> = (props) => {
         <ResultPageProvider
           value={{
             page: "item",
-            onReadOnline: () => { },
+            onReadOnline: () => {},
           }}
         >
           <ItemDetail workResult={props.workResult} backUrl={props.backUrl} />

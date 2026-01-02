@@ -8,6 +8,7 @@ import {
 } from "@nypl/design-system-react-components";
 
 import { Filter } from "~/src/types/SearchQuery";
+import { ACCORDION_EXPANDED_BG } from "~/src/constants/colors";
 
 /**
  * Year Filters
@@ -112,7 +113,7 @@ const FilterYears: React.FC<{
       isDefaultOpen
       sx={{
         "button[aria-expanded=true]": {
-          bgColor: "#F2F9F9"
+          bgColor: ACCORDION_EXPANDED_BG
         },
         ".chakra-collapse": {
           bgColor: "ui.white"
