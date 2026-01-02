@@ -21,7 +21,7 @@ describe("EddLink", () => {
     test("renders request scan link if logged in", () => {
         renderEddLink(true);
         expect(
-            screen.getByRole("link", { name: /Request scan/i })
+            screen.getByRole("link", { name: /Request scan/ })
         ).toBeInTheDocument();
     });
 

@@ -61,7 +61,7 @@ describe("DownloadLink", () => {
                 isLoggedIn={false}
             />
         );
-        expect(screen.getByText(/Download PDF/i)).toBeInTheDocument();
+        expect(screen.getByText(/Download PDF/)).toBeInTheDocument();
     });
 
     test("handles /fulfill/ download with error", async () => {
@@ -84,7 +84,7 @@ describe("DownloadLink", () => {
                 isLoggedIn={false}
             />
         );
-        fireEvent.click(screen.getByText(/Download PDF/i));
+        fireEvent.click(screen.getByText(/Download PDF/));
         expect(await screen.findByText(/Some error/i)).toBeInTheDocument();
     });
 });
