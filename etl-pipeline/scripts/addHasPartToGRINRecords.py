@@ -48,8 +48,9 @@ def create_first_page_part(barcode: str, mets_file: mets_parser.METSFile) -> Par
 
 def windowed_query(session, stmt, column, windowsize):
     '''
-    Yields all records from stmt, fetching `windowsize` records at a time into memory
+    Yields all records from stmt, fetching `windowsize` records at a time into memory.
     `column` must contain strictly unique values (non-null)
+    Safe to call session.commit() while iterating.
     see: https://github.com/sqlalchemy/sqlalchemy/wiki/RangeQuery-and-WindowedRangeQuery
     '''
     stmt = stmt.add_columns(column).order_by(column)
