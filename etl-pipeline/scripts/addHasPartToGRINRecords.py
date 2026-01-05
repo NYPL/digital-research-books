@@ -100,12 +100,18 @@ def main():
                 )
 
                 logger.info(f"Sent record {record.source_id} to queue")
+
+                if total_updated % BATCH_SIZE == 0:
+                    db_manager.commit_changes()
+                    logger.info(
+                        f"Committed batch: {total_updated} records updated so far"
+                    )
             except Exception as e:
                 logger.error(
                     f"Failed to process record with source_id {record.source_id}: {e}"
                 )
 
-        db_manager.session.commit()
+        db_manager.commit_changes()
         logger.info(
             f"Updated {total_updated} GRIN records with has_part, {total_has_first_page} already had first_page_part"
         )
