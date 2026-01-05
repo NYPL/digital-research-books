@@ -1,7 +1,7 @@
 import os
 
 import boto3
-from sqlalchemy import func
+from sqlalchemy import func, select
 import file_conversion.pdfs.mets_parser as mets_parser
 
 
@@ -75,8 +75,8 @@ def main():
     bucket = os.environ["PRIVATE_FILE_BUCKET"]
 
     with DBManager() as db_manager:
-        query = (
-            db_manager.session.query(Record)
+        stmt = (
+            select(Record)
             .join(GRINStatus, GRINStatus.record_id == Record.id)
             .filter(
                 Record.source == "grin",
@@ -86,14 +86,15 @@ def main():
             )
         )
 
-        total_records = query.count()
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        total_records = db_manager.session.execute(count_stmt).scalar()
         logger.info(f"Found {total_records} GRIN records to process")
 
         total_updated = 0
         total_has_first_page = 0
         batch_count = 0
 
-        for record in windowed_query(db_manager.session, query, Record.id, BATCH_SIZE):
+        for record in windowed_query(db_manager.session, stmt, Record.id, BATCH_SIZE):
             try:
                 logger.info(f"Processing record with source_id {record.source_id}")
                 barcode = record.source_id.split("|")[0]
