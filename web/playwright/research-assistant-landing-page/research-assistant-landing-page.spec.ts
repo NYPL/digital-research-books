@@ -67,9 +67,29 @@ test.describe("Research Assistant Landing Page UI", () => {
   });
 });
 
-test("Search executes and routes to Research Assistant page", async ({ page }) => {
-  const researchAssistantLandingPage = new ResearchAssistantLandingPage(page);
-  await researchAssistantLandingPage.navigateTo();
-  await researchAssistantLandingPage.search("Mark Twain");
-  await expect(page).toHaveURL(/.*research-assistant/);
+test.describe("Research Assistant Landing Page Functionality", () => {
+  let page: Page;
+  let researchAssistantLandingPage: ResearchAssistantLandingPage;
+
+  test.beforeAll(async ({ browser }) => {
+    page = await browser.newPage();
+    researchAssistantLandingPage = new ResearchAssistantLandingPage(page);
+    await researchAssistantLandingPage.navigateTo();
+  });
+
+  test.afterAll(async () => {
+    await page.close();
+  });
+
+  test("Search text box is ready for input", async () => {
+    const testQuery = "renaissance";
+    await researchAssistantLandingPage.searchTextBox.fill(testQuery);
+    const inputValue = await researchAssistantLandingPage.searchTextBox.inputValue();
+    expect(inputValue).toBe(testQuery);
+  });
+
+  test("Executing search routes to Research Assistant page", async () => {
+    await researchAssistantLandingPage.search("renaissance");
+    await expect(page).toHaveURL(/.+\/research-assistant$/);
+  });
 });
