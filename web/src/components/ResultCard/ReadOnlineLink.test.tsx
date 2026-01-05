@@ -46,7 +46,7 @@ describe("ReadOnlineLink", () => {
             </ResultPageProvider>
         );
         expect(
-            screen.getByRole("button", { name: /Read online/i })
+            screen.getByRole("button", { name: /Read online/ })
         ).toBeInTheDocument();
     });
 
@@ -57,7 +57,7 @@ describe("ReadOnlineLink", () => {
             </ResultPageProvider>
         );
         expect(
-            screen.getByRole("button", { name: /Read online/i })
+            screen.getByRole("button", { name: /Read online/ })
         ).toBeInTheDocument();
     });
 
@@ -90,7 +90,7 @@ describe("ReadOnlineLink", () => {
                 <ReadOnlineLink {...baseProps} />
             </ResultPageProvider>
         );
-        screen.getByRole("button", { name: /Read online/i }).click();
+        screen.getByRole("button", { name: /Read online/ }).click();
         expect(onReadOnline).toHaveBeenCalled();
     });
 });
