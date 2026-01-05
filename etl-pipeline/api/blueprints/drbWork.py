@@ -47,7 +47,7 @@ def get_work(uuid):
             return APIUtils.formatResponseObject(
                 200,
                 response_type,
-                APIUtils.generate_response(
+                APIUtils.formatWorkOutput(
                     work,
                     None,
                     showAll=show_all,

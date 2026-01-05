@@ -88,7 +88,7 @@ def opdsSearch():
 
         results.append((res.uuid, editionIds))
 
-    works = dbClient.get_metadata_by_edition_ids(results)
+    works = dbClient.fetchSearchedWorks(results)
 
     searchFeed = constructBaseFeed(request.full_path, "Search Results", grouped=True)
 

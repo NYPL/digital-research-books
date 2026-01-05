@@ -1,11 +1,9 @@
 from collections import OrderedDict
 from datetime import datetime, timezone
 from hashlib import scrypt
-from typing import Dict
 from flask import jsonify
 from itertools import repeat
 from math import ceil
-from api.db import DBClient
 from model import Collection, Edition
 import re
 from model.postgres.collection import COLLECTION_EDITIONS
@@ -16,11 +14,6 @@ from urllib.parse import urlparse
 
 
 logger = create_log(__name__)
-
-
-# TODO: make a dataclass (so it can accept/expect extra field)
-def hit_to_dict(hit):
-    return {**hit.to_dict(), **{"meta": hit.meta.to_dict()}}
 
 
 class APIUtils:
@@ -160,207 +153,111 @@ class APIUtils:
             "lastPage": lastPage,
         }
 
-    # pared down version of generate_response that basically gets the ORM data for ES hits
-    # .. like enrich_hits()
-    # TODO  better to do get orm/FRBR data by lowest level FRBR id available in hit data
-    def get_frbr_data_for_es_hits(
-        cls,
-        db_client: DBClient,
-        hits,  # ES serach hit data, each hit must include at least one of work_id, edition_id, item_id
-        # order of returned nested data is taken from order of this flat data
-        # hits are expected to have all the same feild values (first hit is used \
-        # to determine lowest level FRBR id avaiable)
-    ):
-        """
-        Get FRBR nested works from DB that match FRBR object ids in ES search result
-        ORDER and FILTER the FRBR data by the the ids and id order in the ES search result
-
-
-        Returns list of requested ids in nested work/edition/item format
-
-        order of objs in response (at each nested level) is based on the order of frbr items in input hits
-        """
-
-        ### Get FRBR works from DB for ids in search result
-        first_hit = hits[0]
-        lowest_frbr_level = (
-            "item_id"
-            if first_hit.get("item_id")
-            else "edition_id"
-            if first_hit.get("edition_id")
-            else "work_id"
-            if first_hit.get("work_id")
-            else None
-        )
-        if lowest_frbr_level is None:
-            raise ...
-
-        # get ids to filter orm works by
-        filter_ids = list(set(getattr(hit, lowest_frbr_level) for hit in hits))
-
-        # TODO:figure out were to import session from/handle db session
-        # TODO: change function to handle different filter levels
-        orm_works = db_client.get_frbr_data_by_ids(
-            level=lowest_frbr_level, ids=filter_ids
-        )
-        # T TODO: figure out whether it is possible to do eager loading while filtering the ORM objects you eager load (this would avoid the filter part of the order and filter next step)
-
-        # Q: sort DB side vs sort client side
-        # merge_hits_and_frbr() or sort_and_merge()
-        # ... then ... format for reponse, or anything else...
-
-        ### Order and Filter FRBR object by search result object ids and id order
-        # MAYBE:  order_and_filter_frbr_data()
-        response_works = {}  # work_id -> response_work
-        #  orm_works ordered by hits
-        # Q enforce str on orm.uuid or hit.id???
-        for hit in hits:
-            for orm_work in orm_works:
-                if (getattr(hit, "work_id") is None) or (
-                    orm_work.uuid == hit.work_id
-                ):  # record all if hit doesn't have this data id
-                    if hit.work_id not in response_works:
-                        # TODO: handle search data that wants to be added to response outside of this function
-                        # meta = hit.extra.get('work')
-                        response_works[orm_work.uuid] = {
-                            **dict(orm_work),
-                            "editions": {},
-                        }
-                        # ALT: don't convert orm to dict, but simply set sort order with .pop() and .insert() in orm.nested_relationship list (e.g. orm_work.editions)
-
-                    for orm_edition in orm_work.editions:
-                        if (
-                            orm_edition.id == hit.edition_id
-                        ):  # TODO: do all if hit doesn't have this data id # an edition is only in one work so we can assume that if the edition matches the hit.edition_id it also matches the hit.work_id
-                            if (
-                                hit.edition_id
-                                not in response_works[orm_work.uuid]["editions"]
-                            ):
-                                response_works[orm_work.uuid]["editions"][
-                                    orm_edition.id
-                                ] = dict(orm_edition)
-
-                            # TODO: edition rights? item links?
-
-                        for orm_item in orm_edition.items:
-                            ...
-
-        # TODO: rather than nest, flatten response by the lowest frbr level i.e. \
-        # the level at which the sorting occurs, this way the sort order is at
-        # a flat level of aggregation
-
-        return list(response_works.values())
-
-    # edition ordering in response = loop thru works then additions
-    # TODO: where does front end ordering come from
-
-    # TODO: refactor all references (formerly formatWorkOutput) some cases will be handled by format work directly
-    # TODO: move everything but iterating to formatWork
-    # TODO: separate out converting ORM to dict and filtering out unrequested (edition, or other) ids from embelishing/formatting the DB data
     @classmethod
-    def generate_response(
+    def formatWorkOutput(
         cls,
-        db_client: DBClient,
-        hits,  # edition or lower level ES serach hit data (theoretically work hits could be supported?)
-        # order of works and editions is taken from this order #
-        **kwargs,  # TODO: re-specify formats, showall, etc...
+        works,
+        identifiers,
+        dbClient,
+        request,
+        showAll=True,
+        formats=None,
+        reader=None,
     ):
-        """
-        Create a list of Work objs from the API response specification from a list of FRBR obj ids
-        (1) take bibliograpfic ids from ES search and retrieves retrieves the metadata associated
-        (2) formats the metadata onto structure expected by frontend
-        (3) attaches metadata from the ES search (highlights/snippets) in the formatted response
+        # Multiple formatted works with formats specified
+        if isinstance(works, list):
+            outWorks = []
+            workDict = {str(work.uuid): work for work in works}
 
-        Returns list of requested ids in nested work/edition/item format
+            for workUUID, editionIds, highlights in identifiers:
+                work = workDict.get(workUUID, None)
 
-        response order is based on the order of editions returned by
-        """
+                if work is None:
+                    continue
 
-        # TODO: figure out edition sorting... edition->score (Q: does DRB ES search return sorted by score?)
+                outWork = cls.formatWork(
+                    work,
+                    editionIds,
+                    showAll,
+                    dbClient,
+                    formats=formats,
+                    reader=reader,
+                    request=request,
+                )
 
-        # flatten and deduplicate edition ids
-        edition_ids = list(set(hit.edition_id for hit in hits))
-        # TODO:figure out were to import session from/handle db session
-        orm_works = db_client.get_metadata_by_edition_ids(edition_ids)
+                cls.addWorkMeta(outWork, highlights=highlights)
 
-        # join orm_works to hits....
+                outWorks.append(outWork)
 
-        response_works = {}  # work_id -> response_work
-        #  orm_works ordered by hits
-        for hit in hits:
-            for orm_work in orm_works:
-                if orm_work.uuid == hit.work_id:  # enforce str???
-                    if hit.work_id not in response_works:
-                        # DRB ES index highlights are for work index docs, relevant snipets are for editions
-                        meta = hit.extra.get("work")
+            return outWorks
+        # Formatted work with a specific format given
+        elif formats != None and identifiers == None:
+            formattedWork = cls.formatWork(
+                works,
+                None,
+                showAll,
+                dbClient,
+                formats=formats,
+                reader=reader,
+                request=request,
+            )
 
-                        # ALT: response_work = dict(orm_work)
-                        response_work = cls.formatWork(
-                            orm_work,
-                            hits,  # for sorting and filtering editions
-                            meta=meta,
-                            **kwargs,
-                        )
-                        response_works[hit.work_id] = response_work
+            formattedWork["editions"].sort(
+                key=lambda x: x["publication_date"] if x["publication_date"] else 9999
+            )
+            return formattedWork
+        # Formatted work with no format specified
+        else:
+            formattedWork = cls.formatWork(
+                works, None, showAll, dbClient, reader=reader, request=request
+            )
 
-        return list(response_works.values())
+            formattedWork["editions"].sort(
+                key=lambda x: x["publication_date"] if x["publication_date"] else 9999
+            )
+            return formattedWork
 
     @classmethod
     def formatWork(
         cls,
-        work,  # Full work/edition/item metadata nested in a work orm obj
-        editionIds,  # The ordered list of editions that will be displayed to the frontend (pending link filtering) (from ES search result)
-        # often a subset of all editions in work will be included. Edition and thus
+        work,
+        editionIds,
         showAll,
         dbClient=None,
         formats=None,
         reader=None,
         request=None,
-        meta: Dict = None,  # {key:value,...}
     ):
-        assert sorted(set(ed.id for ed in work)) == sorted(editionIds)
-
         workDict = dict(work)
         workDict["edition_count"] = len(work.editions)
-        workDict["inCollections"] = (
-            cls.checkEditionInCollection(  # This function serves for both works and collections, split out
-                work, None, dbClient=dbClient
-            )
+        workDict["inCollections"] = cls.checkEditionInCollection(
+            work, None, dbClient=dbClient
         )
         workDict["date_created"] = work.date_created.strftime("%Y-%m-%dT%H:%M:%S")
         workDict["date_modified"] = work.date_modified.strftime("%Y-%m-%dT%H:%M:%S")
 
-        editions = OrderedDict.fromkeys(editionIds) if editionIds else OrderedDict()
+        orderedEds = OrderedDict.fromkeys(editionIds) if editionIds else OrderedDict()
 
-        for edition_orm in work.editions:
-            # Filter editions (based on search results)
-            if editionIds and edition_orm.id not in editionIds:
+        for edition in work.editions:
+            if editionIds and edition.id not in editionIds:
                 continue
 
-            editionInCollection = cls.checkEditionInCollection(
-                None, edition_orm, dbClient
-            )
+            editInCollection = cls.checkEditionInCollection(None, edition, dbClient)
 
-            # ALT: replace with `editionDict = dict(edition)`
-            edition_response = cls.formatEdition(
-                edition_orm,
-                editionInCollection=editionInCollection,
+            editionDict = cls.formatEdition(
+                edition,
+                editionInCollection=editInCollection,
                 formats=formats,
                 reader=reader,
             )
 
-            # filter editions (based on presence of links)
-            if showAll is True or (
-                showAll is False and len(edition_response["items"]) > 0
-            ):
-                editions[edition_orm.id] = edition_response
+            if showAll is True or (showAll is False and len(editionDict["items"]) > 0):
+                orderedEds[edition.id] = editionDict
 
-        # Filter out edition id with no edition response (TODO: remove once I remove the ordered dict)
-        workDict["editions"] = list(filter(None, [e for _, e in editions.items()]))
+        workDict["editions"] = list(filter(None, [e for _, e in orderedEds.items()]))
 
-        # TODO: move this to formatEdition
-        for edition_orm in workDict["editions"]:
-            for item in edition_orm["items"]:
+        for edition in workDict["editions"]:
+            for item in edition["items"]:
                 if item.get("links"):
                     # Map over item links and patch with pre-signed URL where necessary
                     item["links"] = list(
@@ -370,18 +267,6 @@ class APIUtils:
                             repeat(request),
                         )
                     )
-
-        # TODO: look a tpast version to make sure this is implementing the past cases correctly
-        # Q: how are editions sorted by relevancy score? is it just by preserving the order of edition_ids!?
-        # TODO: vector search sort
-        workDict["editions"].sort(
-            key=lambda x: x["publication_date"] if x["publication_date"] else 9999
-        )
-
-        if meta is not None:
-            for key, value in meta.items():
-                cls.addWorkMeta(workDict, value)
-
         return workDict
 
     @classmethod
@@ -502,7 +387,7 @@ class APIUtils:
         for item in edition.items:
             itemDict = dict(item)
             itemDict["item_id"] = item.id
-            itemDict["location"] = (  # Q: why rename?
+            itemDict["location"] = (
                 item.physical_location["name"] if item.physical_location else None
             )
 
@@ -699,10 +584,6 @@ class APIUtils:
 
     @classmethod
     def flatten(cls, nested):
-        """depth-first recursive generation of values of an iterable of iterables of arbitrary nesting depth.
-
-        `nested` can be flat.
-        """
         try:
             iter(nested)
         except TypeError:

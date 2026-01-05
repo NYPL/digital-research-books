@@ -70,7 +70,7 @@ def query():
 
         filtered_formats = APIUtils.formatFilters(terms)
 
-        works = db_client.get_metadata_by_edition_ids(results)
+        works = db_client.fetchSearchedWorks(results)
 
         # Depending on the version of elastic search, hits will either be an integer or a dictionary
         total_hits = (
@@ -84,7 +84,7 @@ def query():
 
         data_block = {
             "totalWorks": total_hits,
-            "works": APIUtils.generate_response(
+            "works": APIUtils.formatWorkOutput(
                 works,
                 results,
                 request=request,

@@ -288,7 +288,7 @@ class TestAPIUtils:
         }
 
         with testApp.test_request_context("/"):
-            outWork = APIUtils.generate_response(
+            outWork = APIUtils.formatWorkOutput(
                 "testWork", None, mocker.sentinel.dbClient, request=request
             )
 
@@ -313,7 +313,7 @@ class TestAPIUtils:
         testWorks = [mocker.MagicMock(uuid="uuid1"), mocker.MagicMock(uuid="uuid2")]
 
         with testApp.test_request_context("/"):
-            outWorks = APIUtils.generate_response(
+            outWorks = APIUtils.formatWorkOutput(
                 testWorks,
                 [
                     ("uuid1", 1, "highlight1"),

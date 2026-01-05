@@ -43,7 +43,7 @@ class TestDBClient:
 
         testInstance.session.close.assert_called_once()
 
-    def test_get_metadata_by_edition_ids(self, testInstance, mocker):
+    def test_fetchSearchedWorks(self, testInstance, mocker):
         testInstance.session.query().join().options().filter().all.return_value = [
             "work1",
             "work3",
@@ -52,7 +52,7 @@ class TestDBClient:
         mockFlatten = mocker.patch.object(APIUtils, "flatten")
         mockFlatten.return_value = [1, 2, 3]
 
-        workResult = testInstance.get_metadata_by_edition_ids(
+        workResult = testInstance.fetchSearchedWorks(
             [("uuid1", "ed1"), ("uuid2", "ed2"), ("uuid3", "ed3")]
         )
 

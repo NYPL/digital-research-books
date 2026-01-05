@@ -147,7 +147,7 @@ class TestOPDSBlueprint:
         mockResponse = mocker.MagicMock(hits=mockHits, aggregations=mockAgg)
         mockES.searchQuery.return_value = mockResponse
 
-        mockDB.get_metadata_by_edition_ids.return_value = [
+        mockDB.fetchSearchedWorks.return_value = [
             "work1",
             "work2",
             "work3",
@@ -177,7 +177,7 @@ class TestOPDSBlueprint:
                 page=0,
                 perPage=25,
             )
-            mockDB.get_metadata_by_edition_ids.assert_called_once_with(
+            mockDB.fetchSearchedWorks.assert_called_once_with(
                 [
                     ("uuid1", ["ed1", "ed2"]),
                     ("uuid2", ["ed3"]),

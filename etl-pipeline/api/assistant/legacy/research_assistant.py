@@ -1,4 +1,6 @@
+from typing import Optional
 from flask import current_app
+from .elastic import ElasticClient, SearchParams
 from langgraph.prebuilt import create_react_agent
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import (
@@ -8,16 +10,12 @@ from langchain_core.messages import (
     messages_from_dict,
 )
 from langchain.tools import tool
-
 from logger import create_log
-from ...utils import APIUtils, hit_to_dict
+from ...utils import APIUtils
 from ...db import DBClient
-from ...elastic import ElasticClient, SearchParams
-
+from uuid import UUID
 from .item_search import item_full_text_search, QueryMode
 
-from typing import Optional
-from uuid import UUID
 import json
 
 VRA_SYSTEM_PROMPT_V0 = SystemMessage(
@@ -108,38 +106,24 @@ class ResearchAssistant:
             search_result = es_client.search_catalog(params)
             reader_version = current_app.config["READER_VERSION"]
             db_client.createSession()
+            results = []
+            for res in search_result.hits:
+                edition_ids = [e.edition_id for e in res.meta.inner_hits.editions.hits]
 
-            # can the search result (even tho it is returned by work include a
-            # subset of all the editions of the work in the inner hits?
-            # ultimately, do we have to use edition ID or work ID to filter the DB
+                try:
+                    highlights = {
+                        key: list(set(res.meta.highlight[key]))
+                        for key in res.meta.highlight
+                    }
+                except AttributeError:
+                    highlights = {}
 
-            # make edition level hit objs
-            hits = []
-            for w_hit in search_result.hits:
-                for e_hit in w_hit.meta.inner_hits.editions.hits:
-                    hit = hit_to_dict(e_hit)
-                    # TODO: translate uuid to work_id, and id to edition_id
-                    # add work highlight meta data
-                    if getattr(w_hit.meta, "highlight"):
-                        hit["extra"]["work"] = {
-                            "highlights": {
-                                key: list(set(hit.meta.highlight[key]))
-                                for key in hit.meta.highlight
-                            }
-                        }
-                    hits.append(hit)
+                results.append((res.uuid, edition_ids, highlights))
 
-            # TODO: look at past version to figure out how to replicate
             if es_client.sortReversed is True:
-                results_by_work_id = [r for r in reversed([results_by_work_id])]
+                results = [r for r in reversed(results)]
 
-            response_works = APIUtils.generate_response(
-                db_client,
-                hits,
-                request=None,
-                formats=None,
-                reader=reader_version,
-            )
+            works = db_client.fetchSearchedWorks(results)
 
             # Depending on the version of elastic search, hits will either be an integer or a dictionary
             total_hits = (
@@ -157,8 +141,14 @@ class ResearchAssistant:
 
             search_results = {
                 "totalWorks": total_hits,
-                # TODO: add highlights
-                "works": response_works,
+                "works": APIUtils.formatWorkOutput(
+                    works,
+                    results,
+                    request=None,
+                    dbClient=db_client,
+                    formats=None,
+                    reader=reader_version,
+                ),
                 "paging": paging,
                 "facets": facets,
                 "searchParams": params.to_query_filters(),

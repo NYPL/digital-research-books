@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date, timezone
 from sqlalchemy import Integer
-from sqlalchemy.orm import joinedload, sessionmaker, contains_eager
+from sqlalchemy.orm import joinedload, sessionmaker
 from sqlalchemy.sql import column, func, select, text, values
 from uuid import uuid4
 
@@ -15,8 +15,6 @@ from model import (
     AutomaticCollection,
 )
 from .utils import APIUtils
-
-# TODO: separate the session object from the  methods and instantiate the Session in this doc and import elsewhere to use instead of injecting
 
 
 class DBClient:
@@ -36,73 +34,20 @@ class DBClient:
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.closeSession()
 
-    # TODO: refactor all references
-    # TODO: reformat to use with_polymorphic for a flat result that is more simply parsed
-    # (formerly fetchSearchedWorks())
-    # TODO: transform to get_data_by_lowest_level_ORM_id_available
-    def get_metadata_by_edition_ids(self, edition_ids):
-        """
-        Return list of nested FRBR work objects, each containing its nested
-        edition and items,  links, rights, according to the FRBR Data model
-        defined in the DB schema.
-        """
+    def fetchSearchedWorks(self, ids):
+        uuids = [i[0] for i in ids]
+        editionIds = list(set(APIUtils.flatten([i[1] for i in ids])))
 
-        # TODO: add works "relationship" in editions ORM, so that we can query editions \
-        # and get works attached  ... \
-        # OR just join work and edition data in the DB \
-        # and let items,links, rights be returned as ORM
-
-        # Q: if I filter a subset of editions in the work do all editions get returned or only the filtered ones?
-        # A: with contains_eager, only the filtered editions are returned in the collection
-        # return (
-        #     self.session.query(Work)
-        #     .join(Edition)
-        #     .options(
-        #         # Q: why not use with_polymorphic() to return a flat not nested structure (see: https://docs.sqlalchemy.org/en/13/orm/inheritance_loading.html#using-with-polymorphic)
-        #         contains_eager(Work.editions).joinedload(Edition.links),
-        #         contains_eager(Work.editions).joinedload(Edition.items),
-        #         # Q: might this be the line that filters out items without links
-        #         contains_eager(Work.editions).joinedload(Edition.items, Item.links, innerjoin=True),
-        #         contains_eager(Work.editions).joinedload(Edition.items, Item.rights),
-        #     )
-        #     .filter(Edition.id.in_(edition_ids))
-        #     .all()
-        # )
-
-        # POTENTIALLY MORE CONTROL ON FILTERING ITEMS/LINKS
-        # return (
-        # self.session.query(Work)
-        # .join(Edition)  # Your explicit join
-        # .join(Edition.items, isouter=True)  # Explicit join for items
-        # .join(Item.links, isouter=True)     # Explicit join for links
-        # .options(
-        #     contains_eager(Work.editions)  # Use contains_eager instead of joinedload
-        #     .contains_eager(Edition.items)
-        #     .contains_eager(Item.links),
-
-        #     # For nested relationships that don't need filtering, you can still use joinedload
-        #     joinedload(Work.editions, Edition.links),
-        #     joinedload(Work.editions, Edition.items, Item.rights),
-        # )
-        # .filter(Edition.id.in_(edition_ids))
-        # .all()
-        # )
-
-        # ORIGINAL
-        # # Q: if I filter a subset of editions in the work do all editions get returned or only the filtered ones?
-        # # A: all editions for a work are returned, unless innerjoin=True
         return (
             self.session.query(Work)
             .join(Edition)
             .options(
-                # Q: why not use with_polymorphic() to return a flat not nested structure (see: https://docs.sqlalchemy.org/en/13/orm/inheritance_loading.html#using-with-polymorphic)
                 joinedload(Work.editions, Edition.links),
                 joinedload(Work.editions, Edition.items),
-                # Q: might this be the line that filters out items (or even works) without links
                 joinedload(Work.editions, Edition.items, Item.links, innerjoin=True),
                 joinedload(Work.editions, Edition.items, Item.rights),
             )
-            .filter(Edition.id.in_(edition_ids))
+            .filter(Work.uuid.in_(uuids), Edition.id.in_(editionIds))
             .all()
         )
 
@@ -111,9 +56,7 @@ class DBClient:
             self.session.query(Work)
             .options(
                 joinedload(Work.editions),
-                joinedload(
-                    Work.editions, Edition.rights
-                ),  # Q: why get edition rights here by item rights in fetchSingleEdition()
+                joinedload(Work.editions, Edition.rights),
                 joinedload(Work.editions, Edition.items),
                 joinedload(Work.editions, Edition.items, Item.links, innerjoin=True),
             )
@@ -401,39 +344,3 @@ class DBClient:
 
     def fetchUser(self, user):
         return self.session.query(User).filter(User.user == user).one_or_none()
-
-
-def get_frbr_data_by_edition(edition_ids):
-    """
-    Return (Work, Edition) pairs for the passed edition_ids with the following
-    eager loaded relationships for Edition: Edition.items.links,
-    Edition.items.rights, Edition.links/
-    """
-
-    edition_link_alias = aliased(Link)
-    item_link_alias = aliased(Link)
-
-    with Session() as session:
-        rows = (
-            session.query(Work, Edition)
-            .join(Work.editions)  # Work → Edition
-            # Edition.links (draws from aliased Link via edition_links crosswalk)
-            .outerjoin(Edition.links.of_type(edition_link_alias))
-            .outerjoin(Edition.items)  # Edition → Item
-            # Item.links (draws from aliased Link via item_links crosswalk)
-            .outerjoin(Item.links.of_type(item_link_alias))
-            .outerjoin(Item.rights)
-            .filter(Edition.id.in_(edition_ids))
-            .options(
-                # Eager-load Edition.items.links (Item.links)
-                contains_eager(Edition.items).contains_eager(
-                    Item.links.of_type(item_link_alias)
-                ),
-                # Eager-load Edition.items.rights (Item.rights)
-                contains_eager(Edition.items).contains_eager(Item.rights),
-                # Eager-load Edition.links (Edition.links)
-                contains_eager(Edition.links.of_type(edition_link_alias)),
-            )
-            .all()
-        )
-    return rows
