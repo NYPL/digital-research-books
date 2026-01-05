@@ -2,8 +2,8 @@ import { test, expect, Page } from "@playwright/test";
 import { ResearchAssistantLandingPage } from "./research-assistant-landing-page";
 
 test.describe("Research Assistant Landing Page UI", () => {
-  let researchAssistantLandingPage: ResearchAssistantLandingPage;
   let page: Page;
+  let researchAssistantLandingPage: ResearchAssistantLandingPage;
 
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
