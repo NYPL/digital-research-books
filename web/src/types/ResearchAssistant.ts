@@ -70,3 +70,5 @@ export type ApiItemsRead = {
   previousPages: string[];
   nextPages: string[];
 };
+
+export type FeedbackState = "up" | "down" | null;
