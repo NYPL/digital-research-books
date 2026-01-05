@@ -1,0 +1,1 @@
+export const ACCORDION_EXPANDED_BG = "#F2F9F9";
