@@ -86,8 +86,9 @@ def main():
             )
         )
 
-        count_stmt = select(func.count()).select_from(stmt.subquery())
-        total_records = db_manager.session.execute(count_stmt).scalar()
+        total_records = db_manager.session.scalar(
+            select(func.count()).select_from(stmt.alias())
+        )
         logger.info(f"Found {total_records} GRIN records to process")
 
         total_updated = 0
