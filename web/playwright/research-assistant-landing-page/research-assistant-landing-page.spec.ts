@@ -54,7 +54,7 @@ test.describe("Research Assistant Landing Page UI", () => {
     await expect(researchAssistantLandingPage.accessSectionHeading).toBeVisible();
   });
 
-  test("Focused research section heading is visible", async () => {
+  test("Focused Research section heading is visible", async () => {
     await expect(researchAssistantLandingPage.focusedResearchSectionHeading).toBeVisible();
   });
 
