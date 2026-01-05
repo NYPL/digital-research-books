@@ -27,6 +27,7 @@ from .blueprints import (
     fulfill,
 )
 from .utils import APIUtils
+from .db import Session
 
 logger = create_log(__name__)
 
@@ -63,6 +64,12 @@ class API:
         self.app.config["READER_VERSION"] = os.environ["READER_VERSION"]
 
         self._register_blueprints()
+
+        # Close the ORM session at end of request to create thread-safe/thread-scoped DB ORM sessions
+        # see: https://flask.palletsprojects.com/en/stable/appcontext/#events-and-signals
+        @self.app.teardown_appcontext
+        def shutdown_db_session(exception=None):
+            Session.remove()
 
     def _register_blueprints(self):
         for blueprint in BLUEPRINTS:

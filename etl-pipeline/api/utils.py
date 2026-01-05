@@ -16,6 +16,10 @@ from urllib.parse import urlparse
 logger = create_log(__name__)
 
 
+def hit_to_dict(hit):
+    return {**hit.to_dict(), **{"meta": hit.meta.to_dict()}}
+
+
 class APIUtils:
     QUERY_TERMS = [
         "keyword",

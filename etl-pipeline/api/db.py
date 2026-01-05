@@ -1,6 +1,12 @@
 from datetime import datetime, timedelta, date, timezone
 from sqlalchemy import Integer
-from sqlalchemy.orm import joinedload, sessionmaker
+from sqlalchemy.orm import (
+    joinedload,
+    sessionmaker,
+    contains_eager,
+    aliased,
+    scoped_session,
+)
 from sqlalchemy.sql import column, func, select, text, values
 from uuid import uuid4
 
@@ -14,7 +20,57 @@ from model import (
     User,
     AutomaticCollection,
 )
+from managers.db import DBManager
+from utils.utils import read_env
+
 from .utils import APIUtils
+
+
+# Initialize ORM Session
+# global session object is scoped/closed at end of request via handler in api/app.py
+# based on best practice described here:
+# - https://docs.sqlalchemy.org/en/20/orm/contextual.html#using-thread-local-scope-with-web-applications
+# - https://flask.palletsprojects.com/en/stable/patterns/sqlalchemy/
+# - https://docs.sqlalchemy.org/en/20/orm/session_basics.html#using-a-sessionmaker
+engine = DBManager(host=read_env("POSTGRES_READ_HOST")).generate_engine()
+Session = scoped_session(sessionmaker(bind=engine))
+# Consider autocommit=False, autoflush=False see: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#flushing
+
+
+def get_frbr_data_by_edition(edition_ids):
+    """
+    Return (Work, Edition) pairs for the passed edition_ids with the following
+    eager loaded relationships for Edition: Edition.items.links,
+    Edition.items.rights, Edition.links/
+    """
+
+    edition_link_alias = aliased(Link)
+    item_link_alias = aliased(Link)
+
+    with Session() as session:
+        rows = (
+            session.query(Work, Edition)
+            .join(Work.editions)  # Work → Edition
+            # Edition.links (draws from aliased Link via edition_links crosswalk)
+            .outerjoin(Edition.links.of_type(edition_link_alias))
+            .outerjoin(Edition.items)  # Edition → Item
+            # Item.links (draws from aliased Link via item_links crosswalk)
+            .outerjoin(Item.links.of_type(item_link_alias))
+            .outerjoin(Item.rights)
+            .filter(Edition.id.in_(edition_ids))
+            .options(
+                # Eager-load Edition.items.links (Item.links)
+                contains_eager(Edition.items).contains_eager(
+                    Item.links.of_type(item_link_alias)
+                ),
+                # Eager-load Edition.items.rights (Item.rights)
+                contains_eager(Edition.items).contains_eager(Item.rights),
+                # Eager-load Edition.links (Edition.links)
+                contains_eager(Edition.links.of_type(edition_link_alias)),
+            )
+            .all()
+        )
+    return rows
 
 
 class DBClient:
