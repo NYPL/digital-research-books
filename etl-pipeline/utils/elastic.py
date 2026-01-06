@@ -13,7 +13,6 @@ def build_hosts(scheme, host, port, user=None, pswd=None):
     return hosts
 
 
-# TODO: fix different units in ES7 vs >ES7
 def load_connection_config(timeout=None, es_version=9):
     scheme = read_env("ELASTICSEARCH_SCHEME")
     user = read_env("ELASTICSEARCH_USER", require=False)
@@ -35,7 +34,9 @@ def get_or_create_default_connection(*args, **kwargs):
     Arguments are ignored if the default connection already exists.
     """
     assert kwargs.get("es_version", 9) == 9, "only elasticsearch 9.X supported"
-    from elasticsearch.dsl import connections
+    from elasticsearch.dsl import (
+        connections,
+    )  # ES9.2 SDK installed from patched github branch
     # from elasticsearch9.dsl import connections
     # from elasticsearch7_dsl import connections
 

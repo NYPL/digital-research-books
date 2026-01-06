@@ -43,6 +43,7 @@ def get_frbr_data_by_edition(edition_ids):
     eager loaded relationships for Edition: Edition.items.links,
     Edition.items.rights, Edition.links/
     """
+    # ALT: also sort the results by edition_ids order (using CTE as in fetchEditions() below)
 
     edition_link_alias = aliased(Link)
     item_link_alias = aliased(Link)

@@ -20,6 +20,11 @@ def hit_to_dict(hit):
     return {**hit.to_dict(), **{"meta": hit.meta.to_dict()}}
 
 
+def shorten(s):
+    return s[:200] + "..."
+    # TODO: cut out center not end
+
+
 class APIUtils:
     QUERY_TERMS = [
         "keyword",
@@ -155,6 +160,7 @@ class APIUtils:
             "currentPage": page,
             "nextPage": page + 1 if page < lastPage else None,
             "lastPage": lastPage,
+            "totalRecords": totalHits,
         }
 
     @classmethod
