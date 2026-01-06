@@ -68,17 +68,11 @@ test.describe("Research Assistant Landing Page UI", () => {
 });
 
 test.describe("Research Assistant Landing Page Functionality", () => {
-  let page: Page;
   let researchAssistantLandingPage: ResearchAssistantLandingPage;
 
-  test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
+  test.beforeEach(async ({ page }) => {
     researchAssistantLandingPage = new ResearchAssistantLandingPage(page);
     await researchAssistantLandingPage.navigateTo();
-  });
-
-  test.afterAll(async () => {
-    await page.close();
   });
 
   test("Search text box is ready for input", async () => {
@@ -88,7 +82,7 @@ test.describe("Research Assistant Landing Page Functionality", () => {
     expect(inputValue).toBe(testQuery);
   });
 
-  test("Executing search routes to Research Assistant page", async () => {
+  test("Executing search routes to Research Assistant page", async ({ page }) => {
     await researchAssistantLandingPage.search("renaissance");
     await expect(page).toHaveURL(/.+\/research-assistant$/);
   });
