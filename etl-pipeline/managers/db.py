@@ -91,23 +91,23 @@ class DBManager:
             else:
                 logger.warning("Already retried batch, dropping")
 
-    def windowed_query(self, session, stmt, column, windowsize):
+    def windowed_query(self, stmt, id_column, windowsize):
         """
         Yields all records from stmt, fetching `windowsize` records at a time into memory.
         `column` must contain strictly unique values (non-null)
         Safe to call session.commit() while iterating.
         see: https://github.com/sqlalchemy/sqlalchemy/wiki/RangeQuery-and-WindowedRangeQuery
         """
-        stmt = stmt.add_columns(column).order_by(column)
+        stmt = stmt.add_columns(id_column).order_by(id_column)
         last_id = None
 
         while True:
             subq = stmt
 
             if last_id is not None:
-                subq = subq.filter(column > last_id)
+                subq = subq.filter(id_column > last_id)
 
-            result = session.execute(subq.limit(windowsize))
+            result = self.session.execute(subq.limit(windowsize))
             chunk = result.all()
 
             if not chunk:

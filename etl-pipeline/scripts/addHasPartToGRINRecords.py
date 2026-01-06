@@ -73,9 +73,7 @@ def main():
         total_has_first_page = 0
         batch_count = 0
 
-        for record in db_manager.windowed_query(
-            db_manager.session, stmt, Record.id, BATCH_SIZE
-        ):
+        for record in db_manager.windowed_query(stmt, Record.id, BATCH_SIZE):
             try:
                 logger.info(f"Processing record with source_id {record.source_id}")
                 barcode = record.source_id.split("|")[0]
