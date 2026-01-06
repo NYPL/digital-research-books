@@ -24,7 +24,7 @@ class ResearchAssistantLandingPage {
     this.heroSubheading = page.getByText("Your AI partner in discovering relevant research");
     this.subNav = page.getByText('Virtual Research AssistantBETAKeyword search')
     this.searchTextBox = page.getByRole("textbox", { name: "What research topic"});
-    this.searchSubmitBtn = page.locator("[aria-label='Send']");
+    this.searchSubmitBtn = page.getByRole("button", { name: "Send" });
     this.suggestBtnRomanEmpire = page.getByRole("button", { name: "the Roman Empire" });
     this.suggestBtnFeminism = page.getByRole("button", { name: "feminism in medieval times" });
     this.suggestBtnMethodistChurch = page.getByRole("button", { name: "the Methodist Church" });
