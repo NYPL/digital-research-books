@@ -46,34 +46,6 @@ def create_first_page_part(barcode: str, mets_file: mets_parser.METSFile) -> Par
     )
 
 
-def windowed_query(session, stmt, column, windowsize):
-    '''
-    Yields all records from stmt, fetching `windowsize` records at a time into memory.
-    `column` must contain strictly unique values (non-null)
-    Safe to call session.commit() while iterating.
-    see: https://github.com/sqlalchemy/sqlalchemy/wiki/RangeQuery-and-WindowedRangeQuery
-    '''
-    stmt = stmt.add_columns(column).order_by(column)
-    last_id = None
-
-    while True:
-        subq = stmt
-
-        if last_id is not None:
-            subq = subq.filter(column > last_id)
-
-        result = session.execute(subq.limit(windowsize))
-        chunk = result.all()
-
-        if not chunk:
-            break
-
-        last_id = chunk[-1][-1]
-
-        for row in chunk:
-            yield row[0]
-
-
 def main():
     record_pipeline_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
     sqs_manager = SQSManager(record_pipeline_queue)
@@ -101,7 +73,7 @@ def main():
         total_has_first_page = 0
         batch_count = 0
 
-        for record in windowed_query(db_manager.session, stmt, Record.id, BATCH_SIZE):
+        for record in db_manager.windowed_query(db_manager.session, stmt, Record.id, BATCH_SIZE):
             try:
                 logger.info(f"Processing record with source_id {record.source_id}")
                 barcode = record.source_id.split("|")[0]
