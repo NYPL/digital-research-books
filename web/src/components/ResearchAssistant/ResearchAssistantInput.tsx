@@ -1,4 +1,3 @@
-import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -6,19 +5,16 @@ import {
   TextInput,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
-import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import React, { useEffect, useRef, useState } from "react";
 import {
   getPanelLayout,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
 
 const ResearchAssistantInput: React.FC = () => {
-  const {
-    messages,
-    sendMessage,
-    isLoading,
-  } = useResearchAssistant();
+  const { messages, sendMessage, isLoading } = useResearchAssistant();
 
   const [isFocused, setIsFocused] = useState(false);
   const [inputText, setInputText] = useState("");
@@ -70,8 +66,8 @@ const ResearchAssistantInput: React.FC = () => {
   const placeholderValue = isDisabled
     ? "Assistant is thinking..."
     : messages.length === 0
-      ? "Ask your question..."
-      : "Type your response here";
+    ? "Ask your question..."
+    : "Type your response here";
 
   return (
     <Form
@@ -121,11 +117,11 @@ const ResearchAssistantInput: React.FC = () => {
         sx={
           isFocused
             ? {
-              boxShadow: "none",
-              outline: "2px solid",
-              outlineOffset: "2px",
-              outlineColor: "ui.focus",
-            }
+                boxShadow: "none",
+                outline: "2px solid",
+                outlineOffset: "2px",
+                outlineColor: "ui.focus",
+              }
             : {}
         }
       >
