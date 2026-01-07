@@ -1,15 +1,45 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import {
   catalogResults,
+  emptyCatalogResults,
   manyAuthorsCatalogResults,
   minimalCatalogResults,
+  multiPageCatalogResults,
   singleAuthorCatalogResults,
 } from "~/src/__tests__/fixtures/CatalogSearchFixture";
 import { renderWithResearchAssistant } from "~/src/__tests__/testUtils/render";
+import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import CatalogResults from "../CatalogResults";
+
+jest.mock("~/src/lib/api/SearchApi");
+const mockedSearchResultsFetcher = jest.mocked(searchResultsFetcher);
+
+const mockSetViewState = jest.fn();
+
+const mockUseResearchAssistant = jest.fn();
+jest.mock("~/src/context/ResearchAssistantContext", () => ({
+  useResearchAssistant: () => mockUseResearchAssistant(),
+  ResearchAssistantProvider: ({ children }) => <div>{children}</div>,
+}));
 
 describe("CatalogResults", () => {
   beforeEach(() => {
+    mockUseResearchAssistant.mockClear();
+    mockUseResearchAssistant.mockReturnValue({
+      setViewState: mockSetViewState,
+      messages: [],
+      sendMessage: jest.fn(),
+      isLoading: false,
+      error: null,
+      clearHistory: jest.fn(),
+      showChat: true,
+      results: null,
+      historyStack: [],
+      goToPreviousState: jest.fn(),
+    });
+    mockedSearchResultsFetcher.mockResolvedValue({
+      data: { works: [], totalWorks: 0, paging: { lastPage: 1 } },
+    } as any);
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ message: "test" }),
@@ -81,5 +111,37 @@ describe("CatalogResults", () => {
     );
     expect(await screen.findByText(/Author 1/)).toBeInTheDocument();
     expect(screen.getByText(/Author 4/)).toBeInTheDocument();
+  });
+
+  test('renders "No results" message when results are empty', async () => {
+    renderWithResearchAssistant(
+      <CatalogResults results={emptyCatalogResults} />
+    );
+
+    expect(
+      await screen.findByText(/No results matching your research criteria/i)
+    ).toBeInTheDocument();
+  });
+
+  test("calls the search API and updates state on page change", async () => {
+    renderWithResearchAssistant(
+      <CatalogResults results={multiPageCatalogResults} />
+    );
+
+    const nextButton = screen.getByRole("link", { name: /next page/i });
+    fireEvent.click(nextButton);
+
+    await waitFor(() => {
+      expect(mockedSearchResultsFetcher).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: 2,
+          query: "keyword:test",
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockSetViewState).toHaveBeenCalledTimes(1);
+    });
   });
 });

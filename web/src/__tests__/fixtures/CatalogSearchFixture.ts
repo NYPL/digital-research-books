@@ -90,6 +90,16 @@ export const minimalCatalogResults: CatalogSearchResults = {
   },
 };
 
+export const multiPageCatalogResults: CatalogSearchResults = {
+  ...catalogResults,
+  totalWorks: 25,
+  paging: {
+    ...catalogResults.paging,
+    lastPage: 3,
+    nextPage: 2,
+  },
+};
+
 export const emptyCatalogResults: CatalogSearchResults = {
   facets: { formats: [], languages: [] },
   paging: {
