@@ -1,23 +1,21 @@
-import {
-  Box,
-  Flex,
-  Pagination,
-  Text,
-} from "@nypl/design-system-react-components";
+import { Flex, Pagination, Text } from "@nypl/design-system-react-components";
 import { useState } from "react";
+import {
+  HEADER_HEIGHT,
+  MARGIN_BLEED,
+  PADDING_COUNTER,
+} from "~/src/constants/researchAssistant";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
 import { SearchField } from "~/src/types/DataModel";
 import {
   CatalogSearchResults,
   ChatResults,
 } from "~/src/types/ResearchAssistant";
-import { SearchQueryDefaults, SearchQuery } from "~/src/types/SearchQuery";
+import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
 import { toApiQuery } from "~/src/util/apiConversion";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import ResultsBanner from "./ResultsBanner";
 import ResultsList from "../NewResultsList/ResultsList";
-import EmptySearchSvg from "../Svgs/EmptySearchSvg";
-import { HEADER_HEIGHT, MARGIN_BLEED, PADDING_COUNTER } from "~/src/constants/researchAssistant";
+import ResultsBanner from "./ResultsBanner";
 
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;
@@ -36,10 +34,11 @@ const CatalogResults: React.FC<{
       : numberOfWorks;
   const resultsPagingText =
     numberOfWorks > 0
-      ? `${firstElement.toLocaleString()} - ${numberOfWorks < lastElement
-        ? numberOfWorks.toLocaleString()
-        : lastElement.toLocaleString()
-      } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
+      ? `${firstElement.toLocaleString()} - ${
+          numberOfWorks < lastElement
+            ? numberOfWorks.toLocaleString()
+            : lastElement.toLocaleString()
+        } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
       : "No results matching your research criteria";
 
   const onPageChange = async (select: number) => {
@@ -99,7 +98,7 @@ const CatalogResults: React.FC<{
         {resultsPagingText}
       </Text>
       <ResultsBanner />
-      {Object.keys(results).length > 0 ? (
+      {Object.keys(results).length > 0 && (
         <>
           <ResultsList works={results.works} />
           <Pagination
@@ -110,8 +109,7 @@ const CatalogResults: React.FC<{
               paddingTop: "m",
               "a, li > a[aria-current='page']": {
                 color: "var(--nypl-colors-section-research-secondary)",
-                borderColor:
-                  "var(--nypl-colors-section-research-secondary)",
+                borderColor: "var(--nypl-colors-section-research-secondary)",
                 svg: {
                   fill: "var(--nypl-colors-section-research-secondary)",
                 },
@@ -124,13 +122,6 @@ const CatalogResults: React.FC<{
               },
             }}
           />
-        </>
-      ) : (
-        <>
-          <Box>
-            <EmptySearchSvg />
-            <Box>No results were found.</Box>
-          </Box>
         </>
       )}
     </Flex>

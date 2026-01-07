@@ -121,6 +121,10 @@ describe("CatalogResults", () => {
     expect(
       await screen.findByText(/No results matching your research criteria/i)
     ).toBeInTheDocument();
+
+    expect(
+      screen.getByText("No results found. Try a different topic.")
+    ).toBeInTheDocument();
   });
 
   test("calls the search API and updates state on page change", async () => {
