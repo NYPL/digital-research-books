@@ -130,13 +130,13 @@ npm install playwright
 ℹ️&nbsp;&nbsp;Manual installation may be required if only production dependencies are installed (as in [playwright.yml](https://github.com/NYPL/digital-research-books/blob/main/.github/workflows/playwright.yml)).
 
 
-#### Install Playwright browsers
+#### 2. Install Playwright browsers
 Download the browser binaries and their required dependencies with:
 ```
 npx playwright install --with-deps
 ```
 
-#### Run Playwright tests
+#### 3. Run Playwright tests
 
 To run the entire test suite:
 ```
