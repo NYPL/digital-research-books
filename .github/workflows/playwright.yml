@@ -1,6 +1,13 @@
 name: Playwright Tests for DRB Web
 
 on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL for environment"
+        default: "http://local.nypl.org:3000/"
+        required: false
+        type: string
   workflow_call:
     inputs:
       base_url:

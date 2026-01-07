@@ -10,6 +10,8 @@ jobs:
   tag_release:
     name: Tag and Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Bump version and push tag

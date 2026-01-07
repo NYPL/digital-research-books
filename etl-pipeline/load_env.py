@@ -32,16 +32,17 @@ ENV_VAR_TO_SSM_NAME = {
 
 
 def load_env_file(run_type: str, file_string: str | None = None) -> None:
-    """Loads configuration details from a specific yaml file.
+    """Loads variables from a yaml file into os.environ.
+    If certain env vars are not defined in the env yaml, they will be attempted
+    to be retrieved from AWS SSM parameter store.
+
     Arguments:
         runType {string} -- The environment to load configuration details for.
         fileString {string} -- The file string format indicating where to load
         the configuration file from.
+
     Raises:
         YAMLError: Indicates malformed yaml markup in the configuration file
-    Returns:
-        dict -- A dictionary containing the configuration details parsed from
-        the specificied yaml file.
     """
     env_dict = None
 

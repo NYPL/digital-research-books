@@ -6,7 +6,7 @@ import EditionCardUtils from "~/src/util/EditionCardUtils";
 import DownloadLink from "./DownloadLink";
 import EddLink from "./EddLink";
 import ReadOnlineLink from "./ReadOnlineLink";
-import PreviewLink from "./PreviewLink";
+import PreviewLink from "../ResultCard/PreviewLink";
 
 const Ctas: React.FC<{
   authors: Agent[];

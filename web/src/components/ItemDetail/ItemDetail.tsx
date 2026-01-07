@@ -10,6 +10,7 @@ import {
   Heading,
   Text,
   Toggle,
+  Tooltip,
   VStack,
 } from "@nypl/design-system-react-components";
 import AuthorsList from "../AuthorsList/AuthorsList";
@@ -22,9 +23,7 @@ import { useResultPageContext } from "~/src/context/ResultPageContext";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
 import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
-import {
-  HistoryItem,
-} from "~/src/types/ResearchAssistant";
+import { HistoryItem } from "~/src/types/ResearchAssistant";
 import AboutItemPanel from "./AboutItemPanel";
 import SummaryPanel from "./SummaryPanel";
 import SearchPanel from "./SearchPanel";
@@ -37,7 +36,9 @@ import {
   getHeaderPaddingRight,
   getGridRows,
   GRID_PADDING_X,
+  HEADER_HEIGHT,
 } from "~/src/constants/researchAssistant";
+import { ACCORDION_EXPANDED_BG } from "~/src/constants/colors";
 
 interface ItemDetailProps {
   workResult: WorkResult;
@@ -59,6 +60,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     setViewState,
     historyStack,
     setHistoryStack,
+    showChat,
   } = useResearchAssistant();
 
   const { page } = useResultPageContext();
@@ -133,7 +135,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   return (
     <Box fontSize="desktop.body.body2" bgColor="ui.bg.default" width="100%">
       <Grid
-        templateColumns={getGridColumns(vraEnabled)}
+        templateColumns={getGridColumns(vraEnabled, showChat)}
         templateRows={getGridRows(backUrl)}
         gap="l"
         marginBottom="xs"
@@ -155,13 +157,25 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             paddingRight={getHeaderPaddingRight(vraEnabled)}
             paddingY="s"
             marginRight={vraEnabled ? "0" : "-2rem"}
+            height={HEADER_HEIGHT}
           >
             <BackToResultsButton handleBackToResults={handleBackToResults} />
-            <Toggle
-              isChecked={vraEnabled}
-              labelText="Use Virtual Research Assistant"
-              onChange={() => setVraEnabled((prev) => !prev)}
-            />
+            <Tooltip
+              content="Toggle off if you would like to opt out of using the AI tool. When toggled off, chat window will close and chat history will be lost."
+              shouldWrapChildren
+            >
+              <Toggle
+                isChecked={vraEnabled}
+                labelText="Use Virtual Research Assistant"
+                onChange={() => setVraEnabled((prev) => !prev)}
+                size="small"
+                sx={{
+                  ".chakra-switch__track[data-checked]": {
+                    backgroundColor: "section.research.secondary",
+                  },
+                }}
+              />
+            </Tooltip>
           </Flex>
         )}
         <VStack
@@ -174,12 +188,12 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           paddingLeft={GRID_PADDING_X}
           marginTop={backUrl ? "0" : "l"}
         >
-          <Text size="caption" marginBottom="xxs">
-            E-BOOK
-          </Text>
-          <Heading level="h1" size="heading6" marginBottom="xs">
-            {work.title}
-          </Heading>
+          <Flex flexDir="column" gap="xxs">
+            <Text size="caption">E-BOOK</Text>
+            <Heading level="h1" size="heading6">
+              {work.title}
+            </Heading>
+          </Flex>
           <VStack alignContent="left" alignItems="left" gap="l">
             {work.authors && work.authors.length > 0 && (
               <AuthorsList authors={work.authors} />
@@ -222,7 +236,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                     <Box
                       display="flex"
                       alignItems="center"
-                      gap="xxs"
+                      gap="xs"
                       __css={{ svg: { marginInlineStart: "0 !important" } }}
                     >
                       <ResearchAssistantIcon inCircle />
@@ -264,7 +278,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
               id="item-detail-accordion"
               sx={{
                 "button[aria-expanded=true]": {
-                  bgColor: "ui.link.primary-05",
+                  bgColor: ACCORDION_EXPANDED_BG,
                 },
                 ".chakra-collapse": {
                   bgColor: "ui.white",

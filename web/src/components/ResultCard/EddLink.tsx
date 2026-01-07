@@ -22,7 +22,7 @@ const EddLink: React.FC<{
           bgColor="section.research.secondary"
           width="fit-content"
         >
-          Request Scan
+          Request scan
         </Link>
       </>
     );

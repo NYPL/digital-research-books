@@ -1,0 +1,3 @@
+export const ACCORDION_EXPANDED_BG = "#F2F9F9";
+export const DISABLED_FEEDBACK_STROKE = "#E9E9E9";
+export const FEEDBACK_STROKE = "#006166";

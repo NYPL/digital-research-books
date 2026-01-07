@@ -9,6 +9,10 @@ from logger import create_log
 logger = create_log(__name__)
 
 
+def get_database_url(user, pswd, host, port, db):
+    return "postgresql://{}:{}@{}:{}/{}".format(user, pswd, host, port, db)
+
+
 class DBManager:
     def __init__(self, user=None, pswd=None, host=None, port=None, db=None):
         super(DBManager, self).__init__()
@@ -31,9 +35,7 @@ class DBManager:
     def generate_engine(self):
         try:
             self.engine = create_engine(
-                "postgresql://{}:{}@{}:{}/{}".format(
-                    self.user, self.pswd, self.host, self.port, self.db
-                )
+                get_database_url(self.user, self.pswd, self.host, self.port, self.db)
             )
 
             return self.engine
@@ -89,30 +91,32 @@ class DBManager:
             else:
                 logger.warning("Already retried batch, dropping")
 
-    def windowed_query(self, table, query, window_size=100, ingest_limit=None):
-        single_entity = query.is_single_entity
-        query = query.add_column(table.date_modified).order_by(table.date_modified)
-        query = query.add_column(table.id).order_by(table.id)
-
+    def windowed_query(self, stmt, id_column, windowsize):
+        """
+        Yields all records from stmt, fetching `windowsize` records at a time into memory.
+        `column` must contain strictly unique values (non-null)
+        Safe to call session.commit() while iterating.
+        see: https://github.com/sqlalchemy/sqlalchemy/wiki/RangeQuery-and-WindowedRangeQuery
+        """
+        stmt = stmt.add_columns(id_column).order_by(id_column)
         last_id = None
-        total_fetched = 0
 
         while True:
-            sub_query = query
+            subq = stmt
 
             if last_id is not None:
-                sub_query = sub_query.filter(table.id > last_id)
+                subq = subq.filter(id_column > last_id)
 
-            query_chunk = sub_query.limit(window_size).all()
-            total_fetched += window_size
+            result = self.session.execute(subq.limit(windowsize))
+            chunk = result.all()
 
-            if not query_chunk or (ingest_limit and total_fetched > ingest_limit):
+            if not chunk:
                 break
 
-            last_id = query_chunk[-1][-1]
+            last_id = chunk[-1][-1]
 
-            for row in query_chunk:
-                yield row[0] if single_entity else row[0:-2]
+            for row in chunk:
+                yield row[0]
 
     def delete_records_by_query(self, query):
         try:
