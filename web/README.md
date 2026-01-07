@@ -61,9 +61,9 @@ Set up an environment file to store configuration variables and secrets:
 2. Copy the contents of `.env.sample` into `.env`.
 3. Obtain required secrets from the development team and add them to your environment file as intended.
 
-> ⚠️&nbsp;&nbsp;The app will not function properly without the necessary secrets.
+⚠️&nbsp;&nbsp;The app will not function properly without the necessary secrets.
 
-> 🔐&nbsp;&nbsp;Some automated testing depends on user credentials for accessing the catalog.
+🔐&nbsp;&nbsp;Some automated testing depends on user credentials for accessing the catalog.
 
 ### 4. (Optional) Set up local PDF proxy
 To view PDFs locally through the **webreader**, set up a local proxy as described in its [instructions](https://github.com/NYPL/web-reader#cors-proxy).
@@ -127,7 +127,7 @@ If no version number is returned, install Playwright manually:
 npm install playwright
 ```
 
-> ℹ️&nbsp;&nbsp;Manual installation may be required if only production dependencies are installed (as in [playwright.yml](https://github.com/NYPL/digital-research-books/blob/main/.github/workflows/playwright.yml)).
+ℹ️&nbsp;&nbsp;Manual installation may be required if only production dependencies are installed (as in [playwright.yml](https://github.com/NYPL/digital-research-books/blob/main/.github/workflows/playwright.yml)).
 
 
 #### Install Playwright browsers
