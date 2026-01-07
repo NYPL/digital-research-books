@@ -7,7 +7,7 @@ on:
     paths:
       - "web/**"
     paths-ignore:
-      - '**/README.md'
+      - '**/*.md'
 
 jobs:
   lint:
