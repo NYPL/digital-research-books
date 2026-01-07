@@ -193,7 +193,7 @@ The EPUB to Webpub Next.js app is deployed at `https://epub-to-webpub.vercel.app
 
 ## C4 Architecture Diagrams
 
-See [Structurizr link](https://structurizr.com/share/72104) and update via the [c4-diagrams repo](https://github.com/NYPL-Simplified/c4-diagrams).
+See [Structurizr link](https://structurizr.com/share/72104) and update via the [c4-diagrams repo](https://github.com/NYPL/c4-diagrams).
 
 ## Deployment
 
