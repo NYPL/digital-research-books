@@ -147,7 +147,28 @@ To run tests in specific file:
 ```
 npm run playwright /path/to/file
 ```
-
+> ##### ▶️&nbsp;&nbsp;Run options
+> Various command line arguments can be used to customize test runs. Common examples are given below. See the [Playwright docs](https://playwright.dev/docs/running-tests#running-tests) for more.
+>
+> ###### Headed browsers
+> Playwright tests run in headless browsers by default. To see them run in actual browsers, use the `--headed` option:
+> ```
+> npm run playwright -- --headed
+> ```
+> Since Playwright runs tests in parallel across multiple browsers by default, it's recommended combining this option with `--workers=1` to contain them to a single browser instance.
+>
+> ###### UI mode
+> Access interactive tools for enhanced debugging by using the `--ui` option:
+> ```
+> npm run playwright -- --ui
+> ```
+>
+> ###### Last failed tests
+> Run only the tests that failed in the most recent run with the `--last-failed` option:
+> ```
+> npm run playwright -- --last-failed
+> ```
+---
 ## Using the App
 
 ### Searchbar
