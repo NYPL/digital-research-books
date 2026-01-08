@@ -1,6 +1,3 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useCookies } from "react-cookie";
-import { useRouter } from "next/router";
 import {
   Accordion,
   Box,
@@ -13,32 +10,35 @@ import {
   Tooltip,
   VStack,
 } from "@nypl/design-system-react-components";
-import AuthorsList from "../AuthorsList/AuthorsList";
-import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
-import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
-import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel";
-import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
-import EditionCardUtils from "~/src/util/EditionCardUtils";
-import { useResultPageContext } from "~/src/context/ResultPageContext";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { useRouter } from "next/router";
+import React, { useEffect, useMemo, useState } from "react";
+import { useCookies } from "react-cookie";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
-import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
-import { HistoryItem } from "~/src/types/ResearchAssistant";
-import AboutItemPanel from "./AboutItemPanel";
-import SummaryPanel from "./SummaryPanel";
-import SearchPanel from "./SearchPanel";
-import DownloadOptionsPanel from "./DownloadOptionsPanel";
-import DetailsPanel from "./DetailsPanel";
-import OtherEditionsPanel from "./OtherEditionsPanel";
-import Link from "../Link/Link";
+import { ACCORDION_EXPANDED_BG } from "~/src/constants/colors";
 import {
   getGridColumns,
-  getHeaderPaddingRight,
   getGridRows,
+  getHeaderPaddingRight,
   GRID_PADDING_X,
   HEADER_HEIGHT,
 } from "~/src/constants/researchAssistant";
-import { ACCORDION_EXPANDED_BG } from "~/src/constants/colors";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { useResultPageContext } from "~/src/context/ResultPageContext";
+import { HistoryItem } from "~/src/types/ResearchAssistant";
+import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
+import EditionCardUtils from "~/src/util/EditionCardUtils";
+import AuthorsList from "../AuthorsList/AuthorsList";
+import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
+import Link from "../Link/Link";
+import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
+import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel";
+import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
+import AboutItemPanel from "./AboutItemPanel";
+import DetailsPanel from "./DetailsPanel";
+import DownloadOptionsPanel from "./DownloadOptionsPanel";
+import OtherEditionsPanel from "./OtherEditionsPanel";
+import SearchPanel from "./SearchPanel";
+import SummaryPanel from "./SummaryPanel";
 
 interface ItemDetailProps {
   workResult: WorkResult;
@@ -220,8 +220,8 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             <Accordion
               accordionData={[
                 {
-                  ariaLabel: "About this item",
-                  label: "About this item",
+                  ariaLabel: "About this book",
+                  label: "About this book",
                   panel: (
                     <AboutItemPanel
                       previewItem={previewItem}
@@ -231,7 +231,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                   ),
                 },
                 {
-                  ariaLabel: "Read summary",
+                  ariaLabel: "What is this book about?",
                   label: (
                     <Box
                       display="flex"
@@ -240,7 +240,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                       __css={{ svg: { marginInlineStart: "0 !important" } }}
                     >
                       <ResearchAssistantIcon inCircle />
-                      <span>Read summary</span>
+                      <span>What is this book about?</span>
                     </Box>
                   ),
                   panel: <SummaryPanel previewEdition={previewEdition} />,

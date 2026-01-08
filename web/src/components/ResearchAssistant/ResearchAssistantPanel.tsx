@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Button,
@@ -6,15 +5,16 @@ import {
   Heading,
   Text,
 } from "@nypl/design-system-react-components";
-import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
-import ResearchAssistantWindow from "./ResearchAssistantWindow";
-import ResearchAssistantInput from "./ResearchAssistantInput";
-import RewindIcon from "./icons/RewindIcon";
+import React from "react";
 import { getPanelLayout } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import ArrowIcon from "./icons/ArrowIcon";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
+import ArrowIcon from "./icons/ArrowIcon";
+import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
+import RewindIcon from "./icons/RewindIcon";
 import ResearchAssistantHeader from "./ResearchAssistantHeader";
+import ResearchAssistantInput from "./ResearchAssistantInput";
+import ResearchAssistantWindow from "./ResearchAssistantWindow";
 
 const ResearchAssistantPanel: React.FC = () => {
   const { clearHistory, showChat, toggleChat } = useResearchAssistant();
@@ -51,13 +51,13 @@ const ResearchAssistantPanel: React.FC = () => {
               <ResearchAssistantIcon inCircle />
               <span>Virtual Research Assistant</span>
             </Heading>
-            <Flex>
+            <Flex gap="xxs">
               <Button
                 onClick={() => clearHistory(page)}
                 variant="text"
                 size="small"
                 color="ui.white"
-                fontSize="0"
+                fontSize="desktop.body.body2"
                 id="clear-history-button"
                 sx={{
                   "&:hover": {
@@ -78,7 +78,7 @@ const ResearchAssistantPanel: React.FC = () => {
                 variant="text"
                 size="small"
                 color="ui.white"
-                fontSize="0"
+                fontSize="desktop.body.body2"
                 id="hide-chat-button"
                 sx={{
                   "&:hover": {
