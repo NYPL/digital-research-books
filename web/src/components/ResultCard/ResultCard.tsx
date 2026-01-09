@@ -1,5 +1,6 @@
 import {
   Accordion,
+  AccordionDataProps,
   Banner,
   Box,
   Flex,
@@ -68,7 +69,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
   const isLoginRequired = isPhysicalEdition || isUniversityPress;
 
   const accordionSummaryData = () => {
-    const accordionData = [];
+    const accordionData: AccordionDataProps[] = [];
     accordionData.push({
       label: (
         <Box
@@ -157,13 +158,10 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             <Heading size="heading7" marginBottom="xxs">
               <Link
                 to={{
-                  pathname:
-                    page === "vra"
-                      ? `/item/${work.uuid}`
-                      : `/work/${work.uuid}`,
-                  ...(previewItem
-                    ? { query: { featured: edition.edition_id } }
-                    : null),
+                  pathname: `/${page === "vra" ? "item" : "work"}/${work.uuid}`,
+                  ...(previewItem && {
+                    query: { featured: edition.edition_id },
+                  }),
                 }}
                 isUnderlined={false}
               >
