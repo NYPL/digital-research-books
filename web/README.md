@@ -28,7 +28,7 @@ Provides a "Welcome page" entry point with heading, search box, and tagline. Con
 ## Getting Started
 The following steps set up the application to run locally.
 
-📂&nbsp;&nbsp;Run all commands below from the `web` folder of the repository unless specfied otherwise.
+> 📂&nbsp;&nbsp;Run all commands below from the **`web`** folder of the repository unless specfied otherwise.
 
 ### 1. Install Node
 This app currently runs on **Node.js v22**.
@@ -39,6 +39,11 @@ node -v
 ```
 
 If the returned version looks something like `v22.xx.x` and/or it matches the major version specified in [.nvmrc](https://github.com/NYPL/digital-research-books/blob/main/web/.nvmrc), then proceed to the next step.
+
+If a different version is returned, install the Node version used by the app with:
+```
+nvm install
+```
 
 However if an error message is returned stating that the command cannot be found, then Node must be installed. The easiest way to do this is with a version manager like **[nvm](https://github.com/nvm-sh/nvm)**.
 
@@ -52,12 +57,9 @@ If that command is not found, install it with:
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 ```
 
-After verifying a successfull installation, install the Node version used by the app with:
-```
-nvm install
-```
+After verifying a successfull installation, run `nvm install` to install the expected version.
 
-Alternatively, download and install the expected Node from the [official site](https://nodejs.org/en/download).
+Alternatively, download and install the expected Node version from the [official site](https://nodejs.org/en/download).
 
 ### 2. Install dependencies
 Install required dependencies by running:
@@ -65,7 +67,7 @@ Install required dependencies by running:
 npm install --production
 ```
 
-Run the command without the `--production` option to include packages used for development and testing.
+Run the command without the `--production` option to also install packages used for development and testing.
 
 ### 3. Create Environment File
 Set up an environment file to store configuration variables and secrets:
