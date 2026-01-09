@@ -20,40 +20,52 @@ Provides a "Welcome page" entry point with heading, search box, and tagline. Con
 - [Deployment](#deployment)
 
 ## Technical Overview
-- [Node.js](https://nodejs.org/) (v22)
+- [Node.js](https://nodejs.org/)
 - [Next.js](https://nextjs.org/) (bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app))
 - [NYPL Design System](https://github.com/NYPL/nypl-design-system)
 - [NYPL Web Reader](https://github.com/NYPL/web-reader)
 
 ## Getting Started
+The following steps set up the application to run locally.
 
-### 1. Install Node.js v22
+📂&nbsp;&nbsp;Run all commands below from the `web` folder of the repository unless specfied otherwise.
 
-First check if the expected Node version is already installed:
+### 1. Install Node
+This app currently runs on **Node.js v22**.
+
+First check if it is already installed by running:
 ```
 node -v
 ```
 
-If the output is not something like `v22.xx.x`, then the easiest way to install Node.js v22 is with a version manager like **[nvm](https://github.com/nvm-sh/nvm)**.
+If the returned version looks something like `v22.xx.x` and/or it matches the major version specified in [.nvmrc](https://github.com/NYPL/digital-research-books/blob/main/web/.nvmrc), then proceed to the next step.
 
-Check if nvm is installed with `nvm -v`. If not found, install it with:
+However if an error message is returned stating that the command cannot be found, then Node must be installed. The easiest way to do this is with a version manager like **[nvm](https://github.com/nvm-sh/nvm)**.
+
+Check if nvm is installed with:
+```
+nvm -v
+```
+
+If that command is not found, install it with:
 ```
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 ```
 
-After verifying a successfull installation, run:
+After verifying a successfull installation, install the Node version used by the app with:
 ```
-nvm install 22
-nvm use 22
+nvm install
 ```
 
-Alternatively, download and install Node.js v22 from the [official site](https://nodejs.org/en/download).
+Alternatively, download and install the expected Node from the [official site](https://nodejs.org/en/download).
 
 ### 2. Install dependencies
-All required dependencies must be installed before the app can be started. While in the `web` directory, run:
+Install required dependencies by running:
 ```
-npm install
+npm install --production
 ```
+
+Run the command without the `--production` option to include packages used for development and testing.
 
 ### 3. Create Environment File
 Set up an environment file to store configuration variables and secrets:
