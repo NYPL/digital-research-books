@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, date, timezone
+from typing import List
 from sqlalchemy import Integer
 from sqlalchemy.orm import (
     joinedload,
@@ -37,7 +38,7 @@ Session = scoped_session(sessionmaker(bind=engine))
 # Consider autocommit=False, autoflush=False see: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#flushing
 
 
-def get_frbr_data_by_edition(edition_ids):
+def get_frbr_data_by_edition(edition_ids: List):
     """
     Return (Work, Edition) pairs for the passed edition_ids with the following
     eager loaded relationships for Edition: Edition.items.links,

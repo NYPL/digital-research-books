@@ -11,6 +11,7 @@ from logger import create_log
 from botocore.exceptions import ClientError
 import os
 from urllib.parse import urlparse
+from sqlalchemy import inspect
 
 
 logger = create_log(__name__)
@@ -23,6 +24,79 @@ def hit_to_dict(hit):
 def shorten(s):
     return s[:200] + "..."
     # TODO: cut out center not end
+
+
+def remove_markdown_comments(markdown_text):
+    # The regex pattern matches <!-- followed by any characters (including newlines)
+    # in a non-greedy way (.*?) until --> is found.
+    # re.DOTALL ensures that '.' matches newline characters as well.
+    cleaned_text = re.sub(r"<!--.*?-->", "", markdown_text, flags=re.DOTALL)
+    return cleaned_text
+
+
+# see: https://chatgpt.com/c/694e008d-e04c-8326-8c94-223abfd642ba
+# TODO: add mapped obj names
+def orm_to_dict(obj, visited=None):
+    """
+    Convert a single SQLAlchemy ORM object to a dict, following relationships
+    to created a nested structure.
+    Avoids following infinite loop relationships.
+
+    Params:
+        visited: set() of primary key (what obj type?) that have been visited (to avoid infinite loop relationships)
+    """
+    if obj is None:
+        return None
+
+    insp = inspect(obj)
+
+    # Use identity (PK values) to detect cycles
+    identity = insp.identity or tuple(
+        getattr(obj, col.key) for col in insp.mapper.primary_key
+    )
+    if visited is None:
+        visited = set()
+    if identity in visited:
+        # Break cycles
+        # ALT: you could instead return identity only, or None
+        raise ValueError(
+            f"Circular reference: {obj.__class__.__name__}  with identity {identity} already visited."
+        )
+    visited.add(identity)
+
+    data = {}
+
+    # 1) Scalar columns
+    for column in insp.mapper.column_attrs:
+        data[column.key] = getattr(obj, column.key)
+
+    # 2) Relationships (nested)
+    for rel in insp.mapper.relationships:
+        # To avoid lazy loading:
+        # attr_state = insp.attrs[rel.key]
+        # value = attr_state.loaded_value
+        # if value is NO_VALUE:
+        #     continue
+        relations = getattr(obj, rel.key)
+
+        if rel.uselist:  # Relation is a collection of objects
+            children = []
+            for child in relations:
+                child_dict = orm_to_dict(child, visited=visited)
+                if (
+                    child_dict is not None
+                ):  # Q: now that I raid error on circular reference can child_dict ever be None?
+                    children.append(child_dict)
+            data[rel.key] = children
+        else:  # Relation is a single object
+            if (
+                relations is not None
+            ):  #  if the FK column is NULL, the related row was deleted, etc..
+                child_dict = orm_to_dict(relations, visited=visited)
+                if child_dict:
+                    data[rel.key] = child_dict
+
+    return data
 
 
 class APIUtils:

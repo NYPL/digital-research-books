@@ -28,6 +28,7 @@ def warn_deprecated(response, message):
     return response
 
 
+# TODO: rename to require_basic_auth because it implements basic auth not bearer token
 def require_token(func):
     @wraps(func)
     def decorator(*args, **kwargs):

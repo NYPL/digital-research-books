@@ -10,9 +10,8 @@ from tenacity import (
     retry_if_exception,
 )
 from ratelimit import limits, sleep_and_retry
-from sentence_transformers import SentenceTransformer
 
-from lib.local_utils import batched
+from utils.utils import batched
 
 
 GEMINI_EMBEDDING_MODEL = "gemini-embedding-001"
@@ -135,6 +134,9 @@ class GoogleEmbedder:
 
 class SentenceTransformersEmbedder:
     def __init__(self):
+        # import locally to avoid installing if not necessary
+        from sentence_transformers import SentenceTransformer
+
         # TODO: make this module-level so it is only loaded into memory once (or is that handled implicitly?)
         self.embedder = SentenceTransformer("all-mpnet-base-v2")
 

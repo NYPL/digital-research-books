@@ -5,7 +5,7 @@ import tempfile
 from ocrmypdf.hocrtransform import HocrTransform
 
 # api imports
-from ..utils import APIUtils
+from ...utils import APIUtils
 from . import items_blueprint
 
 # shared code imports
