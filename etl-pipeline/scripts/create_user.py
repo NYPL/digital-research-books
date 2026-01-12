@@ -55,6 +55,9 @@ def create_user(*args):
     # Insert user into database
     engine = DBManager().generate_engine()
 
+    # NOTE: password_hash is a bytes obj we are converting to hex (via <bytes>.hex()) \
+    # and then converting back to binary via postgres decode(<hex>, 'hex'). \
+    # Q: why not just directly write the bytes object?
     query = text("""
     INSERT INTO users (
         "user", 
