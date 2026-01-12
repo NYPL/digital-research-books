@@ -8,7 +8,7 @@ from ..utils import APIUtils, orm_to_dict, shorten
 from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
-from ..decorators import require_token
+from ..decorators import require_basic_authentication
 from ..assistant.agent import update_chat, PAGE_SIZE
 
 
@@ -35,7 +35,7 @@ def get_relevant_snippets(chunk_hits):
 
 @chat_blueprint.route("/", methods=["POST"])
 @require_api_key
-# @require_token
+@require_basic_authentication
 def chat(user=None):
     conversation_type = request.json.get("conversation_type")
     conversation = request.json.get("messages")

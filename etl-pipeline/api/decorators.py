@@ -28,11 +28,12 @@ def warn_deprecated(response, message):
     return response
 
 
-# TODO: rename to require_basic_auth because it implements basic auth not bearer token
-def require_token(func):
+def require_basic_authentication(func):
     @wraps(func)
     def decorator(*args, **kwargs):
-        logger.debug(request.headers)
+        logger.debug(
+            f"Attempting basic authentication with request headers: {request.headers}"
+        )
 
         headers = {k.lower(): v for k, v in request.headers.items()}
 
