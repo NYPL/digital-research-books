@@ -48,3 +48,19 @@ test.describe("Research Assistant Page UI", () => {
     await researchAssistantPage.hideChatBtn.isVisible();
   });
 });
+
+test.describe("Research Assistant Page Functionality", () => {
+  let researchAssistantPage: ResearchAssistantPage;
+
+  test.beforeEach(async ({ page }) => {
+    researchAssistantPage = new ResearchAssistantPage(page);
+    await researchAssistantPage.navigateTo();
+  });
+
+  test("Search text box is ready for input", async () => {
+    const testQuery = "Bryant park";
+    await researchAssistantPage.chatInputTextBox.fill(testQuery);
+    const inputValue = await researchAssistantPage.chatInputTextBox.inputValue();
+    expect(inputValue).toBe(testQuery);
+  });
+});
