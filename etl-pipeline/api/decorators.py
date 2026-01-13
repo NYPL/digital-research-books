@@ -32,7 +32,7 @@ def warn_deprecated(response, message):
     return response
 
 
-def require_token(func):
+def require_basic_authentication(func):
     @wraps(func)
     def decorator(*args, **kwargs):
         # Only printing header keys to avoid writing passwords to logs
