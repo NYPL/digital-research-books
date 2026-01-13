@@ -1,17 +1,14 @@
+import { Box, VStack } from "@nypl/design-system-react-components";
 import React from "react";
-import {
-  Box,
-  VStack,
-} from "@nypl/design-system-react-components";
-import ResultCard from "../ResultCard/ResultCard";
 import { ApiWork } from "~/src/types/WorkQuery";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
+import ResultCard from "../ResultCard/ResultCard";
 
 // TODO: rename folder to ResultsList when we switch to VRA/Keyword search
 const ResultsList: React.FC<{ works: ApiWork[] }> = ({ works }) => {
   if (works.length === 0) {
     return (
-      <EmptySearchPrompt message="No results found. Try a different topic."/>
+      <EmptySearchPrompt message="No results found. Try a different topic." />
     );
   }
   return (
