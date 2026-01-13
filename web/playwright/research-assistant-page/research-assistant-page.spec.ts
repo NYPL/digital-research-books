@@ -1,7 +1,7 @@
 import { Page, test } from "@playwright/test";
 import { ResearchAssistantPage } from "./research-assistant-page";
 
-test("Research Assistant page opens and loads DOM", async ({ page }) => {
+test("Navigating to Research Assistant page loads DOM", async ({ page }) => {
   const researchAssistantPage = new ResearchAssistantPage(page);
   await researchAssistantPage.navigateTo(), { waitUntil: 'domcontentloaded' };
 });
