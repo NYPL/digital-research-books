@@ -51,7 +51,7 @@ test.describe("Research Assistant Page UI", () => {
 
 test.describe("Research Assistant Page Functionality", () => {
   let researchAssistantPage: ResearchAssistantPage;
-  let testQuery: "Bryant Park";
+  let testQuery = "Bryant park";
 
   test.beforeEach(async ({ page }) => {
     researchAssistantPage = new ResearchAssistantPage(page);
