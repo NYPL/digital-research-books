@@ -1,4 +1,4 @@
-import { Page, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { ResearchAssistantPage } from "./research-assistant-page";
 
 test("Navigating to Research Assistant page loads DOM", async ({ page }) => {
