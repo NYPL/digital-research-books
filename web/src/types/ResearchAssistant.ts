@@ -1,7 +1,5 @@
-import { FacetItem } from "./DataModel";
 import { LinkResult } from "./LinkQuery";
-import { ApiSearchPaging } from "./SearchQuery";
-import { ApiWork } from "./WorkQuery";
+import { ApiSearchData } from "./SearchQuery";
 
 export interface Message {
   id: string;
@@ -23,13 +21,9 @@ export enum MessageStatus {
   Error = "error",
 }
 
-export interface CatalogSearchResults {
-  facets: { formats: FacetItem[]; languages: FacetItem[] };
-  totalWorks?: number;
-  works: ApiWork[];
-  paging: ApiSearchPaging;
+export type CatalogSearchResults = ApiSearchData & {
   searchParams: SearchParams;
-}
+};
 
 export interface ItemSearchResults {
   highlightedText: string[];
