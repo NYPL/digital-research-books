@@ -12,7 +12,6 @@ class ResearchAssistantPage {
   readonly hideChatBtn: Locator;
   readonly logInBtn: Locator;
 
-
   constructor(page: Page) {
     this.page = page;
     this.researchAssistantPanelHeading = page.getByRole("heading", {
