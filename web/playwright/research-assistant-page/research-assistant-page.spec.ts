@@ -51,6 +51,7 @@ test.describe("Research Assistant Page UI", () => {
 
 test.describe("Research Assistant Page Functionality", () => {
   let researchAssistantPage: ResearchAssistantPage;
+  let testQuery: "Bryant Park";
 
   test.beforeEach(async ({ page }) => {
     researchAssistantPage = new ResearchAssistantPage(page);
@@ -58,9 +59,18 @@ test.describe("Research Assistant Page Functionality", () => {
   });
 
   test("Search text box is ready for input", async () => {
-    const testQuery = "Bryant park";
     await researchAssistantPage.chatInputTextBox.fill(testQuery);
     const inputValue = await researchAssistantPage.chatInputTextBox.inputValue();
     expect(inputValue).toBe(testQuery);
+  });
+
+  test("Submitting a query displays a response from the VRA", async () => {
+    // Must log in to submit queries
+    const username = process.env.VRA_USERNAME as string;
+    const password = process.env.VRA_PASSWORD as string;
+    await researchAssistantPage.logIn(username, password);
+    await researchAssistantPage.navigateTo(); // Navigate back to RA page after log in (SCHOL-279)
+    await researchAssistantPage.query(testQuery);
+    await expect(researchAssistantPage.page.getByText('VRA:').nth(1)).toBeVisible();
   });
 });
