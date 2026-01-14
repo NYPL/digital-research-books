@@ -1,7 +1,13 @@
+from textwrap import indent
 from flask import Blueprint, current_app, request
 
 # shared code
 from logger import create_log
+from model.postgres.edition import Edition
+from model.postgres.item import Item
+from model.postgres.link import Link
+from model.postgres.rights import Rights
+from model.postgres.work import Work
 
 # API code
 from ..utils import APIUtils, orm_to_dict, shorten
@@ -22,6 +28,8 @@ RESPONSE_TYPE = "chat"
 # TODO: Q: extract chunk hits here or in agent.py in search tool? any way to concurrently \
 # extract relevant snippets while LLM is finishing response?
 # TODO: handle ordering of relevant snippets!!!
+# TODO: extract snippets intelligently
+# MAYBE: limit the number of returned snippets
 def get_relevant_snippets(chunk_hits):
     return [
         {
@@ -31,6 +39,104 @@ def get_relevant_snippets(chunk_hits):
         }
         for h in chunk_hits
     ]
+
+
+def format_search_results(search_results):
+    """
+    Convert dict of tool_call_id->results into an output formatted for
+    frontend consumption.
+    Expects len(search_results)==1
+    """
+
+    # Extract (single) search tool result
+    if len(search_results) > 1:
+        # TODO: handle if multiple search results/tool calls per update... merge into a single result
+        logger.error(f"Agent recorded {len(search_results)} search tool results")
+        search_result = list(search_results.values())[-1]
+    elif len(search_results) == 1:
+        search_result = list(search_results.values())[0]
+    else:
+        # TODO: handle no search result (i.e. the agent didn't update the search results (also no pagination))
+        search_result = None
+
+    # Format search result for API response
+    if search_result:
+        if search_result["tool_name"] == "search_library_catalog":
+            # FRBR ORM to dict
+            work_dict = orm_to_dict(
+                search_result["edition_data"]["orm_work"],
+                exclude=[(Work, "date_created"), (Work, "date_modified")],
+            )
+            # prepend "work_" to work fields
+            work_dict = {f"work_{k}": v for k, v in work_dict.items()}
+            edition_dict = orm_to_dict(
+                search_result["edition_data"]["orm_edition"],
+                exclude=[
+                    (Edition, "date_created"),
+                    (Edition, "date_modified"),
+                    (Edition, "dcdw_uuids"),
+                    (Item, "date_created"),
+                    (Item, "date_modified"),
+                    (Item, "modified"),
+                    (Item, "publisher_project_source"),
+                    (Item, "record_id"),
+                    (Link, "date_created"),
+                    (Link, "date_modified"),
+                    (Link, "md5"),
+                    (Rights, "date_created"),
+                    (Rights, "date_created"),
+                    (Rights, "date_modified"),
+                    (Rights, "id"),
+                    (Rights, "rights_date"),
+                    (Rights, "rights_reason"),
+                ],
+            )
+            # Q: should we be including the chunk_hits/snippet in editions or top level?
+            edition_dict.update(
+                {
+                    **work_dict,
+                    "snippets": get_relevant_snippets(
+                        search_result["edition_data"]["edition_hit"]["chunk_hits"]
+                    ),
+                }
+            )
+
+            formatted_search_result = {
+                "conversation_context": "catalogSearch",  # MAYBE: send search tool name
+                "editions": edition_dict,
+                # TODO: add relevant snippets for editions
+                "search_params": search_result["search_params"],
+                # NOTE: paginated search not yet implemented, only 1 fixed result set size
+                "paging": APIUtils.formatPagingOptions(
+                    page=1,
+                    pageSize=PAGE_SIZE,
+                    totalHits=len(search_result["edition_data"]),
+                ),
+            }
+            logger.info(
+                f"Returning {len(search_result['edition_data'])} editions in catalog search response"
+            )  # Q: redundant to tool call logging
+
+        elif search_result["tool_name"] == "search_in_book":
+            formatted_search_result = {
+                "conversation_context": "contentSearch",  # MAYBE: send search tool name
+                "snippets": get_relevant_snippets(search_result["chunk_hits"]),
+                "search_params": search_result["search_params"],
+            }
+            logger.info(
+                f"Returning {len(search_result['chunk_hits'])} snippets in content search response"
+            )
+        else:
+            raise ValueError(
+                f"Unsupported search tool type: {search_result['tool_name']}"
+            )
+    else:
+        formatted_search_result = None
+        logger.info(
+            "No search results to return (agent did record search tool call result)"
+        )
+
+    return formatted_search_result
 
 
 @chat_blueprint.route("/", methods=["POST"])
@@ -57,72 +163,15 @@ def chat(user=None):
     # TODO: when a search tool errors it is handled the LLM responds (ussually saying sorry I had an error) and a 200 response is returned
 
     ## Build API response
+
     # Extract new messages
     messages = [item.to_input_item() for item in run_result.new_items]
     logger.info(f"Agent generated {len(run_result.new_items)} new message items")
 
-    # Extract (single) search tool result
-    search_results = run_result.context_wrapper.context.search_results
-    logger.info(f"Agent recorded {len(search_results)} search tool results")
-    if len(search_results) > 1:
-        # TODO: handle if multiple search results/tool calls per update... merge into a single result
-        logger.warning(
-            f"{len(len(conversation_type.search_results))} tool calls during agent response."
-        )
-    elif len(search_results) == 1:
-        search_result = list(search_results.values())[0]
-    else:
-        search_result = None
-    # TODO: handle no search result (i.e. the agent didn't update the search results (also no pagination))
-
-    # Format search result for API response
-    if search_result:
-        if conversation_type == "catalogSearch":
-            # FRBR ORM to dict
-            work_dict = orm_to_dict(search_result["edition_data"][0])
-            work_dict = {
-                f"work.{k}": v for k, v in work_dict.items()
-            }  # prepend "work." to work fields
-            edition_dict = orm_to_dict(search_result["edition_data"][1])
-            # Q: should we be including the chunk_hits/snippet in editions or top level?
-            edition_dict.update(
-                {
-                    **work_dict,
-                    "snippets": get_relevant_snippets(search_result[2]["chunk_hits"]),
-                }
-            )
-
-            formatted_search_result = {
-                "editions": edition_dict,
-                # TODO: add relevant snippets for editions
-                "search_params": search_result["search_params"],
-                # NOTE: paginated search not yet implemented, only 1 fixed result set size
-                "paging": APIUtils.formatPagingOptions(
-                    page=1,
-                    pageSize=PAGE_SIZE,
-                    totalHits=len(search_result["edition_data"]),
-                ),
-            }
-            logger.info(
-                f"Returning {len(search_result['edition_data'])} editions in catalog search response"
-            )  # Q: redundant to tool call logging
-
-        else:  # contentSearch
-            formatted_search_result = {
-                # TODO: extract snippets intelligently
-                # MAYBE: limit the number of returned snippets
-                # TODO: map the start/end pages to the snippets
-                "snippets": get_relevant_snippets(search_result["chunk_hits"]),
-                "search_params": search_result["search_params"],
-            }
-            logger.info(
-                f"Returning {len(search_result['chunk_hits'])} snippets in content search response"
-            )
-    else:
-        formatted_search_result = {}
-        logger.info(
-            "No search results to return (agent did record search tool call result)"
-        )
+    # Format search results
+    formatted_search_result = format_search_results(
+        run_result.context_wrapper.context.search_results
+    )
 
     response_data = {
         "messages": messages,

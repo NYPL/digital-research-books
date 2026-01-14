@@ -4,6 +4,9 @@ from hashlib import scrypt
 from flask import jsonify
 from itertools import repeat
 from math import ceil
+from json import JSONEncoder
+from uuid import UUID
+
 from model import Collection, Edition
 import re
 from model.postgres.collection import COLLECTION_EDITIONS
@@ -12,9 +15,16 @@ from botocore.exceptions import ClientError
 import os
 from urllib.parse import urlparse
 from sqlalchemy import inspect
+from sqlalchemy.orm.attributes import NO_VALUE
 
 
 logger = create_log(__name__)
+
+
+def json_dump_uuid(obj):
+    if isinstance(obj, UUID):
+        return str(obj)
+    return JSONEncoder().default(obj)
 
 
 def hit_to_dict(hit):
@@ -35,66 +45,75 @@ def remove_markdown_comments(markdown_text):
 
 
 # see: https://chatgpt.com/c/694e008d-e04c-8326-8c94-223abfd642ba
-# TODO: add mapped obj names
-def orm_to_dict(obj, visited=None):
+# TODO: add column name mapping (if needed)
+def orm_to_dict(obj, exclude=None, visited=None):
     """
     Convert a single SQLAlchemy ORM object to a dict, following relationships
-    to created a nested structure.
-    Avoids following infinite loop relationships.
+    recursively to created a nested structure.
+    Skips relationships that are not eagerly loaded.
+    Avoids following infinite loop circular relationships.
 
     Params:
-        visited: set() of primary key (what obj type?) that have been visited (to avoid infinite loop relationships)
+        obj: sqlalchemy declarative entity instance
+        exclude: list of column specs to exclude from returned dict, at any
+            level of nesting. Column specs are tuples of (<declarative table>, 'column name').
+            Does not validate the exclude column specifications. Does nothing if
+            none of the exclude columns are encountered while traversing the
+            ORM object being converted.
+        visited: set() of ORM obj identifiers that have been visited
+            (to avoid infinite loop circular relationships).
     """
-    if obj is None:
-        return None
+    if visited is None:
+        visited = set()
+    if exclude is None:
+        exclude = []
 
     insp = inspect(obj)
 
-    # Use identity (PK values) to detect cycles
-    identity = insp.identity or tuple(
-        getattr(obj, col.key) for col in insp.mapper.primary_key
-    )
-    if visited is None:
-        visited = set()
+    # Handle recursive circular references (using obj identity/PK values)
+    # NOTE: None when ORM objs created locally and PKs haven't been set (NOTE: python id could collide with ORM PK but .identity is always a tuple so no worries)
+    id_key = id(obj) if insp.identity is None else insp.identity
+    identity = (insp.mapper.class_, id_key)
     if identity in visited:
-        # Break cycles
-        # ALT: you could instead return identity only, or None
-        raise ValueError(
-            f"Circular reference: {obj.__class__.__name__}  with identity {identity} already visited."
-        )
+        # Break circular reference cycle
+        return {
+            "_ref": {
+                "class": insp.mapper.class_.__name__,
+                "identity": f"primary key unset (python obj id={id(obj)})"
+                if insp.identity is None
+                else insp.identity,
+                # ALT: {"py_id": id(obj)} if insp.identity is None else {"pk": insp.identity}
+            }
+        }
     visited.add(identity)
 
     data = {}
 
-    # 1) Scalar columns
+    # Field values
     for column in insp.mapper.column_attrs:
-        data[column.key] = getattr(obj, column.key)
+        if (insp.mapper.class_, column.key) not in exclude:
+            # ALT FUTURE: for effciency check check col key first. To handle Mixin classes do issubclass(insp.mapper.class_, exclude_cls)
+            data[column.key] = getattr(obj, column.key)
 
-    # 2) Relationships (nested)
-    for rel in insp.mapper.relationships:
-        # To avoid lazy loading:
-        # attr_state = insp.attrs[rel.key]
-        # value = attr_state.loaded_value
-        # if value is NO_VALUE:
-        #     continue
-        relations = getattr(obj, rel.key)
+    # Related entities (recursive, nested)
+    for relationship in insp.mapper.relationships:
+        rel_loaded = insp.attrs[relationship.key].loaded_value
+        # Skip if relationship is not already eagerly loaded
+        if rel_loaded is NO_VALUE:
+            continue
 
-        if rel.uselist:  # Relation is a collection of objects
-            children = []
-            for child in relations:
-                child_dict = orm_to_dict(child, visited=visited)
-                if (
-                    child_dict is not None
-                ):  # Q: now that I raid error on circular reference can child_dict ever be None?
-                    children.append(child_dict)
-            data[rel.key] = children
-        else:  # Relation is a single object
-            if (
-                relations is not None
-            ):  #  if the FK column is NULL, the related row was deleted, etc..
-                child_dict = orm_to_dict(relations, visited=visited)
-                if child_dict:
-                    data[rel.key] = child_dict
+        # Handle various loaded value types
+        if relationship.uselist:  # collection of related entities
+            relations = [
+                orm_to_dict(rel, exclude=exclude, visited=visited) for rel in rel_loaded
+            ]
+        else:
+            # NOTE: only a scalar relation can be None, if the FK column is NULL, the related row was deleted, etc..
+            if rel_loaded is None:
+                relations = []  # ALT: [{}] (or handle orm_to_dict(None) at top of func and return {}) # this loses the distinction between “relationship loaded but NULL” and “collection loaded but empty”.
+            else:
+                relations = [orm_to_dict(rel_loaded, exclude=exclude, visited=visited)]
+        data[relationship.key] = relations
 
     return data
 

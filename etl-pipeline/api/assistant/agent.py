@@ -121,6 +121,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
 
     requested_ids = set(ids)
     found_source_ids = set(df[source_col])
+    print("XXX", target_col, df[target_col])
 
     # Check for missing source IDs
     missing_source_ids = requested_ids - found_source_ids
@@ -148,7 +149,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
         raise AssertionError("\n".join(error_parts))
 
     # source id -> {target id -> value, ...}
-    return df.set_index(bind_param).to_dict(orient="index")
+    return df.set_index(source_col).to_dict(orient="index")
 
 
 @function_tool
@@ -175,9 +176,7 @@ def search_library_catalog(
     # TODO: doc string - guidance on reformatting the user query to an appropriate search query
 
     try:
-        logger.info(f"search_library_catalog called with query: '{query}'")
-        print(f"LLM QUERY: {query}")
-        # print(f"tool call id = {ctx.tool_call_id}")
+        logger.info(f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}'")
 
         # Execute vector search
         # take top 100 chunks and group by edition (then take top 10 editions)
@@ -202,6 +201,7 @@ def search_library_catalog(
                 )
             else:
                 chunk_hits.append(chunk_hit)
+        print("XXXXX", json.dumps(chunk_hits, indent=2))
 
         # convert record_ids to edition_ids to fetch FRBR data
         # Join work/edition/item ids to chunk hits
@@ -253,14 +253,22 @@ def search_library_catalog(
         # Fetch FRBR data (from DB) for editions in search result (page)
         edition_ids = [h["edition_id"] for h in edition_hits]
         frbr_data = get_frbr_data_by_edition(edition_ids)
+        # TODO: handle get_frbr_data_by_edition() returns empty
 
         # Merge ES hit data and FRBR metadata (maintaining edition sort order)
-        edition_data = []  # (ORM work, ORM edition, ES edition_hit) # TODO: match dict (also change in chat.py)
+        edition_data = []  # dict with keys: orm_work, orm_edition, edition_hit
         for edition_hit in edition_hits:
+            # match orm work/edition to ES edition hit
             orm_work, orm_edition = [
                 (w, e) for w, e in frbr_data if e.id == edition_hit["edition_id"]
             ][0]
-            edition_data.append((orm_work, orm_edition, edition_hit))
+            edition_data.append(
+                {
+                    "orm_work": orm_work,
+                    "orm_edition": orm_edition,
+                    "edition_hit": edition_hit,
+                }
+            )
         # ALT: if frbr_data was pre-sorted by edition_id ordering, we could \
         # iterate over frbr_data and lookup (rather than loop) matching es data \
         # from an edition_hits dict
@@ -272,6 +280,7 @@ def search_library_catalog(
 
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
+            "tool_name": ctx.tool_name,
             "edition_data": edition_data,  # ordered search result
             "search_params": json.loads(ctx.tool_arguments),
         }
@@ -311,9 +320,8 @@ def search_in_book(
 
     try:
         logger.info(
-            f"search_in_book called with query: '{query}' for edition_id: {ctx.context.edition_id}"
+            f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}' for edition_id: {ctx.context.edition_id}"
         )
-        print(f"LLM QUERY (in-book): {query}")
 
         # Execute vector search filtered to single book
         resp = ctx.context.searcher.vector_search(
@@ -334,6 +342,7 @@ def search_in_book(
 
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
+            "tool_name": ctx.tool_name,
             "chunk_hits": chunk_hits,
             # "work": orm_work,
             # "edition": orm_edition,
@@ -492,7 +501,7 @@ def verbose_display_editions(edition_data, query, as_str=False):
     Display edition search results with detailed information.
 
     Args:
-        edition_data: List of tuples (orm_work, orm_edition, edition_hit)
+        edition_data: List of dicts with keys 'orm_work', 'orm_edition', 'edition_hit'
                      where edition_hit contains work_id, edition_id, and chunk_hits
         query: The search query string
         as_str: If True, return as string; otherwise print
@@ -501,7 +510,10 @@ def verbose_display_editions(edition_data, query, as_str=False):
     lines.append(f'QUERY: "{wrap(query)}"')
     lines.append("\n")
 
-    for i, (orm_work, orm_edition, edition_hit) in enumerate(edition_data, 1):
+    for i, edition_entry in enumerate(edition_data, 1):
+        orm_work = edition_entry["orm_work"]
+        orm_edition = edition_entry["orm_edition"]
+        edition_hit = edition_entry["edition_hit"]
         # Format work and edition metadata
         frbr_fields = format_frbr_fields(orm_work, orm_edition)
 
@@ -574,7 +586,7 @@ def compact_display_editions(edition_data, query, as_str=False):
     Display edition search results in compact format.
 
     Args:
-        edition_data: List of tuples (orm_work, orm_edition, edition_hit)
+        edition_data: List of dicts with keys 'orm_work', 'orm_edition', 'edition_hit'
                      where edition_hit contains work_id, edition_id, and chunk_hits
         query: The search query string
         as_str: If True, return as string; otherwise print
@@ -583,7 +595,10 @@ def compact_display_editions(edition_data, query, as_str=False):
     lines.append(f'QUERY: "{wrap(query)}"')
     lines.append("RESULTS:")
 
-    for i, (orm_work, orm_edition, edition_hit) in enumerate(edition_data, 1):
+    for i, edition_entry in enumerate(edition_data, 1):
+        orm_work = edition_entry["orm_work"]
+        orm_edition = edition_entry["orm_edition"]
+        edition_hit = edition_entry["edition_hit"]
         title = orm_work.title or "(No Title)"
         chunk_hits = edition_hit.get("chunk_hits", [])
         max_score = (

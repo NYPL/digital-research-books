@@ -7,6 +7,18 @@ from api.utils import APIUtils
 from datetime import datetime, timezone
 
 
+@pytest.mark.xfail(reason="not implemented")
+def test_orm_to_dict(): ...
+
+
+# TEST cases:
+# circular relationship: Parent.children, Child.parents
+# transitory locally created ORM obj
+# missing FK in relation (relations is None)
+# no error if irrelevant exclude spec is passed
+# exclude correctly excludes at a nested level
+
+
 class TestAPIUtils:
     @pytest.fixture
     def testApp(self):

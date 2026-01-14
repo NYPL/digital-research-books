@@ -11,9 +11,8 @@ from langchain_core.messages import (
 )
 from langchain.tools import tool
 from logger import create_log
-from ...utils import APIUtils
+from ...utils import APIUtils, json_dump_uuid
 from ...db import DBClient
-from uuid import UUID
 from .item_search import item_full_text_search, QueryMode
 
 import json
@@ -36,12 +35,6 @@ VRA_SYSTEM_PROMPT_V0 = SystemMessage(
 )
 
 logger = create_log(__name__)
-
-
-def json_serial_uuid(obj):
-    if isinstance(obj, UUID):
-        return str(obj)
-    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
 
 
 class ResearchAssistant:
@@ -158,7 +151,7 @@ class ResearchAssistant:
 
             db_client.closeSession()
 
-            return json.dumps(data_block, default=json_serial_uuid)
+            return json.dumps(data_block, default=json_dump_uuid)
 
         self.model = init_chat_model("gemini-2.5-flash", model_provider="google_genai")
         self.agent = create_react_agent(
