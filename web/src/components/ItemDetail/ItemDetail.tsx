@@ -143,7 +143,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         margin="0 auto"
         width="100%"
       >
-        <GridItem colSpan={1} gridRow={2} />
+        <GridItem colSpan={1} gridRow={backUrl ? "2" : "1"} />
         {backUrl && (
           <Flex
             alignItems="center"
