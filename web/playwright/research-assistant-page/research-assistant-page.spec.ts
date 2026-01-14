@@ -71,6 +71,6 @@ test.describe("Research Assistant Page Functionality", () => {
     await researchAssistantPage.logIn(username, password);
     await researchAssistantPage.navigateTo(); // Navigate back to RA page after log in (SCHOL-279)
     await researchAssistantPage.query(testQuery);
-    await expect(researchAssistantPage.page.getByText('VRA:').nth(1)).toBeVisible();
+    await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible();
   });
 });

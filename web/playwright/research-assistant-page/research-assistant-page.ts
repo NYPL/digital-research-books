@@ -3,7 +3,7 @@ import { Locator, Page } from "@playwright/test";
 class ResearchAssistantPage {
   readonly page: Page;
   readonly researchAssistantPanelHeading: Locator;
-  readonly messageBubble: Locator;
+  readonly messageBubbles: Locator;
   readonly chatInputTextBox: Locator;
   readonly submitQueryBtn: Locator;
   readonly resultsBanner: Locator;
@@ -17,7 +17,7 @@ class ResearchAssistantPage {
     this.researchAssistantPanelHeading = page.getByRole("heading", {
       name: "Virtual Research Assistant",
     });
-    this.messageBubble = page.getByText("VRA:");
+    this.messageBubbles = page.getByText("VRA:");
     this.chatInputTextBox = page.getByRole("textbox", { name: "Type your response here" });
     this.submitQueryBtn = page.getByLabel("Send");
     this.resultsBanner = page.getByText("public domain scholarly e-books from our collections");
