@@ -25,7 +25,7 @@ test.describe("Research Assistant Page UI", () => {
   });
 
   test("A message bubble from the agent is visible", async () => {
-    await researchAssistantPage.messageBubble.isVisible();
+    await researchAssistantPage.messageBubbles.nth(0).isVisible();
   });
 
   test("Chat input text box is visible", async () => {
