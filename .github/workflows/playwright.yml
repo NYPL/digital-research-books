@@ -68,5 +68,7 @@ jobs:
         working-directory: ./web
         run: npm run playwright
         env:
+          VRA_USERNAME: ${{ secrets.VRA_USERNAME }}
+          VRA_PASSWORD: ${{ secrets.VRA_PASSWORD }}
           CATALOG_USERNAME: ${{ secrets.CATALOG_USERNAME }}
           CATALOG_USER_PIN: ${{ secrets.CATALOG_USER_PIN }}
