@@ -6,8 +6,7 @@ on:
     types: [opened, synchronize, reopened, labeled, unlabeled]
     paths:
       - "web/**"
-    paths-ignore:
-      - '**/*.md'
+      - "!web/**/*.md"
 
 jobs:
   lint:
