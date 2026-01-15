@@ -1,5 +1,4 @@
 interface Window {
-  adobeDataLayer: Array<any> | undefined;
   dataLayer: any;
   NREUM: any;
   newrelic?: {

@@ -17,24 +17,6 @@ export const getQueryString = (query: any) =>
     )
     .join("&");
 
-// For Adobe Analytics page_name
-export const getQueryDecodedString = (query: any) =>
-  query &&
-  Object.keys(query)
-    .map((key) =>
-      [key, query[key]]
-        .map((o) => {
-          let ret = o;
-          if (typeof o === "object") {
-            ret = JSON.stringify(o);
-          }
-          return encodeURI(ret);
-        })
-        .join("=")
-    )
-    .join("|&")
-    .replace(/%20/g, "+");
-
 export const findQueryForField = (queries: Query[], field: string): Query => {
   return queries.find((query: Query) => {
     return query.field === field;

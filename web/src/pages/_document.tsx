@@ -1,6 +1,5 @@
 import React from "react";
 import Document, { Html, Head, Main, NextScript } from "next/document";
-import appConfig from "~/config/appConfig";
 import Script from "next/script";
 
 type DocumentProps = {
@@ -18,7 +17,6 @@ class MyDocument extends Document<DocumentProps> {
     return (
       <Html lang="en">
         <Head>
-          <script src={appConfig.analytics} async />
           {/* Google Tag Manager */}
           {/* eslint-disable-next-line @next/next/next-script-for-ga */}
           <script
