@@ -67,7 +67,7 @@ def load_env_file(run_type: str, file_string: str | None = None) -> None:
         for key, value in env_dict.items():
             os.environ[key] = value
 
-    load_secrets()
+    load_secrets(run_type)
 
 
 def _set_env_vars(config: dict) -> None:
@@ -84,13 +84,14 @@ def _load_yaml_config(file_path: str) -> None:
         return {}
 
 
-def load_secrets():
+def load_secrets(env):
+    # load local secrets file
     if Path(LOCAL_SECRETS_FILE).exists():
         secrets_config = _load_yaml_config(LOCAL_SECRETS_FILE)
         _set_env_vars(secrets_config)
 
-    ssm_service = SSMService()
-
+    # load SSM Parameter Store secrets
+    ssm_service = SSMService(env)
     for env_var, param_name in ENV_VAR_TO_SSM_NAME.items():
         if os.environ.get(env_var, None) is None:
             param = ssm_service.get_parameter(param_name)
