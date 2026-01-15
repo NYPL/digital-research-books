@@ -3,8 +3,8 @@ alembic==1.10.2
 beautifulsoup4==4.12.0
 boto3==1.26.104
 elasticsearch @ git+https://github.com/elastic/elasticsearch-py.git@9.2
-elasticsearch7-dsl>=7.3.0.post1
-elasticsearch7>=7.17.12
+elasticsearch7-dsl==7.3.0.post1
+elasticsearch7==7.17.12
 flasgger==0.9.5
 flask-cors==5.0.0
 flask==2.2.4
