@@ -13,7 +13,6 @@ import ReaderLogoSvg from "../Svgs/ReaderLogoSvg";
 import Link from "../Link/Link";
 import { addTocToManifest } from "@nypl/web-reader";
 import Loading from "../Loading/Loading";
-import { trackCtaClick } from "~/src/lib/adobe/Analytics";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
 import { useCookies } from "react-cookie";
 import { useRouter } from "next/router";
@@ -95,15 +94,6 @@ const ReaderLayout: React.FC<{
     }
     return array;
   };
-
-  useEffect(() => {
-    trackCtaClick({
-      cta_section: `${link.work.title}`,
-      cta_subsection: `${edition.edition_id}`,
-      cta_text: "Read Online",
-      destination_url: `${link.url}`,
-    });
-  }, [edition.edition_id, link]);
 
   useEffect(() => {
     if (isRead) {

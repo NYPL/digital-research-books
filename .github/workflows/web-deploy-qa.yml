@@ -46,8 +46,7 @@ jobs:
           --build-arg APP_ENV=$APP_ENV \
           --build-arg NEW_RELIC_APP_NAME="Digital Research Books (QA)" \
           --build-arg NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY \
-          --build-arg API_KEY=$API_KEY \
-          --build-arg NEXT_PUBLIC_ADOBE_ANALYTICS="https://assets.adobedtm.com/1a9376472d37/8519dfce636d/launch-bf8436264b01-development.min.js" .
+          --build-arg API_KEY=$API_KEY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:qa-latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:qa-latest

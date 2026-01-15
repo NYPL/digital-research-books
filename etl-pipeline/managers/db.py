@@ -55,6 +55,11 @@ class DBManager:
         self.session.begin_nested()
 
     def commit_changes(self, retry=False):
+        """
+        retry=True indicates the function is being called as a retry.
+        When retry=True, the function will NOT retry itself.
+        When retry=False, the function will retry itself once.
+        """
         try:
             self.session.commit()
         except OperationalError as oprErr:
