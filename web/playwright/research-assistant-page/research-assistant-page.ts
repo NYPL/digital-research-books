@@ -6,6 +6,7 @@ class ResearchAssistantPage {
   readonly messageBubbles: Locator;
   readonly chatInputTextBox: Locator;
   readonly submitQueryBtn: Locator;
+  readonly loadingIndicator: Locator;
   readonly resultsBanner: Locator;
   readonly emptySearchPrompt: Locator;
   readonly startOverBtn: Locator;
@@ -20,6 +21,7 @@ class ResearchAssistantPage {
     this.messageBubbles = page.getByText("VRA:");
     this.chatInputTextBox = page.getByRole("textbox", { name: "Type your response here" });
     this.submitQueryBtn = page.getByLabel("Send");
+    this.loadingIndicator = page.getByText("Assistant thinking...");
     this.resultsBanner = page.getByText("public domain scholarly e-books from our collections");
     this.emptySearchPrompt = page.getByRole("heading", { name: "Start searching to see results" });
     this.startOverBtn = page.getByRole("button", { name: "Start over" });

@@ -70,7 +70,23 @@ test.describe("Research Assistant Page Functionality", () => {
     const password = process.env.VRA_PASSWORD as string;
     await researchAssistantPage.logIn(username, password);
     await researchAssistantPage.navigateTo(); // Navigate back to RA page after log in (SCHOL-279)
+
+    // Submit the test query
     await researchAssistantPage.query(testQuery);
+
+    // Print a message every 5 seconds while the loading indicator is visible
+    let secondsElapsed = 0;
+    const interval = 5; // seconds
+    const maxWaitSeconds = 60; // maximum time to wait for the loading indicator to disappear
+
+    while (await researchAssistantPage.loadingIndicator.isVisible() && secondsElapsed < maxWaitSeconds) {
+      await new Promise((resolve) => setTimeout(resolve, interval * 1000));
+      secondsElapsed += interval;
+      console.log(`Assistant still thinking... (${secondsElapsed} seconds elapsed)`);
+    }
+    if (await researchAssistantPage.loadingIndicator.isVisible()) {
+      throw new Error(`Loading indicator did not disappear after ${maxWaitSeconds} seconds.`);
+    }
     await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible();
   });
 });
