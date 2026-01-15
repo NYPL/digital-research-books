@@ -39,6 +39,9 @@ class ResearchAssistantPage {
 
   // TODO: Relocate log in method to a base page class since it exists across pages
   async logIn(username: string, password: string) {
+    if (!username || !password) {
+      throw new Error("Username and password must be defined");
+    }
     // Start waiting for a new page event before clicking (the log in page may open in a new tab)
     const pagePromise = this.page.context().waitForEvent("page");
     await this.logInBtn.click();
