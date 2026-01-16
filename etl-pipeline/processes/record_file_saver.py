@@ -20,7 +20,14 @@ class RecordFileSaver:
         self.storage_manager = storage_manager
         self.file_bucket = os.environ["FILE_BUCKET"]
         self.limited_file_bucket = f"drb-files-limited-{os.environ['ENVIRONMENT']}"
-        self.drive_service = GoogleDriveService()
+        self._drive_service = None
+
+        # only access the credentials needed for google auth when required
+        @property
+        def drive_service(self):
+            if self._drive_service is None:
+                self._drive_service = GoogleDriveService()
+            return self._drive_service
 
     def save_record_files(self, record: Record) -> Record:
         self.storage_manager.store_pdf_manifest(
