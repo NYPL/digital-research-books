@@ -274,6 +274,7 @@ class TestAPIUtils:
             "currentPage": 1,
             "nextPage": 2,
             "lastPage": 5,
+            "totalRecords": 50,
         }
 
     def test_formatPagingOptions_next_null(self):
@@ -286,6 +287,7 @@ class TestAPIUtils:
             "currentPage": 6,
             "nextPage": None,
             "lastPage": 6,
+            "totalRecords": 55,
         }
 
     def test_formatWorkOutput_single_work(self, mocker, testApp):
