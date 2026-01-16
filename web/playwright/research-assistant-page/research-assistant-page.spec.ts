@@ -64,7 +64,7 @@ test.describe("Research Assistant Page Functionality", () => {
     expect(inputValue).toBe(testQuery);
   });
 
-  test("Submitting a query displays a response from the VRA", async () => {
+  test("An assistant response is displayed after submitting text", async () => {
     // Must log in to submit queries
     const username = process.env.VRA_USERNAME as string;
     const password = process.env.VRA_PASSWORD as string;
