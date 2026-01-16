@@ -76,8 +76,8 @@ test.describe("Research Assistant Page Functionality", () => {
 
     // Print a message every 5 seconds while the loading indicator is visible
     let secondsElapsed = 0;
-    const interval = 5; // seconds
-    const maxWaitSeconds = 60; // maximum time to wait for the loading indicator to disappear
+    const interval = 5;
+    const maxWaitSeconds = 60; // Maximum time to wait for the loading indicator to disappear
 
     while (await researchAssistantPage.loadingIndicator.isVisible() && secondsElapsed < maxWaitSeconds) {
       await new Promise((resolve) => setTimeout(resolve, interval * 1000));
