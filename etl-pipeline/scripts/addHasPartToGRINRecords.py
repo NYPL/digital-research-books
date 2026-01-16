@@ -8,7 +8,7 @@ if it is missing, and (b) adds the book to the ETL Pipeline SQS processing queue
 import os
 
 import boto3
-from sqlalchemy import func, or_
+from sqlalchemy import func, select
 import file_conversion.pdfs.mets_parser as mets_parser
 
 
@@ -60,8 +60,8 @@ def main():
     bucket = os.environ["PRIVATE_FILE_BUCKET"]
 
     with DBManager() as db_manager:
-        query = (
-            db_manager.session.query(Record)
+        stmt = (
+            select(Record)
             .join(GRINStatus, GRINStatus.record_id == Record.id)
             .filter(
                 Record.source == "grin",
@@ -71,12 +71,16 @@ def main():
             )
         )
 
-        logger.info(f"Found {query.count()} GRIN records to process")
+        total_records = db_manager.session.scalar(
+            select(func.count()).select_from(stmt.alias())
+        )
+        logger.info(f"Found {total_records} GRIN records to process")
 
         total_updated = 0
         total_has_first_page = 0
+        batch_count = 0
 
-        for record in query.yield_per(BATCH_SIZE):
+        for record in db_manager.windowed_query(stmt, Record.id, BATCH_SIZE):
             try:
                 logger.info(f"Processing record with source_id {record.source_id}")
                 barcode = record.source_id.split("|")[0]
@@ -97,6 +101,7 @@ def main():
 
                         db_manager.session.add(record)
                         total_updated += 1
+                        batch_count += 1
                 else:
                     total_has_first_page += 1
                     logger.info(
@@ -109,12 +114,23 @@ def main():
                 )
 
                 logger.info(f"Sent record {record.source_id} to queue")
+
+                if batch_count >= BATCH_SIZE:
+                    db_manager.commit_changes()
+                    logger.info(
+                        f"Committed batch: {total_updated} records updated so far"
+                    )
+                    batch_count = 0
+
             except Exception as e:
                 logger.error(
                     f"Failed to process record with source_id {record.source_id}: {e}"
                 )
 
-        db_manager.session.commit()
+        if batch_count > 0:
+            db_manager.commit_changes()
+            logger.info(f"Committed final batch")
+
         logger.info(
             f"Updated {total_updated} GRIN records with has_part, {total_has_first_page} already had first_page_part"
         )

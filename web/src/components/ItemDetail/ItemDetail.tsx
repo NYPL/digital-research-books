@@ -1,6 +1,3 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useCookies } from "react-cookie";
-import { useRouter } from "next/router";
 import {
   Accordion,
   Box,
@@ -10,34 +7,38 @@ import {
   Heading,
   Text,
   Toggle,
+  Tooltip,
   VStack,
 } from "@nypl/design-system-react-components";
+import { useRouter } from "next/router";
+import React, { useEffect, useMemo, useState } from "react";
+import { useCookies } from "react-cookie";
+import { NYPL_SESSION_ID } from "~/src/constants/auth";
+import { ACCORDION_EXPANDED_BG } from "~/src/constants/colors";
+import {
+  getGridColumns,
+  getGridRows,
+  getHeaderPaddingRight,
+  GRID_PADDING_X,
+  HEADER_HEIGHT,
+} from "~/src/constants/researchAssistant";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { useResultPageContext } from "~/src/context/ResultPageContext";
+import { HistoryItem } from "~/src/types/ResearchAssistant";
+import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
+import EditionCardUtils from "~/src/util/EditionCardUtils";
 import AuthorsList from "../AuthorsList/AuthorsList";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
+import Link from "../Link/Link";
 import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel";
 import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
-import EditionCardUtils from "~/src/util/EditionCardUtils";
-import { useResultPageContext } from "~/src/context/ResultPageContext";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import { NYPL_SESSION_ID } from "~/src/constants/auth";
-import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
-import {
-  HistoryItem,
-} from "~/src/types/ResearchAssistant";
 import AboutItemPanel from "./AboutItemPanel";
-import SummaryPanel from "./SummaryPanel";
-import SearchPanel from "./SearchPanel";
-import DownloadOptionsPanel from "./DownloadOptionsPanel";
 import DetailsPanel from "./DetailsPanel";
+import DownloadOptionsPanel from "./DownloadOptionsPanel";
 import OtherEditionsPanel from "./OtherEditionsPanel";
-import Link from "../Link/Link";
-import {
-  getGridColumns,
-  getHeaderPaddingRight,
-  getGridRows,
-  GRID_PADDING_X,
-} from "~/src/constants/researchAssistant";
+import SearchPanel from "./SearchPanel";
+import SummaryPanel from "./SummaryPanel";
 
 interface ItemDetailProps {
   workResult: WorkResult;
@@ -59,6 +60,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     setViewState,
     historyStack,
     setHistoryStack,
+    showChat,
   } = useResearchAssistant();
 
   const { page } = useResultPageContext();
@@ -133,7 +135,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   return (
     <Box fontSize="desktop.body.body2" bgColor="ui.bg.default" width="100%">
       <Grid
-        templateColumns={getGridColumns(vraEnabled)}
+        templateColumns={getGridColumns(vraEnabled, showChat)}
         templateRows={getGridRows(backUrl)}
         gap="l"
         marginBottom="xs"
@@ -155,13 +157,25 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             paddingRight={getHeaderPaddingRight(vraEnabled)}
             paddingY="s"
             marginRight={vraEnabled ? "0" : "-2rem"}
+            height={HEADER_HEIGHT}
           >
             <BackToResultsButton handleBackToResults={handleBackToResults} />
-            <Toggle
-              isChecked={vraEnabled}
-              labelText="Use Virtual Research Assistant"
-              onChange={() => setVraEnabled((prev) => !prev)}
-            />
+            <Tooltip
+              content="Toggle off if you would like to opt out of using the AI tool. When toggled off, chat window will close and chat history will be lost."
+              shouldWrapChildren
+            >
+              <Toggle
+                isChecked={vraEnabled}
+                labelText="Use Virtual Research Assistant"
+                onChange={() => setVraEnabled((prev) => !prev)}
+                size="small"
+                sx={{
+                  ".chakra-switch__track[data-checked]": {
+                    backgroundColor: "section.research.secondary",
+                  },
+                }}
+              />
+            </Tooltip>
           </Flex>
         )}
         <VStack
@@ -174,12 +188,12 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
           paddingLeft={GRID_PADDING_X}
           marginTop={backUrl ? "0" : "l"}
         >
-          <Text size="caption" marginBottom="xxs">
-            E-BOOK
-          </Text>
-          <Heading level="h1" size="heading6" marginBottom="xs">
-            {work.title}
-          </Heading>
+          <Flex flexDir="column" gap="xxs">
+            <Text size="caption">E-BOOK</Text>
+            <Heading level="h1" size="heading6">
+              {work.title}
+            </Heading>
+          </Flex>
           <VStack alignContent="left" alignItems="left" gap="l">
             {work.authors && work.authors.length > 0 && (
               <AuthorsList authors={work.authors} />
@@ -206,8 +220,8 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             <Accordion
               accordionData={[
                 {
-                  ariaLabel: "About this item",
-                  label: "About this item",
+                  ariaLabel: "About this book",
+                  label: "About this book",
                   panel: (
                     <AboutItemPanel
                       previewItem={previewItem}
@@ -217,16 +231,16 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                   ),
                 },
                 {
-                  ariaLabel: "Read summary",
+                  ariaLabel: "What is this book about?",
                   label: (
                     <Box
                       display="flex"
                       alignItems="center"
-                      gap="xxs"
+                      gap="xs"
                       __css={{ svg: { marginInlineStart: "0 !important" } }}
                     >
                       <ResearchAssistantIcon inCircle />
-                      <span>Read summary</span>
+                      <span>What is this book about?</span>
                     </Box>
                   ),
                   panel: <SummaryPanel previewEdition={previewEdition} />,
@@ -264,7 +278,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
               id="item-detail-accordion"
               sx={{
                 "button[aria-expanded=true]": {
-                  bgColor: "ui.link.primary-05",
+                  bgColor: ACCORDION_EXPANDED_BG,
                 },
                 ".chakra-collapse": {
                   bgColor: "ui.white",

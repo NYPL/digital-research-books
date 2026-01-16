@@ -8,7 +8,6 @@ import { useRouter } from "next/router";
 import React, { useState } from "react";
 import Link from "~/src/components/Link/Link";
 import { LOGIN_LINK_BASE } from "~/src/constants/links";
-import { trackCtaClick } from "~/src/lib/adobe/Analytics";
 import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { fulfillFetcher } from "~/src/lib/api/SearchApi";
 import { ItemLink } from "~/src/types/DataModel";
@@ -64,11 +63,6 @@ const DownloadLink: React.FC<{
           onOpen();
         }
       }
-      trackCtaClick({
-        cta_section: `${title}`,
-        cta_text: "Download",
-        destination_url: `${linkUrl}`,
-      });
       trackEvent({
         event: "file_download",
         click_text: linkText,

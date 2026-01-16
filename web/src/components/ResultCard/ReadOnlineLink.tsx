@@ -19,6 +19,8 @@ const ReadOnlineLink: React.FC<{
   const { onReadOnline, page } = useResultPageContext();
   const isResearchAssistant = page === "vra";
 
+  if (!readOnlineLink) return null;
+
   let linkText = "Read online";
   let linkUrl: any = {
     pathname: `/read/${readOnlineLink.link_id}`,

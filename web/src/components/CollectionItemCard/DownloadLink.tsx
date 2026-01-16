@@ -4,7 +4,6 @@ import CollectionUtils from "~/src/util/CollectionUtils";
 import Link from "~/src/components/Link/Link";
 import { OpdsLink } from "~/src/types/OpdsModel";
 import { formatUrl } from "~/src/util/Util";
-import { trackCtaClick } from "~/src/lib/adobe/Analytics";
 import { trackEvent } from "~/src/lib/gtag/Analytics";
 
 const DownloadLink: React.FC<{ author: string | undefined; links: OpdsLink[]; title: string }> = ({
@@ -19,11 +18,6 @@ const DownloadLink: React.FC<{ author: string | undefined; links: OpdsLink[]; ti
   const formattedUrl = formatUrl(selectedLink.href);
 
   const trackDownloadCta = () => {
-    trackCtaClick({
-      cta_section: `${title}`,
-      cta_text: "Download",
-      destination_url: `${formattedUrl}`,
-    });
     trackEvent({
       "event":  "file_download",
       "click_text": "Download PDF",

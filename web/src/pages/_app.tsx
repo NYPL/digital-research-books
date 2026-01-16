@@ -9,9 +9,6 @@ import appConfig from "~/config/appConfig";
 import { documentTitles } from "../constants/labels";
 import "@nypl/web-reader/dist/index.css";
 import { FeatureFlagProvider } from "../context/FeatureFlagContext";
-import { trackPageview } from "../lib/adobe/Analytics";
-import { pageNames } from "../constants/analytics";
-import { getQueryDecodedString } from "../util/SearchQueryUtils";
 import NewRelicSnippet from "../lib/newrelic/NewRelic";
 import ErrorBoundary from "../components/ErrorBoundary";
 import { FeedbackProvider } from "../context/FeedbackContext";
@@ -53,29 +50,6 @@ const setTitle = (query: ParsedUrlQuery) => {
   }
 };
 
-const sendAnalytics = (query: ParsedUrlQuery, pathname: string) => {
-  if (query.workId) {
-    trackPageview(pageNames.workItem + query.workId);
-  } else if (query.editionId) {
-    trackPageview(pageNames.editionItem + query.editionId);
-  } else if (query.query) {
-    const searchPageName = pageNames.search + getQueryDecodedString(query);
-    trackPageview(searchPageName);
-  } else if (query.linkId) {
-    trackPageview(pageNames.readItem + query.linkId);
-  } else if (query.collectionId) {
-    trackPageview(pageNames.collection + query.collectionId);
-  } else if (pathname === "/advanced-search") {
-    trackPageview(pageNames.advancedSearch);
-  } else if (pathname === "/about") {
-    trackPageview(pageNames.about);
-  } else if (pathname === "/copyright") {
-    trackPageview(pageNames.copyright);
-  } else {
-    trackPageview(pageNames.home);
-  }
-};
-
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const router = useRouter();
 
@@ -85,7 +59,6 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
         document.getElementById("nypl-header").style.display = "block";
         document.getElementById("nypl-footer").style.display = "block";
       }
-      sendAnalytics(router.query, router.pathname);
     }
   });
 

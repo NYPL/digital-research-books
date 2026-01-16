@@ -726,8 +726,8 @@ class APIUtils:
 
     @staticmethod
     def validatePassword(password, hash, salt):
+        # encrypt password (with the same salt/key with which it was encrypted)
         password = password.encode("utf-8")
-
         hashedPassword = scrypt(password, salt=salt, n=2**14, r=8, p=1)
 
         return hashedPassword == hash

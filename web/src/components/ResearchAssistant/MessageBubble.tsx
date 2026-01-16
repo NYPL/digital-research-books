@@ -1,11 +1,10 @@
-import React, { forwardRef } from "react";
-import styles from "../../../styles/components/MessageBubble.module.scss";
-import { Box, Button, Flex, Text } from "@nypl/design-system-react-components";
+import { Box, Flex, Text } from "@nypl/design-system-react-components";
+import { forwardRef } from "react";
 import { Message } from "~/src/types/ResearchAssistant";
-import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
-import ThumbsUpIcon from "./icons/ThumbsUpIcon";
-import ThumbsDownIcon from "./icons/ThumbsDownIcon";
+import styles from "../../../styles/components/MessageBubble.module.scss";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
+import FeedbackButtons from "./FeedbackButtons";
+import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 
 interface MessageBubbleProps {
   message: Message;
@@ -14,6 +13,7 @@ interface MessageBubbleProps {
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
   ({ message }, ref) => {
     MessageBubble.displayName = "MessageBubble";
+
     const isUser = message.type === "human";
     const bubbleClasses = isUser
       ? `${styles.messageBubble} ${styles.userBubble}`
@@ -21,8 +21,9 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
 
     return (
       <Box
-        className={`${styles.messageWrapper} ${isUser ? styles.userMessageWrapper : ""
-          }`}
+        className={`${styles.messageWrapper} ${
+          isUser ? styles.userMessageWrapper : ""
+        }`}
       >
         <Box className={bubbleClasses} ref={ref}>
           {isUser ? (
@@ -31,10 +32,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
               {message.data.content}
             </Text>
           ) : (
-            <Flex
-              gap="xs"
-              alignItems="flex-start"
-            >
+            <Flex gap="xs" alignItems="flex-start">
               <ResearchAssistantIcon inCircle />
               <Flex flexDir="column" gap="12px">
                 <Box>
@@ -48,47 +46,11 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                   {message.data.content}
                 </Box>
                 {message.id === "assistant-initial" ? (
-                  <AiGeneratedText isInitial/>
+                  <AiGeneratedText isInitial />
                 ) : (
                   <Flex alignItems="center" justifyContent="space-between">
                     <AiGeneratedText />
-                    <Flex>
-                      {/* TODO: Add functionality for thumbs up/down buttons */}
-                      <Button
-                        id="thumbs-up-button"
-                        variant="text"
-                        aria-label="Thumbs up"
-                        padding="xs"
-                        minWidth="18px"
-                        sx={{
-                          "&:hover": {
-                            bgColor: "transparent",
-                            svg: {
-                              fill: "section.research.primary-05",
-                            },
-                          },
-                        }}
-                      >
-                        <ThumbsUpIcon />
-                      </Button>
-                      <Button
-                        id="thumbs-down-button"
-                        variant="text"
-                        aria-label="Thumbs down"
-                        padding="xs"
-                        minWidth="18px"
-                        sx={{
-                          "&:hover": {
-                            bgColor: "transparent",
-                            svg: {
-                              fill: "section.research.primary-05",
-                            },
-                          },
-                        }}
-                      >
-                        <ThumbsDownIcon />
-                      </Button>
-                    </Flex>
+                    <FeedbackButtons />
                   </Flex>
                 )}
               </Flex>

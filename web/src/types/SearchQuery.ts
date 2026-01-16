@@ -48,13 +48,15 @@ export type ApiSearchResult = {
   status?: number;
   timestamp?: string;
   responseType?: string;
-  data?: {
-    facets: { formats: FacetItem[]; languages: FacetItem[] };
-    message?: string;
-    paging: ApiSearchPaging;
-    totalWorks?: number;
-    works: ApiWork[];
-  };
+  data?: ApiSearchData;
+};
+
+export type ApiSearchData = {
+  facets: { formats: FacetItem[]; languages: FacetItem[] };
+  message?: string;
+  paging: ApiSearchPaging;
+  totalWorks?: number;
+  works: ApiWork[];
 };
 
 export type ApiSearchPaging = {
@@ -64,4 +66,4 @@ export type ApiSearchPaging = {
   nextPage: number;
   previousPage: number;
   recordsPerPage: number;
-}
+};
