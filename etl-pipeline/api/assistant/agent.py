@@ -33,7 +33,7 @@ from jinja2 import Template
 # api code
 from .search import Searcher
 from ..utils import APIUtils, hit_to_dict, remove_markdown_comments
-from ..db import get_frbr_data_by_edition, Session
+from ..db import get_frbr_data_by_edition, get_session
 
 # shared code
 from vector_indexing.embedding import GoogleEmbedder
@@ -106,6 +106,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
     """).bindparams(bindparam(bind_param, expanding=True))
     # Discussion of this bind param issue: https://stackoverflow.com/questions/13190392/how-can-i-bind-a-list-to-a-parameter-in-a-custom-query-in-sqlalchemy
 
+    Session = get_session()
     with Session() as session:
         # NOTE: Session() has all the same methods as engine.connect(). see: https://docs.sqlalchemy.org/en/20/orm/session_transaction.html#unitofwork-transaction
         result = session.execute(query, {bind_param: list(ids)})

@@ -27,7 +27,7 @@ from .blueprints import (
     fulfill,
 )
 from .utils import APIUtils
-from .db import Session
+from .db import get_session
 
 logger = create_log(__name__)
 
@@ -69,6 +69,7 @@ class API:
         # see: https://flask.palletsprojects.com/en/stable/appcontext/#events-and-signals
         @self.app.teardown_appcontext
         def shutdown_db_session(exception=None):
+            Session = get_session()
             Session.remove()
 
     def _register_blueprints(self):

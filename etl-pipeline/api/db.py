@@ -33,10 +33,25 @@ from .utils import APIUtils
 # - https://docs.sqlalchemy.org/en/20/orm/contextual.html#using-thread-local-scope-with-web-applications
 # - https://flask.palletsprojects.com/en/stable/patterns/sqlalchemy/
 # - https://docs.sqlalchemy.org/en/20/orm/session_basics.html#using-a-sessionmaker
-# TODO: make a singleton retriever so that it is only instantiated when first accessed
-engine = DBManager(host=read_env("POSTGRES_READ_HOST")).generate_engine()
-Session = scoped_session(sessionmaker(bind=engine))
-# Consider autocommit=False, autoflush=False see: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#flushing
+_engine = None
+_Session = None
+
+
+def get_session():
+    """Retrieve singleton scoped session factory.
+
+    Defers database connection until first access, allowing this module to be
+    imported as a library without requiring environment variables to be set.
+
+    Returns:
+        scoped_session: A thread-local session factory that can be called to get a session.
+    """
+    global _engine, _Session
+    if _Session is None:
+        _engine = DBManager(host=read_env("POSTGRES_READ_HOST")).generate_engine()
+        _Session = scoped_session(sessionmaker(bind=_engine))
+        # Consider autocommit=False, autoflush=False see: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#flushing
+    return _Session
 
 
 def get_frbr_data_by_edition(edition_ids: List):
@@ -51,6 +66,7 @@ def get_frbr_data_by_edition(edition_ids: List):
     edition_link_alias = aliased(Link)
     item_link_alias = aliased(Link)
 
+    Session = get_session()
     with Session() as session:
         rows = (
             session.query(Work, Edition)
