@@ -62,59 +62,61 @@ def format_search_results(search_results):
     # Format search result for API response
     if search_result:
         if search_result["tool_name"] == "search_library_catalog":
-            # FRBR ORM to dict
-            work_dict = orm_to_dict(
-                search_result["edition_data"]["orm_work"],
-                exclude=[(Work, "date_created"), (Work, "date_modified")],
-            )
-            # prepend "work_" to work fields
-            work_dict = {f"work_{k}": v for k, v in work_dict.items()}
-            edition_dict = orm_to_dict(
-                search_result["edition_data"]["orm_edition"],
-                exclude=[
-                    (Edition, "date_created"),
-                    (Edition, "date_modified"),
-                    (Edition, "dcdw_uuids"),
-                    (Item, "date_created"),
-                    (Item, "date_modified"),
-                    (Item, "modified"),
-                    (Item, "publisher_project_source"),
-                    (Item, "record_id"),
-                    (Link, "date_created"),
-                    (Link, "date_modified"),
-                    (Link, "md5"),
-                    (Rights, "date_created"),
-                    (Rights, "date_created"),
-                    (Rights, "date_modified"),
-                    (Rights, "id"),
-                    (Rights, "rights_date"),
-                    (Rights, "rights_reason"),
-                ],
-            )
-            # Q: should we be including the chunk_hits/snippet in editions or top level?
-            edition_dict.update(
-                {
-                    **work_dict,
-                    "snippets": get_relevant_snippets(
-                        search_result["edition_data"]["edition_hit"]["chunk_hits"]
-                    ),
-                }
-            )
+            editions = []
+            for edition_datum in search_result["edition_data"]:
+                # FRBR ORM to dict
+                work_dict = orm_to_dict(
+                    edition_datum["orm_work"],
+                    exclude=[(Work, "date_created"), (Work, "date_modified")],
+                )
+                # prepend "work_" to work fields
+                work_dict = {f"work_{k}": v for k, v in work_dict.items()}
+                edition_dict = orm_to_dict(
+                    edition_datum["orm_edition"],
+                    exclude=[
+                        (Edition, "date_created"),
+                        (Edition, "date_modified"),
+                        (Edition, "dcdw_uuids"),
+                        (Item, "date_created"),
+                        (Item, "date_modified"),
+                        (Item, "modified"),
+                        (Item, "publisher_project_source"),
+                        (Item, "record_id"),
+                        (Link, "date_created"),
+                        (Link, "date_modified"),
+                        (Link, "md5"),
+                        (Rights, "date_created"),
+                        (Rights, "date_created"),
+                        (Rights, "date_modified"),
+                        (Rights, "id"),
+                        (Rights, "rights_date"),
+                        (Rights, "rights_reason"),
+                    ],
+                )
+                # Q: should we be including the chunk_hits/snippet in editions or top level?
+                edition_dict.update(
+                    {
+                        **work_dict,
+                        "snippets": get_relevant_snippets(
+                            edition_datum["edition_hit"]["chunk_hits"]
+                        ),
+                    }
+                )
+                editions.append(edition_dict)
 
             formatted_search_result = {
                 "conversation_context": "catalogSearch",  # MAYBE: send search tool name
-                "editions": edition_dict,
-                # TODO: add relevant snippets for editions
+                "editions": editions,
                 "search_params": search_result["search_params"],
                 # NOTE: paginated search not yet implemented, only 1 fixed result set size
                 "paging": APIUtils.formatPagingOptions(
                     page=1,
                     pageSize=PAGE_SIZE,
-                    totalHits=len(search_result["edition_data"]),
+                    totalHits=len(editions),
                 ),
             }
             logger.info(
-                f"Returning {len(search_result['edition_data'])} editions in catalog search response"
+                f"Returning {len(editions)} editions in catalog search response"
             )  # Q: redundant to tool call logging
 
         elif search_result["tool_name"] == "search_in_book":

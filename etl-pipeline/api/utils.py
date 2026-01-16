@@ -82,7 +82,7 @@ def orm_to_dict(obj, exclude=None, visited=None):
                 "identity": f"primary key unset (python obj id={id(obj)})"
                 if insp.identity is None
                 else insp.identity,
-                # ALT: {"py_id": id(obj)} if insp.identity is None else {"pk": insp.identity}
+                # TODO: {"py_id": id(obj)} if insp.identity is None else {"pk": insp.identity} (but label the identity keys as a dict)
             }
         }
     visited.add(identity)
@@ -104,8 +104,10 @@ def orm_to_dict(obj, exclude=None, visited=None):
 
         # Handle various loaded value types
         if relationship.uselist:  # collection of related entities
+            # copy visited so each branch of the JSON tree tracks its own visited depth-wise (could this cause memory overflow problems)
             relations = [
-                orm_to_dict(rel, exclude=exclude, visited=visited) for rel in rel_loaded
+                orm_to_dict(rel, exclude=exclude, visited=visited.copy())
+                for rel in rel_loaded
             ]
         else:
             # NOTE: only a scalar relation can be None, if the FK column is NULL, the related row was deleted, etc..

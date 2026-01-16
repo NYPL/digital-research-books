@@ -32,9 +32,14 @@ ENV_VAR_TO_SSM_NAME = {
 
 
 def load_env_file(run_type: str, file_string: str | None = None) -> None:
-    """Loads variables from a yaml file into os.environ.
-    If certain env vars are not defined in the env yaml, they will be attempted
-    to be retrieved from AWS SSM parameter store.
+    """
+    Loads variables from various sources into os.environ in the following order
+    of precedence.
+    (a) The yaml file specified by `run_type` and `file_string` OR a local.yaml file in CWD (if `file_string` is not set)
+    (b) config/local-secrets.yaml
+    (c) ssm parameter store (according to a hard coded list of ENV_VAR_TO_SSM_NAME) and `run_type`
+
+    Existing env vars are NOT overridden.
 
     Arguments:
         runType {string} -- The environment to load configuration details for.
@@ -65,7 +70,8 @@ def load_env_file(run_type: str, file_string: str | None = None) -> None:
 
     if env_dict:
         for key, value in env_dict.items():
-            os.environ[key] = value
+            if key not in os.environ:
+                os.environ[key] = value
 
     load_secrets(run_type)
 

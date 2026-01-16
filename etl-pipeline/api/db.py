@@ -33,6 +33,7 @@ from .utils import APIUtils
 # - https://docs.sqlalchemy.org/en/20/orm/contextual.html#using-thread-local-scope-with-web-applications
 # - https://flask.palletsprojects.com/en/stable/patterns/sqlalchemy/
 # - https://docs.sqlalchemy.org/en/20/orm/session_basics.html#using-a-sessionmaker
+# TODO: make a singleton retriever so that it is only instantiated when first accessed
 engine = DBManager(host=read_env("POSTGRES_READ_HOST")).generate_engine()
 Session = scoped_session(sessionmaker(bind=engine))
 # Consider autocommit=False, autoflush=False see: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#flushing
@@ -40,9 +41,10 @@ Session = scoped_session(sessionmaker(bind=engine))
 
 def get_frbr_data_by_edition(edition_ids: List):
     """
-    Return (Work, Edition) pairs for the passed edition_ids with the following
-    eager loaded relationships for Edition: Edition.items.links,
-    Edition.items.rights, Edition.links/
+    Return list of (Work, Edition) Rows for each of the passed edition_ids
+    present in the DB.
+    Edition includes the following eager loaded relationships: Edition.items,
+    Edition.items.links, Edition.items.rights, Edition.links.
     """
     # ALT: also sort the results by edition_ids order (using CTE as in fetchEditions() below)
 

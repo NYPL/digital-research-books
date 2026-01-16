@@ -1,6 +1,6 @@
 from typing import Optional
 from flask import current_app
-from .elastic import ElasticClient, SearchParams
+from ...elastic import ElasticClient, SearchParams
 from langgraph.prebuilt import create_react_agent
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import (

@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 import json
 from pathlib import Path
 import traceback
@@ -23,10 +23,9 @@ from agents import (
 from agents.tool_context import ToolContext
 from agents.extensions.memory import SQLAlchemySession
 from openai.types.shared import Reasoning
+from sklearn.decomposition import FastICA
 from sqlalchemy import text, bindparam
 from jinja2 import Template
-
-from utils.chunker import chunk
 
 
 # from sqlalchemy.ext.asyncio import create_async_engine
@@ -47,17 +46,10 @@ from utils.utils import wrap
 logger = create_log(__name__)
 
 
-# instantiate at module level (agent worker context)
-# - execution context (searcher...)
-# - event loop
-# - read system prompt
-
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
 
-INDEX_NAME = (
-    "vra_chunks_gemini-embedding-001"  # imported into blueprints/chat.py # Q: move?
-)
+INDEX_NAME = "vra_chunks_gemini-embedding-001"
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
@@ -85,10 +77,18 @@ class ContentSearchExecutionContext:
 
 def map_editions_and_records(record_ids=None, edition_ids=None):
     if record_ids:
-        bind_param, table_alias, ids = "record_ids", "r", record_ids
+        bind_param = "record_ids"
+        ids = record_ids
+        target_col = "edition_id"
     elif edition_ids:
         assert record_ids is None, "both record_ids and edition_ids are non-null"
-        bind_param, table_alias, ids = "edition_ids", "e", edition_ids
+        bind_param = "edition_ids"
+        ids = edition_ids
+        target_col = "record_id"
+    source_col = bind_param.rstrip("s")
+    table_alias = bind_param[0]
+
+    logger.debug(f"Mapping {source_col}s to {target_col}s...")
 
     query = text(f"""
     SELECT
@@ -111,45 +111,70 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
         result = session.execute(query, {bind_param: list(ids)})
         df = pd.DataFrame(result.fetchall(), columns=result.keys())
 
-    # we expect records = editions = items for NYPL GRIN books
-    # in the long term we must index books as items, as records have no \
-    # defined/guaranteed relationship to editions/items
-
-    # Validate 1-to-1 mapping
-    source_col = bind_param.rstrip("s")
-    target_col = "edition_id" if bind_param == "record_ids" else "record_id"
-
-    requested_ids = set(ids)
-    found_source_ids = set(df[source_col])
-    print("XXX", target_col, df[target_col])
+    # We expect records = editions = items for NYPL GRIN books
+    # in the long term we must index books as editions (or items) because they
+    # are consumed as editions, as records have no defined/guaranteed relationship
+    # to editions/items
 
     # Check for missing source IDs
+    # (a) source id does not exist in its original table (filter) (b) source id has no \
+    # related entity in the target table (inner join)
+    requested_ids = set(ids)
+    found_source_ids = set(df[source_col])
     missing_source_ids = requested_ids - found_source_ids
 
     # Check for duplicate source IDs (one source -> multiple targets)
-    source_value_counts = df[source_col].value_counts()
-    duplicate_sources = source_value_counts[source_value_counts > 1].index.tolist()
+    duplicate_sources = [
+        {k: v[target_col].tolist()}
+        for k, v in df.groupby(source_col)
+        if v[target_col].size > 1
+    ]
 
     # Check for duplicate target IDs (multiple sources -> one target)
-    target_value_counts = df[target_col].value_counts()
-    duplicate_targets = target_value_counts[target_value_counts > 1].index.tolist()
+    duplicate_targets = [
+        {k: v[source_col].tolist()}
+        for k, v in df.groupby(target_col)
+        if v[source_col].size > 1
+    ]
 
-    if missing_source_ids or duplicate_sources or duplicate_targets:
-        error_parts = [f"{source_col}->{target_col} mapping is not 1->1:"]
-        if missing_source_ids:  # TODO: this is that the source col ids are either not present in DB or not mapped to targets
-            error_parts.append(f"Missing {source_col}: {sorted(missing_source_ids)}")
-        if duplicate_sources:
-            error_parts.append(
-                f"Duplicate {source_col} (matched multiple {target_col}s): {sorted(duplicate_sources)}"
-            )
-        if duplicate_targets:
-            error_parts.append(
-                f"Duplicate {target_col}s (matched multiple {source_col}): {sorted(duplicate_targets)}"
-            )
-        raise AssertionError("\n".join(error_parts))
+    # Log non 1-1 mappings
+    error_parts = []
+    if missing_source_ids:
+        error_parts.append(
+            f"{len(missing_source_ids)} {source_col}s failing to map to {target_col}s: {sorted(missing_source_ids)}"
+        )
+    if duplicate_sources:
+        error_parts.append(
+            f"{len(duplicate_sources)} case(s) of one {source_col} -> multiple {target_col}s: {duplicate_sources}"
+        )
+    if duplicate_targets:
+        error_parts.append(
+            f"{len(duplicate_targets)} case(s) of one {target_col} -> multiple {source_col}s: {duplicate_targets}"
+        )
+    if error_parts:
+        error_parts = [f"{source_col}->{target_col} mapping is not 1->1:"] + error_parts
+        logger.error("\n".join(error_parts))
 
+    # Select a 1-1 mapping subset
+    # - if duplicate source: pick first target (i.e. drop duplicates source col)
+    # - if duplicate target: no problem
+    # - if missing source: ignore
+    df = df.drop_duplicates(subset=source_col)
+    logger.debug(
+        f"Successfully mapped {len(df)} {source_col}s to {df[target_col].unique().size} {target_col}s"
+    )
+
+    # Create dict mapping
     # source id -> {target id -> value, ...}
     return df.set_index(source_col).to_dict(orient="index")
+
+
+def max_chunk_score(chunk_hits):
+    return max([h["meta"]["score"] for h in chunk_hits])
+
+
+def mean_chunk_score(chunk_hits):
+    return np.mean([h["meta"]["score"] for h in chunk_hits])
 
 
 @function_tool
@@ -189,94 +214,93 @@ def search_library_catalog(
 
         # MAYBE: turn the below into 2 functions: group_by_edition_and_sort() and enrich_edition_hits() (with limit to top 10 in between)
 
-        # chunk hits
-        chunk_hits = []
+        # Group ES Chunk hits by Edition (before adding FRBR data)
+        record_ids = set(hit.book_id for hit in resp.hits)
+        mapper = map_editions_and_records(record_ids=record_ids)
+        edition_hits = {}
+        missing_edition_ids = []
         for chunk_hit in resp.hits:
-            chunk_hit = hit_to_dict(chunk_hit)
-            # TEMP
-            # TODO: ensure all books are indexed with book_id # TODO: gracebully handle book_id where accessed
+            chunk_hit = hit_to_dict(
+                chunk_hit
+            )  # MAYBE: we don't need to convert chunk to dict
             if not chunk_hit.get("book_id"):
                 logger.error(
                     f"Chunk missing book_id: id={chunk_hit['meta'].get('id')}, keys={chunk_hit.keys()}"
                 )
-            else:
-                chunk_hits.append(chunk_hit)
-        print("XXXXX", json.dumps(chunk_hits, indent=2))
+                continue
+            # book_id was incorrectly indexed as a str for a while
+            chunk_hit["book_id"] = int(chunk_hit["book_id"])
 
-        # convert record_ids to edition_ids to fetch FRBR data
-        # Join work/edition/item ids to chunk hits
-        # TODO: FUTURE: index books with book_id=edition_id so we don't have to convert
-        record_ids = set(hit["book_id"] for hit in chunk_hits)
-        record_id2frbr_ids = map_editions_and_records(record_ids=record_ids)
-        for chunk_hit in chunk_hits:
-            chunk_hit.update(**record_id2frbr_ids[chunk_hit["book_id"]])
-        # chunk_hit = {meta.score, meta.id, text, book_id, chunk_start_page, chunk_end_page,  edition_id, work_id, item_id}
-
-        # Group ES Chunk hits by Edition (before adding FRBR data)
-        # edition hits
-        edition_hits = {}
-        for chunk_hit in chunk_hits:
-            if chunk_hit["edition_id"] not in edition_hits:
-                edition_hits[chunk_hit["edition_id"]] = {
-                    "work_id": chunk_hit["work_id"],
-                    "edition_id": chunk_hit["edition_id"],
+            # convert record_ids to edition_ids (for fetching FRBR data)
+            # TODO: FUTURE: index books with book_id=edition_id so we don't have to convert
+            frbr_ids = mapper.get(chunk_hit["book_id"])
+            if frbr_ids is None:
+                missing_edition_ids.append(chunk_hit["book_id"])
+                continue
+            if frbr_ids["edition_id"] not in edition_hits:
+                edition_hits[frbr_ids["edition_id"]] = {
+                    "edition_id": frbr_ids["edition_id"],
                     "chunk_hits": [chunk_hit],
                 }
             else:
-                edition_hits[chunk_hit["edition_id"]]["chunk_hits"].append(chunk_hit)
+                edition_hits[frbr_ids["edition_id"]]["chunk_hits"].append(chunk_hit)
+        # set aggregate edition score
+        edition_hits = [
+            {**eh, "agg_score": max_chunk_score(eh["chunk_hits"])}
+            for eh in edition_hits.values()
+        ]
+        logger.info(
+            f"Aggregated {len(edition_hits)} editions from {len(resp.hits)} chunk hits"
+        )
+        if missing_edition_ids:
+            logger.error(
+                f"These {len(set(missing_edition_ids))} record_ids failed to map to an edition: {set(missing_edition_ids)}"
+            )
+            # this case of missing record_ids is also logged in map_editions_and_records()
 
-        # TODO: if fewer than 10 editions, re-query more chunks until 10 editions are retrieved
+        # TODO: if fewer than PAGE_SIZE editions, re-query more chunks until PAGE_SIZE editions are retrieved
 
         # Sort editions (by aggregate chunk score)
-        # max chunk score
-        def sort_key(edition_hit):
-            scores = [h["meta"]["score"] for h in edition_hit["chunk_hits"]]
-            return max(scores)
-
-        # # mean chunk score
-        # def sort_key(edition_row):
-        #     scores = [h['meta']['score'] for h in edition_hit['chunk_hits']]
-        #     return np.mean(scores)
-
-        edition_hits = sorted(
-            edition_hits.values(), key=sort_key
-        )  # ALT: retain dict structure
+        edition_hits = sorted(edition_hits, key=lambda eh: eh["agg_score"])
 
         # Limit results to the 10 top scoring editions
-        logger.info(
-            f"Aggregated {len(edition_hits)} editions from {len(chunk_hits)} chunk hits"
-        )
         logger.info(f"Limiting results to top {PAGE_SIZE} editions")
         edition_hits = edition_hits[:PAGE_SIZE]
         # TODO: handle paginating or providing more edition hits
 
-        # Fetch FRBR data (from DB) for editions in search result (page)
+        # Fetch FRBR data (from DB)
         edition_ids = [h["edition_id"] for h in edition_hits]
         frbr_data = get_frbr_data_by_edition(edition_ids)
-        # TODO: handle get_frbr_data_by_edition() returns empty
 
         # Merge ES hit data and FRBR metadata (maintaining edition sort order)
+        frbr_data = {r.Edition.id: r for r in frbr_data}
         edition_data = []  # dict with keys: orm_work, orm_edition, edition_hit
+        missing_data = []
         for edition_hit in edition_hits:
-            # match orm work/edition to ES edition hit
-            orm_work, orm_edition = [
-                (w, e) for w, e in frbr_data if e.id == edition_hit["edition_id"]
-            ][0]
-            edition_data.append(
-                {
-                    "orm_work": orm_work,
-                    "orm_edition": orm_edition,
-                    "edition_hit": edition_hit,
-                }
+            # match DB orm work/edition to vector search edition hit
+            row = frbr_data.get(edition_hit["edition_id"])
+            if row is None:
+                missing_data.append(edition_hit["edition_id"])
+            else:
+                edition_data.append(
+                    {
+                        "orm_work": row.Work,
+                        "orm_edition": row.Edition,
+                        "edition_hit": edition_hit,
+                    }
+                )
+        # ALT: if frbr_data was pre-sorted by edition_ids in the SQL call, we \
+        # could zip frbr data and edition hits bc order would be the same
+        if missing_data:
+            logger.error(
+                f"Vector search hits for the following edition_ids have no matching data in DB: {missing_data}"
             )
-        # ALT: if frbr_data was pre-sorted by edition_id ordering, we could \
-        # iterate over frbr_data and lookup (rather than loop) matching es data \
-        # from an edition_hits dict
 
         # NOTE: the biggest difference btw VRA (current state) search and DRB \
         # search (in terms of output formatting) is that VRA search does FRBR obj \
         # sorting outside/after ES and does not purely rely on ES search to \
-        # determine results ordering
+        # determine results ordering (because direct results are grouped by \
+        # edition outside of ES  in VRA)
 
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
@@ -294,9 +318,6 @@ def search_library_catalog(
     except Exception as e:
         logger.exception("Error during search_library_catalog tool execution.")
         raise e
-
-    # requesting frontend already has edition frbr metadata so only chunk hit ES data needed in API response, but... we do want to give the LLM that book level context when generating its response
-    # include page num info
 
 
 @function_tool
@@ -320,12 +341,16 @@ def search_in_book(
 
     try:
         logger.info(
-            f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}' for edition_id: {ctx.context.edition_id}"
+            f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}', for edition_id (record_id) = {ctx.context.edition_id}"
         )
 
         # Execute vector search filtered to single book
         resp = ctx.context.searcher.vector_search(
-            query, topk=10, filter_query={"term": {"book_id": ctx.context.edition_id}}
+            # NOTE: book_id was (incorrectly) indexed as str initially
+            # TODO: current book_id=record_id, future book_id=edition_id (record_id currently passed to context under name edition_id)
+            query,
+            topk=10,
+            filter_query={"term": {"book_id": str(ctx.context.edition_id)}},
         )
         logger.info(
             f"Retrieved {len(resp.hits)} chunk hits from Elasticsearch for book"
@@ -422,10 +447,13 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
 
         # Fetch FRBR data for the book
         frbr_data = get_frbr_data_by_edition([edition_id])
-        orm_work, orm_edition = frbr_data[0]
-        frbr_fields = format_frbr_fields(orm_work, orm_edition)
+        if not frbr_data:
+            logger.error(
+                f"FRBR data missing for content search in edition {edition_id}"
+            )
+        frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
-        # NOTE: falsely naming record_id as edition_id to make future state a smaller refactor
+        # NOTE: intentionally passing record_id as edition_id to make future state a smaller refactor
         exec_context = ContentSearchExecutionContext(
             searcher=searcher, edition_id=record_id, frbr_fields=frbr_fields
         )
@@ -501,11 +529,13 @@ def verbose_display_editions(edition_data, query, as_str=False):
     Display edition search results with detailed information.
 
     Args:
-        edition_data: List of dicts with keys 'orm_work', 'orm_edition', 'edition_hit'
-                     where edition_hit contains work_id, edition_id, and chunk_hits
+        edition_data: List of dicts containing 'orm_work', 'orm_edition', 'edition_hit'
         query: The search query string
         as_str: If True, return as string; otherwise print
     """
+    if not edition_data:
+        return "There are no results for your query."
+
     lines = []
     lines.append(f'QUERY: "{wrap(query)}"')
     lines.append("\n")
@@ -586,11 +616,13 @@ def compact_display_editions(edition_data, query, as_str=False):
     Display edition search results in compact format.
 
     Args:
-        edition_data: List of dicts with keys 'orm_work', 'orm_edition', 'edition_hit'
-                     where edition_hit contains work_id, edition_id, and chunk_hits
+        edition_data: List of dicts containing 'orm_work', 'orm_edition', 'edition_hit'
         query: The search query string
         as_str: If True, return as string; otherwise print
     """
+    if not edition_data:
+        return "There are no results for your query."
+
     lines = []
     lines.append(f'QUERY: "{wrap(query)}"')
     lines.append("RESULTS:")
@@ -625,7 +657,8 @@ def get_score(entry):
     return entry.get("meta", {}).get("score", float("-inf"))
 
 
-# TODO: use dynamic system prompt to insert book level info into system prompt rather than each individual content search
+# TODO: When we insert messages in context specifying book for content search \
+# context, remove book level info from search response to save tokens.
 def verbose_display_chunks(chunk_hits, query, as_str=False, frbr_fields=None):
     """
     Display chunk search results, optionally with FRBR book metadata.
@@ -636,6 +669,10 @@ def verbose_display_chunks(chunk_hits, query, as_str=False, frbr_fields=None):
         as_str: If True, return as string; otherwise print
         frbr_fields: Optional dict of formatted FRBR fields for book context
     """
+    if not chunk_hits:
+        return "There are no results for your query."
+
+    # TODO: should sorting be handled by the calling code
     # Sort entries by ['meta']['score'] descending, missing scores last
     sorted_hits = sorted(chunk_hits, key=get_score, reverse=True)
 
