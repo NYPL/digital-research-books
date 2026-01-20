@@ -13,8 +13,8 @@ def load_secrets(path, raise_if_no_file=False, override=False):
     AWS Parameter Store parameters.
 
     .env File:
-    - Env var values should be either parameter full ARNs or simply parameter
-      names. If parameter names only are used AWS account and region are
+    - Env var values should be either full parameter ARNs or simply parameter
+      names (starting with `/`). If parameter names only are used AWS account and region are
       inferred from the default config of the AWS client. If full ARN is used,
       AWS region relies on the default configuration of the AWS client.
     - Duplicate env var names are overwritten by the later name in the env file.
