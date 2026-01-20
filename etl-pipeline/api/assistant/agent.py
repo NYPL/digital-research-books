@@ -54,7 +54,7 @@ INDEX_NAME = "vra_chunks_gemini-embedding-001"
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 
-MODEL = "litellm/gemini/gemini-2.5-flash"
+MODEL = "litellm/gemini/gemini-3-flash-preview"
 
 
 @dataclass
