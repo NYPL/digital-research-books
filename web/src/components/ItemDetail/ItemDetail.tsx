@@ -30,15 +30,16 @@ import EditionCardUtils from "~/src/util/EditionCardUtils";
 import AuthorsList from "../AuthorsList/AuthorsList";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import Link from "../Link/Link";
-import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel";
 import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
-import AboutItemPanel from "./AboutItemPanel";
-import DetailsPanel from "./DetailsPanel";
-import DownloadOptionsPanel from "./DownloadOptionsPanel";
-import OtherEditionsPanel from "./OtherEditionsPanel";
-import SearchPanel from "./SearchPanel";
-import SummaryPanel from "./SummaryPanel";
+import AccordionLabelWithIcon from "./AccordionLabelWithIcon";
+import AboutItemPanel from "./panels/AboutItemPanel";
+import DetailsPanel from "./panels/DetailsPanel";
+import DownloadOptionsPanel from "./panels/DownloadOptionsPanel";
+import OtherEditionsPanel from "./panels/OtherEditionsPanel";
+import RelatedBooksPanel from "./panels/RelatedBooksPanel";
+import SearchPanel from "./panels/SearchPanel";
+import SummaryPanel from "./panels/SummaryPanel";
 
 interface ItemDetailProps {
   workResult: WorkResult;
@@ -142,7 +143,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         margin="0 auto"
         width="100%"
       >
-        <GridItem colSpan={1} gridRow={2} />
+        <GridItem colSpan={1} gridRow={backUrl ? "2" : "1"} />
         {backUrl && (
           <Flex
             alignItems="center"
@@ -233,15 +234,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                 {
                   ariaLabel: "What is this book about?",
                   label: (
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      gap="xs"
-                      __css={{ svg: { marginInlineStart: "0 !important" } }}
-                    >
-                      <ResearchAssistantIcon inCircle />
-                      <span>What is this book about?</span>
-                    </Box>
+                    <AccordionLabelWithIcon text="What is this book about?" />
                   ),
                   panel: <SummaryPanel previewEdition={previewEdition} />,
                 },
@@ -258,8 +251,8 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                   ),
                 },
                 {
-                  ariaLabel: "Search inside this item",
-                  label: "Search inside this item",
+                  ariaLabel: "Search inside this book",
+                  label: "Search inside this book",
                   panel: <SearchPanel />,
                 },
                 {
@@ -271,6 +264,11 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                   ariaLabel: "Details",
                   label: "Details",
                   panel: <DetailsPanel work={work} />,
+                },
+                {
+                  ariaLabel: "Related books",
+                  label: <AccordionLabelWithIcon text="Related books" />,
+                  panel: <RelatedBooksPanel />,
                 },
               ]}
               isDefaultOpen
