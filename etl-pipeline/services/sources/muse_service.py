@@ -84,8 +84,10 @@ class MUSEService(SourceService):
         try:
             marc_response = requests.get(MARC_URL, stream=True, timeout=30)
             marc_response.raise_for_status()
-        except Exception:
-            raise Exception("Unable to load Project MUSE MARC file")
+        except Exception as e:
+            raise Exception(
+                f"Unable to stream Project MUSE MARC file from '{MARC_URL}'"
+            ) from e
 
         content = bytes()
         for chunk in marc_response.iter_content(1024 * 250):
