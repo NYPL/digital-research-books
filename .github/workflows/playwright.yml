@@ -72,3 +72,4 @@ jobs:
           VRA_PASSWORD: ${{ secrets.VRA_PASSWORD }}
           CATALOG_USERNAME: ${{ secrets.CATALOG_USERNAME }}
           CATALOG_USER_PIN: ${{ secrets.CATALOG_USER_PIN }}
+          API_KEY: ${{ secrets.API_KEY }}
