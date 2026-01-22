@@ -74,19 +74,14 @@ test.describe("Research Assistant Page Functionality", () => {
     // Submit the test query
     await researchAssistantPage.query(testQuery);
 
-    // Print a message every 5 seconds while the loading indicator is visible
-    let secondsElapsed = 0;
-    const interval = 5;
-    const maxWaitSeconds = 60; // Maximum time to wait for the loading indicator to disappear
+    // Wait for the loading indicator to disappear and report the time it took
+    const start = Date.now();
+    await expect(researchAssistantPage.loadingIndicator).toBeHidden({ timeout: 60000 });
+    const end = Date.now();
+    const elapsedSeconds = ((end - start) / 1000).toFixed(2);
+    console.log(`Loading indicator disappeared after ${elapsedSeconds} seconds`);
 
-    while (await researchAssistantPage.loadingIndicator.isVisible() && secondsElapsed < maxWaitSeconds) {
-      await new Promise((resolve) => setTimeout(resolve, interval * 1000));
-      secondsElapsed += interval;
-      console.log(`Assistant still thinking... (${secondsElapsed} seconds elapsed)`);
-    }
-    if (await researchAssistantPage.loadingIndicator.isVisible()) {
-      throw new Error(`Loading indicator did not disappear after ${maxWaitSeconds} seconds.`);
-    }
+    // Verify a new message is displayed
     await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible();
   });
 });
