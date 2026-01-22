@@ -8,8 +8,12 @@ from sqlalchemy import pool
 from alembic import context
 from load_env import load_env_file
 
-# set config file here, e.g. local-qa.yaml to run migrations in QA
-load_env_file("sample-compose", file_string="config/{}.yaml")
+# load correct environment
+xargs = context.get_x_argument(as_dictionary=True)
+environment = xargs.get("env")
+if environment is None:
+    raise ValueError("`-x env=<target_env>` missing from alembic call")
+load_env_file(environment, file_string="config/{}.yaml")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
