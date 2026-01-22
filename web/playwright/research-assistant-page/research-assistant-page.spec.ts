@@ -58,7 +58,7 @@ test.describe("Research Assistant Page Functionality", () => {
     await researchAssistantPage.navigateTo();
   });
 
-  test("Search text box is ready for input", async () => {
+  test("Chat input text box is ready for input", async () => {
     await researchAssistantPage.chatInputTextBox.fill(testQuery);
     const inputValue = await researchAssistantPage.chatInputTextBox.inputValue();
     expect(inputValue).toBe(testQuery);
