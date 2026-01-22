@@ -2,9 +2,12 @@ import os
 from pathlib import Path
 
 import boto3
-from dotenv import dotenv_values, find_dotenv, load_dotenv
+from dotenv import dotenv_values, load_dotenv
 
 from .utils import batched
+
+# NOTE: print() is used instead of a logger bc the environment is expected to \
+# be loaded before loggers are configured in an application.
 
 
 def load_secrets(path, raise_if_no_file=False, override=False):
@@ -31,8 +34,12 @@ def load_secrets(path, raise_if_no_file=False, override=False):
         ValueError: If any parameters cannot be fetched.
     """
 
-    if raise_if_no_file and (not Path(path).exists()):
-        raise FileNotFoundError(f"Secrets file {path} does not exist")
+    if not Path(path).exists():
+        msg = f"Secrets file '{path}' does not exist"
+        if raise_if_no_file:
+            raise FileNotFoundError(msg)
+        else:
+            print(msg)
 
     # Load the .env file
     env_vars = dotenv_values(path)
@@ -77,7 +84,7 @@ def load_secrets(path, raise_if_no_file=False, override=False):
 
 def load_env(
     env_path: str | os.PathLike,
-    secrets_path: str | os.PathLike = None,
+    secrets_path: str | os.PathLike | None = None,
     override: bool = False,
     raise_if_no_file=False,
 ):
@@ -104,10 +111,14 @@ def load_env(
     if secrets_path is None:
         secrets_path = str(env_path) + ".secrets"
 
-    print(f"reading env at {env_path}")
-    if raise_if_no_file and (not Path(env_path).exists()):
-        raise FileNotFoundError(f"Env file {env_path} does not exist")
+    print(f"Reading env at '{env_path}'")
+    if not Path(env_path).exists():
+        msg = f"Env file '{env_path}' does not exist"
+        if raise_if_no_file:
+            raise FileNotFoundError(msg)
+        else:
+            print(msg)
     load_dotenv(env_path, override=override)
 
-    print(f"reading env at {secrets_path}")
+    print(f"Reading env at '{secrets_path}'")
     load_secrets(secrets_path, override=override, raise_if_no_file=raise_if_no_file)
