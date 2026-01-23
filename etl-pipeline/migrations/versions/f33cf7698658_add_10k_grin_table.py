@@ -20,6 +20,8 @@ depends_on = None
 def upgrade():
     op.create_table(
         "grin_public_domain_10k",
+        # text data type bc the integer is too big for postgres Integer type \
+        # (and we don't plan on doing numeric operations on the values)
         sa.Column("barcode", sa.Text, primary_key=True),
         sa.Column("record_id", sa.Integer, unique=True),
     )
