@@ -5,7 +5,7 @@ from sqlalchemy.exc import OperationalError
 
 from model import Base
 from logger import create_log
-from utils.common import read_env
+from utils.common import require_env
 
 logger = create_log(__name__)
 
@@ -17,11 +17,11 @@ def get_database_url(user, pswd, host, port, db):
 class DBManager:
     def __init__(self, user=None, pswd=None, host=None, port=None, db=None):
         super(DBManager, self).__init__()
-        self.user = user or read_env("POSTGRES_USER")
-        self.pswd = pswd or read_env("POSTGRES_PSWD")
-        self.host = host or read_env("POSTGRES_HOST")
-        self.port = port or read_env("POSTGRES_PORT")
-        self.db = db or read_env("POSTGRES_NAME")
+        self.user = user or require_env("POSTGRES_USER")
+        self.pswd = pswd or require_env("POSTGRES_PSWD")
+        self.host = host or require_env("POSTGRES_HOST")
+        self.port = port or require_env("POSTGRES_PORT")
+        self.db = db or require_env("POSTGRES_NAME")
 
         self.engine = None
         self.session = None

@@ -8,14 +8,14 @@ from google.oauth2.service_account import Credentials
 
 
 from logger import create_log
-from utils.common import read_env
+from utils.common import require_env
 
 logger = create_log(__name__)
 
 
 class GoogleDriveService:
     def __init__(self):
-        SERVICE_ACCOUNT_FILE = read_env("GOOGLE_DRIVE_SERVICE_KEY")
+        SERVICE_ACCOUNT_FILE = require_env("GOOGLE_DRIVE_SERVICE_KEY")
 
         service_account_info = json.loads(SERVICE_ACCOUNT_FILE)
         scopes = [

@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from utils.common import read_env
+from utils.common import require_env
 
 
 def build_hosts(scheme, host, port, user=None, pswd=None):
@@ -25,12 +25,12 @@ def load_hosts(cluster_prefix, scheme=None, host=None, port=None, user=None, psw
             `<cluster_prefix>_ELASTIC_SEARCH_<varname>`.
     """
 
-    scheme = scheme or read_env(f"{cluster_prefix}_ELASTICSEARCH_SCHEME")
+    scheme = scheme or require_env(f"{cluster_prefix}_ELASTICSEARCH_SCHEME")
     # NOTE: user and password are not required bc a host str can be constructed without them.
-    user = user or read_env(f"{cluster_prefix}_ELASTICSEARCH_USER", require=False)
-    pswd = pswd or read_env(f"{cluster_prefix}_ELASTICSEARCH_PSWD", require=False)
-    host = host or read_env(f"{cluster_prefix}_ELASTICSEARCH_HOST")
-    port = port or read_env(f"{cluster_prefix}_ELASTICSEARCH_PORT")
+    user = user or os.environ.get(f"{cluster_prefix}_ELASTICSEARCH_USER")
+    pswd = pswd or os.environ.get(f"{cluster_prefix}_ELASTICSEARCH_PSWD")
+    host = host or require_env(f"{cluster_prefix}_ELASTICSEARCH_HOST")
+    port = port or require_env(f"{cluster_prefix}_ELASTICSEARCH_PORT")
 
     hosts = build_hosts(scheme, host, port, user, pswd)
 

@@ -1,6 +1,6 @@
 import pytest
 
-from utils.common import read_env
+from utils.common import require_env
 
 
 class TestReadEnv:
@@ -10,7 +10,7 @@ class TestReadEnv:
         """Test reading an environment variable that exists"""
         mocker.patch.dict("os.environ", {"TEST_VAR": "test_value"})
 
-        result = read_env("TEST_VAR")
+        result = require_env("TEST_VAR")
 
         assert result == "test_value"
 
@@ -19,13 +19,13 @@ class TestReadEnv:
         mocker.patch.dict("os.environ", {}, clear=True)
 
         with pytest.raises(ValueError) as exc_info:
-            read_env("MISSING_VAR")
+            require_env("MISSING_VAR")
 
     def test_read_env_empty_string_value(self, mocker):
         """Test reading an environment variable with an empty string value"""
         mocker.patch.dict("os.environ", {"EMPTY_VAR": ""})
 
-        result = read_env("EMPTY_VAR")
+        result = require_env("EMPTY_VAR")
 
         assert result == ""
 
@@ -33,7 +33,7 @@ class TestReadEnv:
         """Test reading an environment variable with whitespace value"""
         mocker.patch.dict("os.environ", {"WHITESPACE_VAR": "  spaces  "})
 
-        result = read_env("WHITESPACE_VAR")
+        result = require_env("WHITESPACE_VAR")
 
         assert result == "  spaces  "
 
@@ -41,7 +41,7 @@ class TestReadEnv:
         """Test reading an environment variable with numeric string value"""
         mocker.patch.dict("os.environ", {"NUMERIC_VAR": "12345"})
 
-        result = read_env("NUMERIC_VAR")
+        result = require_env("NUMERIC_VAR")
 
         assert result == "12345"
         assert isinstance(result, str)
@@ -51,7 +51,7 @@ class TestReadEnv:
         special_value = "test@#$%^&*()_+={}[]|\\:;\"'<>,.?/~`"
         mocker.patch.dict("os.environ", {"SPECIAL_VAR": special_value})
 
-        result = read_env("SPECIAL_VAR")
+        result = require_env("SPECIAL_VAR")
 
         assert result == special_value
 
@@ -60,7 +60,7 @@ class TestReadEnv:
         multiline_value = "line1\nline2\nline3"
         mocker.patch.dict("os.environ", {"MULTILINE_VAR": multiline_value})
 
-        result = read_env("MULTILINE_VAR")
+        result = require_env("MULTILINE_VAR")
 
         assert result == multiline_value
 
@@ -70,9 +70,9 @@ class TestReadEnv:
         mocker.patch.dict("os.environ", {"test_var": "lowercase"}, clear=True)
 
         # Should find the lowercase version
-        result = read_env("test_var")
+        result = require_env("test_var")
         assert result == "lowercase"
 
         # Should not find the uppercase version
         with pytest.raises(ValueError) as exc_info:
-            read_env("TEST_VAR")
+            require_env("TEST_VAR")

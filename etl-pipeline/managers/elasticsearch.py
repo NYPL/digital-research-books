@@ -9,7 +9,7 @@ from elastic_transport import ConnectionTimeout
 from model import ESWork
 from logger import create_log
 from utils.elastic import load_hosts
-from utils.common import read_env
+from utils.common import require_env
 
 logger = create_log(__name__)
 
@@ -18,7 +18,7 @@ class ElasticsearchManager:
     OP_TYPE = "index"
 
     def __init__(self, index=None):
-        self.index = index or read_env("DRB_ELASTICSEARCH_INDEX")
+        self.index = index or require_env("DRB_ELASTICSEARCH_INDEX")
         self.client = None
 
     def create_elastic_connection(

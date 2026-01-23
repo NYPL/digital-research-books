@@ -4,15 +4,15 @@ import json
 from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError
 from requests_oauthlib import OAuth2Session
 
-from utils.common import read_env
+from utils.common import require_env
 
 
 class NYPLAPIManager:
     def __init__(self, client_id=None, client_secret=None):
         self.client = None
-        self.client_id = client_id or read_env("NYPL_API_CLIENT_ID")
-        self.client_secret = client_secret or read_env("NYPL_API_CLIENT_SECRET")
-        self.token_url = read_env("NYPL_API_CLIENT_TOKEN_URL")
+        self.client_id = client_id or require_env("NYPL_API_CLIENT_ID")
+        self.client_secret = client_secret or require_env("NYPL_API_CLIENT_SECRET")
+        self.token_url = require_env("NYPL_API_CLIENT_TOKEN_URL")
         self.api_root = "https://platform.nypl.org/api/v0.1"
         self.token = None
 

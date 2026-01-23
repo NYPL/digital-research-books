@@ -7,12 +7,14 @@ from sqlalchemy import pool
 from alembic import context
 
 from utils.load_env import load_env
-from utils.common import read_env
+from utils.common import require_env
 from model.postgres.base import Base
 
 
 # read relevant env file
-env_file = Path(__file__).parent.parent / "config" / f".env.{read_env('ENVIRONMENT')}"
+env_file = (
+    Path(__file__).parent.parent / "config" / f".env.{require_env('ENVIRONMENT')}"
+)
 load_env(env_file)
 
 # this is the Alembic Config object, which provides

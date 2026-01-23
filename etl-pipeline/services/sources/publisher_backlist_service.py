@@ -8,7 +8,7 @@ from logger import create_log
 from mappings.publisher_backlist import PublisherBacklistMapping
 from model import Record
 from .source_service import SourceService
-from utils.common import read_env
+from utils.common import require_env
 
 logger = create_log(__name__)
 
@@ -18,7 +18,7 @@ PAGE_SIZE = 100
 
 class PublisherBacklistService(SourceService):
     def __init__(self):
-        self.airtable_auth_token = read_env("AIRTABLE_PUB_BACKLIST_API_KEY")
+        self.airtable_auth_token = require_env("AIRTABLE_PUB_BACKLIST_API_KEY")
 
     def get_records(
         self,

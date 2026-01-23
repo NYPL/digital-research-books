@@ -22,7 +22,7 @@ from model import (
     AutomaticCollection,
 )
 from managers.db import DBManager
-from utils.common import read_env
+from utils.common import require_env
 
 from .utils import APIUtils
 
@@ -48,7 +48,7 @@ def get_session():
     """
     global _engine, _Session
     if _Session is None:
-        _engine = DBManager(host=read_env("POSTGRES_READ_HOST")).generate_engine()
+        _engine = DBManager(host=require_env("POSTGRES_READ_HOST")).generate_engine()
         _Session = scoped_session(sessionmaker(bind=_engine))
         # Consider autocommit=False, autoflush=False see: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#flushing
     return _Session

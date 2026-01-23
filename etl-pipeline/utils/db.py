@@ -1,4 +1,4 @@
-from .common import read_env
+from .common import require_env
 
 from sqlalchemy import create_engine
 
@@ -6,11 +6,11 @@ from sqlalchemy import create_engine
 def load_db_env_vars():
     """Load PostgreSQL connection parameters from environment variables."""
     return {
-        "user": read_env("POSTGRES_USER"),
-        "pswd": read_env("POSTGRES_PSWD"),
-        "host": read_env("POSTGRES_HOST"),
-        "port": read_env("POSTGRES_PORT"),
-        "db": read_env("POSTGRES_NAME"),
+        "user": require_env("POSTGRES_USER"),
+        "pswd": require_env("POSTGRES_PSWD"),
+        "host": require_env("POSTGRES_HOST"),
+        "port": require_env("POSTGRES_PORT"),
+        "db": require_env("POSTGRES_NAME"),
     }
 
 
