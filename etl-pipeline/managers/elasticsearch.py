@@ -9,7 +9,7 @@ from elastic_transport import ConnectionTimeout
 from model import ESWork
 from logger import create_log
 from utils.elastic import load_hosts
-from utils.utils import read_env
+from utils.common import read_env
 
 logger = create_log(__name__)
 

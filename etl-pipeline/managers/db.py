@@ -5,7 +5,7 @@ from sqlalchemy.exc import OperationalError
 
 from model import Base
 from logger import create_log
-from utils.utils import read_env
+from utils.common import read_env
 
 logger = create_log(__name__)
 

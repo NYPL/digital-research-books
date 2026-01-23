@@ -37,10 +37,9 @@ from ..db import get_frbr_data_by_edition, get_session
 
 # shared code
 from vector_indexing.embedding import GoogleEmbedder
-from utils.utils import create_sql_engine
 from managers.db import DBManager
 from logger import create_log
-from utils.utils import wrap
+from utils.common import wrap
 
 
 logger = create_log(__name__)

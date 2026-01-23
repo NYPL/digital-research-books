@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from utils.utils import read_env
+from utils.common import read_env
 
 
 def build_hosts(scheme, host, port, user=None, pswd=None):

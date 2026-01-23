@@ -4,7 +4,7 @@ import json
 from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError
 from requests_oauthlib import OAuth2Session
 
-from utils.utils import read_env
+from utils.common import read_env
 
 
 class NYPLAPIManager:

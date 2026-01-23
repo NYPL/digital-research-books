@@ -8,7 +8,7 @@ from logger import create_log
 from mappings.publisher_backlist import PublisherBacklistMapping
 from model import Record
 from .source_service import SourceService
-from utils.utils import read_env
+from utils.common import read_env
 
 logger = create_log(__name__)
 

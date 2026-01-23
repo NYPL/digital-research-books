@@ -4,7 +4,7 @@ import requests
 from requests.exceptions import Timeout, ConnectionError
 
 from logger import create_log
-from utils.utils import read_env
+from utils.common import read_env
 
 
 logger = create_log(__name__)

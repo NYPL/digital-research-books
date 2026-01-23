@@ -6,7 +6,7 @@ from google.oauth2.service_account import Credentials
 import json
 from requests import HTTPError
 from logger import create_log
-from utils.utils import read_env
+from utils.common import read_env
 
 BATCH_LIMIT = 100
 

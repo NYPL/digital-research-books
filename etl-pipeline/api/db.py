@@ -22,7 +22,7 @@ from model import (
     AutomaticCollection,
 )
 from managers.db import DBManager
-from utils.utils import read_env
+from utils.common import read_env
 
 from .utils import APIUtils
 

@@ -11,7 +11,7 @@ from tenacity import (
 )
 from ratelimit import limits, sleep_and_retry
 
-from utils.utils import batched
+from utils.common import batched
 
 
 GEMINI_EMBEDDING_MODEL = "gemini-embedding-001"

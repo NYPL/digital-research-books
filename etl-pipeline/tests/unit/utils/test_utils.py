@@ -1,6 +1,6 @@
 import pytest
 
-from utils.utils import read_env
+from utils.common import read_env
 
 
 class TestReadEnv:

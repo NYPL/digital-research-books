@@ -7,7 +7,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from utils.load_env import load_env
-from utils.utils import read_env
+from utils.common import read_env
 from model.postgres.base import Base
 
 

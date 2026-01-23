@@ -4,7 +4,7 @@ from pathlib import Path
 import boto3
 from dotenv import dotenv_values, load_dotenv
 
-from .utils import batched
+from .common import batched
 
 # NOTE: print() is used instead of a logger bc the environment is expected to \
 # be loaded before loggers are configured in an application.

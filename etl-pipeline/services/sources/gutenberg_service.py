@@ -12,7 +12,7 @@ from mappings.gutenberg import GutenbergMapping
 from model import Record
 from .source_service import SourceService
 from logger import create_log
-from utils.utils import read_env
+from utils.common import read_env
 
 logger = create_log(__name__)
 
