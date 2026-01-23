@@ -37,6 +37,7 @@ jobs:
         run: |
           touch .env
           echo "BASE_URL=${{ inputs.base_url }}" >> .env
+          echo "API_KEY=${{ secrets.API_KEY }}" >> .env
         shell: bash
 
       - name: Add hosts to /etc/hosts
@@ -72,4 +73,3 @@ jobs:
           VRA_PASSWORD: ${{ secrets.VRA_PASSWORD }}
           CATALOG_USERNAME: ${{ secrets.CATALOG_USERNAME }}
           CATALOG_USER_PIN: ${{ secrets.CATALOG_USER_PIN }}
-          API_KEY: ${{ secrets.API_KEY }}
