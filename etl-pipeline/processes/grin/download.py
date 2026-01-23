@@ -8,9 +8,9 @@ import shutil
 from .grin_client import GRINClient
 from managers import DBManager, S3Manager
 from model import GRINStatus, GRINState
-from services.ssm_service import SSMService
 from logger import create_log
 from utils.profiler import profile
+from utils.utils import read_env
 
 logger = create_log(__name__)
 
@@ -19,12 +19,9 @@ class GRINDownloadService:
     def __init__(self, bucket):
         self.grin_client = GRINClient()
         self.s3_manager = S3Manager()
-        self.ssm_service = SSMService()
         self.bucket = bucket
 
-        self.grin_pass_key = self.ssm_service.get_parameter(
-            "grin-access-key", raise_on_error=True
-        )
+        self.grin_pass_key = read_env("GRIN_ACCESS_KEY")
 
     @profile(logger=logger)
     def download_barcode(self, barcode):

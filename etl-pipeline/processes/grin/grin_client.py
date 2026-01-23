@@ -5,8 +5,8 @@ from google.auth.transport.requests import AuthorizedSession
 from google.oauth2.service_account import Credentials
 import json
 from requests import HTTPError
-from services.ssm_service import SSMService
 from logger import create_log
+from utils.utils import read_env
 
 BATCH_LIMIT = 100
 
@@ -19,10 +19,7 @@ class GRINClient(object):
         self.session = AuthorizedSession(self.creds)
 
     def load_creds(self):
-        ssm_service = SSMService()
-        service_account_file = ssm_service.get_parameter(
-            "grin-auth", raise_on_error=True
-        )
+        service_account_file = read_env("GRIN_AUTH")
         service_account_info = json.loads(service_account_file)
 
         scopes = [

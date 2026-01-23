@@ -7,7 +7,7 @@ from logger import create_log
 import file_conversion.pdfs.mets_parser as mets_parser
 from managers import DBManager, ElasticsearchManager, S3Manager
 from model import Record, Part, FileFlags, Source
-from utils import with_logging, setup_env
+from utils import with_logging  # , setup_env
 from processes.record_embedder import RecordEmbedder
 from processes.record_pipeline import RecordPipelineProcess
 
@@ -17,6 +17,29 @@ parser = argparse.ArgumentParser(
     parents=[env_parser()],
 )
 parser.add_argument("-b", "--barcode", required=True, help="The barcode number")
+
+
+from functools import wraps
+import os
+from utils.load_env import load_env
+
+
+def setup_env(parser):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            parsed_args = parser.parse_args()
+
+            load_env(f"./config/.env.{parsed_args.environment}")
+            os.environ["ENVIRONMENT"] = (
+                os.environ.get("ENVIRONMENT") or parsed_args.environment
+            )
+
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 @setup_env(parser)

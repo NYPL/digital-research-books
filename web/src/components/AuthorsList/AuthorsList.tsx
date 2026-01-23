@@ -1,10 +1,10 @@
 import React from "react";
-import { ApiSearchQuery } from "~/src/types/SearchQuery";
 import Link from "~/src/components/Link/Link";
 import { Agent } from "~/src/types/DataModel";
+import { ApiSearchQuery } from "~/src/types/SearchQuery";
 
 const AuthorsList: React.FC<{ authors: Agent[] }> = ({ authors }) => {
-  if (!authors || authors.length === 0) return undefined;
+  if (!authors || authors.length === 0) return <>Unknown</>;
 
   return (
     <>

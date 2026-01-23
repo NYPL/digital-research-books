@@ -1,16 +1,16 @@
 import os
-import pytest
 import random
 import re
 from datetime import datetime, timedelta, timezone
 import json
+from uuid import uuid4
+from pathlib import Path
+
 import requests_mock
 from sqlalchemy import text, delete
-from uuid import uuid4
+import pytest
 from unittest.mock import patch, MagicMock
 from processes.grin.grin_client import GRINClient
-
-
 from processes import RecordClusterer
 from model import (
     Collection,
@@ -26,7 +26,7 @@ from model import (
 from model.postgres.item import ITEM_LINKS
 from logger import create_log
 from managers import DBManager, RedisManager, S3Manager
-from load_env import load_env_file
+from utils.load_env import load_env
 from tests.fixtures.generate_test_data import generate_test_data
 
 
@@ -68,22 +68,29 @@ def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:
     return new_record
 
 
+# NOTE: autouse=True does not guarantee execution before other session scoped \
+# fixtures unless an explicit dependency on setup_env is specified.
 @pytest.fixture(scope="session", autouse=True)
 def setup_env(pytestconfig, request):
-    environment = (
-        os.environ.get("ENVIRONMENT") or pytestconfig.getoption("--env") or "local"
-    )
+    is_unit_test = any("unit" in item.keywords for item in request.session.items)
 
-    running_unit_tests = any("unit" in item.keywords for item in request.session.items)
-
-    if not running_unit_tests and environment in ["local", "local-qa", "qa"]:
-        load_env_file(environment, file_string=f"config/{environment}.yaml")
+    # Q: re:removed code: any reason why we should be prevented from running integration tests on PRODUCTION?
+    if not is_unit_test:
+        environment = (
+            # NOAH RECOMMENDS: choose one source of end or the other
+            os.environ.get("ENVIRONMENT") or pytestconfig.getoption("--env")
+        )
+        assert environment is not None, (
+            "an execution environment must be specified if not running unit tests."
+        )
+        print(f'Loading environment: "{environment}" during test setup')
+        config_dir = Path(__file__).parent.parent / "config"
+        load_env(config_dir / f".env.{environment}")
 
 
 @pytest.fixture(scope="session")
-def db_manager():
+def db_manager(setup_env):
     db_manager = DBManager()
-
     try:
         db_manager.create_session()
         db_manager.session.execute(text("SELECT 1"))
@@ -92,11 +99,15 @@ def db_manager():
 
         db_manager.close_connection()
     except:
+        print("db_manager error")
+        import traceback
+
+        traceback.print_exc()
         yield None
 
 
 @pytest.fixture(scope="session")
-def s3_manager():
+def s3_manager(setup_env):
     try:
         s3_manager = S3Manager()
 
@@ -106,7 +117,7 @@ def s3_manager():
 
 
 @pytest.fixture(scope="session")
-def redis_manager():
+def redis_manager(setup_env):
     try:
         manager = RedisManager()
         manager.create_client()
@@ -454,7 +465,7 @@ def mock_sqs_manager():
 
 
 @pytest.fixture(scope="module")
-def grin_client():
+def grin_client(setup_env):
     client = GRINClient()
 
     yield client

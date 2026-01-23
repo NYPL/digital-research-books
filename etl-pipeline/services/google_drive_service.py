@@ -5,21 +5,17 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from googleapiclient.errors import HttpError
 from google.oauth2.service_account import Credentials
-from services.ssm_service import SSMService
 
 
 from logger import create_log
+from utils.utils import read_env
 
 logger = create_log(__name__)
 
 
 class GoogleDriveService:
     def __init__(self):
-        ssm_service = SSMService()
-
-        SERVICE_ACCOUNT_FILE = ssm_service.get_parameter(
-            "google-drive-service-key", raise_on_error=True
-        )
+        SERVICE_ACCOUNT_FILE = read_env("GOOGLE_DRIVE_SERVICE_KEY")
 
         service_account_info = json.loads(SERVICE_ACCOUNT_FILE)
         scopes = [

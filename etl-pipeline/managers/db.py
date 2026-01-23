@@ -5,6 +5,7 @@ from sqlalchemy.exc import OperationalError
 
 from model import Base
 from logger import create_log
+from utils.utils import read_env
 
 logger = create_log(__name__)
 
@@ -16,11 +17,11 @@ def get_database_url(user, pswd, host, port, db):
 class DBManager:
     def __init__(self, user=None, pswd=None, host=None, port=None, db=None):
         super(DBManager, self).__init__()
-        self.user = user or DBManager.decrypt_env_var("POSTGRES_USER")
-        self.pswd = pswd or DBManager.decrypt_env_var("POSTGRES_PSWD")
-        self.host = host or DBManager.decrypt_env_var("POSTGRES_HOST")
-        self.port = port or DBManager.decrypt_env_var("POSTGRES_PORT")
-        self.db = db or DBManager.decrypt_env_var("POSTGRES_NAME")
+        self.user = user or read_env("POSTGRES_USER")
+        self.pswd = pswd or read_env("POSTGRES_PSWD")
+        self.host = host or read_env("POSTGRES_HOST")
+        self.port = port or read_env("POSTGRES_PORT")
+        self.db = db or read_env("POSTGRES_NAME")
 
         self.engine = None
         self.session = None
@@ -129,9 +130,3 @@ class DBManager:
         except OperationalError as oprErr:
             logger.error("Deadlock in database layer, retry batch")
             logger.debug(oprErr)
-
-    @staticmethod
-    def decrypt_env_var(envVar):
-        encrypted = os.environ.get(envVar, None)
-        # TODO Implement Kubernetes encryption
-        return encrypted

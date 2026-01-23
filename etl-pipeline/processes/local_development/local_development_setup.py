@@ -12,6 +12,11 @@ logger = create_log(__name__)
 
 
 class LocalDevelopmentSetupProcess:
+    """
+    Creates database and elastic search index according to the DRB data model,
+    but does not insert any data.
+    """
+
     def __init__(self, *args):
         self.elastic_search_manager = ElasticsearchManager()
         self.db_manager = DBManager()

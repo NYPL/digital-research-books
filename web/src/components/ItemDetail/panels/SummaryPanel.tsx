@@ -1,7 +1,7 @@
 import { Flex, Text, VStack } from "@nypl/design-system-react-components";
 import { WorkEdition } from "~/src/types/DataModel";
-import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
-import FeedbackButtons from "../ResearchAssistant/FeedbackButtons";
+import AiGeneratedText from "../../AiGeneratedText/AiGeneratedText";
+import FeedbackButtons from "../../ResearchAssistant/FeedbackButtons";
 
 interface SummaryPanelProps {
   previewEdition: WorkEdition;
