@@ -31,7 +31,7 @@ class Searcher:
         self.index_name = index_name
         self.embedder = embedder
         get_or_create_default_connection(
-            timeout=60 * 5
+            request_timeout=60 * 5  # NOTE: in ES <8 this param is `timeout`
         )  # brute vector search is slow 5 min timeout
 
     # query = "shipbuilding"

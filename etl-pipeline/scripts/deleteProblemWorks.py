@@ -23,7 +23,7 @@ def main():
 
     dbManager.session.query(Work).filter(Work.uuid == uuid).delete()
 
-    resp = Search(index=os.environ["ELASTICSEARCH_INDEX"]).query("match", uuid=uuid)
+    resp = Search(index=os.environ["DRB_ELASTICSEARCH_INDEX"]).query("match", uuid=uuid)
     resp.delete()
 
     dbManager.session.commit()

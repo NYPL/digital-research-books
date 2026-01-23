@@ -8,8 +8,8 @@ LOCAL_SECRETS_FILE = str(Path(__file__, "../config/local-secrets.yaml").resolve(
 ENV_VAR_TO_SSM_NAME = {
     "CONTENT_CAFE_USER": "contentcafe/user",
     "CONTENT_CAFE_PSWD": "contentcafe/pswd",
-    "ELASTICSEARCH_PSWD": "elasticsearch/pswd",
-    "ELASTICSEARCH_USER": "elasticsearch/user",
+    "DRB_ELASTICSEARCH_PSWD": "elasticsearch/pswd",
+    "DRB_ELASTICSEARCH_USER": "elasticsearch/user",
     "GITHUB_API_KEY": "github-key",
     "GOOGLE_BOOKS_KEY": "google-books/api-key",
     "HATHI_API_KEY": "hathitrust/api-key",

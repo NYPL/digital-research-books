@@ -13,7 +13,7 @@ def main():
     es_manager = ElasticsearchManager()
     es_manager.create_elastic_connection()
 
-    index = os.environ["ELASTICSEARCH_INDEX"]
+    index = os.environ["DRB_ELASTICSEARCH_INDEX"]
     batch_size = 1000
 
     with DBManager() as db_manager:

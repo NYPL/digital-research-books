@@ -59,8 +59,9 @@ def main(args):
     if process in ("APIProcess", "DevelopmentSetupProcess", "MigrationProcess"):
         process_instance.run()
     else:
+        # Configure a separate scope for logs of this process in New Relic UI
+        # otherwise logs would be sent to overall DRB new relic app
         app = newrelic.agent.register_application(timeout=10.0)
-
         with newrelic.agent.BackgroundTask(app, name=process_instance):
             process_instance.run()
 
