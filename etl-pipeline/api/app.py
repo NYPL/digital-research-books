@@ -53,6 +53,7 @@ BLUEPRINTS = [
 
 class API:
     def __init__(self, db_engine, redis_client):
+        Session = get_session()
         self.app = Flask(__name__)
 
         CORS(self.app)
@@ -69,7 +70,6 @@ class API:
         # see: https://flask.palletsprojects.com/en/stable/appcontext/#events-and-signals
         @self.app.teardown_appcontext
         def shutdown_db_session(exception=None):
-            Session = get_session()
             Session.remove()
 
     def _register_blueprints(self):

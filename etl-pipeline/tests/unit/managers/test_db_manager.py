@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from sqlalchemy import inspect
 from sqlalchemy.exc import OperationalError
@@ -8,8 +10,9 @@ from managers import DBManager
 class TestDBManager:
     @pytest.fixture
     def test_instance(self, mocker):
-        mock_read_env = mocker.patch("managers.db.read_env")
-        mock_read_env.side_effect = ["user", "pswd", "host", "port", "name"]
+        vals = ["user", "pswd", "host", "port", "name"]
+        for val in vals:
+            os.environ[f"POSTGRES_{val.upper()}"] = val
 
         return DBManager()
 
