@@ -54,6 +54,7 @@ def setup_env(pytestconfig, request):
     # present for all tests under the "unit/" folder.
 
     # fetch target environment
+    # NOTE: default is "local" from addoption()
     environment = os.environ.get("ENVIRONMENT") or pytestconfig.getoption("--env")
 
     # Error if attempting to run function or integration tests against \
@@ -66,6 +67,9 @@ def setup_env(pytestconfig, request):
     print(f'Loading environment: "{environment}" during test setup')
     config_dir = Path(__file__).parent.parent / "config"
     load_env(config_dir / f".env.{environment}")
+    # Setting ENVIRONMENT so that downstream fixtures and tests can determine \
+    # execution behavior based on the environment
+    os.environ["ENVIRONMENT"] = environment
 
 
 def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:

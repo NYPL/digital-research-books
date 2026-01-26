@@ -15,7 +15,7 @@ class TestAPI:
 
     def test_run_local(self, test_api):
         os.environ["STAGE"] = "development"
-        os.environ["API_HOST"] = "127.0.0.1"
+        os.environ["DRB_API_HOST"] = "127.0.0.1"
 
         test_api.run()
 

@@ -1,9 +1,12 @@
 import io
+import os
 from unittest.mock import patch
 import pypdf
 import pytest
 from file_conversion.pdfs.pdf_page import PDFPageGenerator
 from botocore.exceptions import ClientError
+
+from utils.common import require_env
 
 OCR_DIR = "0000011245674"
 ALTO_OCR_DATA_INDEX = "00000004"
@@ -11,6 +14,14 @@ ALTO_OCR_FILE_TYPES = ["jp2", "txt", "xml"]
 
 
 def test_generate_pdf_page(s3_manager, tmp_path):
+    environment = os.environ.get("ENVIRONMENT")
+    if environment != "local":
+        pytest.skip(
+            f'This test is only supported in the "local" environment. Current environment: "{environment}"'
+        )
+
+    bucket_name = require_env("PRIVATE_FILE_BUCKET")
+
     output_dir = tmp_path / "pdf_generation"
     output_dir.mkdir()
     output_file_location = output_dir / f"{ALTO_OCR_DATA_INDEX}.pdf"
@@ -20,12 +31,12 @@ def test_generate_pdf_page(s3_manager, tmp_path):
         with open(file=file_name, mode="rb") as f:
             s3_manager.client.put_object(
                 Key=f"{OCR_DIR}/{ALTO_OCR_DATA_INDEX}.{file_type}",
-                Bucket="drb-files-limited-local",
+                Bucket=bucket_name,
                 Body=f,
             )
 
     pdf_page_generator = PDFPageGenerator(
-        bucket_name="drb-files-limited-local",
+        bucket_name=bucket_name,
         ocr_dir=OCR_DIR,
         alto_to_hocr_file="file_conversion/pdfs/alto_to_hocr.xsl",
     )
@@ -65,7 +76,7 @@ def test_generate_pdf_page_missing_image(s3_manager, tmp_path):
         s3_manager.client, "get_object", side_effect=mock_get_object_failure
     ):
         pdf_page_generator = PDFPageGenerator(
-            bucket_name="drb-files-limited-local",
+            bucket_name=require_env("PRIVATE_FILE_BUCKET"),
             ocr_dir=OCR_DIR,
             alto_to_hocr_file="file_conversion/pdfs/alto_to_hocr.xsl",
         )

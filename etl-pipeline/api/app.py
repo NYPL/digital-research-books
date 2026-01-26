@@ -80,7 +80,7 @@ class API:
         if os.environ.get("STAGE") == "development":
             self.app.config["ENV"] = "development"
             self.app.config["DEBUG"] = True
-            self.app.run(host=os.environ.get("API_HOST"), port=5050)
+            self.app.run(host=os.environ.get("DRB_API_HOST"), port=5050)
         else:
             serve(self.app, host="0.0.0.0", port=80)
 
