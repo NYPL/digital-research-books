@@ -8,11 +8,22 @@ on:
         default: "http://local.nypl.org:3000/"
         required: false
         type: string
+      api_url:
+        description: "API URL for environment"
+        default: "https://drb-api-qa.nypl.org"
+        required: false
+        type: string
+
   workflow_call:
     inputs:
       base_url:
         description: "Base URL for environment"
         default: "http://local.nypl.org:3000/"
+        required: false
+        type: string
+      api_url:
+        description: "API URL for environment"
+        default: "https://drb-api-qa.nypl.org"
         required: false
         type: string
 
@@ -72,5 +83,5 @@ jobs:
           VRA_PASSWORD: ${{ secrets.VRA_PASSWORD }}
           CATALOG_USERNAME: ${{ secrets.CATALOG_USERNAME }}
           CATALOG_USER_PIN: ${{ secrets.CATALOG_USER_PIN }}
-          API_URL: ${{ secrets.API_URL }}
+          API_URL: ${{ inputs.api_url }}
           API_KEY: ${{ secrets.API_KEY }}
