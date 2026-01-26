@@ -47,13 +47,13 @@ jobs:
         working-directory: ./web
         run: |
           touch .env
-          echo "BASE_URL=${{ inputs.base_url }}" > .env
-          echo "API_URL=${{ secrets.api_url }}" >> .env
-          echo "API_KEY=${{ secrets.API_KEY }}" >> .env
-          echo "VRA_USERNAME=${{ secrets.VRA_USERNAME }}" >> .env
-          echo "VRA_PASSWORD=${{ secrets.VRA_PASSWORD }}" >> .env
-          echo "CATALOG_USERNAME=${{ secrets.CATALOG_USERNAME }}" >> .env
-          echo "CATALOG_USER_PIN=${{ secrets.CATALOG_USER_PIN }}" >> .env
+          echo "BASE_URL='${{ inputs.base_url }}'" >> .env
+          echo "API_URL='${{ secrets.api_url }}'" >> .env
+          echo "API_KEY='${{ secrets.API_KEY }}'" >> .env
+          echo "VRA_USERNAME='${{ secrets.VRA_USERNAME }}'" >> .env
+          echo "VRA_PASSWORD='${{ secrets.VRA_PASSWORD }}'" >> .env
+          echo "CATALOG_USERNAME='${{ secrets.CATALOG_USERNAME }}'" >> .env
+          echo "CATALOG_USER_PIN='${{ secrets.CATALOG_USER_PIN }}'" >> .env
         shell: bash
 
       - name: Add hosts to /etc/hosts
