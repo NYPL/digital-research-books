@@ -47,13 +47,13 @@ jobs:
         working-directory: ./web
         run: |
           touch .env
-          printf "BASE_URL='%s'\n" "${{ inputs.base_url }}" >> .env
-          printf "API_URL='%s'\n" "${{ inputs.api_url }}" >> .env
-          printf "API_KEY='%s'\n" "${{ secrets.API_KEY }}" >> .env
-          printf "VRA_USERNAME='%s'\n" "${{ secrets.VRA_USERNAME }}" >> .env
-          printf "VRA_PASSWORD='%s'\n" "${{ secrets.VRA_PASSWORD }}" >> .env
-          printf "CATALOG_USERNAME='%s'\n" "${{ secrets.CATALOG_USERNAME }}" >> .env
-          printf "CATALOG_USER_PIN='%s'\n" "${{ secrets.CATALOG_USER_PIN }}" >> .env
+          printf "BASE_URL=%s\n" "${{ inputs.base_url }}" >> .env
+          printf "API_URL=%s\n" "${{ inputs.api_url }}" >> .env
+          printf "API_KEY=%s\n" "${{ secrets.API_KEY }}" >> .env
+          printf "VRA_USERNAME=%s\n" "${{ secrets.VRA_USERNAME }}" >> .env
+          printf "VRA_PASSWORD=%s\n" "${{ secrets.VRA_PASSWORD }}" >> .env
+          printf "CATALOG_USERNAME=%s\n" "${{ secrets.CATALOG_USERNAME }}" >> .env
+          printf "CATALOG_USER_PIN=%s\n" "${{ secrets.CATALOG_USER_PIN }}" >> .env
         shell: bash
 
       - name: Add hosts to /etc/hosts
