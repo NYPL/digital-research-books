@@ -9,8 +9,12 @@ from .common import batched
 # NOTE: print() is used instead of a logger bc the environment is expected to \
 # be loaded before loggers are configured in an application.
 
+# NOTE: aws region must be explicitly set when authorizing from the deployed \
+# ECS environment's credentials.
+AWS_REGION = "us-east-1"
 
-def load_secrets(path, raise_if_no_file=False, override=False):
+
+def load_secrets(path, raise_if_no_file=False, override=False, region=AWS_REGION):
     """
     Load secrets from AWS Parameter Store based on a .env file containing
     AWS Parameter Store parameters.
@@ -28,6 +32,7 @@ def load_secrets(path, raise_if_no_file=False, override=False):
             does not exist. Defaults to False.
         override (bool): Whether to override existing environment variables.
             Defaults to False.
+        region (str): AWS region for the SSM client. Defaults to AWS_REGION.
 
     Raises:
         FileNotFoundError: If raise_if_no_file is True and the file does not exist.
@@ -54,7 +59,7 @@ def load_secrets(path, raise_if_no_file=False, override=False):
     if not arn_to_key_pairs:
         return
 
-    ssm = boto3.client("ssm")
+    ssm = boto3.client("ssm", region_name=region)
     arn_to_value = {}
 
     unique_arns = set(arn for arn, _ in arn_to_key_pairs)
@@ -87,6 +92,7 @@ def load_env(
     secrets_path: str | os.PathLike | None = None,
     override: bool = False,
     raise_if_no_file=False,
+    region=AWS_REGION,
 ):
     """
     Load environment variables and secrets values in from .env file(s).
@@ -104,6 +110,7 @@ def load_env(
                          This applies to both standard environment variables and secrets.
         raise_if_no_file (bool): If True, raises FileNotFoundError when either file
             does not exist. Defaults to False.
+        region (str): AWS region for the SSM client. Defaults to AWS_REGION.
     Raises:
         FileNotFoundError: If raise_if_no_file is True and either file does not exist.
     """
@@ -121,4 +128,9 @@ def load_env(
     load_dotenv(env_path, override=override)
 
     print(f"Reading env at '{secrets_path}'")
-    load_secrets(secrets_path, override=override, raise_if_no_file=raise_if_no_file)
+    load_secrets(
+        secrets_path,
+        override=override,
+        raise_if_no_file=raise_if_no_file,
+        region=region,
+    )
