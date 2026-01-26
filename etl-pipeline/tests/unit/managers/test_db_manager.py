@@ -8,8 +8,8 @@ from managers import DBManager
 class TestDBManager:
     @pytest.fixture
     def test_instance(self, mocker):
-        mock_decrypt = mocker.patch.object(DBManager, "decrypt_env_var")
-        mock_decrypt.side_effect = ["user", "pswd", "host", "port", "name"]
+        mock_read_env = mocker.patch("managers.db.read_env")
+        mock_read_env.side_effect = ["user", "pswd", "host", "port", "name"]
 
         return DBManager()
 
@@ -211,17 +211,3 @@ class TestDBManager:
             ]
         )
         assert mock_rollback.call_count == 2
-
-    def test_decrypt_env_var_present(self, mocker):
-        mocker.patch.dict("os.environ", {"test": "test_value"})
-
-        decrypted_var = DBManager.decrypt_env_var("test")
-
-        assert decrypted_var == "test_value"
-
-    def test_decrypt_env_var_missing(self, mocker):
-        mocker.patch.dict("os.environ", {"test": "test_value"})
-
-        decrypted_var = DBManager.decrypt_env_var("other")
-
-        assert decrypted_var == None

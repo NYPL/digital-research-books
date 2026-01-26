@@ -4,7 +4,7 @@ import newrelic.agent
 import inspect
 
 from args_parser import create_arg_parser
-from load_env import load_env_file
+from utils.load_env import load_env
 from logger import configure_loggers, create_log
 
 
@@ -94,8 +94,10 @@ if __name__ == "__main__":
     parser = create_arg_parser()
     args = parser.parse_args()
 
-    load_env_file(args.environment, "./config/{}.yaml")
-    os.environ["ENVIRONMENT"] = os.environ.get("ENVIRONMENT") or args.environment
+    load_env(f"./config/.env.{args.environment}")
+    if os.environ.get("ENVIRONMENT") is None:
+        # MAYBE: remove  this...
+        os.environ["ENVIRONMENT"] = args.environment
     configure_loggers()
 
     main(args)

@@ -1,19 +1,24 @@
 import os
-
+from pathlib import Path
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-
 from alembic import context
-from load_env import load_env_file
+from utils.load_env import load_env
+import model.postgres.base
+# from utils.utils import read_env
 
-# load correct environment
+# load specified environment
 xargs = context.get_x_argument(as_dictionary=True)
 environment = xargs.get("env")
 if environment is None:
+    # ALT: read env name from env vars if not passed as -x arg
+    # environment = read_env('ENVIRONMENT')
+
     raise ValueError("`-x env=<target_env>` missing from alembic call")
-load_env_file(environment, file_string="config/{}.yaml")
+env_file = Path(__file__).parent.parent / "config" / f".env.{environment}"
+load_env(env_file)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -44,9 +49,7 @@ fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = model.postgres.base.Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

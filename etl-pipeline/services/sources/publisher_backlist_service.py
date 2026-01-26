@@ -7,8 +7,8 @@ from typing import Generator
 from logger import create_log
 from mappings.publisher_backlist import PublisherBacklistMapping
 from model import Record
-from services.ssm_service import SSMService
 from .source_service import SourceService
+from utils.utils import read_env
 
 logger = create_log(__name__)
 
@@ -18,10 +18,7 @@ PAGE_SIZE = 100
 
 class PublisherBacklistService(SourceService):
     def __init__(self):
-        self.ssm_service = SSMService()
-        self.airtable_auth_token = self.ssm_service.get_parameter(
-            "airtable/pub-backlist/api-key", raise_on_error=True
-        )
+        self.airtable_auth_token = read_env("AIRTABLE_PUB_BACKLIST_API_KEY")
 
     def get_records(
         self,

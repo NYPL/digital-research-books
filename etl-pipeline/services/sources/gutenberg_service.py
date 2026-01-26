@@ -12,6 +12,7 @@ from mappings.gutenberg import GutenbergMapping
 from model import Record
 from .source_service import SourceService
 from logger import create_log
+from utils.utils import read_env
 
 logger = create_log(__name__)
 
@@ -27,7 +28,7 @@ class GutenbergService(SourceService):
     }
 
     def __init__(self):
-        self.github_api_key = os.environ.get("GITHUB_API_KEY")
+        self.github_api_key = read_env("GITHUB_API_KEY")
         self.github_api_root = "https://api.github.com/graphql"
 
         self.constants = get_constants()
