@@ -43,11 +43,18 @@ jobs:
           cache: npm
           cache-dependency-path: "web/package-lock.json"
 
-      - name: Set environment for branch
+      - name: Set environment variables
         working-directory: ./web
         run: |
-          touch .env
-          echo "BASE_URL=${{ inputs.base_url }}" >> .env
+          cat <<EOF > .env
+          BASE_URL=${{ inputs.base_url }}
+          API_URL=${{ secrets.api_url }}
+          API_KEY=${{ secrets.API_KEY }}
+          VRA_USERNAME=${{ secrets.VRA_USERNAME }}
+          VRA_PASSWORD=${{ secrets.VRA_PASSWORD }}
+          CATALOG_USERNAME=${{ secrets.CATALOG_USERNAME }}
+          CATALOG_USER_PIN=${{ secrets.CATALOG_USER_PIN }}
+          EOF
         shell: bash
 
       - name: Add hosts to /etc/hosts
@@ -78,10 +85,3 @@ jobs:
       - name: Run Playwright tests
         working-directory: ./web
         run: npm run playwright
-        env:
-          VRA_USERNAME: ${{ secrets.VRA_USERNAME }}
-          VRA_PASSWORD: ${{ secrets.VRA_PASSWORD }}
-          CATALOG_USERNAME: ${{ secrets.CATALOG_USERNAME }}
-          CATALOG_USER_PIN: ${{ secrets.CATALOG_USER_PIN }}
-          API_URL: ${{ inputs.api_url }}
-          API_KEY: ${{ secrets.API_KEY }}
