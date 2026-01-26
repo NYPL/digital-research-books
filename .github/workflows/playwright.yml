@@ -31,6 +31,10 @@ jobs:
   tests:
     name: Run Playwright Tests for DRB Web
     runs-on: ubuntu-latest
+    env:
+      BASE_URL: ${{ inputs.base_url }}
+      API_URL: ${{ inputs.api_url }}
+      API_KEY: ${{ secrets.API_KEY }}
 
     steps:
       - name: Checkout
@@ -42,19 +46,6 @@ jobs:
           node-version-file: "web/.nvmrc"
           cache: npm
           cache-dependency-path: "web/package-lock.json"
-
-      - name: Set environment variables
-        working-directory: ./web
-        run: |
-          touch .env
-          printf "BASE_URL=%s\n" "${{ inputs.base_url }}" >> .env
-          printf "API_URL=%s\n" "${{ inputs.api_url }}" >> .env
-          printf "API_KEY=%s\n" "${{ secrets.API_KEY }}" >> .env
-          printf "VRA_USERNAME=%s\n" "${{ secrets.VRA_USERNAME }}" >> .env
-          printf "VRA_PASSWORD=%s\n" "${{ secrets.VRA_PASSWORD }}" >> .env
-          printf "CATALOG_USERNAME=%s\n" "${{ secrets.CATALOG_USERNAME }}" >> .env
-          printf "CATALOG_USER_PIN=%s\n" "${{ secrets.CATALOG_USER_PIN }}" >> .env
-        shell: bash
 
       - name: Add hosts to /etc/hosts
         if: inputs.base_url == 'http://local.nypl.org:3000/'
@@ -84,3 +75,8 @@ jobs:
       - name: Run Playwright tests
         working-directory: ./web
         run: npm run playwright
+        env:
+          VRA_USERNAME: ${{ secrets.VRA_USERNAME }}
+          VRA_PASSWORD: ${{ secrets.VRA_PASSWORD }}
+          CATALOG_USERNAME: ${{ secrets.CATALOG_USERNAME }}
+          CATALOG_USER_PIN: ${{ secrets.CATALOG_USER_PIN }}
