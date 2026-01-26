@@ -72,10 +72,12 @@ def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:
 # fixtures unless an explicit dependency on setup_env is specified.
 @pytest.fixture(scope="session", autouse=True)
 def setup_env(pytestconfig, request):
-    is_unit_test = any("unit" in item.keywords for item in request.session.items)
+    includes_unit_tests = any("unit" in item.keywords for item in request.session.items)
+    # TODO: require env if any non-unit test is present, rather than if any unit test is present
 
     # Q: re:removed code: any reason why we should be prevented from running integration tests on PRODUCTION?
-    if not is_unit_test:
+    # A: maybe yes, because we write to (real) env resources
+    if not includes_unit_tests:
         environment = (
             # NOAH RECOMMENDS: choose one source of end or the other
             os.environ.get("ENVIRONMENT") or pytestconfig.getoption("--env")
