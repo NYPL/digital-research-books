@@ -1,3 +1,11 @@
+"""
+This is ad-hoc exploration to estimate the serialized size of the book
+attributes we plan to add to the search index for the VRA.
+
+Takes 1000 of attribute sets, serializes them and introspects the distribution
+of sizes.
+"""
+
 import os
 import sys
 import json
@@ -11,29 +19,32 @@ from managers import DBManager
 from model import Work, Edition, Item
 from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy import text
+from utils.utils import read_env
 
 # Setup database connection
-DB_URL = os.environ["POSTGRES_READ_HOST"]
+DB_URL = read_env("POSTGRES_READ_HOST")
 engine = DBManager(host=DB_URL).generate_engine()
 Session = sessionmaker(bind=engine)
 
 # Query to get first 1000 public domain GRIN editions
-# Super slow....
 query = text("""
-    SELECT DISTINCT
+    SELECT -- 3.872s
         e.id AS edition_id,
         e.publication_date,
         e.languages,
         w.subjects
-    FROM records r
-    JOIN items i ON r.id = i.record_id
-    JOIN editions e ON i.edition_id = e.id
-    JOIN works w ON e.work_id = w.id
-    JOIN grin_statuses ON r.id = grin_statuses.record_id
-    WHERE 
-        grin_statuses.state = 'downloaded'
+    FROM (
+        -- Get only the IDs we need first
+        SELECT DISTINCT i.edition_id
+        FROM records r
+        JOIN grin_statuses gs ON r.id = gs.record_id
+        JOIN items i ON r.id = i.record_id
+        WHERE gs.state = 'downloaded'
         AND split_part(r.rights, '|', 2) IN ('public_domain', 'https://creativecommons.org/publicdomain/zero/1.0/')
-    LIMIT 1000
+        LIMIT 1000
+    ) AS sub
+    JOIN editions e ON sub.edition_id = e.id
+    JOIN works w ON e.work_id = w.id;
 """)
 
 print("Fetching data from database...")
