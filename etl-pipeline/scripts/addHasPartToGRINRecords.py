@@ -50,7 +50,7 @@ def main(stmt=None):
     """
 
     Params:
-        stmt: Sqlalchemy statement. Must include Record.id in the select.
+        stmt: (sqlalchemy.sql.selectable.Select) Must include Record.id .
     """
     record_pipeline_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
     sqs_manager = SQSManager(record_pipeline_queue)
