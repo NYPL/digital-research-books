@@ -1,6 +1,9 @@
 import os
 
 
+# NOTE: setEnvVars() does not clear all pre-existing vars from os.environ  and \
+# clearEnvVars() does not restore previous state. Make sure usage does not \
+# implicitly rely on a clean os.environ.
 class TestHelpers:
     ENV_VARS = {
         "POSTGRES_HOST": "test_psql_host",
