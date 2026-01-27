@@ -1,7 +1,5 @@
-try:
-    from elasticsearch_dsl import Search, Q
-except ModuleNotFoundError:
-    from elasticsearch.dsl import Search, Q
+# ES9 import here only
+from elasticsearch.dsl import Search, Q
 # from elasticsearch9.dsl import Search, Q
 
 from typing import Dict

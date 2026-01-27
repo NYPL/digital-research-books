@@ -41,11 +41,22 @@ def load_hosts(cluster_prefix, scheme=None, host=None, port=None, user=None, psw
 
 def get_or_create_default_connection(cluster_prefix="VRA", es_version=9, **kwargs):
     """
+    Get or create a default Elasticsearch connection.
 
-    `es_version` determines which connection parameters are loaded from the environment and used to create the default connection. ....
-    All other kwargs passed to managers.elasticsearch.load_connection_config().
-    Arguments are ignored if the default connection already exists, and the
-    already configured default connection is returned.
+    Args:
+        cluster_prefix: Prefix used to construct environment variable names
+            (default: "VRA").
+        es_version: Elasticsearch version, either 9 or 7 (default: 9). Used to
+            import the correct ES SDK version.
+        **kwargs: Additional keyword arguments passed to connections.create_connection()
+            to configure the ES client.
+
+    Returns:
+        Elasticsearch connection client.
+
+    Note:
+        Arguments are ignored if the default connection already exists, and the
+        already configured default connection is returned.
     """
     if es_version == 9:
         from elasticsearch.dsl import (
@@ -59,9 +70,9 @@ def get_or_create_default_connection(cluster_prefix="VRA", es_version=9, **kwarg
 
     if "default" not in connections.connections._conns.keys():
         # register global default client
-        client = connections.create_connection(
-            **load_hosts(cluster_prefix, es_version=es_version, **kwargs)
-        )
+        # TODO: implement a generic version connection kwarg translator for \
+        # cases like "timeout" v<9 vs. "request_timeout" v>=8
+        client = connections.create_connection(**load_hosts(cluster_prefix), **kwargs)
         return client
     else:
         return connections.get_connection("default")
