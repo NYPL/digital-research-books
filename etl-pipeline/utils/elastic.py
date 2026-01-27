@@ -21,8 +21,8 @@ def load_hosts(cluster_prefix, scheme=None, host=None, port=None, user=None, psw
     If scheme, host, port, or user is passed, it's value will override its associated env var.
 
     Params:
-        cluster_prefix: used to construct env vars in the format
-            `<cluster_prefix>_ELASTIC_SEARCH_<varname>`.
+        cluster_prefix: used to construct connection param env vars in the format
+            `<cluster_prefix>_ELASTICSEARCH_<varname>`.
     """
 
     scheme = scheme or require_env(f"{cluster_prefix}_ELASTICSEARCH_SCHEME")
@@ -44,7 +44,8 @@ def get_or_create_default_connection(cluster_prefix="VRA", es_version=9, **kwarg
     Get or create a default Elasticsearch connection.
 
     Args:
-        cluster_prefix: Prefix used to construct environment variable names
+        cluster_prefix: Prefix used to construct connection param environment
+            variable names in the format `<prefix>_ELASTICSEARCH_<varname>`
             (default: "VRA").
         es_version: Elasticsearch version, either 9 or 7 (default: 9). Used to
             import the correct ES SDK version.
@@ -71,7 +72,7 @@ def get_or_create_default_connection(cluster_prefix="VRA", es_version=9, **kwarg
     if "default" not in connections.connections._conns.keys():
         # register global default client
         # TODO: implement a generic version connection kwarg translator for \
-        # cases like "timeout" v<9 vs. "request_timeout" v>=8
+        # cases like "timeout" v<8 vs. "request_timeout" v>=8
         client = connections.create_connection(**load_hosts(cluster_prefix), **kwargs)
         return client
     else:
