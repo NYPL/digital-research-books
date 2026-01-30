@@ -14,6 +14,7 @@ import pandas as pd
 from agents import (
     Agent,
     Runner,
+    RunConfig,
     function_tool,
     RunContextWrapper,
     SQLiteSession,
@@ -384,33 +385,6 @@ def search_in_book(
         raise e
 
 
-def run_agent(exec_context, system_prompt, tools, conversation):
-    # Create a persistent event loop to use across the agent run and potential derived other objs
-    _loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(_loop)
-
-    agent = Agent[type(exec_context)](
-        name="Research Library Assistant",  # necesary?
-        model=MODEL,
-        # model_settings=ModelSettings(
-        #     # include_usage=True,  # only for chatcompletions based agents/models # requires openai model?
-        #     # reasoning=Reasoning(effort="low"),  # converted to chat completions API  reasoning_effort= which  is consistently supported in litellm
-        # ),
-        instructions=system_prompt,
-        tools=tools,
-    )
-
-    async def _run():
-        # Run the agent using a centralized persistent loop session
-        # this is not necessary here, but allows calling other related awaitable \
-        # instance methods bound to that loop
-        return await Runner.run(agent, conversation, context=exec_context)
-
-    run_result = _loop.run_until_complete(_run())
-
-    return run_result
-
-
 def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     """
     Send a message to the conversation and get the agent's response.
@@ -473,7 +447,23 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         )
         tools = [search_library_catalog]
 
-    run_result = run_agent(exec_context, system_prompt, tools, conversation)
+    agent = Agent[type(exec_context)](
+        name="Research Library Assistant",
+        model=MODEL,
+        # model_settings=ModelSettings(
+        #     # include_usage=True,  # only for chatcompletions based agents/models # requires openai model?
+        #     # reasoning=Reasoning(effort="low"),  # converted to chat completions API  reasoning_effort= which  is consistently supported in litellm
+        # ),
+        instructions=system_prompt,
+        tools=tools,
+    )
+
+    run_result = Runner.run_sync(
+        agent,
+        conversation,
+        context=exec_context,
+        run_config=RunConfig(tracing_disabled=True),
+    )
 
     return run_result
 

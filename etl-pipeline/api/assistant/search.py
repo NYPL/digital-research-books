@@ -1,5 +1,5 @@
 # ES9 import here only
-from elasticsearch.dsl import Search, Q
+from elasticsearch.dsl import Search, Q, Response
 # from elasticsearch9.dsl import Search, Q
 
 from typing import Dict
@@ -36,7 +36,7 @@ class Searcher:
     # topk=50
     def vector_search(
         self, query, topk=10, filter_query: Dict | None = None, brute=False
-    ):
+    ) -> Response:
         query_vector = self.embedder.get_embedding(query)
 
         # Brute force KNN
@@ -82,12 +82,11 @@ class Searcher:
 
         resp = search.execute()
         logger.info(
-            f"Vector search returned {len(resp.hits)} hits in {resp.took / 1000:.2f}s (brute={brute}, topk={topk})"
+            f"Vector search returned {len(resp.hits)} hits, server-side duration={resp.took / 1000:.2f}s (brute={brute}, topk={topk})"
         )
-        print(f"Server-side search took: {resp.took / 1000} (seconds)")
         return resp
 
-    def keyword_search(self, query, topk=10):
+    def keyword_search(self, query, topk=10) -> Response:
         search = (
             Search(index=self.index_name)
             .query(Q("match", text=query))
