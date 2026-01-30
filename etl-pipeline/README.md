@@ -1,6 +1,6 @@
 # Digital Research Books 
 
-![ETL_Pipeline_Tests](https://github.com/NYPL/drb-etl-pipeline/workflows/ETL_Pipeline_Tests/badge.svg)
+<!-- ![ETL_Pipeline_Tests](https://github.com/NYPL/drb-etl-pipeline/workflows/ETL_Pipeline_Tests/badge.svg) -->
 
 This directory contains the ETL pipeline, API server, and other deployable processes related to the DRB project (including GRIN books ingestion).
 
