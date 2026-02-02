@@ -20,7 +20,7 @@ def create_user(*args):
     run via `main.py -sc create_user -e <target_env>`
 
     <target_env> should be a env file stem configured with details for the DB
-    with a `users` table you want to write to (e.g. qa.yaml or production.yaml)
+    with a `users` table you want to write to (e.g. local-qa, qa, production).
 
     Script will error if username already exists due to uniqueness constraint
     on `users` table. See "models/postgres/user.py"
@@ -60,12 +60,12 @@ def create_user(*args):
     # Q: why not just directly write the bytes object?
     query = text("""
     INSERT INTO users (
-        "user", 
-        "password", 
-        "salt", 
-        "date_created", 
+        "user",
+        "password",
+        "salt",
+        "date_created",
         "date_modified"
-    ) 
+    )
     VALUES (
         :username,
         decode(:password_hex, 'hex'),
