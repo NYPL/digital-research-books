@@ -47,7 +47,7 @@ def set_env(mocker):
         {
             "NYPL_API_CLIENT_PUBLIC_KEY": "test",
             "ENVIRONMENT": "test",
-            "ELASTICSEARCH_INDEX": "test_es_index",
+            "DRB_ELASTICSEARCH_INDEX": "test_es_index",
         },
     )
 

@@ -4,6 +4,7 @@ import requests
 from urllib.parse import quote
 
 from .utils import assert_response_status
+from utils.common import require_env
 
 
 @pytest.mark.parametrize(
@@ -17,7 +18,7 @@ from .utils import assert_response_status
     ],
 )
 def test_search(endpoint, expected_status, test_title):
-    url = os.getenv("DRB_API_URL") + endpoint.format(keyword=quote(test_title))
+    url = require_env("DRB_API_URL") + endpoint.format(keyword=quote(test_title))
     response = requests.get(url)
 
     assert response.status_code is not None
@@ -56,10 +57,13 @@ def test_search(endpoint, expected_status, test_title):
 def test_search_language_and_sorting(
     endpoint, sort_field, sort_order, test_title, test_language
 ):
-    url = os.getenv("DRB_API_URL") + endpoint.format(
+    url = require_env("DRB_API_URL") + endpoint.format(
         keyword=quote(test_title), language=quote(test_language)
     )
     response = requests.get(url)
+    print(f"{url=}")
+    print(response.content)
+    print(response.headers)
 
     response_json = response.json()
     assert response_json is not None, "Response JSON is empty"
@@ -92,7 +96,7 @@ def test_search_language_and_sorting(
     ],
 )
 def test_search_readable_format_flags(endpoint, test_title):
-    url = os.getenv("DRB_API_URL") + endpoint.format(keyword=quote(test_title))
+    url = require_env("DRB_API_URL") + endpoint.format(keyword=quote(test_title))
     response = requests.get(url)
 
     response_json = response.json()

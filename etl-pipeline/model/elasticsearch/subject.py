@@ -1,4 +1,4 @@
-from elasticsearch_dsl import Keyword, Object
+from elasticsearch7_dsl import Keyword, Object
 
 from .base import BaseInner, PerLanguageField
 

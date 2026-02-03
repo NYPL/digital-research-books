@@ -74,7 +74,7 @@ class RecordDeleter:
             if work and not work.editions:
                 self.db_manager.session.delete(work)
                 self.es_manager.client.delete(
-                    index=os.environ["ELASTICSEARCH_INDEX"], id=work.uuid
+                    index=os.environ["DRB_ELASTICSEARCH_INDEX"], id=work.uuid
                 )
 
                 deleted_work_ids.add(work_id)
@@ -85,7 +85,7 @@ class RecordDeleter:
             if work_id not in deleted_work_ids:
                 work_uuid = work_ids_to_uuids[work_id]
                 work_document = self.es_manager.client.get(
-                    index=os.environ["ELASTICSEARCH_INDEX"], id=work_uuid
+                    index=os.environ["DRB_ELASTICSEARCH_INDEX"], id=work_uuid
                 )
                 editions = work_document["_source"].get("editions", [])
 
@@ -95,7 +95,7 @@ class RecordDeleter:
                 work_document["_source"]["editions"] = updated_editions
 
                 self.es_manager.client.index(
-                    index=os.environ["ELASTICSEARCH_INDEX"],
+                    index=os.environ["DRB_ELASTICSEARCH_INDEX"],
                     id=work_uuid,
                     body=work_document["_source"],
                 )

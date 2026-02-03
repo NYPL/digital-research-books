@@ -1,4 +1,4 @@
-from elasticsearch_dsl import Text, Keyword, Boolean, Nested, Object
+from elasticsearch7_dsl import Text, Keyword, Boolean, Nested, Object
 import os
 
 from .base import BaseDoc, PerLanguageField
@@ -46,4 +46,4 @@ class Work(BaseDoc):
         return "<ESWork(title={}, uuid={})>".format(self.title, self.uuid)
 
     class Index:
-        name = os.environ.get("ELASTICSEARCH_INDEX", None)
+        name = os.environ.get("DRB_ELASTICSEARCH_INDEX", None)

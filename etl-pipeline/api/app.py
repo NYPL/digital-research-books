@@ -1,4 +1,4 @@
-from elasticsearch.exceptions import RequestError
+from elasticsearch7.exceptions import RequestError
 from flasgger import Swagger
 from flask import Flask
 from flask_cors import CORS
@@ -9,7 +9,7 @@ from waitress import serve
 
 from logger import create_log
 from .blueprints import (
-    chats_blueprint,
+    chat_blueprint,
     search,
     work,
     works,
@@ -27,11 +27,12 @@ from .blueprints import (
     fulfill,
 )
 from .utils import APIUtils
+from .db import get_session
 
 logger = create_log(__name__)
 
 BLUEPRINTS = [
-    chats_blueprint,
+    chat_blueprint,
     search,
     work,
     works,
@@ -52,16 +53,24 @@ BLUEPRINTS = [
 
 class API:
     def __init__(self, db_engine, redis_client):
+        Session = get_session()
         self.app = Flask(__name__)
 
         CORS(self.app)
         Swagger(self.app, template=json.load(open("swagger.v4.json", "r")))
 
+        # TODO: rename "SQL_ENGINE"
         self.app.config["DB_CLIENT"] = db_engine
         self.app.config["REDIS_CLIENT"] = redis_client
         self.app.config["READER_VERSION"] = os.environ["READER_VERSION"]
 
         self._register_blueprints()
+
+        # Close the ORM session at end of request to create thread-safe/thread-scoped DB ORM sessions
+        # see: https://flask.palletsprojects.com/en/stable/appcontext/#events-and-signals
+        @self.app.teardown_appcontext
+        def shutdown_db_session(exception=None):
+            Session.remove()
 
     def _register_blueprints(self):
         for blueprint in BLUEPRINTS:
@@ -71,7 +80,7 @@ class API:
         if os.environ.get("STAGE") == "development":
             self.app.config["ENV"] = "development"
             self.app.config["DEBUG"] = True
-            self.app.run(host=os.environ.get("API_HOST"), port=5050)
+            self.app.run(host=os.environ.get("DRB_API_HOST"), port=5050)
         else:
             serve(self.app, host="0.0.0.0", port=80)
 

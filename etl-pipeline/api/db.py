@@ -1,6 +1,13 @@
 from datetime import datetime, timedelta, date, timezone
+from typing import List
 from sqlalchemy import Integer
-from sqlalchemy.orm import joinedload, sessionmaker
+from sqlalchemy.orm import (
+    joinedload,
+    sessionmaker,
+    contains_eager,
+    aliased,
+    scoped_session,
+)
 from sqlalchemy.sql import column, func, select, text, values
 from uuid import uuid4
 
@@ -14,7 +21,76 @@ from model import (
     User,
     AutomaticCollection,
 )
+from managers.db import DBManager
+from utils.common import require_env
+
 from .utils import APIUtils
+
+
+# Initialize ORM Session
+# global session object is scoped/closed at end of request via handler in api/app.py
+# based on best practice described here:
+# - https://docs.sqlalchemy.org/en/20/orm/contextual.html#using-thread-local-scope-with-web-applications
+# - https://flask.palletsprojects.com/en/stable/patterns/sqlalchemy/
+# - https://docs.sqlalchemy.org/en/20/orm/session_basics.html#using-a-sessionmaker
+_engine = None
+_Session = None
+
+
+def get_session():
+    """Retrieve singleton scoped session factory.
+
+    Defers database connection until first access, allowing this module to be
+    imported as a library without requiring environment variables to be set.
+
+    Returns:
+        scoped_session: A thread-local session factory that can be called to get a session.
+    """
+    global _engine, _Session
+    if _Session is None:
+        _engine = DBManager(host=require_env("POSTGRES_READ_HOST")).generate_engine()
+        _Session = scoped_session(sessionmaker(bind=_engine))
+        # Consider autocommit=False, autoflush=False see: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#flushing
+    return _Session
+
+
+def get_frbr_data_by_edition(edition_ids: List):
+    """
+    Return list of (Work, Edition) Rows for each of the passed edition_ids
+    present in the DB.
+    Edition includes the following eager loaded relationships: Edition.items,
+    Edition.items.links, Edition.items.rights, Edition.links.
+    """
+    # ALT: also sort the results by edition_ids order (using CTE as in fetchEditions() below)
+
+    edition_link_alias = aliased(Link)
+    item_link_alias = aliased(Link)
+
+    Session = get_session()
+    with Session() as session:
+        rows = (
+            session.query(Work, Edition)
+            .join(Work.editions)  # Work → Edition
+            # Edition.links (draws from aliased Link via edition_links crosswalk)
+            .outerjoin(Edition.links.of_type(edition_link_alias))
+            .outerjoin(Edition.items)  # Edition → Item
+            # Item.links (draws from aliased Link via item_links crosswalk)
+            .outerjoin(Item.links.of_type(item_link_alias))
+            .outerjoin(Item.rights)
+            .filter(Edition.id.in_(edition_ids))
+            .options(
+                # Eager-load Edition.items.links (Item.links)
+                contains_eager(Edition.items).contains_eager(
+                    Item.links.of_type(item_link_alias)
+                ),
+                # Eager-load Edition.items.rights (Item.rights)
+                contains_eager(Edition.items).contains_eager(Item.rights),
+                # Eager-load Edition.links (Edition.links)
+                contains_eager(Edition.links.of_type(edition_link_alias)),
+            )
+            .all()
+        )
+    return rows
 
 
 class DBClient:

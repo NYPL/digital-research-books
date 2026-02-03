@@ -11,13 +11,13 @@ class TestElasticsearchManager:
         mocker.patch.dict(
             "os.environ",
             {
-                "ELASTICSEARCH_INDEX": "testES",
-                "ELASTICSEARCH_HOST": "host",
-                "ELASTICSEARCH_PORT": "port",
-                "ELASTICSEARCH_TIMEOUT": "1000",
-                "ELASTICSEARCH_SCHEME": "http",
-                "ELASTICSEARCH_USER": "testUser",
-                "ELASTICSEARCH_PSWD": "testPswd",
+                "DRB_ELASTICSEARCH_INDEX": "testES",
+                "DRB_ELASTICSEARCH_HOST": "host",
+                "DRB_ELASTICSEARCH_PORT": "port",
+                "DRB_ELASTICSEARCH_TIMEOUT": "1000",
+                "DRB_ELASTICSEARCH_SCHEME": "http",
+                "DRB_ELASTICSEARCH_USER": "testUser",
+                "DRB_ELASTICSEARCH_PSWD": "testPswd",
             },
         )
 
@@ -28,13 +28,13 @@ class TestElasticsearchManager:
         mocker.patch.dict(
             "os.environ",
             {
-                "ELASTICSEARCH_INDEX": "testES",
-                "ELASTICSEARCH_HOST": "host1, host2, host3",
-                "ELASTICSEARCH_PORT": "port",
-                "ELASTICSEARCH_TIMEOUT": "1000",
-                "ELASTICSEARCH_SCHEME": "http",
-                "ELASTICSEARCH_USER": "testUser",
-                "ELASTICSEARCH_PSWD": "testPswd",
+                "DRB_ELASTICSEARCH_INDEX": "testES",
+                "DRB_ELASTICSEARCH_HOST": "host1, host2, host3",
+                "DRB_ELASTICSEARCH_PORT": "port",
+                "DRB_ELASTICSEARCH_TIMEOUT": "1000",
+                "DRB_ELASTICSEARCH_SCHEME": "http",
+                "DRB_ELASTICSEARCH_USER": "testUser",
+                "DRB_ELASTICSEARCH_PSWD": "testPswd",
             },
         )
 

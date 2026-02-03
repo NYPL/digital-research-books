@@ -1,4 +1,4 @@
-from elasticsearch.helpers import bulk
+from elasticsearch7.helpers import bulk
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_core.documents import Document
 import json

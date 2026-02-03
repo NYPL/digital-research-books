@@ -1,17 +1,17 @@
 import pytest
+from unittest.mock import patch
 
 from managers.parsers.parser_abc import ParserABC
 from tests.helper import TestHelpers
 
 
 class TestParserABC:
-    @classmethod
-    def setup_class(cls):
-        TestHelpers.setEnvVars()
+    @pytest.fixture(scope="class", autouse=True)
+    def setup_env(self):
+        import os
 
-    @classmethod
-    def teardown_class(cls):
-        TestHelpers.clearEnvVars()
+        with patch.dict(os.environ, TestHelpers.ENV_VARS, clear=True):
+            yield
 
     @pytest.fixture
     def test_parser(self, mocker):

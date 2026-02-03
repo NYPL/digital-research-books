@@ -4,7 +4,7 @@ import requests
 from requests.exceptions import Timeout, ConnectionError
 
 from logger import create_log
-from utils.utils import read_env
+from utils.common import require_env
 
 
 logger = create_log(__name__)
@@ -24,8 +24,8 @@ class OCLCAuthManager:
 
     @classmethod
     def get_search_token(cls):
-        OCLC_CLIENT_ID = read_env("OCLC_CLIENT_ID")
-        OCLC_CLIENT_SECRET = read_env("OCLC_CLIENT_SECRET")
+        OCLC_CLIENT_ID = require_env("OCLC_CLIENT_ID")
+        OCLC_CLIENT_SECRET = require_env("OCLC_CLIENT_SECRET")
 
         cls._search_token, cls._search_token_expires_at = cls._get_token(
             token=cls._search_token,
@@ -39,8 +39,8 @@ class OCLCAuthManager:
 
     @classmethod
     def get_metadata_token(cls):
-        OCLC_METADATA_ID = read_env("OCLC_METADATA_ID")
-        OCLC_METADATA_SECRET = read_env("OCLC_METADATA_SECRET")
+        OCLC_METADATA_ID = require_env("OCLC_METADATA_ID")
+        OCLC_METADATA_SECRET = require_env("OCLC_METADATA_SECRET")
 
         cls._metadata_token, cls._metadata_token_expires_at = cls._get_token(
             token=cls._metadata_token,

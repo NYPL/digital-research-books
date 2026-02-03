@@ -1,5 +1,5 @@
 from copy import deepcopy
-from elasticsearch_dsl import Search, Q, A
+from elasticsearch7_dsl import Search, Q, A
 from hashlib import sha1
 import json
 import os
@@ -97,7 +97,7 @@ class ElasticClient:
 
     def __init__(self, redisClient):
         self.environment = os.environ["ENVIRONMENT"]
-        self.esIndex = os.environ["ELASTICSEARCH_INDEX"]
+        self.esIndex = os.environ["DRB_ELASTICSEARCH_INDEX"]
 
         self.redis = redisClient
 
@@ -116,7 +116,7 @@ class ElasticClient:
         return self.searchQuery(params.to_query_filters(), params.page, params.size)
 
     def createSearch(self):
-        s = Search(index=os.environ["ELASTICSEARCH_INDEX"])
+        s = Search(index=os.environ["DRB_ELASTICSEARCH_INDEX"])
         searchES = s.params(track_total_hits=True)
         return searchES
 

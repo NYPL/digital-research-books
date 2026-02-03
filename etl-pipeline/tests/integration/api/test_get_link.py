@@ -3,6 +3,7 @@ import pytest
 import requests
 
 from .utils import assert_response_status
+from utils.common import require_env
 
 
 @pytest.mark.parametrize(
@@ -16,7 +17,7 @@ from .utils import assert_response_status
     ],
 )
 def test_get_link(endpoint, expected_status, test_link_id):
-    url = os.getenv("DRB_API_URL") + endpoint.format(link_id=test_link_id)
+    url = require_env("DRB_API_URL") + endpoint.format(link_id=test_link_id)
     response = requests.get(url)
 
     assert response.status_code is not None

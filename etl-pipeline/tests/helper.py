@@ -1,6 +1,9 @@
 import os
 
 
+# NOTE: setEnvVars() does not clear all pre-existing vars from os.environ  and \
+# clearEnvVars() does not restore previous state. Make sure usage does not \
+# implicitly rely on a clean os.environ.
 class TestHelpers:
     ENV_VARS = {
         "POSTGRES_HOST": "test_psql_host",
@@ -12,10 +15,10 @@ class TestHelpers:
         "POSTGRES_ADMIN_PSWD": "test_psql_admin_pswd",
         "REDIS_HOST": "test_redis_host",
         "REDIS_PORT": "test_redis_port",
-        "ELASTICSEARCH_INDEX": "test_es_index",
-        "ELASTICSEARCH_HOST": "test_es_host",
-        "ELASTICSEARCH_PORT": "test_es_port",
-        "ELASTICSEARCH_TIMEOUT": "test_es_timeout",
+        "DRB_ELASTICSEARCH_INDEX": "test_es_index",
+        "DRB_ELASTICSEARCH_HOST": "test_es_host",
+        "DRB_ELASTICSEARCH_PORT": "test_es_port",
+        "DRB_ELASTICSEARCH_TIMEOUT": "test_es_timeout",
         "OCLC_API_KEY": "test_oclc_key",
         "OCLC_CLASSIFY_API_KEY": "test_classify_key",
         "AWS_REGION": "test_aws_region",

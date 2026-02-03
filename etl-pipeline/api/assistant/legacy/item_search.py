@@ -22,7 +22,7 @@ except:
 
 @items_blueprint.route("/<item_id>/search", methods=["GET"])
 def item_search(item_id):
-    search_results = get_search_results(
+    search_results = item_full_text_search(
         item_id,
         query_mode=request.args.get("mode", "keyword"),
         keyword=request.args.get("kw"),
@@ -33,7 +33,7 @@ def item_search(item_id):
     return APIUtils.formatResponseObject(200, RESPONSE_TYPE, search_results)
 
 
-def get_search_results(
+def item_full_text_search(
     item_id: str,
     query_mode: QueryMode,
     keyword: Optional[str],

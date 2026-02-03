@@ -1,4 +1,4 @@
-from elasticsearch_dsl import Text, Keyword
+from elasticsearch7_dsl import Text, Keyword
 
 from .base import BaseInner, plain_ascii
 
