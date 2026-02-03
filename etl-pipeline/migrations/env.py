@@ -7,14 +7,14 @@ from sqlalchemy import pool
 from alembic import context
 from utils.load_env import load_env
 import model.postgres.base
-# from utils.utils import read_env
 
 # load specified environment
 xargs = context.get_x_argument(as_dictionary=True)
 environment = xargs.get("env")
 if environment is None:
     # ALT: read env name from env vars if not passed as -x arg
-    # environment = read_env('ENVIRONMENT')
+    # from utils.utils import require_env
+    # environment = require_env('ENVIRONMENT')
 
     raise ValueError("`-x env=<target_env>` missing from alembic call")
 env_file = Path(__file__).parent.parent / "config" / f".env.{environment}"

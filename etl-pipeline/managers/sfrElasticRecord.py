@@ -1,4 +1,4 @@
-from elasticsearch.exceptions import ConnectionTimeout
+from elasticsearch7.exceptions import ConnectionTimeout
 
 from model import (
     ESWork,

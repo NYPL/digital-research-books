@@ -7,6 +7,16 @@ from api.utils import APIUtils
 from datetime import datetime, timezone
 
 
+def test_orm_to_dict():
+    # TEST cases:
+    # circular relationship: Parent.children, Child.parents
+    # transitory locally created ORM obj
+    # missing FK in relation (relations is None)
+    # no error if irrelevant exclude spec is passed
+    # exclude correctly excludes at a nested level
+    pytest.xfail(reason="not implemented")
+
+
 class TestAPIUtils:
     @pytest.fixture
     def testApp(self):
@@ -262,6 +272,7 @@ class TestAPIUtils:
             "currentPage": 1,
             "nextPage": 2,
             "lastPage": 5,
+            "totalRecords": 50,
         }
 
     def test_formatPagingOptions_next_null(self):
@@ -274,6 +285,7 @@ class TestAPIUtils:
             "currentPage": 6,
             "nextPage": None,
             "lastPage": 6,
+            "totalRecords": 55,
         }
 
     def test_formatWorkOutput_single_work(self, mocker, testApp):

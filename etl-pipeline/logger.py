@@ -26,6 +26,7 @@ def configure_loggers():
     logger = logging.getLogger("drb")
     console_log_handler = logging.StreamHandler(stream=sys.stdout)
 
+    print("log level", os.environ.get("LOG_LEVEL"))
     log_level = os.environ.get("LOG_LEVEL", "info").lower()
 
     logger.setLevel(levels[log_level])

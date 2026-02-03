@@ -6,14 +6,14 @@ import os
 
 from model import Work
 from managers import DBManager, ElasticsearchManager
-from elasticsearch_dsl import Search
+from elasticsearch7_dsl import Search
 
 
 def main():
     es_manager = ElasticsearchManager()
     es_manager.create_elastic_connection()
 
-    index = os.environ["ELASTICSEARCH_INDEX"]
+    index = os.environ["DRB_ELASTICSEARCH_INDEX"]
     batch_size = 1000
 
     with DBManager() as db_manager:

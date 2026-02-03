@@ -6,7 +6,7 @@ from google.oauth2.service_account import Credentials
 import json
 from requests import HTTPError
 from logger import create_log
-from utils.utils import read_env
+from utils.common import require_env
 
 BATCH_LIMIT = 100
 
@@ -19,7 +19,7 @@ class GRINClient(object):
         self.session = AuthorizedSession(self.creds)
 
     def load_creds(self):
-        service_account_file = read_env("GRIN_AUTH")
+        service_account_file = require_env("GRIN_AUTH")
         service_account_info = json.loads(service_account_file)
 
         scopes = [

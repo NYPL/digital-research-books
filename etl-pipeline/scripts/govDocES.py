@@ -1,5 +1,5 @@
 import os
-from elasticsearch.exceptions import NotFoundError, ConflictError
+from elasticsearch7.exceptions import NotFoundError, ConflictError
 from sqlalchemy.sql.functions import array_agg
 
 from model import Work, Edition, ESWork

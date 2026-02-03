@@ -1,5 +1,5 @@
 import os
-from elasticsearch.exceptions import NotFoundError
+from elasticsearch7.exceptions import NotFoundError
 
 from model import Work, Item, Edition, ESWork
 from managers import DBManager, ElasticsearchManager

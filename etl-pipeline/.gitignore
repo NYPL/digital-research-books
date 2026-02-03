@@ -1,13 +1,14 @@
-/__pycache__/*
 .DS_Store
 .coverage
 /.vscode/*
 *.pyc
 *.xml
 *.code-workspace
+
+# Hold over from previous formatting of secret env files
 config/local*
-!config/local.yaml
-!config/local-compose.yaml
+
+
 /allure-results
 /scripts/*.log
 # ctags generated file

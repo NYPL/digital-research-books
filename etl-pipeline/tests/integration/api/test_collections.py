@@ -3,6 +3,7 @@ import pytest
 import requests
 
 from .utils import assert_response_status
+from utils.common import require_env
 
 
 @pytest.mark.parametrize(
@@ -16,7 +17,7 @@ from .utils import assert_response_status
     ],
 )
 def test_get_collection(endpoint, expected_status, test_collection_id):
-    url = os.getenv("DRB_API_URL") + endpoint.format(collection_id=test_collection_id)
+    url = require_env("DRB_API_URL") + endpoint.format(collection_id=test_collection_id)
     response = requests.get(url)
 
     assert response.status_code is not None
@@ -28,7 +29,7 @@ def test_get_collection(endpoint, expected_status, test_collection_id):
 
 
 def test_get_collections():
-    url = os.getenv("DRB_API_URL") + "/collections?sort=title"
+    url = require_env("DRB_API_URL") + "/collections?sort=title"
     response = requests.get(url)
 
     assert response.status_code is not None

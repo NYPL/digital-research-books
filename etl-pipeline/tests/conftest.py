@@ -41,6 +41,37 @@ def pytest_addoption(parser):
     )
 
 
+# NOTE: autouse=True does not guarantee execution before other session scoped \
+# fixtures unless an explicit dependency on setup_env is specified.
+@pytest.fixture(scope="session", autouse=True)
+def setup_env(pytestconfig, request):
+    # Check if test session is all tests in the unit/ folder
+    only_unit_tests = all("unit" in item.keywords for item in request.session.items)
+    # NOTE: pytest item keywords are based on the path from the pytest rootdir, \
+    # which is set by default to the highest dir containing conftest.py. So as long as \
+    # the "unit" directory is at or below conftest.py in the directory tree \
+    # (and pytest `--rootdir` is not overridden), the "unit" keyword will be \
+    # present for all tests under the "unit/" folder.
+
+    # fetch target environment
+    # NOTE: default is "local" from addoption()
+    environment = os.environ.get("ENVIRONMENT") or pytestconfig.getoption("--env")
+
+    # Error if attempting to run function or integration tests against \
+    # production environment
+    if (not only_unit_tests) and ("production" in environment):
+        raise ValueError(
+            "Integration and functional tests cannot be run on production environments."
+        )
+
+    print(f'Loading environment: "{environment}" during test setup')
+    config_dir = Path(__file__).parent.parent / "config"
+    load_env(config_dir / f".env.{environment}")
+    # Setting ENVIRONMENT so that downstream fixtures and tests can determine \
+    # execution behavior based on the environment
+    os.environ["ENVIRONMENT"] = environment
+
+
 def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:
     existing_record = (
         db_manager.session.query(Record)
@@ -66,26 +97,6 @@ def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:
     db_manager.session.commit()
 
     return new_record
-
-
-# NOTE: autouse=True does not guarantee execution before other session scoped \
-# fixtures unless an explicit dependency on setup_env is specified.
-@pytest.fixture(scope="session", autouse=True)
-def setup_env(pytestconfig, request):
-    is_unit_test = any("unit" in item.keywords for item in request.session.items)
-
-    # Q: re:removed code: any reason why we should be prevented from running integration tests on PRODUCTION?
-    if not is_unit_test:
-        environment = (
-            # NOAH RECOMMENDS: choose one source of end or the other
-            os.environ.get("ENVIRONMENT") or pytestconfig.getoption("--env")
-        )
-        assert environment is not None, (
-            "an execution environment must be specified if not running unit tests."
-        )
-        print(f'Loading environment: "{environment}" during test setup')
-        config_dir = Path(__file__).parent.parent / "config"
-        load_env(config_dir / f".env.{environment}")
 
 
 @pytest.fixture(scope="session")

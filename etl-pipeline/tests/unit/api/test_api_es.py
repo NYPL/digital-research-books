@@ -1,6 +1,6 @@
 import pytest
 
-from elasticsearch_dsl import Search, Q, A
+from elasticsearch7_dsl import Search, Q, A
 from tests.helper import TestHelpers
 from api.elastic import ElasticClient, ElasticClientError
 

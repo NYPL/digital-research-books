@@ -1,4 +1,4 @@
-from elasticsearch_dsl import Keyword
+from elasticsearch7_dsl import Keyword
 
 from .base import BaseInner
 

@@ -1,4 +1,4 @@
-from elasticsearch.exceptions import ConnectionError
+from elasticsearch7.exceptions import ConnectionError
 import os
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import sqlalchemy as sa

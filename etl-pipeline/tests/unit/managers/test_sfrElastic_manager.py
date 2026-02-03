@@ -1,4 +1,4 @@
-from elasticsearch.exceptions import ConnectionTimeout
+from elasticsearch7.exceptions import ConnectionTimeout
 import pytest
 
 from managers import SFRElasticRecordManager

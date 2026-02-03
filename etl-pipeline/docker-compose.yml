@@ -45,6 +45,7 @@ services:
       context: .
     command: -e local-compose -p APIProcess
     ports:
+      # TODO: this port spec should read from the local env files
       - 5050:5050
     volumes:
       - type: bind

@@ -1,3 +1,38 @@
+# prepares (structures, formats individual records, deduplicates between) data records for insertion into Works, Editions Items Tables
+
+"""SFR Record Manager Module
+
+This module provides functionality for managing and processing Scholar Friend Record (SFR)
+bibliographic data within the ETL pipeline. It handles the transformation, merging, and
+persistence of bibliographic records into a structured hierarchy of Work, Edition, and Item entities.
+
+Main Purpose:
+    Orchestrate the consolidation of multiple bibliographic records into cohesive Work records,
+    handling deduplication, data normalization, and hierarchical structuring for digital library
+    collections.
+
+Key Functionalities:
+    - Record Merging: Identify and merge duplicate works based on DCDW UUIDs and identifiers
+    - Deduplication: Remove duplicate identifiers, links, and entities across the record hierarchy
+    - Work Building: Construct Work entities from clustered records, aggregating metadata
+    - Edition Management: Group records by publication year into distinct Edition entities
+    - Item Processing: Parse and structure Item-level data including links, rights, and locations
+    - Agent Parsing: Normalize and deduplicate authors, contributors, and publishers using
+      fuzzy matching (Jaro-Winkler similarity) and authority identifiers (VIAF, LCNAF)
+    - Subject Processing: Normalize subject headings and authority control numbers
+    - Language Handling: Standardize language codes using ISO 639 standards and pycountry
+    - Metadata Normalization: Process dates, measurements, identifiers, and other metadata fields
+    - Sort Title Generation: Create normalized sort titles by removing stopwords
+
+Classes:
+    SFRRecordManager: Main class for managing bibliographic record operations
+
+Dependencies:
+    - SQLAlchemy models (Work, Edition, Item, Identifier, Link, Record, Rights)
+    - Levenshtein for fuzzy string matching
+    - pycountry for language standardization
+"""
+
 from collections import Counter, defaultdict
 from datetime import date, datetime, timezone
 import json

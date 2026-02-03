@@ -10,7 +10,7 @@ from managers import DBManager, S3Manager
 from model import GRINStatus, GRINState
 from logger import create_log
 from utils.profiler import profile
-from utils.utils import read_env
+from utils.common import require_env
 
 logger = create_log(__name__)
 
@@ -21,7 +21,7 @@ class GRINDownloadService:
         self.s3_manager = S3Manager()
         self.bucket = bucket
 
-        self.grin_pass_key = read_env("GRIN_ACCESS_KEY")
+        self.grin_pass_key = require_env("GRIN_ACCESS_KEY")
 
     @profile(logger=logger)
     def download_barcode(self, barcode):

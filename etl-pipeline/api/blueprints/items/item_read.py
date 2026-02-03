@@ -1,14 +1,20 @@
 import base64
-from ocrmypdf.hocrtransform import HocrTransform
 import os
 import tempfile
 
-from api.utils import APIUtils
-from .items import items_blueprint
+from ocrmypdf.hocrtransform import HocrTransform
+
+# api imports
+from ...utils import APIUtils
+from . import items_blueprint
+
+# shared code imports
 import file_conversion.pdfs.mets_parser as mets_parser
 from managers import DBManager, S3Manager
 from model import Item, Record
 from processes.grin.unpack import GRINUnpackService
+# TODO: since the unpack functions are used in multiple places they should be \
+# moved to a shared code location.
 
 RESPONSE_TYPE = "itemRead"
 

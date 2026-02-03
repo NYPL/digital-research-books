@@ -1,4 +1,4 @@
-from .chats import chats_blueprint
+from .chat import chat_blueprint
 from .drbCitation import citation
 from .drbCollection import collection, collections
 from .drbEdition import edition, editions
