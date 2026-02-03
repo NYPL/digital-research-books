@@ -62,12 +62,12 @@ After verifying a successfull installation, run `nvm install` to install the exp
 Alternatively, download and install the expected Node version from the [official site](https://nodejs.org/en/download).
 
 ### 2. Install dependencies
-Install required dependencies by running:
+Install dependencies with:
 ```
-npm install --production
+npm install
 ```
-
-Run the command without the `--production` option to also install packages used for development and testing.
+**Note:** Adding `--production` to the command installs only production dependencies however be aware that the prod build also runs linting and type checks that rely on development dependencies such as `eslint` and `jest`. To help avoid build errors due to missing packages, it's recommended to install all dependencies.
+```
 
 ### 3. Create Environment File
 Set up an environment file to store configuration variables and secrets:
