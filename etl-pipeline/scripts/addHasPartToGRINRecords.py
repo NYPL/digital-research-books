@@ -53,23 +53,30 @@ def create_first_page_part(barcode: str, mets_file: mets_parser.METSFile) -> Par
     )
 
 
-def main():
+def main(stmt=None):
+    """
+
+    Params:
+        stmt: (sqlalchemy.sql.selectable.Select) Must include Record.id .
+    """
     record_pipeline_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
     sqs_manager = SQSManager(record_pipeline_queue)
     s3_client = boto3.client("s3")
     bucket = os.environ["PRIVATE_FILE_BUCKET"]
 
     with DBManager() as db_manager:
-        stmt = (
-            select(Record)
-            .join(GRINStatus, GRINStatus.record_id == Record.id)
-            .filter(
-                Record.source == "grin",
-                func.split_part(Record.rights, "|", 2) == "public_domain",
-                GRINStatus.state == GRINState.DOWNLOADED.value,
-                Record.state == "ingested",
+        if stmt is None:
+            # NYPL GRIN public domain books
+            stmt = (
+                select(Record)
+                .join(GRINStatus, GRINStatus.record_id == Record.id)
+                .filter(
+                    Record.source == "grin",
+                    func.split_part(Record.rights, "|", 2) == "public_domain",
+                    GRINStatus.state == GRINState.DOWNLOADED.value,
+                    Record.state == "ingested",
+                )
             )
-        )
 
         total_records = db_manager.session.scalar(
             select(func.count()).select_from(stmt.alias())
