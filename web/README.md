@@ -67,7 +67,6 @@ Install dependencies with:
 npm install
 ```
 **Note:** Adding `--production` to the command installs only production dependencies however be aware that the prod build also runs linting and type checks that rely on development dependencies such as `eslint` and `jest`. To help avoid build errors due to missing packages, it's recommended to install all dependencies.
-```
 
 ### 3. Create Environment File
 Set up an environment file to store configuration variables and secrets:
@@ -77,7 +76,7 @@ Set up an environment file to store configuration variables and secrets:
 
 ⚠️&nbsp;&nbsp;The app will not function properly without the necessary secrets.
 
-🔐&nbsp;&nbsp;Some automated testing depends on user credentials for accessing the catalog.
+🔐&nbsp;&nbsp;There are tests that depend on setting user credentials for accessing the catalog and VRA.
 
 ### 4. (Optional) Set up local PDF proxy
 To view PDFs locally through the **webreader**, set up a local proxy as described in its [instructions](https://github.com/NYPL/web-reader#cors-proxy).
