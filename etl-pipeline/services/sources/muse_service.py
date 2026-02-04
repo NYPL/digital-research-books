@@ -2,8 +2,10 @@ import csv
 from datetime import datetime
 from itertools import islice
 from io import BytesIO
+import logging
 from pymarc import MARCReader
 import requests
+from tenacity import retry, stop_after_attempt, wait_exponential, before_sleep_log
 
 from managers import S3Manager, MUSEManager
 from mappings.marc_record import map_marc_record
@@ -80,20 +82,21 @@ class MUSEService(SourceService):
 
         return record
 
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        before_sleep=before_sleep_log(logger, logging.WARNING),
+    )
     def _get_marc_records(self):
         try:
-            marc_response = requests.get(MARC_URL, stream=True, timeout=30)
+            marc_response = requests.get(MARC_URL, timeout=30)
             marc_response.raise_for_status()
         except Exception as e:
             raise Exception(
                 f"Unable to stream Project MUSE MARC file from '{MARC_URL}'"
             ) from e
 
-        content = bytes()
-        for chunk in marc_response.iter_content(1024 * 250):
-            content += chunk
-
-        return BytesIO(content)
+        return BytesIO(marc_response.content)
 
     def _get_record_updates(self) -> dict:
         try:
