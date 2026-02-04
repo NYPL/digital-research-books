@@ -8,6 +8,12 @@ services:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: localpsql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"] # pg_ready never needs a password, postgres user simply prevents log message telling us default root user does not exist
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   elasticsearch:
     container_name: drb_local_es
@@ -27,6 +33,12 @@ services:
       - elasticsearch-plugin install analysis-icu analysis-smartcn analysis-kuromoji analysis-stempel; /usr/local/bin/docker-entrypoint.sh elasticsearch
     volumes:
       - drb_local_esdata:/bitnami/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   redis:
     container_name: drb_local_rs
@@ -35,6 +47,12 @@ services:
       - 6379:6379
     volumes:
       - drb_local_rsdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   api:
     container_name: drb_local_api
@@ -52,6 +70,12 @@ services:
         source: .
         target: /src
         read_only: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5050/apidocs/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   aws_services:
     container_name: drb-local-aws
@@ -67,13 +91,22 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./localstack/init-localstack-resources.sh:/etc/localstack/init/ready.d/init-localstack-resources.sh
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4566/_localstack/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   devsetup:
     container_name: drb_local_devSetUp
     depends_on:
-      - database
-      - elasticsearch
-      - aws_services
+      database:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      aws_services:
+        condition: service_healthy
     build:
       context: .
     command: -e local-compose -p LocalDevelopmentSetupProcess

@@ -82,9 +82,10 @@ jobs:
         run: |
           docker compose up -d
 
-      - name: Wait for containers
+      - name: Wait for services to be healthy
+        working-directory: ./etl-pipeline
         run: |
-          echo "Waiting for services..." && sleep 90
+          ./docker-compose-healthcheck.sh
 
       - name: Run functional tests
         env:
