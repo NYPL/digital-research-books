@@ -1,17 +1,19 @@
 import csv
+from typing import Generator
 from datetime import datetime
 from itertools import islice
 from io import BytesIO
 import logging
+
 from pymarc import MARCReader
 import requests
-from tenacity import retry, stop_after_attempt, wait_exponential, before_sleep_log
 
 from managers import S3Manager, MUSEManager
 from mappings.marc_record import map_marc_record
 from model import Record, Source
 from logger import create_log
-from typing import Generator
+from utils.retry_request import retry_request
+
 from .source_service import SourceService
 
 logger = create_log(__name__)
@@ -82,10 +84,11 @@ class MUSEService(SourceService):
 
         return record
 
-    @retry(
-        stop=stop_after_attempt(5),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        before_sleep=before_sleep_log(logger, logging.WARNING),
+    @retry_request(
+        max_retries=4,
+        wait_seconds=1,
+        log_func=logger.warning,
+        retry_exceptions=(Exception,),
     )
     def _get_marc_records(self):
         try:
@@ -93,7 +96,7 @@ class MUSEService(SourceService):
             marc_response.raise_for_status()
         except Exception as e:
             raise Exception(
-                f"Unable to stream Project MUSE MARC file from '{MARC_URL}'"
+                f"Failed to fetch Project MUSE MARC file from '{MARC_URL}'"
             ) from e
 
         return BytesIO(marc_response.content)
