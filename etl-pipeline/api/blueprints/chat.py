@@ -141,7 +141,7 @@ def format_search_results(search_results):
     return formatted_search_result
 
 
-@chat_blueprint.route("/", methods=["POST"])
+@chat_blueprint.route("", methods=["POST"])
 @require_api_key
 @require_basic_authentication
 def chat(user=None):
