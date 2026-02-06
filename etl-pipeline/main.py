@@ -4,14 +4,9 @@ import newrelic.agent
 import inspect
 
 from args_parser import create_arg_parser
+from utils.common import require_env
 from utils.load_env import load_env
 from logger import configure_loggers, create_log
-
-
-if os.environ.get("NEW_RELIC_LICENSE_KEY", None):
-    newrelic.agent.initialize(
-        config_file="newrelic.ini", environment=os.environ.get("ENVIRONMENT", "local")
-    )
 
 
 def main(args):
@@ -96,10 +91,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     load_env(f"./config/.env.{args.environment}")
-    if os.environ.get("ENVIRONMENT") is None:
-        # MAYBE: remove  this...
-        os.environ["ENVIRONMENT"] = args.environment
+    os.environ["ENVIRONMENT"] = args.environment
+
     configure_loggers()
 
+    if os.environ.get("NEW_RELIC_LICENSE_KEY"):
+        newrelic.agent.initialize(
+            config_file="newrelic.ini", environment=require_env("ENVIRONMENT")
+        )
     main(args)
     newrelic.agent.shutdown_agent()
