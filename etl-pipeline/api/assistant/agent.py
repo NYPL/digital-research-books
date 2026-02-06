@@ -238,6 +238,7 @@ def search_library_catalog(
             if frbr_ids is None:
                 missing_edition_ids.append(chunk_hit["book_id"])
                 continue
+            chunk_hit.update(frbr_ids)
             if frbr_ids["edition_id"] not in edition_hits:
                 edition_hits[frbr_ids["edition_id"]] = {
                     "edition_id": frbr_ids["edition_id"],
@@ -434,7 +435,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
 
         template = Template((PROMPTS_DIR / "chat" / "1.jinja.md").read_text())
         system_prompt = template.render(
-            conversation_type="content_search", frbr_fields=frbr_fields
+            conversation_type="contentSearch", frbr_fields=frbr_fields
         )
         tools = [search_in_book]
 
@@ -443,7 +444,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         exec_context = CatalogSearchExecutionContext(searcher=searcher)
         template = Template((PROMPTS_DIR / "chat" / "1.jinja.md").read_text())
         system_prompt = remove_markdown_comments(
-            template.render(conversation_type="catalog_search")
+            template.render(conversation_type="catalogSearch")
         )
         tools = [search_library_catalog]
 
