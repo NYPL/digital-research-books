@@ -1,6 +1,8 @@
 import json
+
 import pytest
 from managers import SQSManager
+from utils.common import require_env
 
 
 @pytest.fixture
@@ -15,6 +17,9 @@ def sqs_manager(monkeypatch):
 class TestSQSManagerIntegration:
     def test_send_and_receive_message(self, sqs_manager):
         """Test full message lifecycle: send -> receive -> delete"""
+        if require_env("ENVIRONMENT") != "local":
+            pytest.skip(reason="only implemented for `local` env")
+
         # Send test message
         test_msg = {"key": "value"}
         send_result = sqs_manager.send_message_to_queue(test_msg)
