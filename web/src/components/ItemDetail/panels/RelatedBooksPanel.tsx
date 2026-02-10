@@ -8,7 +8,7 @@ const RelatedBooksPanel: React.FC = () => (
   <Flex gap="xs" flexDir="column">
     <BookCard />
     <BookCard />
-    <Flex alignItems="center" justifyContent="space-between">
+    <Flex alignItems="center" justifyContent="space-between" height="1.125rem">
       <AiGeneratedText />
       <FeedbackButtons />
     </Flex>
