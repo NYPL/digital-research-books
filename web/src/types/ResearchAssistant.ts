@@ -170,9 +170,7 @@ export interface HistoryItem {
   linkResults: LinkResult;
 }
 
-export type ChatResults =
-  | { type: ConversationType.Catalog; data: CatalogSearchResults }
-  | { type: ConversationType.Content; data: ContentSearchResults };
+export type ChatResults = CatalogSearchResults | ContentSearchResults;
 
 export type SearchParams = {
   query: [string, string][];

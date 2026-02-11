@@ -65,13 +65,8 @@ export default async function handler(
     const chatResult = await chatResponse.json();
     const chatData = chatResult.data;
 
-    const formattedResults = {
-      type: chatData.conversation_context,
-      data: chatData.result,
-    };
-
     return res.status(201).json({
-      results: formattedResults,
+      results: chatData.result,
       messages: chatData.messages,
     });
   } catch (error) {

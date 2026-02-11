@@ -117,9 +117,9 @@ const ResearchAssistant: React.FC = () => {
                 >
                   {results && Object.keys(results).length > 0 ? (
                     <>
-                      {results.data.conversation_context ===
+                      {results.conversation_context ===
                         ConversationType.Catalog && (
-                        <CatalogResults results={results.data} />
+                        <CatalogResults results={results} />
                       )}
                     </>
                   ) : (

@@ -148,7 +148,7 @@ export const ResearchAssistantProvider: React.FC<{
         showWebReader: false,
       }));
 
-      if (data.results?.type === ConversationType.Catalog) {
+      if (data.results?.conversation_context === ConversationType.Catalog) {
         setHistoryStack([]);
         pushNewState({
           results: data.results,
@@ -157,7 +157,7 @@ export const ResearchAssistantProvider: React.FC<{
           itemId: "",
         });
       } else if (
-        data.results?.type === ConversationType.Content &&
+        data.results?.conversation_context === ConversationType.Content &&
         viewState.itemId
       ) {
         pushNewState({
