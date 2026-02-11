@@ -9,7 +9,7 @@ from .assert_uploaded_epubs import assert_uploaded_epubs
 
 
 @pytest.mark.skip(
-    reason="As of Feb 11 2026, one of the the latest 5 records ingested includes a corrupted zipfile which errors during RecordFileSaver. Retry once this file is not in the latest 5 records."
+    reason="As of Feb 11 2026, one of the latest 5 records ingested includes a corrupted zipfile which errors during RecordFileSaver. Retry once this file is not in the latest 5 records."
 )
 def test_loc_process(db_manager, s3_manager, mock_epub_to_webpub, mock_sqs_manager):
     loc_process = IngestProcess("complete", None, None, None, 5, None, Source.LOC.value)
