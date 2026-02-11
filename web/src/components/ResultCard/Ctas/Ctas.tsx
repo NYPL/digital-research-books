@@ -3,17 +3,27 @@ import { useCookies } from "react-cookie";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
 import { Agent, ApiItem } from "~/src/types/DataModel";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
-import PreviewLink from "../ResultCard/Ctas/PreviewLink";
 import DownloadLink from "./DownloadLink";
 import EddLink from "./EddLink";
+import PreviewLink from "./PreviewLink";
 import ReadOnlineLink from "./ReadOnlineLink";
 
-const Ctas: React.FC<{
+interface CtasProps {
   authors: Agent[];
   item: ApiItem | undefined;
   title: string;
-}> = ({ authors, item, title }) => {
-  // cookies defaults to be undefined if not fonud
+  workId?: string;
+  editionId?: number;
+}
+
+const Ctas: React.FC<CtasProps> = ({
+  authors,
+  item,
+  title,
+  workId,
+  editionId,
+}) => {
+  // cookies defaults to be undefined if not found
   const [cookies] = useCookies([NYPL_SESSION_ID]);
   const loginCookie = cookies[NYPL_SESSION_ID];
   const isLoggedIn = !!loginCookie;
@@ -22,6 +32,7 @@ const Ctas: React.FC<{
   const downloadLink = EditionCardUtils.selectDownloadLink(item);
 
   const authorNames = authors ? authors.map((author) => author.name) : [];
+  console.log(readOnlineLink);
 
   if (readOnlineLink || downloadLink) {
     return (
@@ -35,7 +46,11 @@ const Ctas: React.FC<{
               title={title}
             />
           ) : (
-            <PreviewLink previewLink={readOnlineLink} />
+            <PreviewLink
+              previewLink={readOnlineLink}
+              workId={workId}
+              editionId={editionId}
+            />
           ))}
         {downloadLink && (
           <DownloadLink

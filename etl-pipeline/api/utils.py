@@ -46,7 +46,7 @@ def remove_markdown_comments(markdown_text):
 
 # see: https://chatgpt.com/c/694e008d-e04c-8326-8c94-223abfd642ba
 # TODO: add column name mapping (if needed)
-def orm_to_dict(obj, exclude=None, visited=None):
+def orm_to_dict(obj, exclude=None, visited=None, column_formatters=None):
     """
     Convert a single SQLAlchemy ORM object to a dict, following relationships
     recursively to created a nested structure.
@@ -93,7 +93,15 @@ def orm_to_dict(obj, exclude=None, visited=None):
     for column in insp.mapper.column_attrs:
         if (insp.mapper.class_, column.key) not in exclude:
             # ALT FUTURE: for effciency check check col key first. To handle Mixin classes do issubclass(insp.mapper.class_, exclude_cls)
-            data[column.key] = getattr(obj, column.key)
+            value = getattr(obj, column.key)
+            if column_formatters and column.key in column_formatters:
+                try:
+                    data[column.key] = column_formatters[column.key](value)
+                except Exception:
+                    # If formatter fails, fall back to raw value
+                    data[column.key] = value
+            else:
+                data[column.key] = value
 
     # Related entities (recursive, nested)
     for relationship in insp.mapper.relationships:

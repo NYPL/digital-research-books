@@ -4,7 +4,6 @@ import { ApiWork } from "~/src/types/WorkQuery";
 import Link from "../Link/Link";
 
 const EditionsLinks: React.FC<{ work: ApiWork }> = ({ work }) => {
-
   return (
     work.editions.length > 1 && (
       <Flex flexDir="column" gap="xs">
@@ -14,7 +13,9 @@ const EditionsLinks: React.FC<{ work: ApiWork }> = ({ work }) => {
             to={`edition/${edition.edition_id}`}
             isUnderlined={false}
           >
-            <Text size="body2">{edition.publication_date} edition</Text>
+            <Text size="body2">
+              {edition.publication_date ?? "Unknown"} edition
+            </Text>
           </Link>
         ))}
       </Flex>

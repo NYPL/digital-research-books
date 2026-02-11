@@ -1,19 +1,15 @@
-import React, { useEffect, useRef } from "react";
-import MessageBubble from "./MessageBubble";
-import styles from "../../../styles/components/ResearchAssistantWindow.module.scss";
 import { Box, Text } from "@nypl/design-system-react-components";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import React, { useEffect, useRef } from "react";
 import {
   getPanelLayout,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import styles from "../../../styles/components/ResearchAssistantWindow.module.scss";
+import MessageBubble from "./MessageBubble";
 
 const ResearchAssistantWindow: React.FC = () => {
-  const {
-    messages,
-    isLoading,
-    error,
-  } = useResearchAssistant();
+  const { messages, isLoading, error } = useResearchAssistant();
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,13 +38,17 @@ const ResearchAssistantWindow: React.FC = () => {
       paddingLeft={paddingX}
       paddingRight={`calc(${PADDING_COUNTER} * 2)`}
     >
-      {messages.map((message, index) => (
-        <MessageBubble
-          key={message.id}
-          message={message}
-          ref={index === messages.length - 1 ? messagesEndRef : null}
-        />
-      ))}
+      {messages.map((message, index) => {
+        if (message.type === "message")
+          return (
+            <MessageBubble
+              key={`message-${index}`}
+              index={index}
+              message={message}
+              ref={index === messages.length - 1 ? messagesEndRef : null}
+            />
+          );
+      })}
 
       {isLoading && (
         <Box

@@ -92,6 +92,9 @@ def format_search_results(search_results):
                         (Rights, "rights_date"),
                         (Rights, "rights_reason"),
                     ],
+                    column_formatters={
+                        "publication_date": (lambda d: d.year if d else None)
+                    },
                 )
                 # Q: should we be including the chunk_hits/snippet in editions or top level?
                 edition_dict.update(

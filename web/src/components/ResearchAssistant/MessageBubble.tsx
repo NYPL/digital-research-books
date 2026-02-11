@@ -1,20 +1,22 @@
 import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
-import { Message } from "~/src/types/ResearchAssistant";
+import { MessageItem, MessageRole } from "~/src/types/ResearchAssistant";
 import styles from "../../../styles/components/MessageBubble.module.scss";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import FeedbackButtons from "./FeedbackButtons";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 
 interface MessageBubbleProps {
-  message: Message;
+  message: MessageItem;
+  index: number;
 }
 
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
-  ({ message }, ref) => {
+  ({ message, index }, ref) => {
     MessageBubble.displayName = "MessageBubble";
 
-    const isUser = message.type === "human";
+    const isUser = message.role === MessageRole.User;
+    const isAssistant = message.role === MessageRole.Assistant;
     const bubbleClasses = isUser
       ? `${styles.messageBubble} ${styles.userBubble}`
       : `${styles.messageBubble} ${styles.assistantBubble}`;
@@ -29,32 +31,35 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
           {isUser ? (
             <Text>
               <b>You: </b>
-              {message.data.content}
+              {message.content}
             </Text>
           ) : (
-            <Flex gap="xs" alignItems="flex-start">
-              <ResearchAssistantIcon inCircle />
-              <Flex flexDir="column" gap="12px">
-                <Box>
-                  <Text
-                    color="section.research.secondary"
-                    isBold
-                    display="inline"
-                  >
-                    VRA:{" "}
-                  </Text>
-                  {message.data.content}
-                </Box>
-                {message.id === "assistant-initial" ? (
-                  <AiGeneratedText isInitial />
-                ) : (
-                  <Flex alignItems="center" justifyContent="space-between">
-                    <AiGeneratedText />
-                    <FeedbackButtons />
-                  </Flex>
-                )}
+            isAssistant &&
+            message.content.map((contentItem, idx) => (
+              <Flex key={idx} gap="xs" alignItems="flex-start">
+                <ResearchAssistantIcon inCircle />
+                <Flex flexDir="column" gap="12px">
+                  <Box>
+                    <Text
+                      color="section.research.secondary"
+                      isBold
+                      display="inline"
+                    >
+                      VRA:{" "}
+                    </Text>
+                    {contentItem.text}
+                  </Box>
+                  {index === 0 ? (
+                    <AiGeneratedText isInitial />
+                  ) : (
+                    <Flex alignItems="center" justifyContent="space-between">
+                      <AiGeneratedText />
+                      <FeedbackButtons />
+                    </Flex>
+                  )}
+                </Flex>
               </Flex>
-            </Flex>
+            ))
           )}
         </Box>
       </Box>

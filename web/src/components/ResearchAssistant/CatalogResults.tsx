@@ -5,76 +5,71 @@ import {
   MARGIN_BLEED,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
-import { SearchField } from "~/src/types/DataModel";
-import {
-  CatalogSearchResults,
-  ChatResults,
-} from "~/src/types/ResearchAssistant";
-import { SearchQuery, SearchQueryDefaults } from "~/src/types/SearchQuery";
-import { toApiQuery } from "~/src/util/apiConversion";
+import { CatalogSearchResults } from "~/src/types/ResearchAssistant";
+import { SearchQueryDefaults } from "~/src/types/SearchQuery";
+import { normalizeCatalogEditionsToApiWorks } from "~/src/util/NormalizeCatalogEdition";
 import ResultsList from "../NewResultsList/ResultsList";
 import ResultsBanner from "./ResultsBanner";
 
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;
 }> = ({ results }) => {
-  const { setViewState } = useResearchAssistant();
+  const [searchQuery] = useState({ ...SearchQueryDefaults });
 
-  const [searchQuery, setSearchQuery] = useState({ ...SearchQueryDefaults });
-
-  const numberOfWorks = results?.totalWorks;
+  const numberOfRecords = results?.paging?.totalRecords || 0;
   const resultsPaging = results?.paging;
   const firstElement =
     (resultsPaging?.currentPage - 1) * resultsPaging?.recordsPerPage + 1;
   const lastElement =
     searchQuery?.page <= resultsPaging?.lastPage
       ? resultsPaging?.currentPage * resultsPaging?.recordsPerPage
-      : numberOfWorks;
+      : numberOfRecords;
   const resultsPagingText =
-    numberOfWorks > 0
+    numberOfRecords > 0
       ? `${firstElement.toLocaleString()} - ${
-          numberOfWorks < lastElement
-            ? numberOfWorks.toLocaleString()
+          numberOfRecords < lastElement
+            ? numberOfRecords.toLocaleString()
             : lastElement.toLocaleString()
-        } of ${numberOfWorks.toLocaleString()} results matching your research criteria`
+        } of ${numberOfRecords.toLocaleString()} results matching your research criteria`
       : "No results matching your research criteria";
 
-  const onPageChange = async (select: number) => {
-    const newSearchQuery: SearchQuery = {
-      queries: [],
-      page: select,
-    };
-    newSearchQuery.queries = results.searchParams.query.map(
-      ([field, queryStr]) => ({
-        query: queryStr,
-        field: field as SearchField,
-      })
-    );
+  // TODO: implement pagination when API supports it
+  // const onPageChange = async (select: number) => {
+  //   const newSearchQuery: SearchQuery = {
+  //     queries: [],
+  //     page: select,
+  //   };
+  //   newSearchQuery.queries = results.searchParams.query.map(
+  //     ([field, queryStr]) => ({
+  //       query: queryStr,
+  //       field: field as SearchField,
+  //     })
+  //   );
 
-    newSearchQuery.filters = results.searchParams.filters.map(
-      ([field, value]) => ({
-        field: field,
-        value: value,
-      })
-    );
+  //   newSearchQuery.filters = results.searchParams.filters.map(
+  //     ([field, value]) => ({
+  //       field: field,
+  //       value: value,
+  //     })
+  //   );
 
-    setSearchQuery(newSearchQuery);
+  //   setSearchQuery(newSearchQuery);
 
-    const searchResult = await searchResultsFetcher(toApiQuery(newSearchQuery));
-    const chatResult: ChatResults = {
-      type: "catalog_search",
-      data: {
-        ...searchResult.data,
-        searchParams: results.searchParams,
-      },
-    };
-    setViewState((prev) => ({
-      ...prev,
-      results: chatResult,
-    }));
-  };
+  //   const searchResult = await searchResultsFetcher(toApiQuery(newSearchQuery));
+  //   const chatResult: ChatResults = {
+  //     type: ConversationType.Catalog,
+  //     data: {
+  //       ...searchResult.data,
+  //       searchParams: results.searchParams,
+  //     },
+  //   };
+  //   setViewState((prev) => ({
+  //     ...prev,
+  //     results: chatResult,
+  //   }));
+  // };
+
+  const works = normalizeCatalogEditionsToApiWorks(results.editions);
 
   return (
     <Flex flexDir="column" bgColor="ui.bg.default" gap="s">
@@ -100,11 +95,11 @@ const CatalogResults: React.FC<{
       <ResultsBanner />
       {Object.keys(results).length > 0 && (
         <>
-          <ResultsList works={results.works} />
+          <ResultsList works={works} />
           <Pagination
             pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
             initialPage={resultsPaging.currentPage}
-            onPageChange={(e) => onPageChange(e)}
+            // onPageChange={(e) => onPageChange(e)}
             __css={{
               paddingTop: "m",
               "a, li > a[aria-current='page']": {
