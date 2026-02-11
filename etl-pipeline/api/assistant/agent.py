@@ -71,6 +71,7 @@ class ContentSearchExecutionContext:
 
     searcher: Searcher
     edition_id: int
+    item_id: int
     search_results: Dict = field(default_factory=dict)
     frbr_fields: Dict = field(default_factory=dict)
 
@@ -365,6 +366,9 @@ def search_in_book(
         chunk_hits = []
         for chunk_hit in resp.hits:
             chunk_hit = hit_to_dict(chunk_hit)
+            chunk_hit["item_id"] = (
+                ctx.context.item_id
+            )  # NOTE: future: the item_id will be directly indexed in the chunk hit.
             chunk_hits.append(chunk_hit)
 
         # Store search results for later reference
@@ -416,9 +420,11 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     # Search within single book
     if conversation_type == "contentSearch":
         # TEMP: convert edition_id to record_id to filter ES search
-        record_id = map_editions_and_records(edition_ids=[edition_id])[edition_id][
-            "record_id"
-        ]
+        mapped_ids = map_editions_and_records(edition_ids=[edition_id])[edition_id]
+        record_id = mapped_ids["record_id"]
+        item_id = mapped_ids["item_id"]  # BUG: this item_id may not be correct \
+        # for the returned chunks in the case of multiple items per edition, in \
+        # that case it was arbitrarily selected by map_editions_and_records().
 
         # Fetch FRBR data for the book
         frbr_data = get_frbr_data_by_edition([edition_id])
@@ -429,8 +435,12 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
         # NOTE: intentionally passing record_id as edition_id to make future state a smaller refactor
+        # NOTE: future item_id will be extracted directly from the chunk hit, not passed from the mapper as here
         exec_context = ContentSearchExecutionContext(
-            searcher=searcher, edition_id=record_id, frbr_fields=frbr_fields
+            searcher=searcher,
+            edition_id=record_id,
+            item_id=item_id,
+            frbr_fields=frbr_fields,
         )
 
         template = Template((PROMPTS_DIR / "chat" / "1.jinja.md").read_text())
