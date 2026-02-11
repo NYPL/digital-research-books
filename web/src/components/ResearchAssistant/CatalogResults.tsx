@@ -69,7 +69,9 @@ const CatalogResults: React.FC<{
   //   }));
   // };
 
-  const works = normalizeCatalogEditionsToApiWorks(results.editions);
+  const works = results.editions
+    ? normalizeCatalogEditionsToApiWorks(results.editions)
+    : [];
 
   return (
     <Flex flexDir="column" bgColor="ui.bg.default" gap="s">

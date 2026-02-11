@@ -89,7 +89,7 @@ describe("MessageBubble", () => {
       ],
       role: MessageRole.Assistant,
     };
-    render(<MessageBubble index={0} message={assistantMessage} />);
+    render(<MessageBubble index={1} message={assistantMessage} />);
 
     const icons = screen.getAllByRole("img", { hidden: true });
     expect(screen.getByText("VRA:")).toBeInTheDocument();

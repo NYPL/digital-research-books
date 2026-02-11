@@ -1,5 +1,10 @@
 import { Agent, FacetItem, WorkEdition } from "~/src/types/DataModel";
-import { CatalogSearchResults } from "~/src/types/ResearchAssistant";
+import {
+  CatalogEdition,
+  CatalogSearchResults,
+  ConversationType,
+  SearchParams,
+} from "~/src/types/ResearchAssistant";
 
 const mockFacets: { formats: FacetItem[]; languages: FacetItem[] } = {
   formats: [{ value: "ebook", count: 2 }],
@@ -30,162 +35,196 @@ const createMockEdition = (overrides?: Partial<WorkEdition>): WorkEdition => ({
 });
 
 export const catalogResults: CatalogSearchResults = {
-  facets: mockFacets,
-  paging: mockPaging,
-  totalWorks: 2,
-  works: [
+  conversation_context: ConversationType.Catalog,
+  editions: [
     {
-      uuid: "1",
+      id: 1,
       title: "Test Book 1",
-      sub_title: "First Edition",
-      authors: [createAgent("Author One"), createAgent("Author Two")],
-      dates: [{ date: "2023", type: "publication_date" }],
-      editions: [
-        createMockEdition({
-          edition_id: 1,
-          title: "Test Book 1",
-          publication_date: "2023",
-        }),
-      ],
-    },
+      items: [],
+      languages: [{ language: "English", iso_2: "en", iso_3: "eng" }],
+      links: [],
+      measurements: [],
+      publication_date: "2023",
+      publication_place: undefined,
+      publishers: [],
+      snippets: [],
+      work_authors: [createAgent("Author One"), createAgent("Author Two")],
+      work_title: "Test Book 1",
+      work_uuid: "1",
+    } as CatalogEdition,
     {
-      uuid: "2",
+      id: 2,
       title: "Test Book 2",
-      authors: [createAgent("Author Three")],
-      dates: [{ date: "2022", type: "publication_date" }],
-      editions: [
-        createMockEdition({
-          edition_id: 2,
-          title: "Test Book 2",
-          publication_date: "2022",
-        }),
-      ],
-    },
+      items: [],
+      languages: [{ language: "English", iso_2: "en", iso_3: "eng" }],
+      links: [],
+      measurements: [],
+      publication_date: "2022",
+      publication_place: undefined,
+      publishers: [],
+      snippets: [],
+      work_authors: [createAgent("Author Three")],
+      work_title: "Test Book 2",
+      work_uuid: "2",
+    } as CatalogEdition,
   ],
-  searchParams: {
+  search_params: {
     query: [["keyword", "test"]],
     filters: [],
+  } as SearchParams,
+  paging: {
+    recordsPerPage: mockPaging.recordsPerPage,
+    firstPage: mockPaging.firstPage,
+    previousPage: mockPaging.previousPage,
+    currentPage: mockPaging.currentPage,
+    nextPage: mockPaging.nextPage,
+    lastPage: mockPaging.lastPage,
+    totalRecords: 2,
   },
 };
 
 export const minimalCatalogResults: CatalogSearchResults = {
-  facets: mockFacets,
-  paging: mockPaging,
-  totalWorks: 1,
-  works: [
+  conversation_context: ConversationType.Catalog,
+  editions: [
     {
-      uuid: "3",
+      id: 3,
       title: "Minimal Book",
-      authors: [],
-      editions: [
-        createMockEdition({
-          edition_id: 3,
-          title: "Minimal Book",
-        }),
-      ],
-    },
+      items: [],
+      languages: [{ language: "English", iso_2: "en", iso_3: "eng" }],
+      links: [],
+      measurements: [],
+      publishers: [],
+      snippets: [],
+      work_authors: [],
+      work_title: "Minimal Book",
+      work_uuid: "3",
+    } as CatalogEdition,
   ],
-  searchParams: {
-    query: [["keyword", "minimal"]],
+  search_params: { query: [["keyword", "minimal"]] } as SearchParams,
+  paging: {
+    recordsPerPage: mockPaging.recordsPerPage,
+    firstPage: mockPaging.firstPage,
+    previousPage: mockPaging.previousPage,
+    currentPage: mockPaging.currentPage,
+    nextPage: mockPaging.nextPage,
+    lastPage: mockPaging.lastPage,
+    totalRecords: 1,
   },
 };
 
 export const multiPageCatalogResults: CatalogSearchResults = {
   ...catalogResults,
-  totalWorks: 25,
   paging: {
     ...catalogResults.paging,
     lastPage: 3,
     nextPage: 2,
+    totalRecords: 25,
   },
 };
 
 export const emptyCatalogResults: CatalogSearchResults = {
-  facets: { formats: [], languages: [] },
+  conversation_context: ConversationType.Catalog,
+  editions: [],
+  search_params: { query: [["keyword", "nothing"]] } as SearchParams,
   paging: {
-    currentPage: 1,
-    firstPage: 1,
-    lastPage: 1,
-    nextPage: 1,
-    previousPage: 1,
     recordsPerPage: 10,
-  },
-  totalWorks: 0,
-  works: [],
-  searchParams: {
-    query: [["keyword", "nothing"]],
+    firstPage: 1,
+    previousPage: 1,
+    currentPage: 1,
+    nextPage: 1,
+    lastPage: 1,
+    totalRecords: 0,
   },
 };
 
 export const singleAuthorCatalogResults: CatalogSearchResults = {
-  facets: mockFacets,
-  paging: mockPaging,
-  totalWorks: 1,
-  works: [
+  conversation_context: ConversationType.Catalog,
+  editions: [
     {
-      uuid: "4",
+      id: 4,
       title: "Single Author Book",
-      authors: [createAgent("Solo Author")],
-      editions: [
-        createMockEdition({
-          edition_id: 4,
-          title: "Single Author Book",
-        }),
-      ],
-    },
+      items: [],
+      languages: [{ language: "English", iso_2: "en", iso_3: "eng" }],
+      links: [],
+      measurements: [],
+      publishers: [],
+      snippets: [],
+      work_authors: [createAgent("Solo Author")],
+      work_title: "Single Author Book",
+      work_uuid: "4",
+    } as CatalogEdition,
   ],
-  searchParams: {
-    query: [["keyword", "single"]],
+  search_params: { query: [["keyword", "single"]] } as SearchParams,
+  paging: {
+    recordsPerPage: mockPaging.recordsPerPage,
+    firstPage: mockPaging.firstPage,
+    previousPage: mockPaging.previousPage,
+    currentPage: mockPaging.currentPage,
+    nextPage: mockPaging.nextPage,
+    lastPage: mockPaging.lastPage,
+    totalRecords: 1,
   },
 };
 
 export const manyAuthorsCatalogResults: CatalogSearchResults = {
-  facets: mockFacets,
-  paging: mockPaging,
-  totalWorks: 1,
-  works: [
+  conversation_context: ConversationType.Catalog,
+  editions: [
     {
-      uuid: "5",
+      id: 5,
       title: "Many Authors Book",
-      authors: Array.from({ length: 4 }, (_, i) =>
+      items: [],
+      languages: [{ language: "English", iso_2: "en", iso_3: "eng" }],
+      links: [],
+      measurements: [],
+      publishers: [],
+      snippets: [],
+      work_authors: Array.from({ length: 4 }, (_, i) =>
         createAgent(`Author ${i + 1}`)
       ),
-      editions: [
-        createMockEdition({
-          edition_id: 5,
-          title: "Many Authors Book",
-        }),
-      ],
-    },
+      work_title: "Many Authors Book",
+      work_uuid: "5",
+    } as CatalogEdition,
   ],
-  searchParams: {
-    query: [["keyword", "many"]],
+  search_params: { query: [["keyword", "many"]] } as SearchParams,
+  paging: {
+    recordsPerPage: mockPaging.recordsPerPage,
+    firstPage: mockPaging.firstPage,
+    previousPage: mockPaging.previousPage,
+    currentPage: mockPaging.currentPage,
+    nextPage: mockPaging.nextPage,
+    lastPage: mockPaging.lastPage,
+    totalRecords: 1,
   },
 };
 
 export const longFieldsCatalogResults: CatalogSearchResults = {
-  facets: mockFacets,
-  paging: mockPaging,
-  totalWorks: 1,
-  works: [
+  conversation_context: ConversationType.Catalog,
+  editions: [
     {
-      uuid: "6",
+      id: 6,
       title: "A Very Long Title ".repeat(50),
-      sub_title: "Edition with very long text ".repeat(10),
-      authors: Array.from({ length: 20 }, (_, i) =>
+      items: [],
+      languages: [{ language: "English", iso_2: "en", iso_3: "eng" }],
+      links: [],
+      measurements: [],
+      publication_date: "2024",
+      publishers: [],
+      snippets: [],
+      work_authors: Array.from({ length: 20 }, (_, i) =>
         createAgent(`Author ${i + 1}`)
       ),
-      dates: [{ date: "2024", type: "publication_date" }],
-      editions: [
-        createMockEdition({
-          edition_id: 6,
-          title: "A Very Long Title ".repeat(50),
-          publication_date: "2024",
-        }),
-      ],
-    },
+      work_title: "A Very Long Title ".repeat(50),
+      work_uuid: "6",
+    } as CatalogEdition,
   ],
-  searchParams: {
-    query: [["keyword", "long"]],
+  search_params: { query: [["keyword", "long"]] } as SearchParams,
+  paging: {
+    recordsPerPage: mockPaging.recordsPerPage,
+    firstPage: mockPaging.firstPage,
+    previousPage: mockPaging.previousPage,
+    currentPage: mockPaging.currentPage,
+    nextPage: mockPaging.nextPage,
+    lastPage: mockPaging.lastPage,
+    totalRecords: 1,
   },
 };
