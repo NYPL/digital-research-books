@@ -1,15 +1,10 @@
-import { Agent, FacetItem, WorkEdition } from "~/src/types/DataModel";
+import { Agent } from "~/src/types/DataModel";
 import {
   CatalogEdition,
   CatalogSearchResults,
   ConversationType,
   SearchParams,
 } from "~/src/types/ResearchAssistant";
-
-const mockFacets: { formats: FacetItem[]; languages: FacetItem[] } = {
-  formats: [{ value: "ebook", count: 2 }],
-  languages: [{ value: "eng", count: 2 }],
-};
 
 const mockPaging = {
   currentPage: 1,
@@ -23,15 +18,6 @@ const mockPaging = {
 const createAgent = (name: string): Agent => ({
   name,
   roles: ["author"],
-});
-
-const createMockEdition = (overrides?: Partial<WorkEdition>): WorkEdition => ({
-  edition_id: 1,
-  title: "Default Edition",
-  items: [],
-  languages: [{ language: "English", iso_2: "en", iso_3: "eng" }],
-  publication_date: "2023",
-  ...overrides,
 });
 
 export const catalogResults: CatalogSearchResults = {
