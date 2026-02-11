@@ -32,7 +32,6 @@ const Ctas: React.FC<CtasProps> = ({
   const downloadLink = EditionCardUtils.selectDownloadLink(item);
 
   const authorNames = authors ? authors.map((author) => author.name) : [];
-  console.log(readOnlineLink);
 
   if (readOnlineLink || downloadLink) {
     return (

@@ -83,10 +83,10 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
       }
     }
 
-    const first = work.editions[0];
+    const firstEdition = work.editions[0];
     return {
-      previewEdition: first,
-      previewItem: EditionCardUtils.getPreviewItem(first.items),
+      previewEdition: firstEdition,
+      previewItem: EditionCardUtils.getPreviewItem(firstEdition.items),
     };
   }, [work.editions]);
 
@@ -100,7 +100,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
       handlePreview(previewLink.url);
       setHasPreviewLoaded(true);
     }
-  }, [previewLink, handlePreview]);
+  }, [previewLink, handlePreview, hasPreviewLoaded]);
 
   useEffect(() => {
     if (previewLink?.url && router.pathname.startsWith("/item")) {
@@ -115,6 +115,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         ...prev,
         itemId,
         pageId,
+        editionId: previewEdition?.edition_id,
         showWebReader: true,
         results: null,
         linkResults: null,

@@ -165,6 +165,7 @@ export interface ContentSearchResults {
 export interface HistoryItem {
   results: ChatResults;
   itemId?: string;
+  editionId?: number;
   showWebReader: boolean;
   linkResults: LinkResult;
 }

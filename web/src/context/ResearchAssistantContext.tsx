@@ -14,6 +14,7 @@ import {
 
 interface ResearchAssistantViewState {
   showWebReader: boolean;
+  editionId?: number;
   itemId: string;
   pageId: string;
   results: ChatResults | null;
@@ -72,27 +73,6 @@ export const ResearchAssistantProvider: React.FC<{
     ? ConversationType.Content
     : ConversationType.Catalog;
 
-  // useEffect(() => {
-  //   if (messages.length === 0) {
-  //     let initialMessage;
-  //     if (conversationType === ConversationType.Catalog) {
-  //       initialMessage = {
-  //         type: ItemType.Message,
-  //         role: MessageRole.Assistant,
-  //         content: "What research topic can I help you explore today?",
-  //       };
-  //     } else {
-  //       initialMessage = {
-  //         type: ItemType.Message,
-  //         role: MessageRole.Assistant,
-  //         content:
-  //           "I can help you find relevant content in this book. Ask me a question, or try the suggestions below.",
-  //       };
-  //     }
-  //     setMessages([initialMessage]);
-  //   }
-  // }, [conversationType, messages]);
-
   const pushNewState = ({
     results,
     showWebReader,
@@ -125,14 +105,9 @@ export const ResearchAssistantProvider: React.FC<{
     };
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
 
-    let textToSend = text;
-    if (viewState.itemId !== "") {
-      textToSend += `<ItemId>${viewState.itemId}</ItemId>`;
-    }
-
     const messagesForBackend: Item[] = [
       ...messages,
-      { type: ItemType.Message, role: MessageRole.User, content: textToSend },
+      { type: ItemType.Message, role: MessageRole.User, content: text },
     ];
 
     try {
@@ -145,6 +120,7 @@ export const ResearchAssistantProvider: React.FC<{
         },
         body: JSON.stringify({
           messages: messagesForBackend,
+          editionId: viewState.editionId,
           conversationType,
         }),
       });
@@ -252,6 +228,7 @@ export const ResearchAssistantProvider: React.FC<{
           ...prev,
           results: prevState.results,
           itemId: prevState.itemId || "",
+          editionId: prevState.editionId,
           showWebReader: prevState.showWebReader,
           linkResults: prevState.linkResults,
         }));
@@ -261,6 +238,7 @@ export const ResearchAssistantProvider: React.FC<{
         ...prev,
         results: null,
         itemId: "",
+        editionId: undefined,
         showWebReader: false,
         linkResults: null,
       }));
@@ -277,6 +255,7 @@ export const ResearchAssistantProvider: React.FC<{
         results: null,
         showWebReader: false,
         itemId: "",
+        editionId: undefined,
         linkResults: null,
       }));
     }

@@ -121,11 +121,6 @@ const ResearchAssistant: React.FC = () => {
                         ConversationType.Catalog && (
                         <CatalogResults results={results.data} />
                       )}
-                      {results.data.conversation_context ===
-                        ConversationType.Content && (
-                        // <ItemResults results={results.data} />
-                        <></>
-                      )}
                     </>
                   ) : (
                     <Box width="100%" marginTop="s">

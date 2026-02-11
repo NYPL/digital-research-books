@@ -1,10 +1,17 @@
 import { Box, Text } from "@nypl/design-system-react-components";
+import { useRouter } from "next/router";
 import React, { useEffect, useRef } from "react";
 import {
   getPanelLayout,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import {
+  ConversationType,
+  ItemType,
+  MessageItem,
+  MessageRole,
+} from "~/src/types/ResearchAssistant";
 import styles from "../../../styles/components/ResearchAssistantWindow.module.scss";
 import MessageBubble from "./MessageBubble";
 
@@ -23,6 +30,35 @@ const ResearchAssistantWindow: React.FC = () => {
 
   const { marginX, paddingX, marginRight } = getPanelLayout();
 
+  const router = useRouter();
+  const conversationType = router.pathname.startsWith("/item/")
+    ? ConversationType.Content
+    : ConversationType.Catalog;
+
+  const initialMessage: MessageItem =
+    conversationType === ConversationType.Catalog
+      ? {
+          type: ItemType.Message,
+          role: MessageRole.Assistant,
+          content: [
+            {
+              text: "What research topic can I help you explore today?",
+              type: "output_text",
+            },
+          ],
+        }
+      : {
+          type: ItemType.Message,
+          role: MessageRole.Assistant,
+          content: [
+            {
+              text:
+                "I can help you find relevant content in this book. Ask me a question, or try the suggestions below.",
+              type: "output_text",
+            },
+          ],
+        };
+
   return (
     <Box
       flex="1"
@@ -38,12 +74,13 @@ const ResearchAssistantWindow: React.FC = () => {
       paddingLeft={paddingX}
       paddingRight={`calc(${PADDING_COUNTER} * 2)`}
     >
+      <MessageBubble index={0} message={initialMessage} ref={null} />
       {messages.map((message, index) => {
         if (message.type === "message")
           return (
             <MessageBubble
-              key={`message-${index}`}
-              index={index}
+              key={`message-${index + 1}`}
+              index={index + 1}
               message={message}
               ref={index === messages.length - 1 ? messagesEndRef : null}
             />

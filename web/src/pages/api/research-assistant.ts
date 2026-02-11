@@ -26,7 +26,7 @@ export default async function handler(
       return res.status(500).json({ error: "Server configuration error." });
     }
 
-    const { messages, conversationType } = req.body;
+    const { messages, conversationType, editionId } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({
@@ -34,24 +34,24 @@ export default async function handler(
       });
     }
 
-    const authorization = req.headers.authorization || null;
+    const authorization = req.headers.authorization || undefined;
 
-    const bodyStr = JSON.stringify({
+    const payload: any = {
       messages,
       conversation_type: conversationType,
-    });
+    };
+    if (editionId !== undefined) payload.editionId = editionId;
 
-    const headers = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
       "X-API-KEY": apiKey,
-      Authorization: authorization,
-      "Content-Length": Buffer.byteLength(bodyStr).toString(),
     };
+    if (authorization) headers.Authorization = authorization;
 
     const chatResponse = await fetch(chatUrl, {
       method: "POST",
       headers,
-      body: bodyStr,
+      body: JSON.stringify(payload),
     });
 
     if (!chatResponse.ok && chatResponse.status !== 201) {
