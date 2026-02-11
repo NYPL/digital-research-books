@@ -157,10 +157,25 @@ def chat(user=None):
     )
 
     # Input parameter validation
-    assert conversation_type in ["contentSearch", "catalogSearch"]
-    if conversation_type == "contentSearch":
-        assert edition_id is not None, (
-            'edition_id is required for conversation_type="contentSearch"'
+    if not conversation_type:
+        return APIUtils.formatResponseObject(
+            400, RESPONSE_TYPE, {"message": "conversationType is required"}
+        )
+
+    if conversation_type not in ["contentSearch", "catalogSearch"]:
+        return APIUtils.formatResponseObject(
+            400,
+            RESPONSE_TYPE,
+            {
+                "message": "conversationType must be either 'contentSearch' or 'catalogSearch'"
+            },
+        )
+
+    if conversation_type == "contentSearch" and edition_id is None:
+        return APIUtils.formatResponseObject(
+            400,
+            RESPONSE_TYPE,
+            {"message": "editionId is required for conversationType='contentSearch'"},
         )
 
     # get LLM response + search results
