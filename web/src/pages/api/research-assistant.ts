@@ -38,8 +38,9 @@ export default async function handler(
 
     const payload: any = {
       messages,
-      conversation_type: conversationType,
+      conversationType,
     };
+
     if (editionId !== undefined) payload.editionId = editionId;
 
     const headers: Record<string, string> = {
