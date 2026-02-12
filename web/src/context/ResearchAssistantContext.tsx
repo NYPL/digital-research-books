@@ -232,7 +232,7 @@ export const ResearchAssistantProvider: React.FC<{
           showWebReader: prevState.showWebReader,
           linkResults: prevState.linkResults,
         }));
-        return stack.length > 1 ? stack.slice(0, -1) : [];
+        return stack.length > 1 ? stack.slice(0, -1) : stack;
       }
       setViewState((prev) => ({
         ...prev,
