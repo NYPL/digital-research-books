@@ -106,7 +106,7 @@ def format_search_results(search_results):
                 )
                 editions.append(edition_dict)
 
-            result_type = ("catalogSearch",)  # MAYBE: send search tool name
+            result_type = "catalogSearch"  # MAYBE: send search tool name
             formatted_search_result = {
                 "editions": editions,
                 "search_params": search_result["search_params"],
@@ -122,7 +122,7 @@ def format_search_results(search_results):
             )  # Q: redundant to tool call logging
 
         elif search_result["tool_name"] == "search_in_book":
-            result_type = ("contentSearch",)  # MAYBE: send search tool name
+            result_type = "contentSearch"  # MAYBE: send search tool name
             formatted_search_result = {
                 "snippets": get_relevant_snippets(search_result["chunk_hits"]),
                 "search_params": search_result["search_params"],
