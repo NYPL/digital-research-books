@@ -71,6 +71,7 @@ class ContentSearchExecutionContext:
 
     searcher: Searcher
     edition_id: int
+    item_id: int
     search_results: Dict = field(default_factory=dict)
     frbr_fields: Dict = field(default_factory=dict)
 
@@ -238,6 +239,7 @@ def search_library_catalog(
             if frbr_ids is None:
                 missing_edition_ids.append(chunk_hit["book_id"])
                 continue
+            chunk_hit.update(frbr_ids)
             if frbr_ids["edition_id"] not in edition_hits:
                 edition_hits[frbr_ids["edition_id"]] = {
                     "edition_id": frbr_ids["edition_id"],
@@ -274,7 +276,7 @@ def search_library_catalog(
         frbr_data = get_frbr_data_by_edition(edition_ids)
 
         # Merge ES hit data and FRBR metadata (maintaining edition sort order)
-        frbr_data = {r.Edition.id: r for r in frbr_data}
+        frbr_data = {row.Edition.id: row for row in frbr_data}
         edition_data = []  # dict with keys: orm_work, orm_edition, edition_hit
         missing_data = []
         for edition_hit in edition_hits:
@@ -364,6 +366,9 @@ def search_in_book(
         chunk_hits = []
         for chunk_hit in resp.hits:
             chunk_hit = hit_to_dict(chunk_hit)
+            chunk_hit["item_id"] = (
+                ctx.context.item_id
+            )  # NOTE: future: the item_id will be directly indexed in the chunk hit.
             chunk_hits.append(chunk_hit)
 
         # Store search results for later reference
@@ -415,9 +420,11 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     # Search within single book
     if conversation_type == "contentSearch":
         # TEMP: convert edition_id to record_id to filter ES search
-        record_id = map_editions_and_records(edition_ids=[edition_id])[edition_id][
-            "record_id"
-        ]
+        mapped_ids = map_editions_and_records(edition_ids=[edition_id])[edition_id]
+        record_id = mapped_ids["record_id"]
+        item_id = mapped_ids["item_id"]  # BUG: this item_id may not be correct \
+        # for the returned chunks in the case of multiple items per edition, in \
+        # that case it was arbitrarily selected by map_editions_and_records().
 
         # Fetch FRBR data for the book
         frbr_data = get_frbr_data_by_edition([edition_id])
@@ -428,13 +435,17 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
         # NOTE: intentionally passing record_id as edition_id to make future state a smaller refactor
+        # NOTE: future item_id will be extracted directly from the chunk hit, not passed from the mapper as here
         exec_context = ContentSearchExecutionContext(
-            searcher=searcher, edition_id=record_id, frbr_fields=frbr_fields
+            searcher=searcher,
+            edition_id=record_id,
+            item_id=item_id,
+            frbr_fields=frbr_fields,
         )
 
         template = Template((PROMPTS_DIR / "chat" / "1.jinja.md").read_text())
         system_prompt = template.render(
-            conversation_type="content_search", frbr_fields=frbr_fields
+            conversation_type="contentSearch", frbr_fields=frbr_fields
         )
         tools = [search_in_book]
 
@@ -443,7 +454,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         exec_context = CatalogSearchExecutionContext(searcher=searcher)
         template = Template((PROMPTS_DIR / "chat" / "1.jinja.md").read_text())
         system_prompt = remove_markdown_comments(
-            template.render(conversation_type="catalog_search")
+            template.render(conversation_type="catalogSearch")
         )
         tools = [search_library_catalog]
 
@@ -540,13 +551,6 @@ def verbose_display_editions(edition_data, query, as_str=False):
         # Get chunk hits for this edition
         chunk_hits = edition_hit.get("chunk_hits", [])
 
-        # TODO: use the same function for chunk score agg as in group by edition, or... set the edition score in the edition_data
-        max_score = (
-            max([h.get("meta", {}).get("score", 0) for h in chunk_hits])
-            if chunk_hits
-            else 0
-        )
-
         # Display work/edition data
         base_indent = "  "
         lines.append(f"EDITION {i}:")
@@ -564,7 +568,7 @@ def verbose_display_editions(edition_data, query, as_str=False):
         lines.append(
             indent(f"SUBJECTS: {frbr_fields['subject_list']}", base_indent)
         )  # Does this need to be wrap()'ed to multi-line
-        lines.append(indent(f"MAX SCORE: {max_score:.4f}", base_indent))
+        lines.append(indent(f"MAX SCORE: {edition_hit['agg_score']:.4f}", base_indent))
         lines.append(indent(f"CHUNKS FOUND: {len(chunk_hits)}", base_indent))
         lines.append("")
 
@@ -623,17 +627,12 @@ def compact_display_editions(edition_data, query, as_str=False):
         edition_hit = edition_entry["edition_hit"]
         title = orm_work.title or "(No Title)"
         chunk_hits = edition_hit.get("chunk_hits", [])
-        max_score = (
-            max([h.get("meta", {}).get("score", 0) for h in chunk_hits])
-            if chunk_hits
-            else 0
-        )
 
         # Truncate title if too long
         title_display = title[:60] + "..." if len(title) > 60 else title
 
         lines.append(
-            f" {i:>3}:  ({max_score:.3f}) Ed:{orm_edition.id:<6} W:{orm_work.id:<6} [{len(chunk_hits)} chunks] - {title_display}"
+            f" {i:>3}:  ({edition_hit['agg_score']:.3f}) Ed:{orm_edition.id:<6} W:{orm_work.id:<6} [{len(chunk_hits)} chunks] - {title_display}"
         )
 
     msg = "\n".join(lines)

@@ -23,13 +23,6 @@ jobs:
       PRIMARY_AWS_ACCOUNTID: "491147561046"
       SECONDARY_AWS_ACCOUNTID: "946183545209"
       IMAGE_TAG: nypl-nginx-test
-      ENVIRONMENT: qa
-      REDIS_TIMEOUT: 10
-      ELASTICSEARCH_HOST: ${{ secrets.ELASTICSEARCH_HOST }}
-      ELASTICSEARCH_INDEX: ${{ secrets.ELASTICSEARCH_INDEX }}
-      ELASTICSEARCH_PORT: ${{ secrets.ELASTICSEARCH_PORT }}
-      ELASTICSEARCH_SCHEME: ${{ secrets.ELASTICSEARCH_SCHEME }}
-      REDIS_HOST: ${{ secrets.REDIS_HOST }}
 
     steps:
       - name: Checkout code
@@ -107,7 +100,8 @@ jobs:
           python3 -m pytest tests/functional/processes/ingest \
             --junitxml=test-results.xml \
             --reruns=3 \
-            --reruns-delay=5
+            --reruns-delay=5 \
+            --env=qa
             
       - name: Cleanup GitHub API Key
         run: |

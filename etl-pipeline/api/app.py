@@ -78,7 +78,6 @@ class API:
 
     def run(self):
         if os.environ.get("STAGE") == "development":
-            self.app.config["ENV"] = "development"
             self.app.config["DEBUG"] = True
             self.app.run(host=os.environ.get("DRB_API_HOST"), port=5050)
         else:

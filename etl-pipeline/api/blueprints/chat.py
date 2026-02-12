@@ -36,6 +36,8 @@ def get_relevant_snippets(chunk_hits):
             "text": shorten(h["text"]),
             "start_page": h["chunk_start_page"],
             "end_page": h["chunk_end_page"],
+            "item_id": h["item_id"],
+            "chunk_score": h["meta"]["score"],
         }
         for h in chunk_hits
     ]
@@ -107,8 +109,8 @@ def format_search_results(search_results):
                 )
                 editions.append(edition_dict)
 
+            result_type = "catalogSearch"  # MAYBE: send search tool name
             formatted_search_result = {
-                "conversation_context": "catalogSearch",  # MAYBE: send search tool name
                 "editions": editions,
                 "search_params": search_result["search_params"],
                 # NOTE: paginated search not yet implemented, only 1 fixed result set size
@@ -123,8 +125,8 @@ def format_search_results(search_results):
             )  # Q: redundant to tool call logging
 
         elif search_result["tool_name"] == "search_in_book":
+            result_type = "contentSearch"  # MAYBE: send search tool name
             formatted_search_result = {
-                "conversation_context": "contentSearch",  # MAYBE: send search tool name
                 "snippets": get_relevant_snippets(search_result["chunk_hits"]),
                 "search_params": search_result["search_params"],
             }
@@ -136,19 +138,20 @@ def format_search_results(search_results):
                 f"Unsupported search tool type: {search_result['tool_name']}"
             )
     else:
+        result_type = None
         formatted_search_result = None
         logger.info(
             "No search results to return (agent did record search tool call result)"
         )
 
-    return formatted_search_result
+    return result_type, formatted_search_result
 
 
-@chat_blueprint.route("/", methods=["POST"])
+@chat_blueprint.route("", methods=["POST"])
 @require_api_key
 @require_basic_authentication
 def chat(user=None):
-    conversation_type = request.json.get("conversation_type")
+    conversation_type = request.json.get("conversationType")
     conversation = request.json.get("messages")
     edition_id = request.json.get("editionId")
 
@@ -157,10 +160,25 @@ def chat(user=None):
     )
 
     # Input parameter validation
-    assert conversation_type in ["contentSearch", "catalogSearch"]
-    if conversation_type == "contentSearch":
-        assert edition_id is not None, (
-            'edition_id is required for conversation_type="contentSearch"'
+    if not conversation_type:
+        return APIUtils.formatResponseObject(
+            400, RESPONSE_TYPE, {"message": "conversationType is required"}
+        )
+
+    if conversation_type not in ["contentSearch", "catalogSearch"]:
+        return APIUtils.formatResponseObject(
+            400,
+            RESPONSE_TYPE,
+            {
+                "message": "conversationType must be either 'contentSearch' or 'catalogSearch'"
+            },
+        )
+
+    if conversation_type == "contentSearch" and edition_id is None:
+        return APIUtils.formatResponseObject(
+            400,
+            RESPONSE_TYPE,
+            {"message": "editionId is required for conversationType='contentSearch'"},
         )
 
     # get LLM response + search results
@@ -174,12 +192,13 @@ def chat(user=None):
     logger.info(f"Agent generated {len(run_result.new_items)} new message items")
 
     # Format search results
-    formatted_search_result = format_search_results(
+    result_type, formatted_search_result = format_search_results(
         run_result.context_wrapper.context.search_results
     )
 
     response_data = {
         "messages": messages,
+        "result_type": result_type,
         "result": formatted_search_result,
     }
     return APIUtils.formatResponseObject(200, RESPONSE_TYPE, response_data)
