@@ -10,13 +10,6 @@ import { LinkResult } from "./LinkQuery";
 
 export type Item = MessageItem | ToolCallItem | ToolCallOutputItem;
 
-export interface OutputContentItem {
-  type: "output_text";
-  text: string;
-  annotations?: unknown[];
-  logprobs?: unknown[];
-}
-
 export type MessageItem =
   | {
       type?: ItemType.Message;
@@ -32,6 +25,13 @@ export type MessageItem =
       id?: string;
       status?: MessageStatus;
     };
+
+export interface OutputContentItem {
+  type: "output_text";
+  text: string;
+  annotations?: unknown[];
+  logprobs?: unknown[];
+}
 
 interface ToolCallItem {
   type: ItemType.FunctionCall;
@@ -122,7 +122,7 @@ export interface CatalogEdition {
   snippets: Snippet[];
   sub_title?: string;
   summary?: string;
-  table_of_contents?: unknown;
+  table_of_contents?: string;
   title: string;
   volume?: string;
   work_alt_titles: string[];
