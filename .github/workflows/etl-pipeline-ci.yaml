@@ -12,13 +12,7 @@ permissions:
 jobs:
   run-tests:
     runs-on: ubuntu-latest
-    env:
-      ENVIRONMENT: qa
-      ELASTICSEARCH_HOST: ${{ secrets.ELASTICSEARCH_HOST }}
-      ELASTICSEARCH_INDEX: ${{ secrets.ELASTICSEARCH_INDEX }}
-      ELASTICSEARCH_PORT: ${{ secrets.ELASTICSEARCH_PORT }}
-      ELASTICSEARCH_SCHEME: ${{ secrets.ELASTICSEARCH_SCHEME }}
-      REDIS_HOST: ${{ secrets.REDIS_HOST }}
+
     steps:
       - uses: actions/checkout@v4
 

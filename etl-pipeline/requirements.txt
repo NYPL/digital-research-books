@@ -47,5 +47,6 @@ requests==2.28.2
 roman==4.1
 scikit-learn==1.2.2
 sqlalchemy==2.0.20
+tenacity==9.1.2
 waitress==3.0.1
 werkzeug==2.2.2

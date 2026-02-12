@@ -1,17 +1,16 @@
+import json
 import os
 import random
 import re
 from datetime import datetime, timedelta, timezone
-import json
-from uuid import uuid4
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+from uuid import uuid4
 
-import requests_mock
-from sqlalchemy import text, delete
 import pytest
-from unittest.mock import patch, MagicMock
-from processes.grin.grin_client import GRINClient
-from processes import RecordClusterer
+import requests_mock
+from logger import create_log
+from managers import DBManager, RedisManager, S3Manager
 from model import (
     Collection,
     Edition,
@@ -24,11 +23,12 @@ from model import (
     Work,
 )
 from model.postgres.item import ITEM_LINKS
-from logger import create_log
-from managers import DBManager, RedisManager, S3Manager
+from processes import RecordClusterer
+from processes.grin.grin_client import GRINClient
+from sqlalchemy import delete, text
 from utils.load_env import load_env
-from tests.fixtures.generate_test_data import generate_test_data
 
+from tests.fixtures.generate_test_data import generate_test_data
 
 logger = create_log(__name__)
 
@@ -53,20 +53,22 @@ def setup_env(pytestconfig, request):
     # (and pytest `--rootdir` is not overridden), the "unit" keyword will be \
     # present for all tests under the "unit/" folder.
 
-    # fetch target environment
-    # NOTE: default is "local" from addoption()
-    environment = os.environ.get("ENVIRONMENT") or pytestconfig.getoption("--env")
+    # Set environment
+    # empty strings (and other things that coerce to False) will be set as 'local'
+    # NOTE: `make integration` and `make functional` without ENVIRONMENT set \
+    # will set an empty string to --env=
+    environment = pytestconfig.getoption("--env") or "local"
 
     # Error if attempting to run function or integration tests against \
     # production environment
     if (not only_unit_tests) and ("production" in environment):
-        raise ValueError(
-            "Integration and functional tests cannot be run on production environments."
+        pytest.exit(
+            "ENVIRONMENT ERROR: Integration and functional tests cannot be run on production environments."
         )
 
     print(f'Loading environment: "{environment}" during test setup')
     config_dir = Path(__file__).parent.parent / "config"
-    load_env(config_dir / f".env.{environment}")
+    load_env(config_dir / f".env.{environment}", raise_if_no_file=True)
     # Setting ENVIRONMENT so that downstream fixtures and tests can determine \
     # execution behavior based on the environment
     os.environ["ENVIRONMENT"] = environment
