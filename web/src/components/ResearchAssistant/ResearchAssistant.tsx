@@ -8,7 +8,11 @@ import {
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
-import { ConversationType } from "~/src/types/ResearchAssistant";
+import {
+  CatalogSearchResults,
+  ChatResults,
+  ConversationType,
+} from "~/src/types/ResearchAssistant";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
@@ -21,6 +25,7 @@ const ResearchAssistant: React.FC = () => {
     messages,
     sendMessage,
     results,
+    resultType,
     historyStack,
     goToPreviousState,
     showWebReader,
@@ -117,10 +122,10 @@ const ResearchAssistant: React.FC = () => {
                 >
                   {results && Object.keys(results).length > 0 ? (
                     <>
-                      {results.conversation_context ===
-                        ConversationType.Catalog && (
-                        <CatalogResults results={results} />
-                      )}
+                      {resultType === ConversationType.Catalog &&
+                        isCatalogResults(results) && (
+                          <CatalogResults results={results} />
+                        )}
                     </>
                   ) : (
                     <Box width="100%" marginTop="s">
@@ -159,5 +164,11 @@ const ResearchAssistant: React.FC = () => {
     </ResultPageProvider>
   );
 };
+
+function isCatalogResults(
+  results: ChatResults | null
+): results is CatalogSearchResults {
+  return !!results && (results as CatalogSearchResults).editions !== undefined;
+}
 
 export default ResearchAssistant;

@@ -69,6 +69,7 @@ export default async function handler(
     return res.status(201).json({
       results: chatData.result,
       messages: chatData.messages,
+      resultType: chatData.result_type,
     });
   } catch (error) {
     console.error("Error in Next.js Research Assistant API route:", error);

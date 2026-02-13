@@ -142,7 +142,6 @@ export interface CatalogEdition {
 }
 
 export type CatalogSearchResults = {
-  conversation_context: ConversationType.Catalog;
   editions: CatalogEdition[];
   search_params: SearchParams;
   paging: {
@@ -157,7 +156,6 @@ export type CatalogSearchResults = {
 };
 
 export interface ContentSearchResults {
-  conversation_context: ConversationType.Content;
   snippets: Snippet[];
   search_params: SearchParams;
 }
@@ -168,6 +166,7 @@ export interface HistoryItem {
   editionId?: number;
   showWebReader: boolean;
   linkResults: LinkResult;
+  resultType?: ConversationType;
 }
 
 export type ChatResults = CatalogSearchResults | ContentSearchResults;

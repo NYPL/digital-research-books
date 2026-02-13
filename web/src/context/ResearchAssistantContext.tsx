@@ -19,6 +19,7 @@ interface ResearchAssistantViewState {
   pageId: string;
   results: ChatResults | null;
   linkResults: LinkResult | null;
+  resultType?: ConversationType;
 }
 
 interface ResearchAssistantContextType extends ResearchAssistantViewState {
@@ -45,6 +46,7 @@ interface PushNewStateArgs {
   linkResults: LinkResult | null;
   itemId?: string;
   pageId?: string;
+  resultType?: ConversationType;
 }
 
 const ResearchAssistantContext = createContext<
@@ -79,6 +81,7 @@ export const ResearchAssistantProvider: React.FC<{
     linkResults,
     itemId = "",
     pageId = "",
+    resultType,
   }: PushNewStateArgs) => {
     setHistoryStack((prevStack) => [
       ...prevStack,
@@ -88,6 +91,7 @@ export const ResearchAssistantProvider: React.FC<{
         pageId: pageId,
         showWebReader: showWebReader,
         linkResults: linkResults,
+        resultType: resultType,
       },
     ]);
   };
@@ -146,18 +150,20 @@ export const ResearchAssistantProvider: React.FC<{
         ...prev,
         results: data.results,
         showWebReader: false,
+        resultType: data.resultType,
       }));
 
-      if (data.results?.conversation_context === ConversationType.Catalog) {
+      if (data.resultType === ConversationType.Catalog) {
         setHistoryStack([]);
         pushNewState({
           results: data.results,
           showWebReader: false,
           linkResults: null,
           itemId: "",
+          resultType: data.resultType,
         });
       } else if (
-        data.results?.conversation_context === ConversationType.Content &&
+        data.resultType === ConversationType.Content &&
         viewState.itemId
       ) {
         pushNewState({
@@ -165,6 +171,7 @@ export const ResearchAssistantProvider: React.FC<{
           showWebReader: false,
           linkResults: null,
           itemId: viewState.itemId,
+          resultType: data.resultType,
         });
       }
     } catch (err: any) {
@@ -200,6 +207,7 @@ export const ResearchAssistantProvider: React.FC<{
       linkResults: null,
       itemId: itemId,
       pageId: pageId,
+      resultType: viewState.resultType,
     });
   };
 
@@ -216,6 +224,7 @@ export const ResearchAssistantProvider: React.FC<{
       showWebReader: true,
       linkResults: linkResult,
       itemId: "",
+      resultType: viewState.resultType,
     });
   };
 

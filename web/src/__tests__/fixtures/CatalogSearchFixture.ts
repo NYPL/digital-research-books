@@ -2,7 +2,6 @@ import { Agent } from "~/src/types/DataModel";
 import {
   CatalogEdition,
   CatalogSearchResults,
-  ConversationType,
   SearchParams,
 } from "~/src/types/ResearchAssistant";
 
@@ -21,7 +20,6 @@ const createAgent = (name: string): Agent => ({
 });
 
 export const catalogResults: CatalogSearchResults = {
-  conversation_context: ConversationType.Catalog,
   editions: [
     {
       id: 1,
@@ -70,7 +68,6 @@ export const catalogResults: CatalogSearchResults = {
 };
 
 export const minimalCatalogResults: CatalogSearchResults = {
-  conversation_context: ConversationType.Catalog,
   editions: [
     {
       id: 3,
@@ -109,7 +106,6 @@ export const multiPageCatalogResults: CatalogSearchResults = {
 };
 
 export const emptyCatalogResults: CatalogSearchResults = {
-  conversation_context: ConversationType.Catalog,
   editions: [],
   search_params: { query: [["keyword", "nothing"]] } as SearchParams,
   paging: {
@@ -124,7 +120,6 @@ export const emptyCatalogResults: CatalogSearchResults = {
 };
 
 export const singleAuthorCatalogResults: CatalogSearchResults = {
-  conversation_context: ConversationType.Catalog,
   editions: [
     {
       id: 4,
@@ -153,7 +148,6 @@ export const singleAuthorCatalogResults: CatalogSearchResults = {
 };
 
 export const manyAuthorsCatalogResults: CatalogSearchResults = {
-  conversation_context: ConversationType.Catalog,
   editions: [
     {
       id: 5,
@@ -184,7 +178,6 @@ export const manyAuthorsCatalogResults: CatalogSearchResults = {
 };
 
 export const longFieldsCatalogResults: CatalogSearchResults = {
-  conversation_context: ConversationType.Catalog,
   editions: [
     {
       id: 6,
