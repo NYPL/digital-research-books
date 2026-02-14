@@ -17,32 +17,38 @@ class TestSearcher:
         assert searcher.embedder == mock_embedder
 
     def test_vector_search(self, mocker):
-        """Test vector_search executes without errors and returns a response."""
+        """Test vector_search executes without errors and returns correct response."""
 
-        # Mock Elasticsearch connection and embedding model with fixed output
+        # Mock Elasticsearch connection
         mocker.patch('api.assistant.search.get_or_create_default_connection')
+
+        # Mock embedding model to return a fixed output vector
         mock_embedder = mocker.MagicMock()
         mock_embedder.get_embedding.return_value = [0.1] * 768
 
-        # Initialize Searcher with mocked arguments
-        searcher = Searcher(index_name="test_index", embedder=mock_embedder)
-
-        # Mock the Search class and its methods to simulate a search response
+        # Mock the Search class
         mock_search = mocker.patch('api.assistant.search.Search')
+
+        # Create fake search object
         mock_instance = mocker.MagicMock()
         mock_search.return_value = mock_instance
+
+        # Configure instance methods of the fake search object to allow chaining
         mock_instance.knn.return_value = mock_instance
         mock_instance.__getitem__.return_value = mock_instance
 
-        # Create mock response for executing the search
+        # Create fake response object with attributes used for logging
         mock_response = mocker.MagicMock()
-
-        # Set attributes used for logging info after executing the search
         mock_response.hits = []
         mock_response.took = 100
-
-        # Set the execute method to return the mocked response
         mock_instance.execute.return_value = mock_response
 
-        # Verify a response is returned from executing the search
-        assert searcher.vector_search("test query") is not None
+        # Initialize Searcher with mocked embedder and execute vector search
+        searcher = Searcher(index_name="test_index", embedder=mock_embedder)
+        result = searcher.vector_search("test query")
+
+        # Verify result and that embedding and search were called correctly
+        assert result is not None
+        assert result == mock_response
+        mock_embedder.get_embedding.assert_called_once_with("test query")
+        mock_instance.execute.assert_called_once()
