@@ -6,17 +6,17 @@ class TestAgent:
         """Test update_chat in catalogSearch mode returns the expected result."""
 
         # Mock search dependencies
-        mocker.patch('api.assistant.agent.Searcher')
-        mocker.patch('api.assistant.agent.GoogleEmbedder')
+        mocker.patch("api.assistant.agent.Searcher")
+        mocker.patch("api.assistant.agent.GoogleEmbedder")
 
         # Mock the agent and its runner to simulate execution
-        mocker.patch('api.assistant.agent.Agent')
-        mock_runner = mocker.patch('api.assistant.agent.Runner')
+        mocker.patch("api.assistant.agent.Agent")
+        mock_runner = mocker.patch("api.assistant.agent.Runner")
         mock_run_result = mocker.MagicMock()
         mock_runner.run_sync.return_value = mock_run_result
 
         # Mock prompt template rendering
-        mock_template = mocker.patch('api.assistant.agent.Template')
+        mock_template = mocker.patch("api.assistant.agent.Template")
         mock_template_instance = mocker.MagicMock()
         mock_template.return_value = mock_template_instance
         mock_template_instance.render.return_value = "system prompt"
