@@ -34,8 +34,14 @@ class TestSearcher:
         mock_instance.knn.return_value = mock_instance
         mock_instance.__getitem__.return_value = mock_instance
 
-        # Create mock response that includes 'took' attribute needed for logging
-        mock_response = mocker.MagicMock(hits=[], took=100)
+        # Create mock response for executing the search
+        mock_response = mocker.MagicMock()
+
+        # Set attributes used for logging info after executing the search
+        mock_response.hits = []
+        mock_response.took = 100
+
+        # Set the execute method to return the mocked response
         mock_instance.execute.return_value = mock_response
 
         # Verify a response is returned from executing the search
