@@ -25,12 +25,20 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - xpack.security.http.ssl.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Djdk.disableLastCgroup=true -XX:-UseContainerSupport"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - ELASTIC_PASSWORD=elastic
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     command:
       - /bin/sh
       - -c
-      - elasticsearch-plugin install analysis-icu analysis-smartcn analysis-kuromoji analysis-stempel; /usr/local/bin/docker-entrypoint.sh elasticsearch
+      - |
+        export ES_TMPDIR=/tmp
+        export JAVA_TOOL_OPTIONS="-Djdk.disableLastUsageTracking=true"
+        elasticsearch-plugin install analysis-icu analysis-smartcn analysis-kuromoji analysis-stempel
+        exec /usr/local/bin/docker-entrypoint.sh elasticsearch
     volumes:
       - drb_local_esdata:/bitnami/elasticsearch/data
     healthcheck:
