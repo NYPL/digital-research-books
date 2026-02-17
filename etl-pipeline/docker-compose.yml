@@ -25,7 +25,6 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - xpack.security.http.ssl.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - ELASTIC_PASSWORD=elastic
     ulimits:
       memlock:
@@ -36,11 +35,11 @@ services:
       - -c
       - |
         export ES_TMPDIR=/tmp
-        export JAVA_TOOL_OPTIONS="-Djdk.disableLastUsageTracking=true"
         elasticsearch-plugin install analysis-icu analysis-smartcn analysis-kuromoji analysis-stempel
         exec /usr/local/bin/docker-entrypoint.sh elasticsearch
     volumes:
       - drb_local_esdata:/bitnami/elasticsearch/data
+      - ./elasticsearch-config/jvm.options:/usr/share/elasticsearch/config/jvm.options:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
       interval: 10s
