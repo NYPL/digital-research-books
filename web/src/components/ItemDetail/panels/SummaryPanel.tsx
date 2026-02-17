@@ -11,7 +11,11 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ previewEdition }) => {
   return (
     <VStack alignItems="left" gap="xs">
       <Text>{previewEdition.summary || "No summary available."}</Text>
-      <Flex alignItems="center" justifyContent="space-between">
+      <Flex
+        alignItems="center"
+        justifyContent="space-between"
+        height="1.125rem"
+      >
         <AiGeneratedText />
         <FeedbackButtons />
       </Flex>
