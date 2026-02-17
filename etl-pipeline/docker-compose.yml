@@ -25,7 +25,7 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - xpack.security.http.ssl.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Djdk.disableLastCgroup=true"
       - ELASTIC_PASSWORD=elastic
     command:
       - /bin/sh
