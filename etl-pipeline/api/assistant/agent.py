@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field, asdict
+from datetime import datetime
+from importlib.resources import read_text
 import json
 from pathlib import Path
 import traceback
-from typing import Dict
+from typing import Dict, Any, Optional, Union, List
 import uuid
 from textwrap import indent
 import sys
@@ -32,19 +34,27 @@ from jinja2 import Template
 # from sqlalchemy.ext.asyncio import create_async_engine
 
 # api code
-from .search import Searcher
 from ..utils import APIUtils, hit_to_dict, remove_markdown_comments
 from ..db import get_frbr_data_by_edition, get_session
 
 # shared code
 from vector_indexing.embedding import GoogleEmbedder
+
+# TODO: FIX WHEN CODE IS READY
+try:
+    from vector_indexing.backends import TurbopufferBackend
+    from vector_indexing.core.config import get_config
+except:
+    from unittest.mock import patch, MagicMock
+
+    TurbopufferBackend = MagicMock()
+    get_config = MagicMock()
 from managers.db import DBManager
 from logger import create_log
 from utils.common import wrap
 
 
 logger = create_log(__name__)
-
 
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
@@ -57,11 +67,50 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 MODEL = "litellm/gemini/gemini-3-flash-preview"
 
 
+# Fields that should be converted to datetime objects
+DATETIME_FIELDS = {"publication_date"}
+
+
+def convert_filter_datetimes(filters: Any) -> Any:
+    """
+    Recursively convert datetime string values to datetime objects in turbopuffer
+    filter structures.
+
+    Args:
+        filters: Filter specification (can be nested lists/arrays)
+
+    Returns:
+        Filters with datetime strings converted to datetime objects
+    """
+    if not isinstance(filters, (list, tuple)):
+        return filters
+
+    # Check if this is a 3-element condition list
+    if len(filters) == 3:
+        field_name, operator, value = filters
+
+        # If it's a datetime field and value is a string, convert it
+        if field_name in DATETIME_FIELDS and isinstance(value, str):
+            try:
+                # Parse ISO 8601 date string to datetime
+                # NOTE: handles py <3.11 quirk were Z isn't handled, although timezone should never be used here
+                converted_value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                return [field_name, operator, converted_value]
+            except (ValueError, AttributeError) as e:
+                logger.warning(
+                    f"Failed to convert '{value}' to datetime for field '{field_name}': {e}"
+                )
+                return filters
+
+    # Recursively process nested structures
+    return [convert_filter_datetimes(item) for item in filters]
+
+
 @dataclass
 class CatalogSearchExecutionContext:
     """Container used to inject objects into each agent run execution."""
 
-    searcher: Searcher
+    backend: TurbopufferBackend
     search_results: Dict = field(default_factory=dict)
 
 
@@ -69,7 +118,7 @@ class CatalogSearchExecutionContext:
 class ContentSearchExecutionContext:
     """Container used to inject objects into each agent run execution."""
 
-    searcher: Searcher
+    backend: TurbopufferBackend
     edition_id: int
     item_id: int
     search_results: Dict = field(default_factory=dict)
@@ -171,63 +220,149 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
     return df.set_index(source_col).to_dict(orient="index")
 
 
+def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
+    """
+    Send a message to the conversation and get the agent's response.
+
+    The raw search results will be available in self.context.search_data
+    for any post-processing or enrichment needed.
+
+    Args:
+        conversation: The list of openai Responses API items representing the conversation history.
+        conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
+        edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
+
+    Returns:
+        The agent's RunResult obj.
+    """
+
+    # TODO: when a user switches from catalog to content search, we should add \
+    # an additional user message saying: "I am now switching to content search \
+    # with in book XYZ" or "I am now switching back to catalog search"
+
+    # TODO: figure out how to do thread safe  module level instantiations for \
+    # some reused objs (backend, system prompts, async loop, etc...) (for sharing btw server \
+    # request workers/threads)
+
+    # TODO: get embedder from index_name config
+    backend = TurbopufferBackend(index_name=INDEX_NAME, config=get_config())
+
+    # Search within single book
+    if conversation_type == "contentSearch":
+        # TEMP: convert edition_id to record_id to filter ES search
+        mapped_ids = map_editions_and_records(edition_ids=[edition_id])[edition_id]
+        record_id = mapped_ids["record_id"]
+        item_id = mapped_ids["item_id"]  # BUG: this item_id may not be correct \
+        # for the returned chunks in the case of multiple items per edition, in \
+        # that case it was arbitrarily selected by map_editions_and_records().
+
+        # Fetch FRBR data for the book
+        frbr_data = get_frbr_data_by_edition([edition_id])
+        if not frbr_data:
+            logger.error(
+                f"FRBR data missing for content search in edition {edition_id}"
+            )
+        frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
+
+        # NOTE: intentionally passing record_id as edition_id to make future state a smaller refactor
+        # NOTE: future item_id will be extracted directly from the chunk hit, not passed from the mapper as here
+        exec_context = ContentSearchExecutionContext(
+            backend=backend,
+            edition_id=record_id,
+            item_id=item_id,
+            frbr_fields=frbr_fields,
+        )
+
+        template = Template((PROMPTS_DIR / "system" / "1.jinja.md").read_text())
+        system_prompt = template.render(
+            conversation_type="contentSearch", frbr_fields=frbr_fields
+        )
+        tools = [search_book]
+
+    # Search for books in catalog
+    elif conversation_type == "catalogSearch":
+        exec_context = CatalogSearchExecutionContext(backend=backend)
+        template = Template((PROMPTS_DIR / "system" / "1.jinja.md").read_text())
+        system_prompt = remove_markdown_comments(
+            template.render(conversation_type="catalogSearch")
+        )
+        tools = [search_catalog]
+
+    agent = Agent[type(exec_context)](
+        name="Research Library Assistant",
+        model=MODEL,
+        # model_settings=ModelSettings(
+        #     # include_usage=True,  # only for chatcompletions based agents/models # requires openai model?
+        #     # reasoning=Reasoning(effort="low"),  # converted to chat completions API  reasoning_effort= which  is consistently supported in litellm
+        # ),
+        instructions=system_prompt,
+        tools=tools,
+    )
+
+    run_result = Runner.run_sync(
+        agent,
+        conversation,
+        context=exec_context,
+        run_config=RunConfig(tracing_disabled=True),
+    )
+
+    return run_result
+
+
 def max_chunk_score(chunk_hits):
-    return max([h["meta"]["score"] for h in chunk_hits])
+    return max([h["score"] for h in chunk_hits])
 
 
 def mean_chunk_score(chunk_hits):
-    return np.mean([h["meta"]["score"] for h in chunk_hits])
+    return np.mean([h["score"] for h in chunk_hits])
 
 
 @function_tool
-def search_library_catalog(
-    # ctx: RunContextWrapper[ConversationContext],
+def search_catalog(
     ctx: ToolContext[CatalogSearchExecutionContext],
-    query: str,
+    ranking_query: str,
+    filters: Optional[Union[List, tuple]] = None,
 ) -> str:
-    """
-    Search the research library catalog for relevant book sections.
-    This tool uses semantic vector search on a vector index composed of all
-    the books broken into short text chunks with each chunk embedded with a
-    semantic embedding model. The vector search tool returns text chunks with
-    the most relevant semantic content.
+    f"""
+    {(PROMPTS_DIR / "tools" / "search_catalog.txt").read_text()}
 
-    Args:
-        query: The query will be embedded with a semantic embedding model and
-        used for the vector similarity search.
-
-    Returns:
-        A formatted string containing search results with book titles, page numbers,
-        subjects, dates, and text excerpts.
+    {remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
     """
-    # TODO: doc string - guidance on reformatting the user query to an appropriate search query
 
     try:
         logger.info(f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}'")
 
-        # Execute vector search
-        # take top 100 chunks and group by edition (then take top 10 editions)
-        resp = ctx.context.searcher.vector_search(query, topk=100)
-        logger.info(f"Retrieved {len(resp.hits)} chunk hits from Elasticsearch")
-        # TODO: s.params(track_total_hits=True)
+        # Post-process filters: convert datetime strings to datetime objects
+        if filters is not None:
+            filters = convert_filter_datetimes(filters)
+            logger.debug(f"Processed filters: {filters}")
 
-        if not len(resp.hits):  # ? search_obj/resp.total_hits
+        # Execute vector search via TurbopufferBackend
+        # take top 100 chunks and group by edition (then take top 10 editions)
+        results = ctx.context.backend.query(
+            rank_by=("text", "ANN", ranking_query),
+            top_k=100,
+            filters=filters,
+        )
+        logger.info(f"Retrieved {len(results)} chunk hits from vector backend")
+
+        if not len(results):
             return "No results found for your query."
 
         # MAYBE: turn the below into 2 functions: group_by_edition_and_sort() and enrich_edition_hits() (with limit to top 10 in between)
 
         # Group ES Chunk hits by Edition (before adding FRBR data)
-        record_ids = set(hit.book_id for hit in resp.hits)
+        record_ids = set(cd.book_id for cd, _ in results)
         mapper = map_editions_and_records(record_ids=record_ids)
         edition_hits = {}
         missing_edition_ids = []
-        for chunk_hit in resp.hits:
-            chunk_hit = hit_to_dict(
-                chunk_hit
-            )  # MAYBE: we don't need to convert chunk to dict
+        # Results from TurbopufferBackend are list of (ChunkDocument, distance) tuples
+        for chunk_doc, distance in results:
+            chunk_hit = chunk_doc.to_dict()
+            chunk_hit["score"] = distance if distance is not None else 0.0
             if not chunk_hit.get("book_id"):
                 logger.error(
-                    f"Chunk missing book_id: id={chunk_hit['meta'].get('id')}, keys={chunk_hit.keys()}"
+                    f"Chunk missing book_id: id={chunk_hit.get('doc_id')}, keys={chunk_hit.keys()}"
                 )
                 continue
             # book_id was incorrectly indexed as a str for a while
@@ -253,7 +388,7 @@ def search_library_catalog(
             for eh in edition_hits.values()
         ]
         logger.info(
-            f"Aggregated {len(edition_hits)} editions from {len(resp.hits)} chunk hits"
+            f"Aggregated {len(edition_hits)} editions from {len(results)} chunk hits"
         )
         if missing_edition_ids:
             logger.error(
@@ -316,7 +451,7 @@ def search_library_catalog(
         # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
         # than saving JSON/API response separately but edition data json may \
         # include irrelevant metadata)
-        return verbose_display_editions(edition_data, query, as_str=True)
+        return verbose_display_editions(edition_data, as_str=True)
 
     except Exception as e:
         logger.exception("Error during search_library_catalog tool execution.")
@@ -324,22 +459,15 @@ def search_library_catalog(
 
 
 @function_tool
-def search_in_book(
+def search_book(
     ctx: ToolContext[ContentSearchExecutionContext],
-    query: str,
+    ranking_query: str,
+    filters: Optional[Union[List, tuple]] = None,
 ) -> str:
-    """
-    Search within a specific book for relevant sections.
-    This tool performs semantic vector search constrained to a XXXsingle book,
-    returning the most relevant text chunks with their page numbers.
+    f"""
+    {(PROMPTS_DIR / "tools" / "search_book.txt").read_text()}
 
-    Args:
-        query: The query will be embedded with a semantic embedding model and
-        used for the vector similarity search within the book.
-
-    Returns:
-        A formatted string containing search results with page numbers,
-        scores, and text excerpts from the book.
+    {remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
     """
 
     try:
@@ -347,28 +475,41 @@ def search_in_book(
             f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}', for edition_id (record_id) = {ctx.context.edition_id}"
         )
 
-        # Execute vector search filtered to single book
-        resp = ctx.context.searcher.vector_search(
-            # NOTE: book_id was (incorrectly) indexed as str initially
-            # TODO: current book_id=record_id, future book_id=edition_id (record_id currently passed to context under name edition_id)
-            query,
-            topk=10,
-            filter_query={"term": {"book_id": str(ctx.context.edition_id)}},
-        )
-        logger.info(
-            f"Retrieved {len(resp.hits)} chunk hits from Elasticsearch for book"
-        )  # # Q: redudnant to searcher logging
+        # Post-process filters: convert datetime strings to datetime objects
+        if filters is not None:
+            filters = convert_filter_datetimes(filters)
+            logger.debug(f"Processed filters: {filters}")
 
-        if not len(resp.hits):
+        # Build filter to restrict search to single book
+        # NOTE: book_id was (incorrectly) indexed as str initially
+        # TODO: current book_id=record_id, future book_id=edition_id (record_id currently passed to context under name edition_id)
+        book_filter = ["book_id", "Eq", str(ctx.context.edition_id)]
+
+        # Combine with user filters if provided
+        if filters is not None:
+            combined_filters = ["And", [book_filter, filters]]
+        else:
+            combined_filters = book_filter
+
+        # Execute vector search via TurbopufferBackend
+        results = ctx.context.backend.query(
+            rank_by=("text", "ANN", ranking_query),
+            top_k=10,
+            filters=combined_filters,
+        )
+        logger.info(f"Retrieved {len(results)} chunk hits from vector backend for book")
+
+        if not len(results):
             return "No results found for your query in this book."
 
         # Convert chunk hits to dict format
         chunk_hits = []
-        for chunk_hit in resp.hits:
-            chunk_hit = hit_to_dict(chunk_hit)
+        for chunk_doc, distance in results:
+            chunk_hit = chunk_doc.to_dict()
             chunk_hit["item_id"] = (
                 ctx.context.item_id
             )  # NOTE: future: the item_id will be directly indexed in the chunk hit.
+            chunk_hit["score"] = distance if distance is not None else 0.0
             chunk_hits.append(chunk_hit)
 
         # Store search results for later reference
@@ -382,101 +523,12 @@ def search_in_book(
 
         # Format results for LLM
         return verbose_display_chunks(
-            chunk_hits, query, as_str=True, frbr_fields=ctx.context.frbr_fields
+            chunk_hits, as_str=True, frbr_fields=ctx.context.frbr_fields
         )
 
     except Exception as e:
         logger.exception("Error during search_in_book tool execution.")
         raise e
-
-
-def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
-    """
-    Send a message to the conversation and get the agent's response.
-
-    The raw search results will be available in self.context.search_data
-    for any post-processing or enrichment needed.
-
-    Args:
-        conversation: The list of openai Responses API items representing the conversation history.
-        conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
-        edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
-
-    Returns:
-        The agent's RunResult obj.
-    """
-
-    # TODO: when a user switches from catalog to content search, we should add \
-    # an additional user message saying: "I am now switching to content search \
-    # with in book XYZ" or "I am now switching back to catalog search"
-
-    # TODO: figure out how to do thread safe  module level instantiations for \
-    # some reused objs (searcher, system prompts, async loop, etc...) (for sharing btw server \
-    # request workers/threads)
-
-    # TODO: get embedder from index_name config
-    searcher = Searcher(index_name=INDEX_NAME, embedder=GoogleEmbedder())
-
-    # Search within single book
-    if conversation_type == "contentSearch":
-        # TEMP: convert edition_id to record_id to filter ES search
-        mapped_ids = map_editions_and_records(edition_ids=[edition_id])[edition_id]
-        record_id = mapped_ids["record_id"]
-        item_id = mapped_ids["item_id"]  # BUG: this item_id may not be correct \
-        # for the returned chunks in the case of multiple items per edition, in \
-        # that case it was arbitrarily selected by map_editions_and_records().
-
-        # Fetch FRBR data for the book
-        frbr_data = get_frbr_data_by_edition([edition_id])
-        if not frbr_data:
-            logger.error(
-                f"FRBR data missing for content search in edition {edition_id}"
-            )
-        frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
-
-        # NOTE: intentionally passing record_id as edition_id to make future state a smaller refactor
-        # NOTE: future item_id will be extracted directly from the chunk hit, not passed from the mapper as here
-        exec_context = ContentSearchExecutionContext(
-            searcher=searcher,
-            edition_id=record_id,
-            item_id=item_id,
-            frbr_fields=frbr_fields,
-        )
-
-        template = Template((PROMPTS_DIR / "chat" / "1.jinja.md").read_text())
-        system_prompt = template.render(
-            conversation_type="contentSearch", frbr_fields=frbr_fields
-        )
-        tools = [search_in_book]
-
-    # Search for books in catalog
-    elif conversation_type == "catalogSearch":
-        exec_context = CatalogSearchExecutionContext(searcher=searcher)
-        template = Template((PROMPTS_DIR / "chat" / "1.jinja.md").read_text())
-        system_prompt = remove_markdown_comments(
-            template.render(conversation_type="catalogSearch")
-        )
-        tools = [search_library_catalog]
-
-    agent = Agent[type(exec_context)](
-        name="Research Library Assistant",
-        model=MODEL,
-        # model_settings=ModelSettings(
-        #     # include_usage=True,  # only for chatcompletions based agents/models # requires openai model?
-        #     # reasoning=Reasoning(effort="low"),  # converted to chat completions API  reasoning_effort= which  is consistently supported in litellm
-        # ),
-        instructions=system_prompt,
-        tools=tools,
-    )
-
-    run_result = Runner.run_sync(
-        agent,
-        conversation,
-        context=exec_context,
-        run_config=RunConfig(tracing_disabled=True),
-    )
-
-    return run_result
 
 
 def format_frbr_fields(orm_work, orm_edition):
@@ -525,9 +577,12 @@ def format_frbr_fields(orm_work, orm_edition):
 
 # TODO: rely on sort order from edition (and nested chunks) as passed (add to doc str)
 # TODO: move to agent.py
-def verbose_display_editions(edition_data, query, as_str=False):
+def verbose_display_editions(edition_data, query=None, as_str=False):
     """
-    Display edition search results with detailed information.
+    Print or return a formatted str containing an ordered list book search
+    results and their associated text excerpts. For each book, metadata is
+    displayed including title, subjects, publication date. For each text excerpt,
+    page number and search score is displayed. Books are ordered by the input list.
 
     Args:
         edition_data: List of dicts containing 'orm_work', 'orm_edition', 'edition_hit'
@@ -538,8 +593,9 @@ def verbose_display_editions(edition_data, query, as_str=False):
         return "There are no results for your query."
 
     lines = []
-    lines.append(f'QUERY: "{wrap(query)}"')
-    lines.append("\n")
+    if query is not None:
+        lines.append(f'QUERY: "{wrap(query)}"')
+        lines.append("\n")
 
     for i, edition_entry in enumerate(edition_data, 1):
         orm_work = edition_entry["orm_work"]
@@ -576,7 +632,7 @@ def verbose_display_editions(edition_data, query, as_str=False):
         # MAYBE: sort chunks by score and limit display
         for j, chunk_hit in enumerate(chunk_hits, 1):
             text = chunk_hit.get("text", "(No Text)")
-            score = chunk_hit.get("meta", {}).get("score", 0)
+            score = chunk_hit.get("score", 0)
             chunk_id = chunk_hit.get("meta", {}).get("id", "unknown")
             # Extract page range from chunk metadata
             start_page = chunk_hit.get("chunk_start_page")
@@ -643,14 +699,17 @@ def compact_display_editions(edition_data, query, as_str=False):
 
 
 def get_score(entry):
-    return entry.get("meta", {}).get("score", float("-inf"))
+    return entry.get("score", float("-inf"))
 
 
 # TODO: When we insert messages in context specifying book for content search \
 # context, remove book level info from search response to save tokens.
-def verbose_display_chunks(chunk_hits, query, as_str=False, frbr_fields=None):
+def verbose_display_chunks(chunk_hits, query=None, as_str=False, frbr_fields=None):
     """
-    Display chunk search results, optionally with FRBR book metadata.
+    Print or return a formatted str containing an ordered list book excerpts.
+    Book metadata  including title, subjects, publication date is optionally
+    displayed. For each text excerpt, page number and search score is displayed.
+    Excerpts are ordered by the input list.
 
     Args:
         chunk_hits: List of chunk hit dictionaries
@@ -666,8 +725,9 @@ def verbose_display_chunks(chunk_hits, query, as_str=False, frbr_fields=None):
     sorted_hits = sorted(chunk_hits, key=get_score, reverse=True)
 
     lines = []
-    lines.append(f'QUERY: "{wrap(query)}"')
-    lines.append("\n")
+    if query is not None:
+        lines.append(f'QUERY: "{wrap(query)}"')
+        lines.append("\n")
 
     # Display book context (if FRBR data provided)
     if frbr_fields:
@@ -697,7 +757,7 @@ def verbose_display_chunks(chunk_hits, query, as_str=False, frbr_fields=None):
             page_display = "?"
 
         lines.append(f"RESULT {i}:")
-        lines.append(indent(f"ID: {entry['meta']['id']}", "  "))
+        lines.append(indent(f"ID: {entry['doc_id']}", "  "))
         lines.append(indent(f"PAGE: {page_display}", "  "))
         lines.append(indent(f"SCORE: {score}", "  "))
         lines.append(indent("TEXT:", "  "))
@@ -720,7 +780,7 @@ def compact_display_chunks(chunk_hits, query, as_str=False):
     lines.append("RESULTS:")
     for i, entry in enumerate(sorted_entries, 1):
         lines.append(
-            f" {i:>3}:  ({get_score(entry):.3f}) {entry['meta']['id']:<19} -  {entry['title']}"
+            f" {i:>3}:  ({get_score(entry):.3f}) {entry['doc_id']:<19} -  {entry['title']}"
         )
 
     msg = "\n".join(lines)
