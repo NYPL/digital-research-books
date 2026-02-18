@@ -15,6 +15,7 @@ import pandas as pd
 
 from agents import (
     Agent,
+    OpenAIChatCompletionsModel,
     Runner,
     RunConfig,
     function_tool,
@@ -25,8 +26,8 @@ from agents import (
 )
 from agents.tool_context import ToolContext
 from agents.extensions.memory import SQLAlchemySession
+from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
-from sklearn.decomposition import FastICA
 from sqlalchemy import text, bindparam
 from jinja2 import Template
 
@@ -39,6 +40,7 @@ from ..db import get_frbr_data_by_edition, get_session
 
 # shared code
 from vector_indexing.embedding import GoogleEmbedder
+from utils.common import require_env
 
 # TODO: FIX WHEN CODE IS READY
 try:
@@ -62,9 +64,6 @@ PAGE_SIZE = 10
 INDEX_NAME = "vra_chunks_gemini-embedding-001"
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
-
-
-MODEL = "litellm/gemini/gemini-3-flash-preview"
 
 
 # Fields that should be converted to datetime objects
@@ -271,6 +270,16 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     # TODO: get embedder from index_name config
     backend = TurbopufferBackend(index_name=INDEX_NAME, config=get_config())
 
+    # NOTE: litellm has a bug converting list | None params into gemini compatible format
+    # model = "litellm/gemini/gemini-3-flash-preview"
+    model = OpenAIChatCompletionsModel(
+        model="gemini-3-flash-preview",
+        openai_client=AsyncOpenAI(
+            api_key=require_env("GOOGLE_API_KEY"),
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        ),
+    )
+
     # Search within single book
     if conversation_type == "contentSearch":
         # TEMP: convert edition_id to record_id to filter ES search
@@ -314,7 +323,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
 
     agent = Agent[type(exec_context)](
         name="Research Library Assistant",
-        model=MODEL,
+        model=model,
         # model_settings=ModelSettings(
         #     # include_usage=True,  # only for chatcompletions based agents/models # requires openai model?
         #     # reasoning=Reasoning(effort="low"),  # converted to chat completions API  reasoning_effort= which  is consistently supported in litellm
