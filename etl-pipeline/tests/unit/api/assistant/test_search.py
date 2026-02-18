@@ -1,4 +1,5 @@
 from api.assistant.search import Searcher
+from vector_indexing.embedding import GEMINI_EMBEDDING_DIMS
 
 
 class TestSearcher:
@@ -24,7 +25,7 @@ class TestSearcher:
 
         # Mock embedding model to return a fixed output vector
         mock_embedder = mocker.MagicMock()
-        mock_embedder.get_embedding.return_value = [0.1] * 768
+        mock_embedder.get_embedding.return_value = [0.1] * GEMINI_EMBEDDING_DIMS
 
         # Mock the Search class
         mock_search = mocker.patch("api.assistant.search.Search")
