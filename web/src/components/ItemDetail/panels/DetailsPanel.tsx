@@ -38,7 +38,11 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({ work }) => (
     </Box>
     <Box>
       <Text fontWeight="bold">Languages</Text>
-      <Text>{work.languages?.join(", ") || "Unknown"}</Text>
+      <Text>
+        {work.languages && work.languages.length > 0
+          ? work.languages.map((l) => l.language).join(", ")
+          : "Unknown"}
+      </Text>
     </Box>
   </VStack>
 );

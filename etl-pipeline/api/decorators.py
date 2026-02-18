@@ -4,6 +4,8 @@ import os
 
 from flask import current_app, request
 
+from utils.common import require_env
+
 from .db import DBClient
 from .utils import APIUtils
 
@@ -57,7 +59,7 @@ def require_basic_authentication(func):
         user = db_client.fetchUser(username)
         if user is None:
             logger.debug(
-                f"User {username} not found in {os.environ['ENVIRONMENT']} database"
+                f"User {username} not found in {os.environ.get('ENVIRONMENT')} database"
             )
 
         if (
