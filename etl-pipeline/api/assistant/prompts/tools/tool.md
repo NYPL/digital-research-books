@@ -268,7 +268,7 @@ Note: The temporal constraint "20th century" is applied via the publication_date
 
 # Avoid ambiguous semantic queries
 
-Avoid Homonyms or ambiguous meaning in `ranking_queries`. 
+Avoid Homonyms or ambiguous meaning in `ranking_query`. 
 
 Ambiguous example (bad): "I'm looking for a history of the several stories that exist under Bryant Park for the library" 
 - This is bad because stories could mean tales or floors of a building. This ranking_query would mix text chunks that match both meanings high in the rankings and do a bad job at isolating a specific meaning.

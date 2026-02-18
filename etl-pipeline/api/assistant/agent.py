@@ -71,6 +71,30 @@ MODEL = "litellm/gemini/gemini-3-flash-preview"
 DATETIME_FIELDS = {"publication_date"}
 
 
+def dynamic_docstring(docstring):
+    """Decorator to set a function's docstring dynamically."""
+
+    def decorator(func):
+        func.__doc__ = docstring
+        return func
+
+    return decorator
+
+
+# Module-level docstring variables
+SEARCH_CATALOG_DOC = f"""
+{(PROMPTS_DIR / "tools" / "search_catalog.txt").read_text()}
+
+{remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
+"""
+
+SEARCH_BOOK_DOC = f"""
+{(PROMPTS_DIR / "tools" / "search_book.txt").read_text()}
+
+{remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
+"""
+
+
 def convert_filter_datetimes(filters: Any) -> Any:
     """
     Recursively convert datetime string values to datetime objects in turbopuffer
@@ -318,17 +342,12 @@ def mean_chunk_score(chunk_hits):
 
 
 @function_tool
+@dynamic_docstring(SEARCH_CATALOG_DOC)
 def search_catalog(
     ctx: ToolContext[CatalogSearchExecutionContext],
     ranking_query: str,
-    filters: Optional[Union[List, tuple]] = None,
+    filters: List | tuple | None = None,
 ) -> str:
-    f"""
-    {(PROMPTS_DIR / "tools" / "search_catalog.txt").read_text()}
-
-    {remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
-    """
-
     try:
         logger.info(f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}'")
 
@@ -459,17 +478,12 @@ def search_catalog(
 
 
 @function_tool
+@dynamic_docstring(SEARCH_BOOK_DOC)
 def search_book(
     ctx: ToolContext[ContentSearchExecutionContext],
     ranking_query: str,
     filters: Optional[Union[List, tuple]] = None,
 ) -> str:
-    f"""
-    {(PROMPTS_DIR / "tools" / "search_book.txt").read_text()}
-
-    {remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
-    """
-
     try:
         logger.info(
             f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}', for edition_id (record_id) = {ctx.context.edition_id}"
