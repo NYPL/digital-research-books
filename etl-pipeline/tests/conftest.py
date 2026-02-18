@@ -53,9 +53,11 @@ def setup_env(pytestconfig, request):
     # (and pytest `--rootdir` is not overridden), the "unit" keyword will be \
     # present for all tests under the "unit/" folder.
 
-    # fetch target environment
-    # NOTE: default is "local" from addoption()
-    environment = os.environ.get("ENVIRONMENT") or pytestconfig.getoption("--env")
+    # Set environment
+    # empty strings (and other things that coerce to False) will be set as 'local'
+    # NOTE: `make integration` and `make functional` without ENVIRONMENT set \
+    # will set an empty string to --env=
+    environment = pytestconfig.getoption("--env") or "local"
 
     # Error if attempting to run function or integration tests against \
     # production environment
@@ -66,7 +68,7 @@ def setup_env(pytestconfig, request):
 
     print(f'Loading environment: "{environment}" during test setup')
     config_dir = Path(__file__).parent.parent / "config"
-    load_env(config_dir / f".env.{environment}")
+    load_env(config_dir / f".env.{environment}", raise_if_no_file=True)
     # Setting ENVIRONMENT so that downstream fixtures and tests can determine \
     # execution behavior based on the environment
     os.environ["ENVIRONMENT"] = environment

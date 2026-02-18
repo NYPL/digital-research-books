@@ -196,9 +196,11 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             </Heading>
           </Flex>
           <VStack alignContent="left" alignItems="left" gap="l">
-            {work.authors && work.authors.length > 0 && (
-              <AuthorsList authors={work.authors} />
-            )}
+            <Box>
+              {work.authors && work.authors.length > 0 && (
+                <AuthorsList authors={work.authors} />
+              )}
+            </Box>
             {/* TODO: Re-add after download is implemented on the backend
             <DownloadLink
               authors={authorNames}
