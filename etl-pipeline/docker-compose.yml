@@ -78,7 +78,7 @@ services:
       start_period: 30s
 
   aws_services:
-    container_name: drb-local-aws
+    container_name: drb_local_aws
     image: localstack/localstack:latest
     environment:
       - DEBUG=1
