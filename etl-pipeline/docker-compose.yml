@@ -17,7 +17,8 @@ services:
 
   elasticsearch:
     container_name: drb_local_es
-    image: elasticsearch:7
+    # use same ES version as in QA/Prod servers
+    image: elasticsearch:7.17.28
     ports:
       - 9200:9200
     environment:
