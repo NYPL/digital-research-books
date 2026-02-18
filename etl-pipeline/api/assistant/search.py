@@ -73,6 +73,7 @@ class Searcher:
                 filter=filter_query,  # filter applied during search. slows query
             )
             search = search[:topk]
+            # TODO: s.params(track_total_hits=True)
 
         # unnecessary in >=ES9.2
         # # Prevent return of memory intensive embeddings
