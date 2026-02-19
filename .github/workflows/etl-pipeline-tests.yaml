@@ -103,7 +103,8 @@ jobs:
           make integration
 
       - name: Dump service logs (on failure)
-        if: failure()
+        # if: failure()
+        if: always()
         working-directory: ./etl-pipeline
         run: |
           docker compose ps

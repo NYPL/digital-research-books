@@ -43,6 +43,9 @@ def pytest_addoption(parser):
 
 # NOTE: autouse=True does not guarantee execution before other session scoped \
 # fixtures unless an explicit dependency on setup_env is specified.
+# NOTE: if an error occurs in setup, the error is reported for each test in the \
+# session, but the captured stdout/logs messages appear only for the first \
+# occurrence of the error
 @pytest.fixture(scope="session", autouse=True)
 def setup_env(pytestconfig, request):
     # Check if test session is all tests in the unit/ folder
