@@ -270,7 +270,8 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     # TODO: get embedder from index_name config
     backend = TurbopufferBackend(index_name=INDEX_NAME, config=get_config())
 
-    # NOTE: litellm has a bug converting list | None params into gemini compatible format
+    # NOTE: litellm has a bug converting `list | None = None` params/types into
+    # gemini compatible format
     # model = "litellm/gemini/gemini-3-flash-preview"
     model = OpenAIChatCompletionsModel(
         model="gemini-3-flash-preview",
@@ -363,7 +364,7 @@ def search_catalog(
         # Post-process filters: convert datetime strings to datetime objects
         if filters is not None:
             filters = convert_filter_datetimes(filters)
-            logger.debug(f"Processed filters: {filters}")
+            logger.debug(f"Post-processed filters: {filters}")
 
         # Execute vector search via TurbopufferBackend
         # take top 100 chunks and group by edition (then take top 10 editions)
