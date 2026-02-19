@@ -25,7 +25,7 @@ from model import (
 from model.postgres.item import ITEM_LINKS
 from processes import RecordClusterer
 from processes.grin.grin_client import GRINClient
-from sqlalchemy import delete, text
+from sqlalchemy import delete, false, text
 from utils.load_env import load_env
 
 from tests.fixtures.generate_test_data import generate_test_data
@@ -161,11 +161,48 @@ def test_language():
     return "Integration Test Language"
 
 
+def pytest_sessionstart(session):
+    import logging
+
+    logging.config.dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": True,
+            "root": {
+                "level": "WARNING",
+            },
+            "loggers": {
+                "drb": {
+                    "level": "DEBUG",
+                },
+            },
+        }
+    )
+
+
+# # https://github.com/pytest-dev/pytest/discussions/11177
+# def get_caplog(request):
+#     request.node.add_report_section = lambda *args: None
+#     logging_plugin = request.config.pluginmanager.getplugin('logging-plugin')
+#     for _ in logging_plugin.pytest_runtest_setup(request.node):
+#         caplog = pytest.LogCaptureFixture(request.node, _ispytest=True)
+#         return caplog
+
+
 @pytest.fixture(scope="session")
 def frbrized_record_data(
-    db_manager, redis_manager, test_title, test_subject, test_language
+    db_manager, redis_manager, test_title, test_subject, test_language, request
 ):
-    # TODO: find path forward to connect to db in GH actions
+    # import logging
+    # request.node.add_report_section = lambda *args: None
+    # logging_plugin = request.config.pluginmanager.getplugin('logging-plugin')
+    # for _ in logging_plugin.pytest_runtest_setup(request.node):
+    #     caplog = pytest.LogCaptureFixture(request.node, _ispytest=True)
+    #     caplog.set_level(logging.DEBUG, logger='drb')
+
+    logger.info("TEST!!!")
+
+    # TODO: find path forward to connect to (localhost? qa?) db in GH actions
     if db_manager is None:
         return {
             "edition_id": 1982731,
