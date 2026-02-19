@@ -35,29 +35,16 @@ const ResearchAssistantWindow: React.FC = () => {
     ? ConversationType.Content
     : ConversationType.Catalog;
 
-  const initialMessage: MessageItem =
+  const messageText =
     conversationType === ConversationType.Catalog
-      ? {
-          type: ItemType.Message,
-          role: MessageRole.Assistant,
-          content: [
-            {
-              text: "What research topic can I help you explore today?",
-              type: "output_text",
-            },
-          ],
-        }
-      : {
-          type: ItemType.Message,
-          role: MessageRole.Assistant,
-          content: [
-            {
-              text:
-                "I can help you find relevant content in this book. Ask me a question, or try the suggestions below.",
-              type: "output_text",
-            },
-          ],
-        };
+      ? "What research topic can I help you explore today?"
+      : "I can help you find relevant content in this book. Ask me a question, or try the suggestions below.";
+
+  const initialMessage: MessageItem = {
+    type: ItemType.Message,
+    role: MessageRole.Assistant,
+    content: [{ text: messageText, type: "output_text" }],
+  };
 
   return (
     <Box
