@@ -1,26 +1,31 @@
-import React, { useEffect } from "react";
 import { Box, Flex } from "@nypl/design-system-react-components";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
-import CatalogResults from "./CatalogResults";
-import ItemResults from "./ItemResults";
-import ResearchAssistantPanel from "./ResearchAssistantPanel";
-import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
-import ReaderLayout from "../ReaderLayout/ReaderLayout";
-import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
-import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
-import ResultsBanner from "./ResultsBanner";
+import React, { useEffect } from "react";
 import {
   HEADER_HEIGHT,
   MARGIN_BLEED,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
+import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
+import {
+  CatalogSearchResults,
+  ChatResults,
+  ConversationType,
+} from "~/src/types/ResearchAssistant";
+import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
+import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
+import ReaderLayout from "../ReaderLayout/ReaderLayout";
+import CatalogResults from "./CatalogResults";
+import ResearchAssistantPanel from "./ResearchAssistantPanel";
+import ResultsBanner from "./ResultsBanner";
 
 const ResearchAssistant: React.FC = () => {
   const {
     messages,
     sendMessage,
     results,
+    resultType,
     historyStack,
     goToPreviousState,
     showWebReader,
@@ -117,12 +122,10 @@ const ResearchAssistant: React.FC = () => {
                 >
                   {results && Object.keys(results).length > 0 ? (
                     <>
-                      {results.type === "catalog_search" && (
-                        <CatalogResults results={results.data} />
-                      )}
-                      {results.type === "item_search" && (
-                        <ItemResults results={results.data} />
-                      )}
+                      {resultType === ConversationType.Catalog &&
+                        isCatalogResults(results) && (
+                          <CatalogResults results={results} />
+                        )}
                     </>
                   ) : (
                     <Box width="100%" marginTop="s">
@@ -161,5 +164,11 @@ const ResearchAssistant: React.FC = () => {
     </ResultPageProvider>
   );
 };
+
+function isCatalogResults(
+  results: ChatResults | null
+): results is CatalogSearchResults {
+  return !!results && (results as CatalogSearchResults).editions !== undefined;
+}
 
 export default ResearchAssistant;
