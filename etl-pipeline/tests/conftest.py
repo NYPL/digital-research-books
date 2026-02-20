@@ -265,7 +265,7 @@ def frbrized_record_data(
         .join(Work, Work.id == Edition.work_id)
         .limit(1000)
     )
-    print("FRBR items!!!")
+    print("FRBR items - setup!!!")
     for row in full_results:
         print(
             f"{row.Work.title=} {row.Work.uuid=} {row.Work.id=} {row.Edition.id=} {row.Item.id=} {row.Edition.title=}"
@@ -280,11 +280,24 @@ def frbrized_record_data(
         .all()
     )
 
-    return {
+    yield {
         "edition_id": str(edition.id) if item else None,
         "work_id": str(work.uuid) if work else None,
         "link_id": links[0].id if links and len(links) > 0 else None,
     }
+
+    # print all available FRBR records
+    full_results = (
+        db_manager.session.query(Item, Edition, Work)
+        .join(Edition, Edition.id == Item.edition_id)
+        .join(Work, Work.id == Edition.work_id)
+        .limit(1000)
+    )
+    print("FRBR items - teardown!!!")
+    for row in full_results:
+        print(
+            f"{row.Work.title=} {row.Work.uuid=} {row.Work.id=} {row.Edition.id=} {row.Item.id=} {row.Edition.title=}"
+        )
 
 
 @pytest.fixture(scope="session")
