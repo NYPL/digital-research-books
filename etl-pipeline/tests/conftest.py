@@ -25,7 +25,7 @@ from model import (
 from model.postgres.item import ITEM_LINKS
 from processes import RecordClusterer
 from processes.grin.grin_client import GRINClient
-from sqlalchemy import delete, false, text
+from sqlalchemy import delete, text
 from utils.load_env import load_env
 
 from tests.fixtures.generate_test_data import generate_test_data
@@ -43,8 +43,8 @@ def pytest_addoption(parser):
 
 # NOTE: autouse=True does not guarantee execution before other session scoped \
 # fixtures unless an explicit dependency on setup_env is specified.
-# NOTE: if an error occurs in setup, the error is reported for each test in the \
-# session, but the captured stdout/logs messages appear only for the first \
+# NOTE: if an error occurs in setup, the error is reported for each test in \
+# the session, but the captured stdout/logs messages appear only for the first \
 # occurrence of the error
 @pytest.fixture(scope="session", autouse=True)
 def setup_env(pytestconfig, request):
