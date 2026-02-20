@@ -17,9 +17,6 @@ from utils.common import require_env
     ],
 )
 def test_get_edition(endpoint, expected_status, test_edition_id, caplog):
-    # import logging
-    # caplog.set_level(logging.DEBUG, logger="drb")
-
     url = require_env("DRB_API_URL") + endpoint.format(edition_id=test_edition_id)
     response = requests.get(url)
 

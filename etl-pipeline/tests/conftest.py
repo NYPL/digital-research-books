@@ -258,6 +258,19 @@ def frbrized_record_data(
         .first()
     )
 
+    # print all available FRBR records
+    full_results = (
+        db_manager.session.query(Item, Edition, Work)
+        .join(Edition, Edition.id == Item.edition_id)
+        .join(Work, Work.id == Edition.work_id)
+        .limit(1000)
+    )
+    print("FRBR items!!!")
+    for row in full_results:
+        print(
+            f"{row.Work.title=} {row.Work.uuid=} {row.Work.id=} {row.Edition.id=} {row.Item.id=} {row.Edition.title=}"
+        )
+
     item, edition, work = frbrized_model if frbrized_model else (None, None, None)
 
     links = (
