@@ -161,7 +161,7 @@ def test_language():
     return "Integration Test Language"
 
 
-def pytest_sessionstart(session):
+def Xpytest_sessionstart(session):
     import logging
 
     logging.config.dictConfig(
