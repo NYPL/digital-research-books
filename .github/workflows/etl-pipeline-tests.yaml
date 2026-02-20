@@ -102,6 +102,14 @@ jobs:
         run: |
           make integration
 
+      - name: Run API tests for VRA
+        env:
+          ENVIRONMENT: qa  # VRA depends on services not yet available locally
+          DRB_API_URL: http://127.0.0.1:5050  # Override to a local instance
+        working-directory: ./etl-pipeline
+        run: |
+          python -m pytest tests/integration/api/assistant
+
       - name: Dump service logs (on failure)
         if: failure()
         working-directory: ./etl-pipeline
