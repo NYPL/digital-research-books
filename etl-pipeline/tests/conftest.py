@@ -184,7 +184,7 @@ def test_language():
 
 @pytest.fixture(scope="session")
 def frbrized_record_data(
-    db_manager, redis_manager, test_title, test_subject, test_language, request
+    db_manager, redis_manager, test_title, test_subject, test_language
 ):
     # TODO: find path forward to connect to (localhost? qa?) db in GH actions
     if db_manager is None:
