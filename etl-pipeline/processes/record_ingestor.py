@@ -12,6 +12,12 @@ logger = create_log(__name__)
 
 
 class RecordIngestor:
+    """
+    Takes records created by the various source services (services/sources/)
+    and adds them to the `records` table, optionally queueing the record for
+    processing in the ETL/Records pipeline.
+    """
+
     def __init__(self, source: str):
         self.source = source
 
