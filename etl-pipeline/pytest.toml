@@ -1,6 +1,3 @@
 [pytest]
 addopts = ["-ra"]
 
-# log_cli = true
-# log_cli_level = "DEBUG"
-# log_level = "DEBUG"

@@ -1,49 +1,9 @@
 import pytest
 import os
 import requests
-import functools
 
 from .utils import assert_response_status
 from utils.common import require_env
-
-import logging
-
-
-def caplog_setup_call(level=None, logger=""):
-    if level is None:
-        level = logging.WARNING
-
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            # Find caplog in both positional and keyword arguments
-            caplog = kwargs.get("caplog")
-            if caplog is None:
-                for arg in args:
-                    if isinstance(arg, pytest.LogCaptureFixture):
-                        caplog = arg
-                        break
-            if caplog is None:
-                raise ValueError(
-                    f"No caplog fixture found in {func.__name__} arguments"
-                )
-            # caplog.set_level(level)
-
-            result = func(*args, **kwargs)
-
-            for when in "setup":  # , 'call'):
-                records = caplog.get_records(when)
-                print(f"XXX {records=}")
-                for record in records:
-                    if level <= record.levelno:
-                        if record.name.startswith(logger):
-                            logging.getLogger(record.name).handle(record)
-
-            return result
-
-        return wrapper
-
-    return decorator
 
 
 @pytest.mark.parametrize(
@@ -56,11 +16,27 @@ def caplog_setup_call(level=None, logger=""):
         ("/editions/%$@!*", 400),
     ],
 )
-@caplog_setup_call(level=logging.DEBUG)
-def test_get_edition(endpoint, expected_status, test_edition_id, caplog):
-    # caplog.set_level(logging.DEBUG, logger='drb')
+def test_get_edition(endpoint, expected_status, test_edition_id, db_manager):
+    # DIAGNOSTIC: print all available FRBR records before requesting test_edition
+    from model import (
+        Edition,
+        Item,
+        Work,
+    )
 
-    print(f"test_get_edition -> {test_edition_id=}")
+    full_results = (
+        db_manager.session.query(Item, Edition, Work)
+        .join(Edition, Edition.id == Item.edition_id)
+        .join(Work, Work.id == Edition.work_id)
+        .limit(500)
+    )
+    print("DIAGNOSTIC: FRBR items before GET /editions test")
+    for row in full_results:
+        print(
+            f"{row.Work.title=} {row.Work.id=} {row.Edition.id=} {row.Item.id=} {row.Edition.title=}"
+        )
+    print(f"DIAGNOSTIC: test_get_edition -> {test_edition_id=}")
+
     url = require_env("DRB_API_URL") + endpoint.format(edition_id=test_edition_id)
     response = requests.get(url)
 
@@ -70,16 +46,3 @@ def test_get_edition(endpoint, expected_status, test_edition_id, caplog):
     if expected_status == 200:
         response_json = response.json()
         assert response_json is not None
-
-    print(f'{caplog.get_records("setup")=}')
-
-    # logger='drb'
-    # level= logging.DEBUG
-    # # caplog.set_level(level)
-    # for when in ('setup', 'call'):
-    #     records = caplog.get_records(when)
-    #     print(f'XXX {records=}')
-    #     for record in records:
-    #         if level <= record.levelno:
-    #             if record.name.startswith(logger):
-    #                 logging.getLogger(record.name).handle(record)

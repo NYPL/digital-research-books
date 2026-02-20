@@ -77,6 +77,27 @@ def setup_env(pytestconfig, request):
     os.environ["ENVIRONMENT"] = environment
 
 
+def pytest_sessionstart(session):
+    # Configure logging for the full duration of the testing session
+
+    import logging
+
+    logging.config.dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": True,
+            "root": {
+                "level": "WARNING",
+            },
+            "loggers": {
+                "drb": {
+                    "level": "DEBUG",
+                },
+            },
+        }
+    )
+
+
 def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:
     existing_record = (
         db_manager.session.query(Record)
@@ -161,47 +182,10 @@ def test_language():
     return "Integration Test Language"
 
 
-def Xpytest_sessionstart(session):
-    import logging
-
-    logging.config.dictConfig(
-        {
-            "version": 1,
-            "disable_existing_loggers": True,
-            "root": {
-                "level": "WARNING",
-            },
-            "loggers": {
-                "drb": {
-                    "level": "DEBUG",
-                },
-            },
-        }
-    )
-
-
-# # https://github.com/pytest-dev/pytest/discussions/11177
-# def get_caplog(request):
-#     request.node.add_report_section = lambda *args: None
-#     logging_plugin = request.config.pluginmanager.getplugin('logging-plugin')
-#     for _ in logging_plugin.pytest_runtest_setup(request.node):
-#         caplog = pytest.LogCaptureFixture(request.node, _ispytest=True)
-#         return caplog
-
-
 @pytest.fixture(scope="session")
 def frbrized_record_data(
     db_manager, redis_manager, test_title, test_subject, test_language, request
 ):
-    # import logging
-    # request.node.add_report_section = lambda *args: None
-    # logging_plugin = request.config.pluginmanager.getplugin('logging-plugin')
-    # for _ in logging_plugin.pytest_runtest_setup(request.node):
-    #     caplog = pytest.LogCaptureFixture(request.node, _ispytest=True)
-    #     caplog.set_level(logging.DEBUG, logger='drb')
-
-    logger.info("TEST!!!")
-
     # TODO: find path forward to connect to (localhost? qa?) db in GH actions
     if db_manager is None:
         return {
@@ -258,19 +242,6 @@ def frbrized_record_data(
         .first()
     )
 
-    # print all available FRBR records
-    full_results = (
-        db_manager.session.query(Item, Edition, Work)
-        .join(Edition, Edition.id == Item.edition_id)
-        .join(Work, Work.id == Edition.work_id)
-        .limit(1000)
-    )
-    print("FRBR items - setup!!!")
-    for row in full_results:
-        print(
-            f"{row.Work.title=} {row.Work.uuid=} {row.Work.id=} {row.Edition.id=} {row.Item.id=} {row.Edition.title=}"
-        )
-
     item, edition, work = frbrized_model if frbrized_model else (None, None, None)
 
     links = (
@@ -285,19 +256,6 @@ def frbrized_record_data(
         "work_id": str(work.uuid) if work else None,
         "link_id": links[0].id if links and len(links) > 0 else None,
     }
-
-    # print all available FRBR records
-    full_results = (
-        db_manager.session.query(Item, Edition, Work)
-        .join(Edition, Edition.id == Item.edition_id)
-        .join(Work, Work.id == Edition.work_id)
-        .limit(1000)
-    )
-    print("FRBR items - teardown!!!")
-    for row in full_results:
-        print(
-            f"{row.Work.title=} {row.Work.uuid=} {row.Work.id=} {row.Edition.id=} {row.Item.id=} {row.Edition.title=}"
-        )
 
 
 @pytest.fixture(scope="session")
