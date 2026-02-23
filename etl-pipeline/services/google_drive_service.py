@@ -44,7 +44,7 @@ class GoogleDriveService:
                 f"HTTP error occurred when downloading Drive file {file_id}: {error}"
             )
             return None
-        except Exception as err:
+        except Exception:
             logger.exception(f"Error occurred when downloading Drive file {file_id}")
             return None
 

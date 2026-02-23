@@ -1,6 +1,5 @@
 import textwrap
 import os
-from types import NoneType
 
 
 def batched(generator, batch_size):

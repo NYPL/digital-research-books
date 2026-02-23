@@ -34,7 +34,7 @@ Dependencies:
 """
 
 from collections import Counter, defaultdict
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 import json
 from Levenshtein import jaro_winkler
 import pycountry

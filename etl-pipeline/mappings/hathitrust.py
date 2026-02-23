@@ -1,7 +1,5 @@
-import os
 import re
 
-from digital_assets import get_stored_file_url
 from .csv import CSVMapping
 from model import FileFlags, Part, Source
 

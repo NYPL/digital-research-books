@@ -1,4 +1,4 @@
-from sqlalchemy import Unicode, Integer, Column, UniqueConstraint
+from sqlalchemy import Unicode, Integer, Column
 
 from .base import Base, Core
 

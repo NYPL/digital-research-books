@@ -1,6 +1,5 @@
 import json
 from mappings.loc import map_loc_record
-from model import Source
 
 
 def test_map_loc_record():

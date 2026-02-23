@@ -6,7 +6,6 @@ Takes 1000 of attribute sets, serializes them and introspects the distribution
 of sizes.
 """
 
-import os
 import sys
 import json
 import pandas as pd
@@ -16,8 +15,7 @@ from load_env import load_env_file
 load_env_file("vra", file_string="config/{}.yaml")
 
 from managers import DBManager
-from model import Work, Edition, Item
-from sqlalchemy.orm import sessionmaker, joinedload
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
 from utils.utils import read_env
 

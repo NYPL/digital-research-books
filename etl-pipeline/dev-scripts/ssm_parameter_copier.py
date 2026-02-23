@@ -244,18 +244,18 @@ def print_copy_summary(result: Dict[str, any]):
         result: Dictionary returned from copy_ssm_parameters_between_envs
     """
     print("\n" + "=" * 60)
-    print(f"Copy Summary:")
+    print("Copy Summary:")
     print(f"  Total parameters: {result['total']}")
     print(f"  Successfully copied: {result['success_count']}")
     print(f"  Failed: {result['failure_count']}")
 
     if result.get("successful_targets"):
-        print(f"\n  Successfully written target parameters:")
+        print("\n  Successfully written target parameters:")
         for target in result["successful_targets"]:
             print(f"    - {target}")
 
     if result["failed_params"]:
-        print(f"\n  Failed parameters:")
+        print("\n  Failed parameters:")
         for param in result["failed_params"]:
             print(f"    - {param}")
 

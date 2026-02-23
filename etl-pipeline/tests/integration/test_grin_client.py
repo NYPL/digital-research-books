@@ -1,5 +1,4 @@
 import pytest
-import random
 from google.oauth2.service_account import Credentials
 from google.auth.transport.requests import AuthorizedSession
 

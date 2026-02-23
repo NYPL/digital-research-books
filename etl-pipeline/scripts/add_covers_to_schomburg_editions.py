@@ -5,7 +5,7 @@ import boto3
 
 from digital_assets.utils.get_stored_file_url import get_stored_file_url
 from utils.load_env import load_env
-from model import Collection, Edition, Link
+from model import Collection, Link
 from managers import DBManager
 
 

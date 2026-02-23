@@ -173,6 +173,6 @@ class PDFPageSubprocess:
                     mets_page.ocr_file.location,
                     out_location,
                 )
-        except Exception as e:
+        except Exception:
             logger.exception(f"Failed to generate PDF page to: {out_location}")
             os._exit(1)

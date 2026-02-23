@@ -4,7 +4,6 @@ from elasticsearch.dsl import Search, Q, Response
 
 from typing import Dict
 
-from vector_indexing.embedding import GoogleEmbedder
 from utils.elastic import get_or_create_default_connection
 from logger import create_log
 

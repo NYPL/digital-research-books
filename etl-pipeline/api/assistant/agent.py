@@ -1,13 +1,8 @@
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 import json
 from pathlib import Path
-import traceback
 from typing import Dict
-import uuid
 from textwrap import indent
-import sys
-import os
-import asyncio
 import numpy as np
 import pandas as pd
 
@@ -16,15 +11,9 @@ from agents import (
     Runner,
     RunConfig,
     function_tool,
-    RunContextWrapper,
-    SQLiteSession,
-    ModelSettings,
     RunResult,
 )
 from agents.tool_context import ToolContext
-from agents.extensions.memory import SQLAlchemySession
-from openai.types.shared import Reasoning
-from sklearn.decomposition import FastICA
 from sqlalchemy import text, bindparam
 from jinja2 import Template
 
@@ -33,12 +22,11 @@ from jinja2 import Template
 
 # api code
 from .search import Searcher
-from ..utils import APIUtils, hit_to_dict, remove_markdown_comments
+from ..utils import hit_to_dict, remove_markdown_comments
 from ..db import get_frbr_data_by_edition, get_session
 
 # shared code
 from vector_indexing.embedding import GoogleEmbedder
-from managers.db import DBManager
 from logger import create_log
 from utils.common import wrap
 

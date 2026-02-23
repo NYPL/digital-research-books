@@ -4,7 +4,7 @@ from random import shuffle
 from flask import Flask, request
 
 from api.utils import APIUtils
-from datetime import datetime, timezone
+from datetime import datetime
 
 
 def test_orm_to_dict():

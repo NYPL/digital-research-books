@@ -1,5 +1,4 @@
 import io
-import os
 
 import PIL
 import pypdf

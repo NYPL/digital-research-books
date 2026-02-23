@@ -20,7 +20,6 @@ parser.add_argument("-b", "--barcode", required=True, help="The barcode number")
 
 
 from functools import wraps
-import os
 from utils.load_env import load_env
 
 

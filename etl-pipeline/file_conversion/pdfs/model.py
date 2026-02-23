@@ -1,14 +1,10 @@
 import dataclasses
 from datetime import datetime, timezone
-import io
-import json
 
 from . import marc
 from . import mets_parser
 from . import path
-import pathlib
 from managers import S3Manager
-from digital_assets import get_stored_file_url
 
 
 @dataclasses.dataclass

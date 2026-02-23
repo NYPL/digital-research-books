@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-import os
 import requests
 from requests.exceptions import Timeout, ConnectionError
 

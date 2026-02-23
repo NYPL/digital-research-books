@@ -70,7 +70,7 @@ class GRINClient(object):
             try:
                 raw_response.raise_for_status()
             except HTTPError:
-                logger.exception(f"Failed to convert barcodes")
+                logger.exception("Failed to convert barcodes")
                 return response
 
             sanitized_response = raw_response.content.decode("utf8").split("\n")

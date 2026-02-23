@@ -1,5 +1,4 @@
 import pytest
-import os
 import requests
 
 from .utils import assert_response_status

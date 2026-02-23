@@ -1,4 +1,3 @@
-import os
 import json
 
 from oauthlib.oauth2 import BackendApplicationClient, TokenExpiredError

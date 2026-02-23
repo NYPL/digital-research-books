@@ -1,5 +1,4 @@
-from textwrap import indent
-from flask import Blueprint, current_app, request
+from flask import Blueprint, request
 
 # shared code
 from logger import create_log
@@ -11,8 +10,6 @@ from model.postgres.work import Work
 
 # API code
 from ..utils import APIUtils, orm_to_dict, shorten
-from ..elastic import ElasticClient
-from ..db import DBClient
 from ..auth import require_api_key
 from ..decorators import require_basic_authentication
 from ..assistant.agent import update_chat, PAGE_SIZE

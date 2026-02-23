@@ -16,7 +16,6 @@ from models.reports.downloads import DownloadsReport
 from models.reports.total_usage import TotalUsageReport
 from models.reports.views import ViewsReport
 from sqlalchemy import CTE, func, literal
-from typing import List
 
 VIEW_FILE_ID_REGEX = r"REST.GET.OBJECT manifests/(.*?json)\s"
 DOWNLOAD_FILE_ID_REGEX = r"REST.GET.OBJECT titles/(.+pdf\s)"

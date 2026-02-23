@@ -123,6 +123,6 @@ def proxy_response():
         )
 
         return Response(response.content, response.status_code, headers)
-    except Exception as e:
+    except Exception:
         logger.exception("Unable to proxy response")
         return Response("Unable to proxy response", 500)

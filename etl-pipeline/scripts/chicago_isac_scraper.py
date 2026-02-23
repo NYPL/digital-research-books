@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-import requests, json
+import requests
+import json
 import re
 
 

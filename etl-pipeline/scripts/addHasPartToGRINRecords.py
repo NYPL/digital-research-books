@@ -136,7 +136,7 @@ def main(stmt=None):
 
         if batch_count > 0:
             db_manager.commit_changes()
-            logger.info(f"Committed final batch")
+            logger.info("Committed final batch")
 
         logger.info(
             f"Updated {total_updated} GRIN records with has_part, {total_has_first_page} already had first_page_part"

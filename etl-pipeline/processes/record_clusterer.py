@@ -1,5 +1,4 @@
 from pottery import Redlock
-from time import sleep
 
 from logger import create_log
 from managers import (
