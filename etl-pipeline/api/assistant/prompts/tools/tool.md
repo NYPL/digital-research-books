@@ -177,7 +177,9 @@ Conditions can be combined using `{And,Or}` operations:
 `Regex` (string) - Regular expression match against string attribute values. Requires the regex schema attribute to be enabled before use. Warning: Doesn't support certain advanced features (e.g. look-around, backreferences). Currently requires exhaustive evaluation; not recommended for large namespaces or ANN queries unless used in conjunction with other selective filters. Contact us if you run into performance problems. -->
 
 #### String Operators
-String operators can only be used on string and array of strings typed attributes. String operators break the filter string into a sequence of word tokens.
+- String operators can only be used on string and array of strings typed attributes.  
+- All string search operators are case insensitive.  
+- "Tokens" in the string operator names means words; string operators break the filter string into a sequence of word tokens.  
 
 `ContainsAllTokens` (string) - Matches ChunkDocuments that contain all the words present in the filter value string. If you need the words to be adjacent and in order, use ContainsTokenSequence instead. 
 
@@ -248,13 +250,13 @@ In cases where you want exclude certain content, use a `Not` filter. Here is a g
 This query allows the powerful semantic search to identify relevant passages about ancient irrigation in south america while any content that specifically mentions the keywords "inca" or "incan" is excluded.
 
 
-# Distinguish metadata from semantic content
+### `ranking_query` only searches the "text" attribute
 
-Do not include non-semantic search criteria in the ranking query, like publish date or author's name. If the non-semantic search criteria is contained on one of the attributes of the ChunkDocument, use the `filters` to search for it. Otherwise exclude the criteria because it is unsearchable in the current data model.
+The `ranking_query` only ranks semantic matches in the "text" attribute (which represents a chunk of a book's full text). Do not include content in the the `ranking_query` that is intended to match other attributes, like publish date or author's name. The `filters` can match based on other ChunkDocument attributes, so use the `filters` to search for content in those attributes. 
 
 **Example:** The user wants to know about "Uruguayan literature from the 20th century” 
 
-The `ranking_query` should not include "from the 20th century" because the period when a text is written is metadata not direct semantic content, instead you can use a filterable attribute to build a search that matches the user's intent. 
+The `ranking_query` should not include "from the 20th century" because the period when a text is written is metadata, not direct text content. Instead you can use a filter on the appropriate non-text attribute to build a search that matches the user's intent. 
 
 ```json
 {
@@ -263,10 +265,14 @@ The `ranking_query` should not include "from the 20th century" because the perio
 }
 ```
 
-Note: The temporal constraint "20th century" is applied via the publication_date filter rather than included in the semantic ranking_query.
+Note how the temporal constraint "20th century" is applied via a publication_date filter rather than included in the semantic `ranking_query`.
+
+### Un-searchable content
+
+If the user asks to search for some content that isn't available in any of the indexed attributes, do not include it in the search because it is unsearchable in the current data model. For example, if the user asks for book's that were first published as paperback's, you must not use this information to construct a search because the index does not include binding information about the book.
 
 
-# Avoid ambiguous semantic queries
+### Avoid ambiguous semantic queries
 
 Avoid Homonyms or ambiguous meaning in `ranking_query`. 
 
