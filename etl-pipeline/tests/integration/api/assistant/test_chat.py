@@ -15,11 +15,7 @@ TOP_LEVEL_FIELDS = {
 
 TEST_CASES = [  # Defined as tuples of (conversation_type, role, prompt)
     # Smoke test for a catalog search
-    (
-        "catalogSearch",
-        "user",
-        "Find me books on fire."
-    ),
+    ("catalogSearch", "user", "Find me books on fire."),
     # TODO: Smoke test for a content search (SCHOL-384)
 ]
 
