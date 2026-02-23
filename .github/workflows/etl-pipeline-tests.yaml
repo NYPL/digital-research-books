@@ -95,7 +95,7 @@ jobs:
         run: |
           make functional
 
-      - name: Run integration tests (DRB only)
+      - name: Run integration tests (DRB)
         env:
           ENVIRONMENT: local
         working-directory: ./etl-pipeline
