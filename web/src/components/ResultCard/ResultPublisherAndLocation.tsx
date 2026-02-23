@@ -1,12 +1,12 @@
 import { Text } from "@nypl/design-system-react-components";
 import React from "react";
 import {
-    MAX_PLACE_LENGTH,
-    MAX_PUBLISHER_NAME_LENGTH,
+  MAX_PLACE_LENGTH,
+  MAX_PUBLISHER_NAME_LENGTH,
 } from "~/src/constants/editioncard";
 import { Agent } from "~/src/types/DataModel";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
-import EclipseSpacer from "./EclipseSpacer";
+import EllipseSpacer from "./EllipseSpacer";
 
 const ResultPublisherAndLocation: React.FC<{
   pubPlace: string;
@@ -38,8 +38,9 @@ const ResultPublisherAndLocation: React.FC<{
   return (
     <>
       {displayName && <Text as="span" whiteSpace="normal">{displayName}</Text>}
-      {displayName && displayLocation && <EclipseSpacer />}
+      {displayName && displayLocation && <EllipseSpacer />}
       {displayLocation && <Text as="span" whiteSpace="normal">{displayLocation}</Text>}
+      {(displayName || displayLocation) && <EllipseSpacer />}
     </>
   );
 };

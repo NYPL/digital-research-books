@@ -1,6 +1,6 @@
 import { Flex } from "@nypl/design-system-react-components";
 
-const EclipseSpacer: React.FC = () => {
+const EllipseSpacer: React.FC = () => {
   return (
     <Flex as="span" marginX="xs" alignItems="center">
       <svg
@@ -16,4 +16,4 @@ const EclipseSpacer: React.FC = () => {
   );
 };
 
-export default EclipseSpacer;
+export default EllipseSpacer;

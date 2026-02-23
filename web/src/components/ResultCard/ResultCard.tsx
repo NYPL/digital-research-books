@@ -25,7 +25,6 @@ import PublicDomainBadge from "../ResearchAssistant/PublicDomainBadge";
 import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import CardRequiredBadge from "./CardRequiredBadge";
 import Ctas from "./Ctas";
-import EclipseSpacer from "./EclipseSpacer";
 import EditionLinks from "./EditionLinks";
 import FeaturedEditionBadge from "./FeaturedEditionBadge";
 import PhysicalEditionBadge from "./PhysicalEditionBadge";
@@ -169,7 +168,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({
               pubPlace={edition.publication_place}
               publishers={edition.publishers}
             />
-            <EclipseSpacer />
             <Box whiteSpace="normal">{editionYearElem()}</Box>
           </Flex>
         </Box>
