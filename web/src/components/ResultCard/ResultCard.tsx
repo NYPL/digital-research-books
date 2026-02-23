@@ -25,7 +25,7 @@ import Link from "../Link/Link";
 import PublicDomainBadge from "../ResearchAssistant/PublicDomainBadge";
 import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import CardRequiredBadge from "./CardRequiredBadge";
-import Ctas from "./Ctas";
+import Ctas from "./Ctas/Ctas";
 import EditionLinks from "./EditionLinks";
 import FeaturedEditionBadge from "./FeaturedEditionBadge";
 import PhysicalEditionBadge from "./PhysicalEditionBadge";

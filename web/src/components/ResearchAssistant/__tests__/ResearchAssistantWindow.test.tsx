@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { Message, MessageType } from "~/src/types/ResearchAssistant";
+import { Item, ItemType, MessageRole } from "~/src/types/ResearchAssistant";
 import ResearchAssistantWindow from "../ResearchAssistantWindow";
 
 const mockUseResearchAssistant = jest.fn();
@@ -17,9 +17,19 @@ describe("ResearchAssistantWindow", () => {
   });
 
   test("renders MessageBubble components for each message", () => {
-    const mockMessages: Message[] = [
-      { id: "1", data: { content: "Hello" }, type: MessageType.Human },
-      { id: "2", data: { content: "Hi there!" }, type: MessageType.Ai },
+    const mockMessages: Item[] = [
+      {
+        id: "1",
+        content: "Hello",
+        role: MessageRole.User,
+        type: ItemType.Message,
+      },
+      {
+        id: "2",
+        content: [{ annotations: [], text: "Hi there!", type: "output_text" }],
+        role: MessageRole.Assistant,
+        type: ItemType.Message,
+      },
     ];
     mockUseResearchAssistant.mockReturnValue({
       messages: mockMessages,
@@ -44,8 +54,13 @@ describe("ResearchAssistantWindow", () => {
   });
 
   test("displays loading indicator with existing messages", () => {
-    const mockMessages: Message[] = [
-      { id: "1", data: { content: "Question" }, type: MessageType.Human },
+    const mockMessages: Item[] = [
+      {
+        id: "1",
+        content: "Question",
+        role: MessageRole.User,
+        type: ItemType.Message,
+      },
     ];
     mockUseResearchAssistant.mockReturnValue({
       messages: mockMessages,
@@ -59,10 +74,27 @@ describe("ResearchAssistantWindow", () => {
   });
 
   test("renders messages in correct order", () => {
-    const mockMessages: Message[] = [
-      { id: "1", data: { content: "First message" }, type: MessageType.Human },
-      { id: "2", data: { content: "Second message" }, type: MessageType.Ai },
-      { id: "3", data: { content: "Third message" }, type: MessageType.Human },
+    const mockMessages: Item[] = [
+      {
+        id: "1",
+        content: "First message",
+        role: MessageRole.User,
+        type: ItemType.Message,
+      },
+      {
+        id: "2",
+        content: [
+          { annotations: [], text: "Second message", type: "output_text" },
+        ],
+        role: MessageRole.Assistant,
+        type: ItemType.Message,
+      },
+      {
+        id: "3",
+        content: "Third message",
+        role: MessageRole.User,
+        type: ItemType.Message,
+      },
     ];
     mockUseResearchAssistant.mockReturnValue({
       messages: mockMessages,
