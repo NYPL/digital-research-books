@@ -95,20 +95,20 @@ jobs:
         run: |
           make functional
 
-      - name: Run integration tests
+      - name: Run integration tests (DRB only)
         env:
           ENVIRONMENT: local
         working-directory: ./etl-pipeline
         run: |
-          make integration
+          make integration-drb
 
-      - name: Run API tests for VRA
+      - name: Run integration tests (VRA)
         env:
           ENVIRONMENT: qa  # VRA depends on services not yet available locally
           DRB_API_URL: http://127.0.0.1:5050  # Override to a local instance
         working-directory: ./etl-pipeline
         run: |
-          python -m pytest tests/integration/api/assistant
+          make integration-vra
 
       - name: Dump service logs (on failure)
         if: failure()
