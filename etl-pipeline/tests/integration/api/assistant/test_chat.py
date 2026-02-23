@@ -18,7 +18,7 @@ TEST_CASES = [  # Defined as tuples of (conversation_type, role, prompt)
     (
         "catalogSearch",
         "user",
-        "Are you on fire?",
+        "Find me books on fire."
     ),
     # TODO: Smoke test for a content search (SCHOL-384)
 ]
