@@ -1,6 +1,6 @@
 from model.postgres.record import Record
 from model.postgres.item import Item
-from sqlalchemy import select, Table, MetaData
+from sqlalchemy import select, text, Table, MetaData
 
 from scripts.addHasPartToGRINRecords import main
 from managers import DBManager

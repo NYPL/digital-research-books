@@ -2,7 +2,7 @@ import os
 
 from managers import DBManager, SQSManager
 from sqlalchemy import select
-from model import GRINStatus
+from model import Record, GRINStatus
 from utils.chunker import chunk
 
 

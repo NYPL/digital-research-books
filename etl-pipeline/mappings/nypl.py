@@ -1,3 +1,5 @@
+import requests
+
 from .sql import SQLMapping
 
 

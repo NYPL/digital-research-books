@@ -5,7 +5,7 @@ import json
 import os
 import re
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from typing import Optional
 
 from .utils import APIUtils

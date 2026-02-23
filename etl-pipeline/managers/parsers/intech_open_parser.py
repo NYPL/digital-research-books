@@ -1,4 +1,5 @@
 from managers.parsers.parser_abc import ParserABC
+from managers.webpubManifest import WebpubManifest
 import re
 
 

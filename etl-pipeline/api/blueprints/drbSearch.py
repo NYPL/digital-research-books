@@ -45,7 +45,7 @@ def query():
             search_result = es_client.searchQuery(
                 terms, page=search_page, perPage=search_size
             )
-        except ElasticClientError:
+        except ElasticClientError as e:
             logger.exception("Unable to execute search")
             return APIUtils.formatResponseObject(
                 500, response_type, {"message": "Unable to execute search"}

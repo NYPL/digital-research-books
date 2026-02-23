@@ -3,6 +3,7 @@ from typing import Generator
 from datetime import datetime
 from itertools import islice
 from io import BytesIO
+import logging
 
 from pymarc import MARCReader
 import requests
@@ -104,7 +105,7 @@ class MUSEService(SourceService):
         try:
             muse_metadata_response = requests.get(MARC_CSV_URL, stream=True, timeout=30)
             muse_metadata_response.raise_for_status()
-        except Exception:
+        except Exception as e:
             raise Exception("Unable to load Project MUSE metadata")
 
         record_updates = {}

@@ -1,5 +1,6 @@
 import pytest
 import os
+import boto3
 from managers import DBManager
 from model import GRINStatus, GRINState
 from processes.grin.download import GRINDownloadService

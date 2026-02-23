@@ -1,5 +1,5 @@
 from sqlalchemy import DateTime, Unicode, Integer, Column, Table, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, ARRAY, UUID
 from sqlalchemy.orm import relationship
 
 from .base import Base, Core

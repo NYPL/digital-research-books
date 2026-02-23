@@ -4,6 +4,7 @@ import os
 
 from flask import current_app, request
 
+from utils.common import require_env
 
 from .db import DBClient
 from .utils import APIUtils

@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from sqlalchemy import inspect
 from sqlalchemy.exc import OperationalError
 
 from managers import DBManager

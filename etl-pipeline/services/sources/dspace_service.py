@@ -98,7 +98,7 @@ class DSpaceService(SourceService):
             try:
                 parsed_record = self.parse_record(oaidc_record)
                 return parsed_record
-            except Exception:
+            except Exception as e:
                 logger.error(f"Error parsing DSpace record {oaidc_record}")
 
     def get_resumption_token(self, oai_file):
@@ -124,7 +124,7 @@ class DSpaceService(SourceService):
                 f"&metadataPrefix=oai_dc&from={start_timestamp.strftime('%Y-%m-%d')}"
             )
         else:
-            url_params += "&metadataPrefix=oai_dc"
+            url_params += f"&metadataPrefix=oai_dc"
 
         url = f"{self.base_url}{url_params}"
 

@@ -1,4 +1,5 @@
 import os
+import re
 
 from model import Link
 from managers import DBManager

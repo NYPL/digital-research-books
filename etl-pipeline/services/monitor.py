@@ -23,7 +23,7 @@ def record_record_event(record: Record, event_name: str, data: dict):
 
 
 def track_work_records_chosen(record: Record, num_records: int):
-    event_name = "Cluster:WorkRecordsChosen"
+    event_name = f"Cluster:WorkRecordsChosen"
     record_record_event(
         record,
         event_name,

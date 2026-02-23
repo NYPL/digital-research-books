@@ -1,3 +1,4 @@
+from lxml import etree
 import pytest
 
 from mappings.sql import SQLMapping

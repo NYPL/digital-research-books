@@ -1,3 +1,4 @@
+import json
 import os
 import mimetypes
 import re
@@ -7,7 +8,7 @@ import requests
 from digital_assets.utils.get_stored_file_url import get_stored_file_url
 from logger import create_log
 from mappings.xml import XMLMapping
-from model import FileFlags, Part
+from model import FileFlags, Part, Record
 
 logger = create_log(__name__)
 
@@ -114,7 +115,7 @@ class GutenbergMapping(XMLMapping):
         self.add_epub_links(gutenbergID)
         try:
             self.add_cover()
-        except Exception:
+        except Exception as e:
             logger.exception("Cover link generation failed")
 
     def add_epub_links(self, gutenberg_id):

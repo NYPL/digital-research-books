@@ -1,3 +1,4 @@
+import os
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError

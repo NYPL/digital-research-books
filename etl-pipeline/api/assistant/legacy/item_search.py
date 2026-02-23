@@ -1,6 +1,7 @@
 from flask import request
 from elasticsearch_dsl import Search, Q
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain.tools import tool
 
 from textwrap import shorten
 from typing import Optional, Literal

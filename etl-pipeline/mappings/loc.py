@@ -16,7 +16,7 @@ def map_loc_record(source_record: dict) -> Record | None:
 
     if (
         "pdf" not in first_file_resource.keys()
-        and "epub_file" not in first_file_resource.keys()
+        and not "epub_file" in first_file_resource.keys()
     ):
         return None
 

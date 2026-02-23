@@ -1,5 +1,6 @@
 import os
 import json
+import uuid
 
 from model import Record, Work, Edition, Identifier
 from model.postgres.edition import EDITION_IDENTIFIERS

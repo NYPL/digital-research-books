@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy import delete
 from uuid import uuid4
 
+import file_conversion.pdfs.mets_parser as mets_parser
 from processes.grin.download import GRINDownloadService
 from model import Record, FRBRStatus, RecordState, Source, GRINStatus, GRINState
 

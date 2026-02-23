@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
+import requests_mock
 from logger import create_log
 from managers import DBManager, RedisManager, S3Manager
 from model import (

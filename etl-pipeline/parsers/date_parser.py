@@ -35,7 +35,7 @@ def get_publication_date_object(dates: list[str]) -> dict:
             yearParser = YearParser(startYear, endYear)
             yearParser.setYearComponents()
             pubYears[dateType] = dict(yearParser)
-        except (ValueError, AttributeError, IndexError):
+        except (ValueError, AttributeError, IndexError) as e:
             pass
 
     for datePref in ["copyright_date", "publication_date", "issued"]:

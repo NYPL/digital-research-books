@@ -184,7 +184,7 @@ class KMeansManager:
 
         try:
             labels = self.cluster(self.k)
-        except ValueError:
+        except ValueError as err:
             labels = [0] * len(self.instances)
 
         for n, item in enumerate(labels):
