@@ -37,9 +37,17 @@ const ResultPublisherAndLocation: React.FC<{
 
   return (
     <>
-      {displayName && <Text as="span" whiteSpace="normal">{displayName}</Text>}
+      {displayName && (
+        <Text as="span" whiteSpace="normal">
+          {displayName}
+        </Text>
+      )}
       {displayName && displayLocation && <EllipseSpacer />}
-      {displayLocation && <Text as="span" whiteSpace="normal">{displayLocation}</Text>}
+      {displayLocation && (
+        <Text as="span" whiteSpace="normal">
+          {displayLocation}
+        </Text>
+      )}
       {(displayName || displayLocation) && <EllipseSpacer />}
     </>
   );
