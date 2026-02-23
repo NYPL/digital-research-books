@@ -119,11 +119,10 @@ def convert_filter_datetimes(filters: Any) -> Any:
                 # NOTE: handles py <3.11 quirk were Z isn't handled, although timezone should never be used here
                 converted_value = datetime.fromisoformat(value.replace("Z", "+00:00"))
                 return [field_name, operator, converted_value]
-            except (ValueError, AttributeError) as e:
-                logger.warning(
-                    f"Failed to convert '{value}' to datetime for field '{field_name}': {e}"
-                )
-                return filters
+            except Exception as e:
+                raise ValueError(
+                    f"Failed to convert '{value}' to datetime for field '{field_name}"
+                ) from e
 
     # Recursively process nested structures
     return [convert_filter_datetimes(item) for item in filters]
@@ -437,6 +436,9 @@ def search_catalog(
 
         # Fetch FRBR data (from DB)
         edition_ids = [h["edition_id"] for h in edition_hits]
+        logger.info(
+            f"Fetching FRBR metadata for the following edition_ids: {edition_ids}"
+        )
         frbr_data = get_frbr_data_by_edition(edition_ids)
 
         # Merge ES hit data and FRBR metadata (maintaining edition sort order)
