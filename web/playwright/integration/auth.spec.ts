@@ -1,4 +1,3 @@
-import { test, expect } from "../support/test-utils";
 import {
   API_URL,
   FULFILL_PATH,
@@ -7,6 +6,7 @@ import {
 } from "~/mocks/mockEnv";
 import { server } from "~/mocks/server";
 import { LOGIN_TO_READ_TEST_ID } from "~/src/constants/testIds";
+import { expect, test } from "../support/test-utils";
 
 test.beforeEach(async ({ context }) => {
   await context.clearCookies();
@@ -14,7 +14,8 @@ test.beforeEach(async ({ context }) => {
 test.afterEach(() => server.resetHandlers());
 test.afterAll(() => server.close());
 
-test.describe("Cookie authentication", () => {
+// This test is skipped since we do not have test credentials for production
+test.skip("Cookie authentication", () => {
   test("redirects to NYPL login page with no cookie", async ({ page }) => {
     await page.goto(`${LIMITED_ACCESS_EDITION_PATH}`);
     await page.getByTestId(LOGIN_TO_READ_TEST_ID).click();
