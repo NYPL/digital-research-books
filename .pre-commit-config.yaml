@@ -1,6 +1,32 @@
 repos:
+  # Check formatting for python files
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.7
     hooks:
       - id: ruff-format
         files: ^etl-pipeline/.*py$
+  # Detect secrets when committing to local in case we're leaking a secret
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package-lock.json # common false positive
+  # Precommit hooks that can be helpful 
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Verify formatting of yaml and json files
+      - id: check-yaml
+      # TODO: add check-json in later, we have two files that are not acceptable
+      # - id: check-json 
+      # Verify that we're not adding any huge files
+      - id: check-added-large-files
+        args: ['--maxkb=1024']
+      # Verify that we have all valid python code
+      - id: check-ast
+      # Verify we never commit to the main branch
+      - id: no-commit-to-branch
+        args: ['--branch', 'main']
+      # Verify we never commit merge conflict tags
+      - id: check-merge-conflict
