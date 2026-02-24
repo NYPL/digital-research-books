@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from ..utils import assert_response_status
+from ..utils import assert_response_status, get_vra_auth_headers
 from utils.common import require_env
 
 ENDPOINT_PATH = "/chat"
@@ -21,14 +21,14 @@ TEST_CASES = [  # Defined as tuples of (conversation_type, role, prompt)
 
 
 @pytest.mark.parametrize("conversation_type, role, prompt", TEST_CASES)
-def test_chat(conversation_type, role, prompt, auth_headers):
+def test_chat(conversation_type, role, prompt):
     # Set up the request then make an authenticated API call
     url = require_env("DRB_API_URL") + ENDPOINT_PATH
     payload = {
         "conversationType": conversation_type,
         "messages": [{"role": role, "content": prompt}],
     }
-    response = requests.post(url, json=payload, headers=auth_headers)
+    response = requests.post(url, json=payload, headers=get_vra_auth_headers())
 
     # Verify HTTP status code is returned and is 200 OK
     assert response.status_code is not None
