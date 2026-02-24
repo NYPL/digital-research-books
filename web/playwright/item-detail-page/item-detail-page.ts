@@ -94,10 +94,10 @@ class ItemDetailPage {
       "//h1[text()='Letters of Jane Austen']"
     );
     this.finiteMathematicsLink = page.locator(
-      "//a[text()='Finite Mathematics'] >> nth=0"
+      "//a[text()='Finite mathematics'] >> nth=0"
     );
     this.finiteMathematicsHeading = page.locator(
-      "//h1[text()='Finite Mathematics']"
+      "//h1[text()='Finite mathematics']"
     );
   }
 
