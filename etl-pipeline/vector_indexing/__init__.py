@@ -1,4 +1,4 @@
-"""Vector Indexing Pipeline - Modular data loading and indexing.
+"""V2 Pipeline - Modular data loading and indexing.
 
 This package provides a source/transform/sink architecture for:
 - Loading books from S3 or local disk
@@ -7,15 +7,14 @@ This package provides a source/transform/sink architecture for:
 - Indexing to Elasticsearch (or other backends)
 
 Example:
-    from vector_indexing import (
+    from lib.v2 import (
         GlobalConfig, get_config,
         Book, BookMetadata, ChunkDocument,
         ElasticsearchBackend,
         SentenceSplitterChunker,
-        Pipeline,
     )
 
-    # Configuration is automatic (reads env vars)
+    # Configuration is automatic (reads VRA_ENV)
     cfg = get_config()
 
     # Or explicit
@@ -36,6 +35,9 @@ from vector_indexing.core import (
     get_config,
     set_config,
     reset_config,
+    PROJECT_ROOT,
+    CONFIG_DIR,
+    DATA_DIR,
 )
 
 from vector_indexing.components import (
@@ -43,30 +45,11 @@ from vector_indexing.components import (
     IndexBackend,
     ElasticsearchBackend,
     DEFAULT_VECTOR_MAPPING,
-    # Loaders
-    BookLoader,
-    BookCache,
-    BookNotFoundError,
-    BookLoadError,
-    LocalBookLoader,
-    DiskBookCache,
-    S3BookLoader,
-    CachedS3BookLoader,
-    # Chunkers
-    TextChunker,
-    SentenceSplitterChunker,
-    # Embedders
-    Embedder,
-    GoogleEmbedder,
-    QwenEmbedder,
-    # Metadata
-    MetadataProvider,
 )
 
-from vector_indexing.pipeline import (
-    Pipeline,
-    IndexingResult,
-    BatchResult,
+from vector_indexing.components.chunkers import (
+    TextChunker,
+    SentenceSplitterChunker,
 )
 
 __all__ = [
@@ -80,30 +63,14 @@ __all__ = [
     "get_config",
     "set_config",
     "reset_config",
+    "PROJECT_ROOT",
+    "CONFIG_DIR",
+    "DATA_DIR",
     # Backends
     "IndexBackend",
     "ElasticsearchBackend",
     "DEFAULT_VECTOR_MAPPING",
-    # Loaders
-    "BookLoader",
-    "BookCache",
-    "BookNotFoundError",
-    "BookLoadError",
-    "LocalBookLoader",
-    "DiskBookCache",
-    "S3BookLoader",
-    "CachedS3BookLoader",
     # Chunkers
     "TextChunker",
     "SentenceSplitterChunker",
-    # Embedders
-    "Embedder",
-    "GoogleEmbedder",
-    "QwenEmbedder",
-    # Metadata
-    "MetadataProvider",
-    # Pipeline
-    "Pipeline",
-    "IndexingResult",
-    "BatchResult",
 ]

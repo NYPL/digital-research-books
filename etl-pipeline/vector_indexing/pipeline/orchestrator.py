@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import logging
 from dataclasses import dataclass, field
 from typing import Callable, TYPE_CHECKING
 
-from vector_indexing.core.types import Book, BookMetadata, ChunkDocument
+from vector_indexing.core.types import Book, BookMetadata, ChunkDocument, InsertResult
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -91,12 +92,14 @@ class Pipeline:
     of books fail we abort the entire batch.
 
     Example:
-        >>> pipeline = Pipeline(
-        ...     loader=S3BookLoader(...),
-        ...     chunker=SentenceSplitterChunker(),
-        ...     embedder=GoogleEmbedder(),
-        ...     metadata_provider=MetadataProvider(),
-        ...     backend=ElasticsearchBackend(...),
+        >>> pipeline = (
+        ...     Pipeline.builder()
+        ...     .with_loader(S3BookLoader(...))
+        ...     .with_chunker(SentenceSplitterChunker())
+        ...     .with_embedder(GoogleEmbedder())
+        ...     .with_metadata_provider(MetadataProvider())
+        ...     .with_backend(ElasticsearchBackend(...))
+        ...     .build()
         ... )
         >>> result = pipeline.index_books(["33433001234567"])
     """
@@ -114,6 +117,11 @@ class Pipeline:
         self._embedder = embedder
         self._metadata_provider = metadata_provider
         self._backend = backend
+
+    @classmethod
+    def builder(cls) -> "PipelineBuilder":
+        """Create a new PipelineBuilder."""
+        return PipelineBuilder()
 
     def index_book(self, barcode: str) -> IndexingResult:
         """Index a single book through the full pipeline. Returns an IndexingResult with success/failure details."""
@@ -163,7 +171,7 @@ class Pipeline:
         if loaded_barcodes:
             try:
                 metadata_map = self._metadata_provider.get_metadata(loaded_barcodes)
-            except Exception:
+            except Exception as e:
                 # If metadata fetch fails, continue with empty metadata
                 # Log this in production
                 pass
@@ -223,6 +231,7 @@ class Pipeline:
         logger.info(
             f"Stage 4 (Embed): {len(all_chunks)} embedded, {len(book_errors)} errors"
         )
+
         # Stage 5: Insert chunks per book (to track per-book results)
         for barcode, chunks in chunks_by_barcode.items():
             book = books[barcode]
@@ -267,3 +276,45 @@ class Pipeline:
                 on_progress(result)
 
         return batch_result
+
+
+def main(barcodes: list[str] | None = None) -> BatchResult:
+    """Run the indexing pipeline with default components. Takes in a list of barcodes to index.
+    Returns a BatchResult with indexing outcomes.
+    """
+    from dotenv import load_dotenv
+    from vector_indexing.core.config import GlobalConfig, DOT_ENV_FILE
+    from vector_indexing.components.backends.elasticsearch import ElasticsearchBackend
+    from vector_indexing.components.chunkers.sentence import SentenceSplitterChunker
+    from vector_indexing.components.embedders.qwen import QwenEmbedder
+    from vector_indexing.components.loaders.s3 import CachedS3BookLoader
+    from vector_indexing.components.metadata.provider import MetadataProvider
+
+    if barcodes is None:
+        return
+
+    load_dotenv(DOT_ENV_FILE)
+    config = GlobalConfig.for_environment()
+
+    pipeline = Pipeline(
+        loader=CachedS3BookLoader(config=config),
+        chunker=SentenceSplitterChunker(config=config),
+        embedder=QwenEmbedder(config=config),
+        metadata_provider=MetadataProvider(config=config),
+        backend=ElasticsearchBackend.from_config(
+            index_name="qwen-test-index", config=config
+        ),
+    )
+
+    def on_progress(result: IndexingResult) -> None:
+        print(result)
+
+    result = pipeline.index_books(barcodes, on_progress=on_progress)
+    print(f"\n{result}")
+    return result
+
+
+if __name__ == "__main__":
+    # Test using a few very small books
+    main(["33433000136972", "33433006239176"])
+    main(["33433071108306", "33433009163845"])

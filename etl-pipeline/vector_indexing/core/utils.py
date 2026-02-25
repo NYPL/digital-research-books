@@ -1,7 +1,7 @@
-"""Utility functions for vector indexing module."""
+"""Utility functions for v2 module."""
 
 import time
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 
 class IncrementalMovingAverage:

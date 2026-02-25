@@ -11,6 +11,10 @@ from vector_indexing.core.config import (
     get_config,
     set_config,
     reset_config,
+    PROJECT_ROOT,
+    VECTOR_INDEXING_ROOT,
+    CONFIG_DIR,
+    DATA_DIR,
 )
 
 __all__ = [
@@ -24,4 +28,8 @@ __all__ = [
     "get_config",
     "set_config",
     "reset_config",
+    "PROJECT_ROOT",
+    "VECTOR_INDEXING_ROOT",
+    "CONFIG_DIR",
+    "DATA_DIR",
 ]

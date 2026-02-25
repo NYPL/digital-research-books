@@ -31,7 +31,7 @@ class LocalBookLoader(BookLoader):
                 page_002.txt
                 ...
 
-    Note: By default data_dir is config.resolved_book_cache_dir which is data/books.
+    Note: By default data_dir is config.resolved_book_cache_dir which is data/v2/books.
     """
 
     def __init__(

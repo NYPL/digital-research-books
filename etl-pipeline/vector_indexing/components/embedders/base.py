@@ -9,7 +9,7 @@ class Embedder(ABC):
     """Abstract base class for text embedding models.
 
     Embedders convert text strings into dense vector representations
-    suitable for semantic/similarity search.
+    suitable for semantic/simililaritying search.
     """
 
     @property

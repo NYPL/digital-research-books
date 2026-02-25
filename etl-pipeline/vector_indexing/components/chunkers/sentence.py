@@ -5,7 +5,7 @@ from typing import Iterator, Optional
 
 from llama_index.core.node_parser import SentenceSplitter
 
-from vector_indexing.core.types import Book, ChunkDocument
+from vector_indexing.core.types import Book, BookMetadata, ChunkDocument
 from vector_indexing.core.config import get_config, GlobalConfig
 from vector_indexing.components.chunkers.base import TextChunker
 

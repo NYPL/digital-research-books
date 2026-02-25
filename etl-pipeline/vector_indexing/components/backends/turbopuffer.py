@@ -6,14 +6,16 @@ Provides a thin wrapper around the turbopuffer SDK.
 
 from __future__ import annotations
 
+import json
 import logging
+from pathlib import Path
 from typing import Iterator, Optional, TYPE_CHECKING
 
 import turbopuffer as tpuf
 
 from vector_indexing.core.utils import format_bytes, TimerSet
 from vector_indexing.core.types import BookMetadata, ChunkDocument, InsertResult
-from vector_indexing.core.config import get_config, GlobalConfig
+from vector_indexing.core.config import get_config, GlobalConfig, VECTOR_INDEXING_ROOT
 from vector_indexing.components.backends.base import IndexBackend
 
 if TYPE_CHECKING:
@@ -22,22 +24,16 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-# Default turbopuffer schema - can be overridden via config
-TPUF_SCHEMA = {
-    "text": {"type": "string", "bm25": {"language": "english", "stemming": True}},
-    "barcode": {"type": "string"},
-    "book_id": {"type": "string"},
-    "chunk_index": {"type": "uint"},
-    "start_page": {"type": "uint"},
-    "end_page": {"type": "uint"},
-    "edition_id": {"type": "uint"},
-    "title": {"type": "string"},
-    "author": {"type": "string[]"},
-    "subject": {"type": "string[]"},
-    "publication_date": {"type": "string"},
-    "language": {"type": "string[]"},
-}
+def _load_schema() -> dict:
+    """Load turbopuffer schema from config/schemas/turbopuffer.json."""
+    schema_path = VECTOR_INDEXING_ROOT / "config" / "schemas" / "turbopuffer.json"
+    with open(schema_path) as f:
+        schema = json.load(f)
+    schema.pop("$comment", None)
+    return schema
 
+
+TPUF_SCHEMA = _load_schema()
 
 # Conversion utilities between ChunkDocument and turbopuffer row format
 

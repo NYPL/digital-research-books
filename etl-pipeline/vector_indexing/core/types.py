@@ -1,4 +1,4 @@
-"""Core data types for the vector indexing pipeline."""
+"""Core data types for the v2 pipeline."""
 
 from dataclasses import dataclass, field
 from typing import Optional

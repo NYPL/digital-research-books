@@ -19,7 +19,7 @@ Example:
     # Local loading
     from vector_indexing.components.loaders import LocalBookLoader
 
-    loader = LocalBookLoader(Path("./data/books"))
+    loader = LocalBookLoader(Path("./data/experiment_books"))
     book = loader.load("33433000127989")
 
     # S3 with caching

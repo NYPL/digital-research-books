@@ -28,34 +28,15 @@ if __name__ == "__main__":
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
-# Load environment variables from .env file
-from utils.load_env import load_env
-
-# Parse --environment early (before other imports that depend on env vars)
-import os
-
-_env = os.getenv("ENVIRONMENT", "local")
-# Check argv for --environment flag
-for i, arg in enumerate(sys.argv):
-    if arg in ("--environment", "-e") and i + 1 < len(sys.argv):
-        _env = sys.argv[i + 1]
-        break
-
-_env_file = Path(__file__).parent.parent.parent / f"config/.env.{_env}"
-if _env_file.exists():
-    load_env(_env_file)
-else:
-    print(f"Warning: env file not found: {_env_file}")
-
 from vector_indexing import (
+    GlobalConfig,
     get_config,
-    Pipeline,
     ElasticsearchBackend,
-    S3BookLoader,
-    LocalBookLoader,
     SentenceSplitterChunker,
-    QwenEmbedder,
 )
+from vector_indexing.pipeline import Pipeline
+from vector_indexing.components.loaders import S3BookLoader, LocalBookLoader
+from vector_indexing.components.embedders import GoogleEmbedder
 from vector_indexing.components.metadata import MetadataProvider
 
 
@@ -97,12 +78,19 @@ def parse_args():
         epilog=__doc__,
     )
 
-    # Environment (parsed early, but declared here for --help)
-    parser.add_argument(
-        "--environment",
-        "-e",
-        default="local",
-        help="Environment to load config from (loads config/.env.<environment>)",
+    # Input source
+    input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument(
+        "--barcodes",
+        "-b",
+        nargs="+",
+        help="List of barcodes to process",
+    )
+    input_group.add_argument(
+        "--file",
+        "-f",
+        type=Path,
+        help="File containing barcodes (one per line)",
     )
 
     # Mode options
@@ -141,14 +129,18 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(barcodes: list[str]):
-    """Run the pipeline.
-
-    Args:
-        barcodes: List of barcodes to process (required).
-    """
-    # Parse command line args for config options
+def main():
     args = parse_args()
+
+    # Load barcodes
+    if args.barcodes:
+        barcodes = args.barcodes
+    else:
+        barcodes = [
+            line.strip()
+            for line in args.file.read_text().splitlines()
+            if line.strip() and not line.startswith("#")
+        ]
 
     print(f"Processing {len(barcodes)} barcodes")
 
@@ -188,8 +180,8 @@ def main(barcodes: list[str]):
         embedder = MockEmbedder(config.embedding_dimensions)
         print("Using MockEmbedder (random vectors)")
     else:
-        embedder = QwenEmbedder(config=config)
-        print(f"Using QwenEmbedder model={config.qwen_model}")
+        embedder = GoogleEmbedder(config=config)
+        print(f"Using GoogleEmbedder model={config.embedding_model}")
 
     if args.mock_metadata:
         metadata_provider = MockMetadataProvider()
@@ -198,7 +190,7 @@ def main(barcodes: list[str]):
         metadata_provider = MetadataProvider(config=config)
         print(f"Using MetadataProvider at {config.pg_host}")
 
-    backend = ElasticsearchBackend.from_config(config=config)
+    backend = ElasticsearchBackend.from_config(config)
     print(f"Using ElasticsearchBackend at {config.es_url}")
 
     # Create pipeline
@@ -214,9 +206,11 @@ def main(barcodes: list[str]):
     print(f"\nIndexing {len(barcodes)} books...")
 
     def on_progress(result):
-        status = "✓" if result.success else "✗"
-        # print(f"  {status} {result.barcode}: {result.chunks_inserted} chunks" +
-        #      (f" ({result.error})" if result.error else ""))
+        status = "y" if result.success else "n"
+        print(
+            f"  {status} {result.barcode}: {result.chunks_inserted} chunks"
+            + (f" ({result.error})" if result.error else "")
+        )
 
     result = pipeline.index_books(barcodes, on_progress=on_progress)
 
@@ -224,16 +218,12 @@ def main(barcodes: list[str]):
     print(f"  Succeeded: {result.succeeded}/{result.total}")
     print(f"  Chunks: {result.total_chunks_inserted}/{result.total_chunks_created}")
 
-    """
     if result.failed > 0:
         print("\nFailed books:")
         for r in result.results:
             if not r.success:
                 print(f"  {r.barcode}: {r.error}")
-    """
 
 
 if __name__ == "__main__":
-    print(get_config())
-    main(["33433000136972", "33433006239176"])
-    # main(["33433071108306", "33433009163845"])
+    main()

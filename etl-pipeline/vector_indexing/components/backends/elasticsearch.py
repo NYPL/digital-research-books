@@ -3,8 +3,8 @@
 from typing import Iterator, Optional
 import logging
 
-from elasticsearch9 import Elasticsearch
-from elasticsearch9.helpers import bulk, scan as es_scan
+from elasticsearch import Elasticsearch
+from elasticsearch.helpers import bulk, scan as es_scan
 
 from vector_indexing.core.types import BookMetadata, ChunkDocument, InsertResult
 from vector_indexing.core.config import get_config, GlobalConfig
@@ -209,7 +209,6 @@ class ElasticsearchBackend(IndexBackend):
             success, failed_items = bulk(
                 self._client,
                 actions,
-                index=self._index_name,
                 chunk_size=batch_size,
                 raise_on_error=False,
                 raise_on_exception=False,

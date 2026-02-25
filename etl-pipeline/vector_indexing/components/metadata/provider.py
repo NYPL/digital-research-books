@@ -120,9 +120,9 @@ class MetadataProvider:
         Returns a dict mapping record_id -> {
             "edition_id": int,
             "language": list[str],
-            "publication_date": str | None,
-            "subject": list[str],
-        }
+                "publication_date": str | None,
+                "subject": list[str],
+            }
         """
         if not record_ids:
             return {}
