@@ -271,7 +271,7 @@ class TurbopufferBackend(IndexBackend):
             logger.info(
                 f"Turbopuffer write: rows={len(batch)}, "
                 f"estimated={format_bytes(estimated_bytes)}, "
-                f"billing={billing}"
+                f"written_bytes={format_bytes(written_bytes)}"
             )
             total_inserted += len(batch)
 

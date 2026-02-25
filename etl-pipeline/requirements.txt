@@ -18,6 +18,7 @@ langchain-google-genai==3.0.0
 langchain==1.0.0
 langgraph==1.0.0
 litellm>=1.79.0
+llama-index-core>=0.14.6
 lxml==4.9.2
 newrelic==10.9.0
 numpy==1.24.2
@@ -48,5 +49,6 @@ roman==4.1
 scikit-learn==1.2.2
 sqlalchemy==2.0.20
 tenacity==9.1.2
+turbopuffer==1.15.0
 waitress==3.0.1
 werkzeug==2.2.2
