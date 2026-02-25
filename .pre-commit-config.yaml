@@ -18,8 +18,9 @@ repos:
     hooks:
       # Verify formatting of yaml and json files
       - id: check-yaml
-      # TODO: add check-json in later, we have two files that are not acceptable
-      # - id: check-json 
+      # Excluding two malformed json files that are already in the repo
+      - id: check-json 
+        exclude: ^(web/config/tsconfig.json|web/.eslintrc.json)$
       # Verify that we're not adding any huge files
       - id: check-added-large-files
         args: ['--maxkb=1024']
