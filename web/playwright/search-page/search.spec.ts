@@ -7,7 +7,8 @@ test.describe("EDD Request Process", () => {
   }) => {
     const searchPage = new SearchPage(page);
     await searchPage.navigateToSearchPage();
-    await searchPage.fillSearchBox("Africa");
+    // await searchPage.fillSearchBox("Africa");
+    await searchPage.fillSearchBox("New York State Inebriate Asylum");
     await searchPage.clickSearchButton();
     await searchPage.clickRequestableCheckbox();
     await searchPage.clickFirstLoginForOptionsButton();
@@ -37,7 +38,11 @@ test.describe("Keyword Search", () => {
   }) => {
     const searchPage = new SearchPage(page);
     await searchPage.navigateToSearchPage();
-    await searchPage.fillSearchBox("IBM 1401");
+    // await searchPage.fillSearchBox("IBM 1401");
+    await searchPage.selectCategory("keyword");
+    await searchPage.fillSearchBox(
+      "The Mediterranean region under climate change"
+    );
     await searchPage.clickSearchButton();
     await searchPage.verifyFirstSearchResultKeywordVisible();
   });
@@ -138,17 +143,6 @@ test.describe("Read Online Link Targets", () => {
     await searchPage.clickFirstReadOnlineButton();
     await searchPage.verifyHathiTrustWebsiteVisible();
   });
-
-  test("Click the Read Online button on the item detail page and the link navigates to HathiTrust", async ({
-    page,
-  }) => {
-    const searchPage = new SearchPage(page);
-
-    // Verify on item details page
-    await searchPage.navigateToSearchPage();
-    await searchPage.clickFirstReadOnlineButton();
-    await searchPage.verifyHathiTrustWebsiteVisible();
-  });
 });
 
 test.describe("Subject Search", () => {
@@ -172,7 +166,10 @@ test.describe("Title Search", () => {
     const searchPage = new SearchPage(page);
     await searchPage.navigateToSearchPage();
     await searchPage.selectCategory("title");
-    await searchPage.fillSearchBox("IBM 1401");
+    // await searchPage.fillSearchBox("IBM 1401");
+    await searchPage.fillSearchBox(
+      "The Mediterranean region under climate change"
+    );
     await searchPage.clickSearchButton();
     await searchPage.verifyFirstSearchResultTitleVisible();
   });
