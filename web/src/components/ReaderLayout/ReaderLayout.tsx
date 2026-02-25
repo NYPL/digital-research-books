@@ -1,25 +1,23 @@
-import React, { useEffect, useState } from "react";
-import { Breadcrumbs, Icon } from "@nypl/design-system-react-components";
-import { defaultBreadcrumbs } from "~/src/constants/labels";
-import { ApiLink, LinkResult } from "~/src/types/LinkQuery";
-import IFrameReader from "../IFrameReader/IFrameReader";
-import EditionCardUtils from "~/src/util/EditionCardUtils";
-import Layout from "../Layout/Layout";
-import { formatUrl, truncateStringOnWhitespace } from "~/src/util/Util";
-import { MAX_TITLE_LENGTH } from "~/src/constants/editioncard";
-import dynamic from "next/dynamic";
-import { MediaTypes } from "~/src/constants/mediaTypes";
-import ReaderLogoSvg from "../Svgs/ReaderLogoSvg";
-import Link from "../Link/Link";
+import { Breadcrumbs } from "@nypl/design-system-react-components";
 import { addTocToManifest } from "@nypl/web-reader";
-import Loading from "../Loading/Loading";
-import { NYPL_SESSION_ID } from "~/src/constants/auth";
-import { useCookies } from "react-cookie";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import { useCookies } from "react-cookie";
+import { NYPL_SESSION_ID } from "~/src/constants/auth";
+import { MAX_TITLE_LENGTH } from "~/src/constants/editioncard";
+import { defaultBreadcrumbs } from "~/src/constants/labels";
+import { MediaTypes } from "~/src/constants/mediaTypes";
+import { useResultPageContext } from "~/src/context/ResultPageContext";
+import ErrorComponent from "~/src/pages/_error";
+import { ApiLink, LinkResult } from "~/src/types/LinkQuery";
+import EditionCardUtils from "~/src/util/EditionCardUtils";
+import { formatUrl, truncateStringOnWhitespace } from "~/src/util/Util";
+import IFrameReader from "../IFrameReader/IFrameReader";
+import Layout from "../Layout/Layout";
+import Loading from "../Loading/Loading";
 
 const WebReader = dynamic(() => import("@nypl/web-reader"), { ssr: false });
-import ErrorComponent from "~/src/pages/_error";
-import { useResultPageContext } from "~/src/context/ResultPageContext";
 
 const origin =
   typeof window !== "undefined" && window.location?.origin
@@ -78,11 +76,11 @@ const ReaderLayout: React.FC<{
    */
   const getProxiedResource = (proxyUrl?: string) => async (href: string) => {
     // Generate the resource URL using the proxy if the URI is not stored in S3
-    const isResourceSelfHosted = href.includes('drb-files');
+    const isResourceSelfHosted = href.includes("drb-files");
     const shouldProxyUrl = proxyUrl && !isResourceSelfHosted;
     setUseProxyUrl(shouldProxyUrl);
 
-    const url: string = shouldProxyUrl 
+    const url: string = shouldProxyUrl
       ? `${proxyUrl}${encodeURIComponent(href)}`
       : href;
 
@@ -137,18 +135,6 @@ const ReaderLayout: React.FC<{
     }
   }, [isLimitedAccess, isRead, pdfWorkerSrc, proxyUrl, url, page]);
 
-  const BackButton = () => {
-    return (
-      //Apends design system classname to use Design System Link.
-      <Link to={props.backUrl} variant="action" className="nypl-ds logo-link">
-        <Icon decorative className="logo-link__icon">
-          <ReaderLogoSvg />
-        </Icon>
-        <span className="logo-link__label">Back to Digital Research Books</span>
-      </Link>
-    );
-  };
-
   if (!isEmbed && !isRead) {
     return <ErrorComponent statusCode={404} />;
   }
@@ -183,7 +169,6 @@ const ReaderLayout: React.FC<{
           webpubManifestUrl={manifestUrl}
           proxyUrl={!isLimitedAccess && useProxyUrl ? proxyUrl : undefined}
           pdfWorkerSrc={pdfWorkerSrc}
-          headerLeft={<BackButton />}
           injectablesFixed={injectables}
           getContent={
             isLimitedAccess

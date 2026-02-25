@@ -1,6 +1,6 @@
 import { Box } from "@nypl/design-system-react-components";
-import React from "react";
 import dynamic from "next/dynamic";
+import React from "react";
 const WebReader = dynamic(() => import("@nypl/web-reader"), { ssr: false });
 
 const origin =
@@ -46,7 +46,6 @@ const ResearchAssistantViewer: React.FC<{
     <Box>
       {manifestApiUrl && (
         <WebReader
-          headerLeft={<></>}
           webpubManifestUrl={manifestApiUrl}
           pdfWorkerSrc="/pdf-worker/pdf.worker.min.js"
           injectablesFixed={injectables}
