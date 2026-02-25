@@ -129,6 +129,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
   return (
     <Box
+      id={`edition-${edition.edition_id}`}
       border="1px solid"
       borderColor="ui.border.default"
       padding="s"
