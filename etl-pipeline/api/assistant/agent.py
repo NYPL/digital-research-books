@@ -66,6 +66,9 @@ INDEX_NAME = "vra_chunks_gemini-embedding-001"
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 
+# Attributes that may be incomplete/null in the index
+INCOMPLETE_ATTRIBUTES = {"subject", "language", "publication_date", "author"}
+
 # Fields that should be converted to datetime objects
 DATETIME_FIELDS = {"publication_date"}
 
@@ -94,38 +97,140 @@ SEARCH_BOOK_DOC = f"""
 """
 
 
-def convert_filter_datetimes(filters: Any) -> Any:
+def convert_datetime_value(filter_array: Any) -> Optional[List]:
     """
-    Recursively convert datetime string values to datetime objects in turbopuffer
-    filter structures.
+    Processing function to convert datetime string values to datetime objects.
+    Only processes 3-element filters with datetime fields.
+
+    Args:
+        filter_array: Filter specification to potentially process
+
+    Returns:
+        Modified filter with converted datetime value if criteria met, None otherwise
+
+    Raises:
+        ValueError: If datetime conversion fails
+    """
+    # Only process 3-element condition lists [attribute, operator, value]
+    if not isinstance(filter_array, (list, tuple)) or len(filter_array) != 3:
+        return None
+
+    field_name, operator, value = filter_array
+
+    # Only process datetime fields
+    if field_name not in DATETIME_FIELDS:
+        return None
+
+    # Convert datetime string values
+    # EDGE CASE: `Contains` operator value length=3 first filter value \
+    # happens to be a target attribute name
+    # TODO: solve by, if operator=='Contains' (or any non-meta operator actually) \
+    # just return the entire filter_array rather than recursing thru it. Maybe a \
+    # generic is_simple_filter() func that can be used in the recursion func
+    try:
+        # Parse ISO 8601 date string to datetime
+        # NOTE: handles py <3.11 quirk were Z isn't handled, although timezone should never be used here
+        converted_value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return [field_name, operator, converted_value]
+    except Exception as e:
+        raise ValueError(
+            f"Failed to convert '{value}' to datetime for field '{field_name}'"
+        ) from e
+
+
+def add_null_match(filter_array: Any) -> Optional[List]:
+    """
+    Processing function to wrap filter with null-matching OR condition.
+    Only processes 3-element filters with incomplete attributes.
+
+    Args:
+        filter_array: Filter specification to potentially process
+
+    Returns:
+        Filter wrapped in Or condition with null match if criteria met, None otherwise
+    """
+    # Only process 3-element condition lists [attribute, operator, value]
+    if not isinstance(filter_array, (list, tuple)) or len(filter_array) != 3:
+        return None
+
+    field_name, operator, value = filter_array
+
+    # Only process incomplete attributes
+    if field_name not in INCOMPLETE_ATTRIBUTES:
+        return None
+
+    return [
+        "Or",
+        [
+            [field_name, operator, value],  # Original filter
+            [field_name, "Eq", None],  # Null match
+        ],
+    ]
+
+
+def process_filters_recursively(filters: Any, processing_func: callable) -> Any:
+    """
+    Generic recursive post-processor for TurboPuffer style filters that applies
+    a processing function.
+
+    The processing function determines whether to process a given filter
+    and returns either:
+    - A processed filter if it should be transformed
+    - None if the filter doesn't meet its processing criteria
+
+    This function handles the recursion through nested filter structures.
 
     Args:
         filters: Filter specification (can be nested lists/arrays)
+        processing_func: Function that takes (filters) and returns either
+                        a modified filter or None if not applicable
 
     Returns:
-        Filters with datetime strings converted to datetime objects
+        Processed filters with transformations applied where applicable
     """
+    # no-op for scalar values (operators, attribute names, filter values..)
     if not isinstance(filters, (list, tuple)):
         return filters
 
-    # Check if this is a 3-element condition list
-    if len(filters) == 3:
-        field_name, operator, value = filters
+    # Try to apply processing function to array
+    processed = processing_func(filters)
+    if processed is not None:
+        return processed
 
-        # If it's a datetime field and value is a string, convert it
-        if field_name in DATETIME_FIELDS and isinstance(value, str):
-            try:
-                # Parse ISO 8601 date string to datetime
-                # NOTE: handles py <3.11 quirk were Z isn't handled, although timezone should never be used here
-                converted_value = datetime.fromisoformat(value.replace("Z", "+00:00"))
-                return [field_name, operator, converted_value]
-            except Exception as e:
-                raise ValueError(
-                    f"Failed to convert '{value}' to datetime for field '{field_name}"
-                ) from e
+    # If array was not processed, recursively process potentially nested array
+    return [process_filters_recursively(item, processing_func) for item in filters]
 
-    # Recursively process nested structures
-    return [convert_filter_datetimes(item) for item in filters]
+
+def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> Any:
+    """
+    Apply all filter post-processing transformations in sequence.
+
+    This provides a modular, extensible pipeline for filter transformations.
+    New post-processing steps can be added here as needed.
+
+    Args:
+        filters: Raw filter specification
+        apply_null_matching: Whether to add null matching for incomplete attributes
+
+    Returns:
+        Processed filters with all transformations applied
+    """
+    if filters is None:
+        return None
+
+    # Step 1: Convert datetime strings to datetime objects
+    filters = process_filters_recursively(
+        filters, processing_func=convert_datetime_value
+    )
+
+    # Step 2: Add null matching for incomplete attributes (if enabled)
+    if apply_null_matching:
+        filters = process_filters_recursively(filters, processing_func=add_null_match)
+
+    # MAYBE: post process to check that null isn't passed as a string
+
+    logger.debug(f"Post-processed filters: {filters}")
+    return filters
 
 
 @dataclass
@@ -356,14 +461,15 @@ def search_catalog(
     ctx: ToolContext[CatalogSearchExecutionContext],
     ranking_query: str,
     filters: List | tuple | None = None,
+    filters_match_null: bool = True,
 ) -> str:
     try:
         logger.info(f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}'")
 
-        # Post-process filters: convert datetime strings to datetime objects
-        if filters is not None:
-            filters = convert_filter_datetimes(filters)
-            logger.debug(f"Post-processed filters: {filters}")
+        # Post-process filters through the pipeline
+        filters = apply_filter_transforms(
+            filters, apply_null_matching=filters_match_null
+        )
 
         # Execute vector search via TurbopufferBackend
         # take top 100 chunks and group by edition (then take top 10 editions)
@@ -495,16 +601,17 @@ def search_book(
     ctx: ToolContext[ContentSearchExecutionContext],
     ranking_query: str,
     filters: Optional[Union[List, tuple]] = None,
+    filters_match_null: bool = True,
 ) -> str:
     try:
         logger.info(
             f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}', for edition_id (record_id) = {ctx.context.edition_id}"
         )
 
-        # Post-process filters: convert datetime strings to datetime objects
-        if filters is not None:
-            filters = convert_filter_datetimes(filters)
-            logger.debug(f"Processed filters: {filters}")
+        # Post-process filters through the pipeline
+        filters = apply_filter_transforms(
+            filters, apply_null_matching=filters_match_null
+        )
 
         # Build filter to restrict search to single book
         # NOTE: book_id was (incorrectly) indexed as str initially
@@ -592,12 +699,17 @@ def format_frbr_fields(orm_work, orm_edition):
         else "(No Publisher)"
     )
 
+    # Format language metadata
+    languages = orm_edition.language or []
+    language_list = ", ".join(languages) if languages else "(No Language)"
+
     return {
         "title": title,
         "author_names": author_names,
         "subject_list": subject_list,
         "pub_date": pub_date,
         "publisher_names": publisher_names,
+        "language_list": language_list,
     }
 
 
@@ -650,6 +762,7 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
         lines.append(
             indent(f"SUBJECTS: {frbr_fields['subject_list']}", base_indent)
         )  # Does this need to be wrap()'ed to multi-line
+        lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", base_indent))
         lines.append(indent(f"MAX SCORE: {edition_hit['agg_score']:.4f}", base_indent))
         lines.append(indent(f"CHUNKS FOUND: {len(chunk_hits)}", base_indent))
         lines.append("")
@@ -730,6 +843,7 @@ def get_score(entry):
 
 # TODO: When we insert messages in context specifying book for content search \
 # context, remove book level info from search response to save tokens.
+# TODO: deduplicate book level metadata code in this and verbose_display_editions()
 def verbose_display_chunks(chunk_hits, query=None, as_str=False, frbr_fields=None):
     """
     Print or return a formatted str containing an ordered list book excerpts.
@@ -762,6 +876,7 @@ def verbose_display_chunks(chunk_hits, query=None, as_str=False, frbr_fields=Non
         lines.append(indent(f"AUTHORS: {frbr_fields['author_names']}", "  "))
         lines.append(indent(f"DATE: {frbr_fields['pub_date']}", "  "))
         lines.append(indent(f"SUBJECTS: {frbr_fields['subject_list']}", "  "))
+        lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", "  "))
         lines.append("")
         lines.append(f"FOUND {len(sorted_hits)} MATCHING SECTIONS:")
         lines.append("-" * 80)

@@ -7,8 +7,8 @@ We refer to each text chunk in the search index as a "ChunkDocument".
     Description: The full text of the text chunk.
 
   subject:
-    Data type: array of string
-    Description: A list of subjects that are associated with the book the text chunk belongs to. Subjects  are a mix of topics, genres, publication types, etc. Here is an example selection of subjects: 
+    Data type: array of strings
+    Description: A list of subject strings that are associated with the book the text chunk belongs to. Subject strings include information like topic, genre, publication type, literary classification, etc. Below is an example selection of subject strings (one per line). Remember each book can have multiple subject strings associated with it: 
       Administrative law -- United States
       American fiction
       American poetry
@@ -78,20 +78,27 @@ We refer to each text chunk in the search index as a "ChunkDocument".
       Clay industries -- Periodicals
 
   publication_date
-    Data type: iso 8601 formatted date string
+    Data type: string (iso 8601 formatted date)
     Description: The publication date of the book the text chunk belongs to.
 
   author
-    Data Type: array of strings.
+    Data Type: array of strings
     Description: An array of all the authors who contributed to the book the text chunk belongs to.
 
   title
     Data Type: string
     Description: The title of the book the text chunk belongs to.  
 
+  language
+    Data Type: array of string
+    Description: Languages that the book is written in. array of ISO 639 full language names. Case Sensitive. First letter uppercase for each language name.
+    <!-- see SFRRecordManager.getLanguage() -->
+
+
 
 ## Filtering
 
+<!-- based on https://turbopuffer.com/docs/query#filtering -->
 <!-- Changes to TP docs: changed "token" to "words" -->
 
 Exact filters to apply to ChunkDocument attributes to refine search results. Think of it as a SQL WHERE clause.
@@ -103,6 +110,9 @@ Filters allow you to narrow down results by applying exact conditions to the ret
   `["publication_date", "NotEq", null]`
 
 Values must have the same data type as the ChunkDocument attribute the filter is applied to, or an array of that type for operators like `ContainsAny`.
+
+All attributes are nullable (value = `null`)
+<!-- null must be represented as raw JSON null value, as all parameters are constructed by the agent as valid JSON -->
 
 Conditions can be combined using `{And,Or}` operations:
 ```
@@ -126,35 +136,41 @@ Conditions can be combined using `{And,Or}` operations:
 ### Filtering Parameters
 
 #### Equality Operators
+- Equality operators on string and array of string attributes are case sensitive.
 
-`Eq` (value) - Exact match for id or attributes values. If value is null, matches ChunkDocuments missing the attribute.
+**Supported Attributes**: publication_date, title, author, language
 
-`NotEq` (value) - Inverse of Eq, for attributes values. If value is "null", matches ChunkDocuments with the attribute.
+`Eq` (value) - Exact match for attributes values. If value is null, matches ChunkDocuments missing the attribute. Only use with scalar attributes, not array attributes.
 
-<!-- Removing to reduce complexity bc this can be handled with `Or` filter combination. "author" is the only field were I think this might be used -->
+<!-- 
+`NotEq` (value) - Inverse of Eq, for attributes values. If value is `null`, matches ChunkDocuments with the attribute.
+ -->
+<!-- Removing to reduce complexity bc this can be handled with `Or` filter combination. "author" or "language" is the only field were I think this might be used -->
 <!-- `In` (array[value]) - Matches any attributes values contained in the provided list.
 
 `NotIn` (array[value]) - Inverse of In, matches any attributes values not contained in the provided list. -->
 
-<!-- #### Array Attribute Operators
+<!-- #### Array Attribute Operators -->
 
-`Contains` (value) - Checks whether the selected array attribute contains the provided value.
+`Contains` (value) - Checks whether the selected array attribute contains the provided value. Only use with array attributes, not scalar attributes.
 
-`NotContains` (value) - Inverse of Contains.
+<!-- `NotContains` (value) - Inverse of Contains. -->
 
-`ContainsAny` (array[value]) - Checks whether the selected array attribute contains any of the values provided (intersection filter).
+`ContainsAny` (array[value]) - Checks whether the selected array attribute contains any of the values provided (intersection filter). Only use with array attributes, not scalar attributes.
 
-`NotContainsAny` (array[value]) - Inverse of ContainsAny. -->
+<!-- `NotContainsAny` (array[value]) - Inverse of ContainsAny. -->
 
 #### Comparison Operators
 
-`Lt` (value) - For ints, this is a numeric less-than on attributes values. For strings, lexicographic less-than. For datetimes, numeric less-than on millisecond representation.
+**Supported Attributes**: publication_date
 
-`Lte` (value) - For ints, this is a numeric less-than-or-equal on attributes values. For strings, lexicographic less-than-or-equal. For datetimes, numeric less-than-or-equal on millisecond representation.
+`Lt` (value) - less-than 
 
-`Gt` (value) - For ints, this is a numeric greater-than on attributes values. For strings, lexicographic greater-than. For datetimes, numeric greater-than on millisecond representation.
+`Lte` (value) -  less-than-or-equal 
 
-`Gte` (value) - For ints, this is a numeric greater-than-or-equal on attributes values. For strings, lexicographic greater-than-or-equal. For datetimes, numeric greater-than-or-equal on millisecond representation.
+`Gt` (value) - greater-than 
+
+`Gte` (value) - greater-than-or-equal
 
 <!-- #### Array Attribute Comparison Operators
 
@@ -176,10 +192,12 @@ Conditions can be combined using `{And,Or}` operations:
 
 `Regex` (string) - Regular expression match against string attribute values. Requires the regex schema attribute to be enabled before use. Warning: Doesn't support certain advanced features (e.g. look-around, backreferences). Currently requires exhaustive evaluation; not recommended for large namespaces or ANN queries unless used in conjunction with other selective filters. Contact us if you run into performance problems. -->
 
-#### String Operators
-- String operators can only be used on string and array of strings typed attributes.  
-- All string search operators are case insensitive.  
-- "Tokens" in the string operator names means words; string operators break the filter string into a sequence of word tokens.  
+#### Word Token Operators
+- Word Token operators can only be used on string and array of strings typed attributes.  
+- All word token search operators are case insensitive.  
+- Word Token operators break the filter value into a sequence of word tokens; "Tokens" in the operator names refers to words.
+
+**Supported Attributes**: text, subject, title
 
 `ContainsAllTokens` (string) - Matches ChunkDocuments that contain all the words present in the filter value string. If you need the words to be adjacent and in order, use ContainsTokenSequence instead. 
 
@@ -269,7 +287,22 @@ Note how the temporal constraint "20th century" is applied via a publication_dat
 
 ### Un-searchable content
 
-If the user asks to search for some content that isn't available in any of the indexed attributes, do not include it in the search because it is unsearchable in the current data model. For example, if the user asks for book's that were first published as paperback's, you must not use this information to construct a search because the index does not include binding information about the book.
+If the user asks to search for content that isn't available in any of the indexed attributes, do not include the information in the constructed search arguments because the request is unsearchable in the current data model. Let the user know what part of their query is unsearchable, and continue to execute a search using whatever is searchable for the user's query
+
+**Example**: The user asks for mystery books that were first published as paperbacks. Construct subject search for mystery books.
+
+```json
+{
+  "ranking_query": "mystery detective crime suspense thriller investigation",
+  "filters": ["subject", "ContainsAnyToken", "mystery detective novel fiction"]
+}
+```
+In your response, let the user know that you are returning results for a search for mystery books, but that you do not have binding metadata available so you are not able to narrow the search to just mystery books that were first released as paperbacks.
+
+
+**Example**: The user asks for books that were first published as paperbacks. Because the search index does not include binding information about the books, and the user did not include any other search criteria in their message, you cannot construct and execute a search. Let the user know you are not able to execute their search because you do not have binding metadata available, and provide examples of queries you would be able to fulfill.
+
+**Example**: The user asks "What chapter of this book mentions slavery in the American south?" in the "ContentSearch" context. Chapter metadata is *not* available for the text chunks in the search index. Search for content related to slavery, but let the user know that you *do not* have chapter metadata available but that you *do* have page number metadata available for the text excerpts you provide.
 
 
 ### Avoid ambiguous semantic queries
@@ -285,6 +318,73 @@ Clear example (good): "history of the many floors of underground rooms that exis
 If the user's actual search intent is ambiguous, ask for clarification rather than create an ambiguous `ranking_query`.
 
 
+### Compound phrases in filters
+
+When filtering for compound phrases (multi-word terms that should be kept together), make sure to use `ContainsAllTokens` or `ContainsTokenSequence` instead of `ContainsAnyToken` since `ContainsAnyToken` matches if ANY of the words appear not the full compound phrase. This can lead to false matches.
+
+**Example:** User asks for books about shipbuilding or naval architecture.
+
+❌ **Incorrect approach:**
+```json
+{
+  "ranking_query": "shipbuilding naval architecture ship construction",
+  "filters": ["subject", "ContainsAnyToken", "Shipbuilding Ship-building Naval Architecture"]
+}
+```
+This is problematic because `ContainsAnyToken` will match subjects that contain just "Architecture" (like "Gothic Architecture" or "Modern Architecture"), which are unrelated to naval topics.
+
+✅ **Correct approach:**
+```json
+{
+  "ranking_query": "shipbuilding naval architecture ship construction",
+  "filters": ["Or", [
+    ["subject", "ContainsAnyToken", "Shipbuilding Ship-building Naval"],
+    ["subject", "ContainsAllTokens", "Naval Architecture"]
+  ]]
+}
+```
+This ensures "Naval Architecture" is treated as a compound phrase using `ContainsAllTokens`, so a subject must contain both "Naval" AND "Architecture" to match. Alternatively, you could use `ContainsTokenSequence` if the words must be adjacent and in order:
+
+```json
+{
+  "ranking_query": "shipbuilding naval architecture ship construction",
+  "filters": ["Or", [
+    ["subject", "ContainsAnyToken", "Shipbuilding Ship-building"],
+    ["subject", "ContainsTokenSequence", "Naval Architecture"]
+  ]]
+}
+```
+
+### Subject filters
+
+The subject field includes both meta-descriptions of genre, literary classification, etc (ex: "Periodicals", "Literature", "Encyclopedias", etc..) and content descriptions (ex: "Theology", "Voyages", "Episcopal Church"). 
+
+Our search tool is designed to search the full text of books in order to surface where relevant content exists even in unexpected books (For example a search for basket weaving can surface an econ textbook with a description basket weaving as an example of artisan industry). 
+
+Use subject filters to filter for meta-descriptors (genre, literary classification, etc) and not content descriptors. Let the `ranking_query` handle surfacing books with the desired content. Don't add subject filters that are not requested by user.
+
+**Example:** User asks about price elasticity of demand.
+
+❌ **Incorrect approach:**
+```json
+{
+  "ranking_query": "price elasticity of demand economic theory",
+  "filters": ["subject", "ContainsAnyToken", "Economics"]
+}
+```
+This unnecessarily restricts results to books classified as "Economics" when relevant content might exist in other types of books.
+
+✅ **Correct approach:**
+```json
+{
+  "ranking_query": "price elasticity of demand economic theory consumer behavior market response"
+}
+```
+This lets the semantic search surface the most relevant content regardless of subject classification.
+
+
+
+
 
 Args:
   ranking_query: The query string used to rank text chunks in the search results. See the "Ranking" section of the tool description for more details.
@@ -292,8 +392,11 @@ Args:
 
   filters: (optional) The filter to apply to the query. See "Filtering" section of the tool description for syntax details.
 
+  filters_match_null: (optional, defaults to True) When True, automatically modifies filters on potentially incomplete attributes (subject, language, publication_date, author) to also match ChunkDocuments where those attributes are null. This ensures search results include books with incomplete metadata. For example, a filter like `["subject", "ContainsAnyToken", "poetry"]` is automatically transformed to `["Or", [["subject", "ContainsAnyToken", "poetry"], ["subject", "Eq", null]]]`. Set to False if you specifically want to exclude results with missing metadata for filtered attributes.
+
 <!-- 
     Args:
         ranking_query: The query string used to rank text chunks in the search results based on semantic similarity.
         filters: Optional filter specification to apply to the query. See tool documentation for syntax.
+        filters_match_null: Optional boolean (default True) to include null-matching for incomplete attributes.
  -->
