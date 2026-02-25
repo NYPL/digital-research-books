@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "../components/Link/Link";
 
 export const parseEditionLinks = (
   text: string,
@@ -19,21 +20,16 @@ export const parseEditionLinks = (
     const editionId = match[1];
     const editionText = match[2];
     parts.push(
-      <a
+      <Link
         key={`edition-${editionId}-${match.index}`}
-        href={`#edition-${editionId}`}
+        to={`#edition-${editionId}`}
         onClick={(e) => {
           e.preventDefault();
           onEditionClick(editionId);
         }}
-        style={{
-          color: "var(--nypl-colors-ui-link-primary)",
-          textDecoration: "underline",
-          cursor: "pointer",
-        }}
       >
         {editionText}
-      </a>
+      </Link>
     );
 
     lastIndex = match.index + match[0].length;
@@ -54,12 +50,13 @@ export const scrollToEdition = (editionId: string) => {
       behavior: "smooth",
       block: "center",
     });
-    
+
     // Optional: Add a highlight effect
     element.style.transition = "background-color 0.3s ease";
     const originalBg = element.style.backgroundColor;
-    element.style.backgroundColor = "var(--nypl-colors-section-research-primary-05)";
-    
+    element.style.backgroundColor =
+      "var(--nypl-colors-section-research-primary-05)";
+
     setTimeout(() => {
       element.style.backgroundColor = originalBg;
     }, 2000);
