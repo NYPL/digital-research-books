@@ -183,7 +183,7 @@ class GlobalConfig:
             """Get env var, trying keys in order."""
             for key in env_keys:
                 value = os.getenv(key)
-                if value is not None:
+                if value is not None and value != "":
                     # Type coercion based on default type
                     if isinstance(default, bool):
                         return value.lower() in ("true", "1", "yes")
@@ -392,8 +392,9 @@ class GlobalConfig:
             value = None
             for key in env_keys:
                 value = os.getenv(key)
-                if value is not None:
+                if value is not None and value != "":
                     break
+                value = None  # Reset if empty string
 
             if value is not None:
                 # Type coercion based on default type
