@@ -10,14 +10,18 @@ const BookCard: React.FC = () => (
     backgroundColor="ui.white"
     borderTop="2px solid"
     borderTopColor="section.research.primary"
-    fontSize="desktop.body.body2"
   >
-    <Link to="#" isUnderlined={false} fontSize="-1">
+    <Link
+      to="#"
+      isUnderlined={false}
+      fontSize="desktop.body.body2"
+      fontWeight="medium"
+    >
       Placeholder Book Title
     </Link>
-    <Box minHeight="1.5rem">
+    <Box minHeight="1.5rem" fontSize="desktop.caption">
       By{" "}
-      <Text fontWeight="bold" fontSize="-2" as="span">
+      <Text fontWeight="bold" as="span">
         Placeholder Author
       </Text>
     </Box>
