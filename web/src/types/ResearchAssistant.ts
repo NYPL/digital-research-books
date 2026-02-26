@@ -99,8 +99,10 @@ export interface CatalogItem {
 }
 
 export interface Snippet {
-  end_page: number;
+  chunk_score: number;
   start_page: number;
+  end_page: number;
+  item_id: number;
   text: string;
 }
 

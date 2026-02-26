@@ -34,7 +34,6 @@ import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel"
 import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
 import AccordionLabelWithIcon from "./AccordionLabelWithIcon";
 import AboutItemPanel from "./panels/AboutItemPanel";
-import DetailsPanel from "./panels/DetailsPanel";
 import DownloadOptionsPanel from "./panels/DownloadOptionsPanel";
 import OtherEditionsPanel from "./panels/OtherEditionsPanel";
 import RelatedBooksPanel from "./panels/RelatedBooksPanel";
@@ -67,6 +66,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   const { page } = useResultPageContext();
 
   const router = useRouter();
+  const { previewItemId, previewPage } = router.query;
 
   const work: ApiWork = workResult.data;
 
@@ -90,10 +90,14 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     };
   }, [work.editions]);
 
-  const previewLink = useMemo(
-    () => EditionCardUtils.getReadOnlineLink(previewItem),
-    [previewItem]
-  );
+  const previewLink = useMemo(() => {
+    if (previewPage) {
+      return {
+        url: `/item/${previewItemId}/page/${previewPage}`,
+      };
+    }
+    return EditionCardUtils.getReadOnlineLink(previewItem);
+  }, [previewPage, previewItemId, previewItem]);
 
   useEffect(() => {
     if (previewLink && !hasPreviewLoaded) {
@@ -251,6 +255,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                       previewItem={previewItem}
                       previewEdition={previewEdition}
                       publisherNames={publisherNames}
+                      work={work}
                     />
                   ),
                 },
@@ -282,11 +287,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                   ariaLabel: "Other editions",
                   label: "Other editions",
                   panel: <OtherEditionsPanel work={work} />,
-                },
-                {
-                  ariaLabel: "Details",
-                  label: "Details",
-                  panel: <DetailsPanel work={work} />,
                 },
                 {
                   ariaLabel: "Related books",
