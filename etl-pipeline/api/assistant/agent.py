@@ -39,18 +39,13 @@ from ..utils import APIUtils, hit_to_dict, remove_markdown_comments
 from ..db import get_frbr_data_by_edition, get_session
 
 # shared code
-from vector_indexing.embedding import GoogleEmbedder
+from vector_indexing.components.embedders.google import GoogleEmbedder
 from utils.common import require_env
 
-# TODO: FIX WHEN CODE IS READY
-try:
-    from vector_indexing.backends import TurbopufferBackend
-    from vector_indexing.core.config import get_config
-except:
-    from unittest.mock import patch, MagicMock
+from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
+from vector_indexing.core.config import get_config
 
-    TurbopufferBackend = MagicMock()
-    get_config = MagicMock()
+
 from managers.db import DBManager
 from logger import create_log
 from utils.common import wrap
@@ -61,7 +56,7 @@ logger = create_log(__name__)
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
 
-INDEX_NAME = "vra_chunks_gemini-embedding-001"
+INDEX_NAME = "vra-dev"
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
@@ -247,6 +242,7 @@ class CatalogSearchExecutionContext:
     """Container used to inject objects into each agent run execution."""
 
     backend: TurbopufferBackend
+    embedder: GoogleEmbedder
     search_results: Dict = field(default_factory=dict)
     last_search_filters: Any = None
     last_search_rank_by: Optional[tuple] = None
@@ -257,6 +253,7 @@ class ContentSearchExecutionContext:
     """Container used to inject objects into each agent run execution."""
 
     backend: TurbopufferBackend
+    embedder: GoogleEmbedder
     edition_id: int
     item_id: int
     search_results: Dict = field(default_factory=dict)
@@ -382,8 +379,8 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     # some reused objs (backend, system prompts, async loop, etc...) (for sharing btw server \
     # request workers/threads)
 
-    # TODO: get embedder from index_name config
     backend = TurbopufferBackend(index_name=INDEX_NAME, config=get_config())
+    embedder = GoogleEmbedder()
 
     # NOTE: litellm has a bug converting `list | None = None` params/types into
     # gemini compatible format
@@ -417,6 +414,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         # NOTE: future item_id will be extracted directly from the chunk hit, not passed from the mapper as here
         exec_context = ContentSearchExecutionContext(
             backend=backend,
+            embedder=embedder,
             edition_id=record_id,
             item_id=item_id,
             frbr_fields=frbr_fields,
@@ -430,7 +428,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
 
     # Search for books in catalog
     elif conversation_type == "catalogSearch":
-        exec_context = CatalogSearchExecutionContext(backend=backend)
+        exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
         template = Template((PROMPTS_DIR / "system" / "1.jinja.md").read_text())
         system_prompt = remove_markdown_comments(
             template.render(conversation_type="catalogSearch")
@@ -482,14 +480,17 @@ def search_catalog(
             filters, apply_null_matching=filters_match_null
         )
 
+        # Embed the query for semantic search
+        query_vector = ctx.context.embedder.embed_one(ranking_query)
+
         # Store search params in context for inspection
         ctx.context.last_search_filters = filters
-        ctx.context.last_search_rank_by = ("text", "ANN", ranking_query)
+        ctx.context.last_search_rank_by = ("vector", "ANN", query_vector)
 
         # Execute vector search via TurbopufferBackend
         # take top 100 chunks and group by edition (then take top 10 editions)
         results = ctx.context.backend.query(
-            rank_by=("text", "ANN", ranking_query),
+            rank_by=("vector", "ANN", query_vector),
             top_k=100,
             filters=filters,
         )
@@ -639,9 +640,12 @@ def search_book(
         else:
             combined_filters = book_filter
 
+        # Embed the query for semantic search
+        query_vector = ctx.context.embedder.embed_one(ranking_query)
+
         # Execute vector search via TurbopufferBackend
         results = ctx.context.backend.query(
-            rank_by=("text", "ANN", ranking_query),
+            rank_by=("vector", "ANN", query_vector),
             top_k=10,
             filters=combined_filters,
         )
@@ -715,8 +719,17 @@ def format_frbr_fields(orm_work, orm_edition):
     )
 
     # Format language metadata
-    languages = orm_edition.language or []
-    language_list = ", ".join(languages) if languages else "(No Language)"
+    languages = orm_edition.languages or []
+    language_list = (
+        ", ".join(
+            [
+                lang.get("language", "") if isinstance(lang, dict) else str(lang)
+                for lang in languages
+            ]
+        )
+        if languages
+        else "(No Language)"
+    )
 
     return {
         "title": title,
