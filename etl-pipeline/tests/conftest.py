@@ -242,7 +242,10 @@ def frbrized_record_data(
         .first()
     )
 
-    item, edition, work = frbrized_model if frbrized_model else (None, None, None)
+    if not frbrized_model:
+        raise Exception("No test FRBR data after an attempt to create it.")
+
+    item, edition, work = frbrized_model
 
     links = (
         db_manager.session.query(Link)
@@ -251,10 +254,35 @@ def frbrized_record_data(
         .all()
     )
 
+    if not (links and len(links) > 0):
+        raise Exception("No link data available after attempt to create it.")
+
+    # DIAGNOSTIC: print all available FRBR records after test record creation
+    all_frbr_records = (
+        db_manager.session.query(Item, Edition, Work)
+        .join(Edition, Edition.id == Item.edition_id)
+        .join(Work, Work.id == Edition.work_id)
+        .limit(500)
+    )
+    print("DIAGNOSTIC: FRBR items after test FRBR record creation")
+    for row in all_frbr_records:
+        print(
+            f"{row.Work.title=} {row.Work.id=} {row.Edition.id=} {row.Item.id=} {row.Edition.title=}"
+        )
+    all_item_links = (
+        db_manager.session.query(Link)
+        .join(ITEM_LINKS)
+        .filter(ITEM_LINKS.c.item_id == item.id)
+        .limit(500)
+    )
+    print(f"DIAGNOSTIC: Item={item.id} links after test FRBR record creation")
+    for link in all_item_links:
+        print(f"{link.id=} {item.id=}")
+
     yield {
-        "edition_id": str(edition.id) if item else None,
-        "work_id": str(work.uuid) if work else None,
-        "link_id": links[0].id if links and len(links) > 0 else None,
+        "edition_id": str(edition.id),
+        "work_id": str(work.uuid),
+        "link_id": links[0].id,
     }
 
 

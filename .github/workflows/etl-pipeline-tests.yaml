@@ -89,13 +89,6 @@ jobs:
         run: |
           ./docker-compose-healthcheck.sh
 
-      - name: flaky test
-        env:
-          ENVIRONMENT: local
-        working-directory: ./etl-pipeline
-        run: |
-          python -m pytest -rA tests/integration/api/test_get_edition.py::test_get_edition
-
       - name: Run functional tests
         env:
           ENVIRONMENT: local

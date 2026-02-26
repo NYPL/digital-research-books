@@ -17,24 +17,6 @@ from utils.common import require_env
     ],
 )
 def test_get_edition(endpoint, expected_status, test_edition_id, db_manager):
-    # DIAGNOSTIC: print all available FRBR records before requesting test_edition
-    from model import (
-        Edition,
-        Item,
-        Work,
-    )
-
-    full_results = (
-        db_manager.session.query(Item, Edition, Work)
-        .join(Edition, Edition.id == Item.edition_id)
-        .join(Work, Work.id == Edition.work_id)
-        .limit(500)
-    )
-    print("DIAGNOSTIC: FRBR items before GET /editions test")
-    for row in full_results:
-        print(
-            f"{row.Work.title=} {row.Work.id=} {row.Edition.id=} {row.Item.id=} {row.Edition.title=}"
-        )
     print(f"DIAGNOSTIC: test_get_edition -> {test_edition_id=}")
 
     url = require_env("DRB_API_URL") + endpoint.format(edition_id=test_edition_id)
