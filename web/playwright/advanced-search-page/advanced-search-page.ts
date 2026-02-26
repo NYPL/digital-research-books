@@ -23,6 +23,8 @@ class AdvancedSearchPage {
   readonly searchResultLink: Locator;
   readonly russianLanguageCheckbox: Locator;
   readonly russianLanguageSubheader: Locator;
+  readonly spanishLanguageCheckbox: Locator;
+  readonly spanishLanguageSubheader: Locator;
   readonly firstReadOnlineButton: Locator;
 
   constructor(page: Page) {
@@ -43,13 +45,22 @@ class AdvancedSearchPage {
     this.dateFilterToField = page.locator("#date-filter-to");
     this.advancedSearchButton = page.locator("#submit-button");
     this.advancedSearchClearButton = page.locator("#reset-button");
-    this.keywordHeading = page.locator("h1:text('IBM 1401')");
-    this.authorHeading = page.locator("h1:text('Laurie, Edward J.')");
+    // this.keywordHeading = page.locator("h1:text('IBM 1401')");
+    // this.authorHeading = page.locator("h1:text('Laurie, Edward J.')");
+    this.keywordHeading = page.locator(
+      "h1:text('The Mediterranean region under climate change')"
+    );
+    this.authorHeading = page.locator("h1:text('Moatti, Jean-Paul. ()')");
+    // this.searchResultLink = page.locator(
+    //   "a:text('Computers and how they work')"
+    // );
     this.searchResultLink = page.locator(
-      "a:text('Computers and how they work')"
+      "a:text('The Mediterranean region under climate change')"
     );
     this.russianLanguageCheckbox = page.locator("span:text('Russian')");
     this.russianLanguageSubheader = page.locator("span:text('Russian')");
+    this.spanishLanguageCheckbox = page.locator("span:text('Spanish')");
+    this.spanishLanguageSubheader = page.locator("span:text('Spanish')");
     this.firstReadOnlineButton = page.locator("a:text('Read Online') >> nth=0");
   }
 
@@ -75,6 +86,10 @@ class AdvancedSearchPage {
 
   async clickRussianLanguageCheckbox() {
     await this.russianLanguageCheckbox.click();
+  }
+
+  async clickSpanishLanguageCheckbox() {
+    await this.spanishLanguageCheckbox.click();
   }
 
   async verifyElementVisible(selector: Locator) {

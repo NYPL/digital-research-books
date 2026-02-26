@@ -96,6 +96,16 @@ npm run build
 npm start
 ```
 
+### Recommended Extensions
+
+For consistent code formatting and linting, please install these VS Code extensions:
+
+- [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+
+Auto-formatting and linting on save are enabled via workspace settings.  
+If you have issues, check that these extensions are enabled and up to date.
+
 ## Local Hosting
 
 To successfully log in under a local deployment, add the following line to your machine's `/etc/hosts` file:

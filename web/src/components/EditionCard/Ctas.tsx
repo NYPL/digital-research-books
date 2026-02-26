@@ -3,10 +3,10 @@ import { useCookies } from "react-cookie";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
 import { Agent, ApiItem } from "~/src/types/DataModel";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
+import PreviewLink from "../ResultCard/Ctas/PreviewLink";
 import DownloadLink from "./DownloadLink";
 import EddLink from "./EddLink";
 import ReadOnlineLink from "./ReadOnlineLink";
-import PreviewLink from "../ResultCard/PreviewLink";
 
 const Ctas: React.FC<{
   authors: Agent[];
@@ -35,9 +35,7 @@ const Ctas: React.FC<{
               title={title}
             />
           ) : (
-            <PreviewLink
-              previewLink={readOnlineLink}
-            />
+            <PreviewLink previewLink={readOnlineLink} />
           ))}
         {downloadLink && (
           <DownloadLink

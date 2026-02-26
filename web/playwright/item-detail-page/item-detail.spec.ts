@@ -86,18 +86,23 @@ test.describe("Item Details Page Elements", () => {
   }) => {
     const itemDetailPage = new ItemDetailPage(page);
     await itemDetailPage.navigateToItemDetailPage();
-    await itemDetailPage.fillSearchBox("Jane Austen");
+    // await itemDetailPage.fillSearchBox("Jane Austen");
+    await itemDetailPage.fillSearchBox("Finite mathematics");
     await itemDetailPage.clickSearchButton();
-    await itemDetailPage.clickElement(itemDetailPage.lettersOfJaneAustenLink);
+    // await itemDetailPage.clickElement(itemDetailPage.lettersOfJaneAustenLink);
+    // await itemDetailPage.verifyElementVisible(
+    //   itemDetailPage.lettersOfJaneAustenHeading
+    // );
+    await itemDetailPage.clickElement(itemDetailPage.finiteMathematicsLink);
     await itemDetailPage.verifyElementVisible(
-      itemDetailPage.lettersOfJaneAustenHeading
+      itemDetailPage.finiteMathematicsHeading
     );
     await itemDetailPage.verifyElementVisible(
       itemDetailPage.backToSearchResultsButton
     );
     await itemDetailPage.clickElement(itemDetailPage.backToSearchResultsButton);
     await itemDetailPage.verifyElementVisible(
-      itemDetailPage.lettersOfJaneAustenLink
+      itemDetailPage.finiteMathematicsLink
     );
   });
 });

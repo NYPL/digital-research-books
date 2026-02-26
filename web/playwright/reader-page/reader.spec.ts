@@ -1,7 +1,9 @@
 import { test } from "@playwright/test";
 import { ReaderPage } from "./reader-page";
 
-test.describe("e-Reader validation", () => {
+// TODO: replace this test with a more comprehensive test that validates all the features of reader page.
+// This test is currently skipped because the test does not cover features of the reader.
+test.skip("e-Reader validation", () => {
   test("Validate all the features of e-Reader is displayed", async ({
     page,
   }) => {

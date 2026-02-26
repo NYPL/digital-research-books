@@ -61,8 +61,12 @@ test.describe("Advanced Search", () => {
     const advancedSearchPage = new AdvancedSearchPage(page);
     await advancedSearchPage.navigateToAdvancedSearchPage();
     await advancedSearchPage.clickAdvancedSearchLink();
-    await advancedSearchPage.fillKeywordSearchBox("IBM 1401");
-    await advancedSearchPage.fillAuthorSearchBox("Laurie, Edward J.");
+    // await advancedSearchPage.fillKeywordSearchBox("IBM 1401");
+    // await advancedSearchPage.fillAuthorSearchBox("Laurie, Edward J.");
+    await advancedSearchPage.fillKeywordSearchBox(
+      "The Mediterranean region under climate change"
+    );
+    await advancedSearchPage.fillAuthorSearchBox("Moatti, Jean-Paul. ()");
     await advancedSearchPage.clickAdvancedSearchButton();
     await advancedSearchPage.verifyElementVisible(
       advancedSearchPage.keywordHeading
@@ -81,14 +85,16 @@ test.describe("Advanced Search", () => {
     const advancedSearchPage = new AdvancedSearchPage(page);
     await advancedSearchPage.navigateToAdvancedSearchPage();
     await advancedSearchPage.clickAdvancedSearchLink();
-    await advancedSearchPage.fillKeywordSearchBox("Jane Austen");
-    await advancedSearchPage.clickRussianLanguageCheckbox();
+    // await advancedSearchPage.fillKeywordSearchBox("Jane Austen");
+    // await advancedSearchPage.clickRussianLanguageCheckbox();
+    await advancedSearchPage.fillKeywordSearchBox("Finite mathematics");
+    await advancedSearchPage.clickSpanishLanguageCheckbox();
     await advancedSearchPage.clickAdvancedSearchButton();
     await advancedSearchPage.verifyElementVisible(
-      advancedSearchPage.russianLanguageSubheader
+      advancedSearchPage.spanishLanguageSubheader
     );
     await advancedSearchPage.verifyElementChecked(
-      advancedSearchPage.russianLanguageCheckbox
+      advancedSearchPage.spanishLanguageCheckbox
     );
     await advancedSearchPage.verifyElementVisible(
       advancedSearchPage.firstReadOnlineButton

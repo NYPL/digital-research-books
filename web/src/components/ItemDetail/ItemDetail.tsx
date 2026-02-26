@@ -70,8 +70,26 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
 
   const work: ApiWork = workResult.data;
 
-  const previewEdition = work.editions && work.editions[0];
-  const previewItem = EditionCardUtils.getPreviewItem(previewEdition.items);
+  const { previewEdition, previewItem } = useMemo(() => {
+    if (!work.editions || work.editions.length === 0)
+      return { previewEdition: undefined, previewItem: undefined };
+
+    for (const edition of work.editions) {
+      if (!edition.items) continue;
+      for (const item of edition.items) {
+        if (item.links?.some((link) => link.mediaType === "application/ocr")) {
+          return { previewEdition: edition, previewItem: item };
+        }
+      }
+    }
+
+    const firstEdition = work.editions[0];
+    return {
+      previewEdition: firstEdition,
+      previewItem: EditionCardUtils.getPreviewItem(firstEdition.items),
+    };
+  }, [work.editions]);
+
   const previewLink = useMemo(
     () => EditionCardUtils.getReadOnlineLink(previewItem),
     [previewItem]
@@ -82,7 +100,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
       handlePreview(previewLink.url);
       setHasPreviewLoaded(true);
     }
-  }, [previewLink, handlePreview]);
+  }, [previewLink, handlePreview, hasPreviewLoaded]);
 
   useEffect(() => {
     if (previewLink?.url && router.pathname.startsWith("/item")) {
@@ -97,6 +115,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         ...prev,
         itemId,
         pageId,
+        editionId: previewEdition?.edition_id,
         showWebReader: true,
         results: null,
         linkResults: null,
@@ -121,11 +140,13 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     router.push("/research-assistant");
   };
 
-  const publisherNames = previewEdition.publishers.map(
+  const publisherNames = (previewEdition?.publishers ?? []).map(
     (pubAgent) => pubAgent && pubAgent.name
   );
 
-  const downloadLink = EditionCardUtils.selectDownloadLink(previewEdition);
+  const downloadLink = previewEdition
+    ? EditionCardUtils.selectDownloadLink(previewEdition)
+    : undefined;
   const authorNames = work.authors
     ? work.authors.map((author) => author.name)
     : [];
