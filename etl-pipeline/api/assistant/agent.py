@@ -25,7 +25,7 @@ from agents.tool_context import ToolContext
 from agents.extensions.memory import SQLAlchemySession
 from openai.types.shared import Reasoning
 from sklearn.decomposition import FastICA
-from sqlalchemy import text, bindparam
+from sqlalchemy import text
 from jinja2 import Template
 
 
@@ -78,96 +78,60 @@ class ContentSearchExecutionContext:
 
 def map_editions_and_records(record_ids=None, edition_ids=None):
     if record_ids:
-        bind_param = "record_ids"
         ids = record_ids
+        source_col = "record_id"
         target_col = "edition_id"
     elif edition_ids:
         assert record_ids is None, "both record_ids and edition_ids are non-null"
-        bind_param = "edition_ids"
         ids = edition_ids
+        source_col = "edition_id"
         target_col = "record_id"
-    source_col = bind_param.rstrip("s")
-    table_alias = bind_param[0]
 
     logger.debug(f"Mapping {source_col}s to {target_col}s...")
 
-    query = text(f"""
-    SELECT
-        r.id AS record_id,
-        i.id as item_id,
-        e.id AS edition_id
-    FROM
-        records r
-    JOIN
-        items i ON r.id = i.record_id
-    JOIN
-        editions e ON i.edition_id = e.id
-    WHERE
-        {table_alias}.id IN :{bind_param};
-    """).bindparams(bindparam(bind_param, expanding=True))
-    # Discussion of this bind param issue: https://stackoverflow.com/questions/13190392/how-can-i-bind-a-list-to-a-parameter-in-a-custom-query-in-sqlalchemy
+    # Use UNNEST with a CTE instead of expanding IN clause for better performance
+    # with large ID lists. DISTINCT ON deduplicates at the DB level.
+    if source_col == "record_id":
+        query = text("""
+            WITH requested(id) AS (
+                SELECT UNNEST(CAST(:ids AS INTEGER[]))
+            )
+            SELECT DISTINCT ON (r.id)
+                r.id AS record_id,
+                i.id AS item_id,
+                e.id AS edition_id
+            FROM requested
+            JOIN records r ON r.id = requested.id
+            JOIN items i ON r.id = i.record_id
+            JOIN editions e ON i.edition_id = e.id
+            ORDER BY r.id
+        """)
+    else:
+        query = text("""
+            WITH requested(id) AS (
+                SELECT UNNEST(CAST(:ids AS INTEGER[]))
+            )
+            SELECT DISTINCT ON (e.id)
+                r.id AS record_id,
+                i.id AS item_id,
+                e.id AS edition_id
+            FROM requested
+            JOIN editions e ON e.id = requested.id
+            JOIN items i ON e.id = i.edition_id
+            JOIN records r ON i.record_id = r.id
+            ORDER BY e.id
+        """)
 
     Session = get_session()
     with Session() as session:
-        # NOTE: Session() has all the same methods as engine.connect(). see: https://docs.sqlalchemy.org/en/20/orm/session_transaction.html#unitofwork-transaction
-        result = session.execute(query, {bind_param: list(ids)})
+        result = session.execute(query, {"ids": list(ids)})
         df = pd.DataFrame(result.fetchall(), columns=result.keys())
 
-    # We expect records = editions = items for NYPL GRIN books
-    # in the long term we must index books as editions (or items) because they
-    # are consumed as editions, as records have no defined/guaranteed relationship
-    # to editions/items
-
-    # Check for missing source IDs
-    # (a) source id does not exist in its original table (filter) (b) source id has no \
-    # related entity in the target table (inner join)
-    requested_ids = set(ids)
-    found_source_ids = set(df[source_col])
-    missing_source_ids = requested_ids - found_source_ids
-
-    # Check for duplicate source IDs (one source -> multiple targets)
-    duplicate_sources = [
-        {k: v[target_col].tolist()}
-        for k, v in df.groupby(source_col)
-        if v[target_col].size > 1
-    ]
-
-    # Check for duplicate target IDs (multiple sources -> one target)
-    duplicate_targets = [
-        {k: v[source_col].tolist()}
-        for k, v in df.groupby(target_col)
-        if v[source_col].size > 1
-    ]
-
-    # Log non 1-1 mappings
-    error_parts = []
-    if missing_source_ids:
-        error_parts.append(
-            f"{len(missing_source_ids)} {source_col}s failing to map to {target_col}s: {sorted(missing_source_ids)}"
-        )
-    if duplicate_sources:
-        error_parts.append(
-            f"{len(duplicate_sources)} case(s) of one {source_col} -> multiple {target_col}s: {duplicate_sources}"
-        )
-    if duplicate_targets:
-        error_parts.append(
-            f"{len(duplicate_targets)} case(s) of one {target_col} -> multiple {source_col}s: {duplicate_targets}"
-        )
-    if error_parts:
-        error_parts = [f"{source_col}->{target_col} mapping is not 1->1:"] + error_parts
-        logger.error("\n".join(error_parts))
-
-    # Select a 1-1 mapping subset
-    # - if duplicate source: pick first target (i.e. drop duplicates source col)
-    # - if duplicate target: no problem
-    # - if missing source: ignore
-    df = df.drop_duplicates(subset=source_col)
     logger.debug(
         f"Successfully mapped {len(df)} {source_col}s to {df[target_col].unique().size} {target_col}s"
     )
 
-    # Create dict mapping
-    # source id -> {target id -> value, ...}
+    # Create dict mapping: source id -> {target id -> value, ...}
     return df.set_index(source_col).to_dict(orient="index")
 
 
