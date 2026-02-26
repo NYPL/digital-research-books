@@ -800,10 +800,12 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
         for j, chunk_hit in enumerate(chunk_hits, 1):
             text = chunk_hit.get("text", "(No Text)")
             score = chunk_hit.get("score", 0)
-            chunk_id = chunk_hit.get("meta", {}).get("id", "unknown")
-            # Extract page range from chunk metadata
-            start_page = chunk_hit.get("chunk_start_page")
-            end_page = chunk_hit.get("chunk_end_page")
+            chunk_id = chunk_hit.get("doc_id", "unknown")
+            # Extract page range from chunk metadata (supports both formats)
+            start_page = chunk_hit.get("start_page") or chunk_hit.get(
+                "chunk_start_page"
+            )
+            end_page = chunk_hit.get("end_page") or chunk_hit.get("chunk_end_page")
             if start_page is not None and end_page is not None:
                 if start_page == end_page:
                     page_display = str(start_page)
@@ -914,9 +916,9 @@ def verbose_display_chunks(chunk_hits, query=None, as_str=False, frbr_fields=Non
         text = entry.get("text", "(No Text)")
         score = get_score(entry)
 
-        # Extract page range from chunk metadata
-        start_page = entry.get("chunk_start_page")
-        end_page = entry.get("chunk_end_page")
+        # Extract page range from chunk metadata (supports both formats)
+        start_page = entry.get("start_page") or entry.get("chunk_start_page")
+        end_page = entry.get("end_page") or entry.get("chunk_end_page")
         if start_page is not None and end_page is not None:
             if start_page == end_page:
                 page_display = str(start_page)
