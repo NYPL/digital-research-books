@@ -80,7 +80,11 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
   const accordionSummaryData = () => {
     const accordionData: AccordionDataProps[] = [];
-    if (page === "vra") {
+    if (
+      page === "vra" &&
+      (edition as any)?.snippets &&
+      (edition as any)?.snippets.length > 0
+    ) {
       accordionData.push({
         label: (
           <Box
@@ -98,8 +102,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
           <>
             <Flex flexDir="column" gap="s">
               <Text>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                You&apos;re seeing this result because this book covers topics
+                relevant to your request. The following sections were identified
+                as matching your query.
               </Text>
               <Box
                 display="flex"
