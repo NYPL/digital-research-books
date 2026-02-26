@@ -68,7 +68,7 @@ def test_cohere_reranker_smoke(setup_env, test_documents):
         documents=test_documents,
     )
 
-    assert len(results) == 3
+    assert len(results) == len(test_documents)
     assert all(r.relevance_score >= 0 for r in results)
     print(results)
     assert results[0].document.book_id == "book2"
