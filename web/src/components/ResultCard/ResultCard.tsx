@@ -20,15 +20,15 @@ import EditionCardUtils from "~/src/util/EditionCardUtils";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import AuthorsList from "../AuthorsList/AuthorsList";
-import PublisherAndLocation from "../EditionCard/PublisherAndLocation";
 import Link from "../Link/Link";
 import PublicDomainBadge from "../ResearchAssistant/PublicDomainBadge";
 import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import CardRequiredBadge from "./CardRequiredBadge";
-import Ctas from "./Ctas";
+import Ctas from "./Ctas/Ctas";
 import EditionLinks from "./EditionLinks";
 import FeaturedEditionBadge from "./FeaturedEditionBadge";
 import PhysicalEditionBadge from "./PhysicalEditionBadge";
+import ResultPublisherAndLocation from "./ResultPublisherAndLocation";
 
 interface ResultCardProps {
   authors: Agent[];
@@ -50,7 +50,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
     const editionDisplay =
       edition && edition.publication_date
         ? `${edition.publication_date} edition`
-        : "Edition year unknown";
+        : "Unknown edition";
     const additionalEditions =
       isFeaturedEdition && page === "vra"
         ? ` + ${work.edition_count - 1} more`
@@ -129,6 +129,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
   return (
     <Box
+      id={`edition-${edition.edition_id}`}
       border="1px solid"
       borderColor="ui.border.default"
       padding="s"
@@ -138,52 +139,39 @@ export const ResultCard: React.FC<ResultCardProps> = ({
       fontSize="desktop.body.body2"
     >
       <Flex gap="s" flexDirection="column">
-        <Flex
-          gap="xs"
-          flexDirection="row"
-          alignItems="center"
-          marginBottom="xs"
-        >
+        <Flex gap="xs" flexDirection="row" alignItems="center">
           {isPublicDomain && <PublicDomainBadge />}
           {isFeaturedEdition && <FeaturedEditionBadge />}
           {isPhysicalEdition && <PhysicalEditionBadge />}
           {isLoginRequired && <CardRequiredBadge />}
         </Flex>
-        <Flex gap="s" flexDirection="row">
-          <Box width="120px" bgColor="ui.gray.light-cool" flexShrink="0" />
-          <Box>
-            <Text size="caption" marginBottom="xxs">
-              E-BOOK
-            </Text>
-            <Heading size="heading7" marginBottom="xxs">
-              <Link
-                to={{
-                  pathname: `/${page === "vra" ? "item" : "work"}/${work.uuid}`,
-                  ...(previewItem && {
-                    query: { featured: edition.edition_id },
-                  }),
-                }}
-                isUnderlined={false}
-              >
-                {truncateStringOnWhitespace(work.title, MAX_TITLE_LENGTH)}
-              </Link>
-            </Heading>
-            <Box minHeight="1.5rem">
-              {authors.length > 0 && (
-                <>
-                  By <AuthorsList authors={authors} />
-                </>
-              )}
-            </Box>
-            <Box marginTop="m">
-              <PublisherAndLocation
-                pubPlace={edition.publication_place}
-                publishers={edition.publishers}
-              />
-            </Box>
-            <Box>{editionYearElem()}</Box>
-          </Box>
-        </Flex>
+        <Box>
+          <Heading size="heading7" marginBottom="xxs">
+            <Link
+              to={{
+                pathname: `/${page === "vra" ? "item" : "work"}/${work.uuid}`,
+                ...(previewItem && {
+                  query: { featured: edition.edition_id },
+                }),
+              }}
+              isUnderlined={false}
+            >
+              {truncateStringOnWhitespace(work.title, MAX_TITLE_LENGTH)}
+            </Link>
+          </Heading>
+          {authors.length > 0 && (
+            <>
+              By <AuthorsList authors={authors} />
+            </>
+          )}
+          <Flex marginTop="xs" flexWrap="wrap" alignItems="center">
+            <ResultPublisherAndLocation
+              pubPlace={edition.publication_place}
+              publishers={edition.publishers}
+            />
+            <Box whiteSpace="normal">{editionYearElem()}</Box>
+          </Flex>
+        </Box>
         {!isPhysicalEdition && (
           <Accordion
             width="100%"
