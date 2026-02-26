@@ -112,13 +112,22 @@ def convert_datetime_value(filter_array: Any) -> Optional[List]:
         ValueError: If datetime conversion fails
     """
     # Only process 3-element condition lists [attribute, operator, value]
-    if not isinstance(filter_array, (list, tuple)) or len(filter_array) != 3:
+    if not (isinstance(filter_array, (list, tuple)) and len(filter_array) == 3):
         return None
 
     field_name, operator, value = filter_array
 
-    # Only process datetime fields
+    # simple filter arrays always start with 2 strings
+    # Note: value is either string or array of string for our index
+    if not (isinstance(field_name, str) and isinstance(operator, str)):
+        return None
+
+    # Only datetime fields eligible for conversion
     if field_name not in DATETIME_FIELDS:
+        return None
+
+    # Only valid non-string value is `None`, pass through unchanged
+    if value is None:
         return None
 
     # Convert datetime string values
@@ -239,6 +248,8 @@ class CatalogSearchExecutionContext:
 
     backend: TurbopufferBackend
     search_results: Dict = field(default_factory=dict)
+    last_search_filters: Any = None
+    last_search_rank_by: Optional[tuple] = None
 
 
 @dataclass
@@ -470,6 +481,10 @@ def search_catalog(
         filters = apply_filter_transforms(
             filters, apply_null_matching=filters_match_null
         )
+
+        # Store search params in context for inspection
+        ctx.context.last_search_filters = filters
+        ctx.context.last_search_rank_by = ("text", "ANN", ranking_query)
 
         # Execute vector search via TurbopufferBackend
         # take top 100 chunks and group by edition (then take top 10 editions)
