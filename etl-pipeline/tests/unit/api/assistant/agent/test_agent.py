@@ -6,8 +6,9 @@ class TestAgent:
         """Test update_chat in catalogSearch mode returns the expected result."""
 
         # Mock search dependencies
-        mocker.patch("api.assistant.agent.Searcher")
-        mocker.patch("api.assistant.agent.GoogleEmbedder")
+        mocker.patch("api.assistant.agent.TurbopufferBackend")
+        mocker.patch("api.assistant.agent.get_config")
+        mocker.patch("api.assistant.agent.require_env", return_value="fake-key")
 
         # Mock the agent and its runner to simulate execution
         mocker.patch("api.assistant.agent.Agent")
