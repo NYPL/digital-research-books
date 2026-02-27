@@ -1,3 +1,4 @@
+import os
 from api.assistant.agent import update_chat
 
 
@@ -8,7 +9,7 @@ class TestAgent:
         # Mock search dependencies
         mocker.patch("api.assistant.agent.TurbopufferBackend")
         mocker.patch("api.assistant.agent.get_config")
-        mocker.patch("api.assistant.agent.require_env", return_value="fake-key")
+        mocker.patch.dict(os.environ, {"GOOGLE_API_KEY": "fake-key"})
 
         # Mock the agent and its runner to simulate execution
         mocker.patch("api.assistant.agent.Agent")
