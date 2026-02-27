@@ -1,0 +1,7 @@
+Search the research library catalog for relevant books.
+
+The research catalog has been processed into a search index composed of the full text of every book divided into short text chunks. 
+
+The search tool returns excerpts from up to 10 of the books with the most relevant content.
+
+The search tool works by ranking all text chunks by the `ranking_query` and filtering out all text chunks that do not match the conditions in `filters`. Up to 10 books with the highest ranking text chunks are returned.
