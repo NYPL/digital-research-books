@@ -38,6 +38,7 @@ from ..db import get_frbr_data_by_edition, get_session
 
 # shared code
 from vector_indexing.embedding import GoogleEmbedder
+from vector_indexing.core.utils import Timer
 from managers.db import DBManager
 from logger import create_log
 from utils.common import wrap
@@ -273,7 +274,13 @@ def search_library_catalog(
 
         # Fetch FRBR data (from DB)
         edition_ids = [h["edition_id"] for h in edition_hits]
-        frbr_data = get_frbr_data_by_edition(edition_ids)
+        with Timer(
+            "get_frbr_data_by_edition",
+            on_exit=lambda name, elapsed: logger.info(
+                f"{name} took {elapsed:.3f}s for {len(edition_ids)} editions"
+            ),
+        ):
+            frbr_data = get_frbr_data_by_edition(edition_ids)
 
         # Merge ES hit data and FRBR metadata (maintaining edition sort order)
         frbr_data = {row.Edition.id: row for row in frbr_data}
@@ -427,7 +434,13 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         # that case it was arbitrarily selected by map_editions_and_records().
 
         # Fetch FRBR data for the book
-        frbr_data = get_frbr_data_by_edition([edition_id])
+        with Timer(
+            "get_frbr_data_by_edition",
+            on_exit=lambda name, elapsed: logger.info(
+                f"{name} took {elapsed:.3f}s for 1 edition"
+            ),
+        ):
+            frbr_data = get_frbr_data_by_edition([edition_id])
         if not frbr_data:
             logger.error(
                 f"FRBR data missing for content search in edition {edition_id}"
