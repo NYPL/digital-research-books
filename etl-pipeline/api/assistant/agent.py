@@ -10,11 +10,13 @@ from textwrap import indent
 import sys
 import os
 import asyncio
+import time
 import numpy as np
 import pandas as pd
 
 from agents import (
     Agent,
+    RunHooks,
     OpenAIChatCompletionsModel,
     Runner,
     RunConfig,
@@ -24,6 +26,7 @@ from agents import (
     ModelSettings,
     RunResult,
 )
+from agents.items import ModelResponse
 from agents.tool_context import ToolContext
 from agents.extensions.memory import SQLAlchemySession
 from openai import AsyncOpenAI
@@ -45,6 +48,7 @@ from vector_indexing.core.config import get_config
 from vector_indexing.core.utils import Timer
 from logger import create_log
 from utils.common import wrap, require_env
+from utils.timer import timer
 
 
 logger = create_log(__name__)
@@ -55,6 +59,69 @@ PAGE_SIZE = 10
 INDEX_NAME = "vra-dev"
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
+
+
+class LLMLoggingHooks(RunHooks):
+    """Agent lifecycle hooks that log LLM call start/end with timing and response."""
+
+    def __init__(self):
+        self._llm_start_time: Optional[float] = None
+        self._tool_start_time: Optional[float] = None
+
+    async def on_llm_start(
+        self,
+        context: RunContextWrapper,
+        agent: Agent,
+        system_prompt: Optional[str],
+        input_items: list,
+    ) -> None:
+        self._llm_start_time = time.perf_counter()
+
+    async def on_llm_end(
+        self,
+        context: RunContextWrapper,
+        agent: Agent,
+        response: ModelResponse,
+    ) -> None:
+        elapsed = (
+            time.perf_counter() - self._llm_start_time
+            if self._llm_start_time is not None
+            else None
+        )
+        self._llm_start_time = None
+        elapsed_str = f"{elapsed:.3f}s" if elapsed is not None else "unknown"
+
+        output_types = [o.type for o in response.output]
+        logger.info(
+            f"LLM response received | elapsed: {elapsed_str} | output types: {output_types} | token usage: input={response.usage.input_tokens} output={response.usage.output_tokens}"
+        )
+
+    async def on_tool_start(
+        self,
+        context: RunContextWrapper,
+        agent: Agent,
+        tool,
+    ) -> None:
+        self._tool_start_time = time.perf_counter()
+        # logger.info(f"Tool starting | tool: {tool.name}")
+
+    async def on_tool_end(
+        self,
+        context: RunContextWrapper,
+        agent: Agent,
+        tool,
+        result: str,
+    ) -> None:
+        elapsed = (
+            time.perf_counter() - self._tool_start_time
+            if self._tool_start_time is not None
+            else None
+        )
+        self._tool_start_time = None
+        elapsed_str = f"{elapsed:.3f}s" if elapsed is not None else "unknown"
+        logger.info(
+            f"Tool execution completed | tool: {tool.name} | elapsed: {elapsed_str}"
+        )
 
 
 ## Turbopuffer filter parsing
@@ -270,6 +337,7 @@ class ContentSearchExecutionContext:
     frbr_fields: Dict = field(default_factory=dict)
 
 
+@timer(logger)
 def map_editions_and_records(record_ids=None, edition_ids=None):
     if record_ids:
         ids = record_ids
@@ -329,6 +397,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
     return df.set_index(source_col).to_dict(orient="index")
 
 
+@timer(logger)
 def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     """
     Send a message to the conversation and get the agent's response.
@@ -431,6 +500,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         agent,
         conversation,
         context=exec_context,
+        hooks=LLMLoggingHooks(),
         run_config=RunConfig(
             tracing_disabled=True, model_settings=ModelSettings(temperature=0.0)
         ),
