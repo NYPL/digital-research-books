@@ -66,11 +66,16 @@ INDEX_NAME = "vra_chunks_gemini-embedding-001"
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 
+## Turbopuffer filter parsing
+
 # Attributes that may be incomplete/null in the index
 INCOMPLETE_ATTRIBUTES = {"subject", "language", "publication_date", "author"}
 
-# Fields that should be converted to datetime objects
-DATETIME_FIELDS = {"publication_date"}
+# Attributes that should be converted to datetime objects
+DATETIME_ATTRIBUTES = {"publication_date"}
+
+# Meta-operators that wrap child filters
+META_OPERATORS = {"And", "Or", "Not"}
 
 
 def dynamic_docstring(docstring):
@@ -97,7 +102,7 @@ SEARCH_BOOK_DOC = f"""
 """
 
 
-def convert_datetime_value(filter_array: Any) -> Optional[List]:
+def transform_datetime(filter_array: Any) -> List:
     """
     Processing function to convert datetime string values to datetime objects.
     Only processes 3-element filters with datetime fields.
@@ -106,36 +111,32 @@ def convert_datetime_value(filter_array: Any) -> Optional[List]:
         filter_array: Filter specification to potentially process
 
     Returns:
-        Modified filter with converted datetime value if criteria met, None otherwise
+        Modified filter with converted datetime value if applicable, or filter_array
+        unchanged if the filter does not meet the criteria for conversion.
 
     Raises:
         ValueError: If datetime conversion fails
     """
     # Only process 3-element condition lists [attribute, operator, value]
     if not (isinstance(filter_array, (list, tuple)) and len(filter_array) == 3):
-        return None
+        return filter_array
 
     field_name, operator, value = filter_array
 
     # simple filter arrays always start with 2 strings
     # Note: value is either string or array of string for our index
     if not (isinstance(field_name, str) and isinstance(operator, str)):
-        return None
+        return filter_array
 
     # Only datetime fields eligible for conversion
-    if field_name not in DATETIME_FIELDS:
-        return None
+    if field_name not in DATETIME_ATTRIBUTES:
+        return filter_array
 
     # Only valid non-string value is `None`, pass through unchanged
     if value is None:
-        return None
+        return filter_array
 
     # Convert datetime string values
-    # EDGE CASE: `Contains` operator value length=3 first filter value \
-    # happens to be a target attribute name
-    # TODO: solve by, if operator=='Contains' (or any non-meta operator actually) \
-    # just return the entire filter_array rather than recursing thru it. Maybe a \
-    # generic is_simple_filter() func that can be used in the recursion func
     try:
         # Parse ISO 8601 date string to datetime
         # NOTE: handles py <3.11 quirk were Z isn't handled, although timezone should never be used here
@@ -147,26 +148,26 @@ def convert_datetime_value(filter_array: Any) -> Optional[List]:
         ) from e
 
 
-def add_null_match(filter_array: Any) -> Optional[List]:
+def transform_incomplete(filter_array: Any) -> List:
     """
-    Processing function to wrap filter with null-matching OR condition.
-    Only processes 3-element filters with incomplete attributes.
+    Wrap filter with null-matching OR condition if attribute has incomplete data.
 
     Args:
         filter_array: Filter specification to potentially process
 
     Returns:
-        Filter wrapped in Or condition with null match if criteria met, None otherwise
+        Filter wrapped in Or condition with null match if applicable, or filter_array
+        unchanged if the filter does not meet the criteria for transformation.
     """
     # Only process 3-element condition lists [attribute, operator, value]
     if not isinstance(filter_array, (list, tuple)) or len(filter_array) != 3:
-        return None
+        return filter_array
 
     field_name, operator, value = filter_array
 
     # Only process incomplete attributes
     if field_name not in INCOMPLETE_ATTRIBUTES:
-        return None
+        return filter_array
 
     return [
         "Or",
@@ -177,37 +178,54 @@ def add_null_match(filter_array: Any) -> Optional[List]:
     ]
 
 
-def process_filters_recursively(filters: Any, processing_func: callable) -> Any:
+def recurse_filters(filters: Any, processing_func: callable) -> Any:
     """
     Generic recursive post-processor for TurboPuffer style filters that applies
-    a processing function.
+    a processing function to every simple (leaf) filter.
 
-    The processing function determines whether to process a given filter
-    and returns either:
-    - A processed filter if it should be transformed
-    - None if the filter doesn't meet its processing criteria
+    Recursion is driven by filter structure:
+    - Meta-operators (And, Or, Not) → recurse into child filters
+    - Everything else → treat as a simple filter and pass to processing_func
 
-    This function handles the recursion through nested filter structures.
+    The processing function must return the filter unchanged if its conditions
+    are not met.
 
     Args:
-        filters: Filter specification (can be nested lists/arrays)
-        processing_func: Function that takes (filters) and returns either
-                        a modified filter or None if not applicable
+        filters: A complete filter specification (list/tuple). Scalars are invalid
+                 and will raise ValueError.
+        processing_func: Function that takes a simple filter and returns either
+                         a transformed filter or the original filter unchanged.
 
     Returns:
         Processed filters with transformations applied where applicable
+
+    Raises:
+        ValueError: If filters is not a list or tuple
     """
-    # no-op for scalar values (operators, attribute names, filter values..)
     if not isinstance(filters, (list, tuple)):
-        return filters
+        raise ValueError(
+            f"Expected filter to be a list or tuple, got {type(filters).__name__}: {filters!r}"
+        )
 
-    # Try to apply processing function to array
-    processed = processing_func(filters)
-    if processed is not None:
-        return processed
+    if len(filters) == 0:
+        raise ValueError("Filter cannot be an empty list or tuple")
 
-    # If array was not processed, recursively process potentially nested array
-    return [process_filters_recursively(item, processing_func) for item in filters]
+    operator = filters[0]
+
+    if operator in META_OPERATORS:
+        if operator == "Not":
+            # ["Not", child_filter]
+            return [operator, recurse_filters(filters[1], processing_func)]
+        else:
+            # ["And"/"Or", [child_filter, ...]]
+            return [
+                operator,
+                [recurse_filters(child, processing_func) for child in filters[1]],
+            ]
+
+    # Simple filter: [attribute, operator, value] — pass whole filter to processing_func.
+    # processing_func returns the filter unchanged if its conditions are not met.
+    return processing_func(filters)
 
 
 def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> Any:
@@ -228,13 +246,11 @@ def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> A
         return None
 
     # Step 1: Convert datetime strings to datetime objects
-    filters = process_filters_recursively(
-        filters, processing_func=convert_datetime_value
-    )
+    filters = recurse_filters(filters, processing_func=transform_datetime)
 
     # Step 2: Add null matching for incomplete attributes (if enabled)
     if apply_null_matching:
-        filters = process_filters_recursively(filters, processing_func=add_null_match)
+        filters = recurse_filters(filters, processing_func=transform_incomplete)
 
     # MAYBE: post process to check that null isn't passed as a string
 
