@@ -398,8 +398,9 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     backend = TurbopufferBackend(index_name=INDEX_NAME, config=get_config())
     embedder = GoogleEmbedder()
 
-    # NOTE: litellm has a bug converting `list | None = None` params/types into
-    # gemini compatible format
+    # NOTE: litellm has a bug converting `list | None = None` in agents sdk @functol_tool
+    # param type annotations into gemini API compatible format
+
     # model = "litellm/gemini/gemini-3-flash-preview"
     model = OpenAIChatCompletionsModel(
         model="gemini-3-flash-preview",
