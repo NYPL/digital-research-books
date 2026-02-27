@@ -34,10 +34,10 @@ def get_relevant_snippets(chunk_hits):
     return [
         {
             "text": shorten(h["text"]),
-            "start_page": h["chunk_start_page"],
-            "end_page": h["chunk_end_page"],
-            "item_id": h["item_id"],
-            "chunk_score": h["meta"]["score"],
+            "start_page": h.get("start_page") or h.get("chunk_start_page"),
+            "end_page": h.get("end_page") or h.get("chunk_end_page"),
+            "item_id": h.get("item_id"),
+            "chunk_score": h.get("score") or h.get("meta", {}).get("score"),
         }
         for h in chunk_hits
     ]
@@ -63,7 +63,7 @@ def format_search_results(search_results):
 
     # Format search result for API response
     if search_result:
-        if search_result["tool_name"] == "search_library_catalog":
+        if search_result["tool_name"] == "search_catalog":
             editions = []
             for edition_datum in search_result["edition_data"]:
                 # FRBR ORM to dict
@@ -124,7 +124,7 @@ def format_search_results(search_results):
                 f"Returning {len(editions)} editions in catalog search response"
             )  # Q: redundant to tool call logging
 
-        elif search_result["tool_name"] == "search_in_book":
+        elif search_result["tool_name"] == "search_book":
             result_type = "contentSearch"  # MAYBE: send search tool name
             formatted_search_result = {
                 "snippets": get_relevant_snippets(search_result["chunk_hits"]),
