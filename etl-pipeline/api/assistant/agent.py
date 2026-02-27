@@ -256,8 +256,6 @@ class CatalogSearchExecutionContext:
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
     search_results: Dict = field(default_factory=dict)
-    last_search_filters: Any = None
-    last_search_rank_by: Optional[tuple] = None
 
 
 @dataclass
@@ -467,10 +465,6 @@ def search_catalog(
 
         # Embed the query for semantic search
         query_vector = ctx.context.embedder.embed_one(ranking_query)
-
-        # Store search params in context for inspection
-        ctx.context.last_search_filters = filters
-        ctx.context.last_search_rank_by = ("vector", "ANN", query_vector)
 
         # Execute vector search via TurbopufferBackend
         # take top 100 chunks and group by edition (then take top 10 editions)
