@@ -8,6 +8,7 @@ from model.postgres.item import Item
 from model.postgres.link import Link
 from model.postgres.rights import Rights
 from model.postgres.work import Work
+from utils.timer import timer
 
 # API code
 from ..utils import APIUtils, orm_to_dict, shorten
@@ -150,6 +151,7 @@ def format_search_results(search_results):
 @chat_blueprint.route("", methods=["POST"])
 @require_api_key
 @require_basic_authentication
+@timer(logger)
 def chat(user=None):
     conversation_type = request.json.get("conversationType")
     conversation = request.json.get("messages")
