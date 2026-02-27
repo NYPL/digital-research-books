@@ -66,6 +66,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   const { page } = useResultPageContext();
 
   const router = useRouter();
+  const { previewItemId, previewPage } = router.query;
 
   const work: ApiWork = workResult.data;
 
@@ -89,10 +90,14 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     };
   }, [work.editions]);
 
-  const previewLink = useMemo(
-    () => EditionCardUtils.getReadOnlineLink(previewItem),
-    [previewItem]
-  );
+  const previewLink = useMemo(() => {
+    if (previewPage) {
+      return {
+        url: `/item/${previewItemId}/page/${previewPage}`,
+      };
+    }
+    return EditionCardUtils.getReadOnlineLink(previewItem);
+  }, [previewPage, previewItemId, previewItem]);
 
   useEffect(() => {
     if (previewLink && !hasPreviewLoaded) {

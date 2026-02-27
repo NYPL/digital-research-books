@@ -1,22 +1,22 @@
-import {
-  Agent,
-  Instance,
-  ApiItem,
-  ItemLink,
-  Language,
-  WorkEdition,
-  Identifier,
-} from "../types/DataModel";
-import { formatUrl, truncateStringOnWhitespace } from "./Util";
+import { NextRouter } from "next/router";
 import {
   MAX_PLACE_LENGTH,
   MAX_PUBLISHER_NAME_LENGTH,
   MAX_SUBTITILE_LENGTH,
   PLACEHOLDER_COVER_LINK,
 } from "../constants/editioncard";
-import { MediaTypes } from "../constants/mediaTypes";
-import { NextRouter } from "next/router";
 import { LOGIN_LINK_BASE } from "../constants/links";
+import { MediaTypes } from "../constants/mediaTypes";
+import {
+  Agent,
+  ApiItem,
+  Identifier,
+  Instance,
+  ItemLink,
+  Language,
+  WorkEdition,
+} from "../types/DataModel";
+import { formatUrl, truncateStringOnWhitespace } from "./Util";
 
 // EditionCard holds all the methods needed to build an Edition Card
 export default class EditionCardUtils {
@@ -223,10 +223,11 @@ export default class EditionCardUtils {
   }
 
   static isPublicDomain(item: ApiItem): boolean {
-    const regex = /public[ _]?domain( \(x\))?/i
-    const publicDomain = item && item.rights && item.rights.length > 0
-      ? item.rights.find((right) => regex.test(right.rightsStatement))
-      : undefined;
+    const regex = /public[ _]?domain( \(x\))?/i;
+    const publicDomain =
+      item && item.rights && item.rights.length > 0
+        ? item.rights.find((right) => regex.test(right.rightsStatement))
+        : undefined;
     return publicDomain !== undefined;
   }
 
