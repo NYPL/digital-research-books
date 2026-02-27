@@ -89,6 +89,10 @@ class GlobalConfig:
     qwen_port: int = 1234
     qwen_model: str = "qwen3-embedding-8b-fp16"
 
+    # Turbopuffer settings
+    turbopuffer_api_key: str | None = None
+    turbopuffer_region: str = "aws-us-east-1"
+
     # Chunking settings
     chunk_size: int = 512
     chunk_overlap: int = 50
@@ -104,6 +108,7 @@ class GlobalConfig:
             "es_user",
             "pg_password",
             "pg_user",
+            "turbopuffer_api_key",
         }
     )
 
@@ -241,6 +246,12 @@ class GlobalConfig:
             chunk_overlap=get_env(["CHUNK_OVERLAP"], defaults.chunk_overlap),
             max_failures=get_env(["MAX_FAILURES"], defaults.max_failures),
             log_dir=get_env(["LOG_DIR"], defaults.log_dir),
+            turbopuffer_api_key=get_env(
+                ["TURBOPUFFER_API_KEY"], defaults.turbopuffer_api_key
+            ),
+            turbopuffer_region=get_env(
+                ["TURBOPUFFER_REGION"], defaults.turbopuffer_region
+            ),
         )
 
     @classmethod
