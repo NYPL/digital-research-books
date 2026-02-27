@@ -29,6 +29,8 @@ class ItemDetailPage {
   readonly backToSearchResultsButton: Locator;
   readonly lettersOfJaneAustenLink: Locator;
   readonly lettersOfJaneAustenHeading: Locator;
+  readonly finiteMathematicsLink: Locator;
+  readonly finiteMathematicsHeading: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -90,6 +92,12 @@ class ItemDetailPage {
     );
     this.lettersOfJaneAustenHeading = page.locator(
       "//h1[text()='Letters of Jane Austen']"
+    );
+    this.finiteMathematicsLink = page.locator(
+      "//a[text()='Finite mathematics'] >> nth=0"
+    );
+    this.finiteMathematicsHeading = page.locator(
+      "//h1[text()='Finite mathematics']"
     );
   }
 

@@ -1,0 +1,54 @@
+{
+  "vector": {"type": "[768]f16", "ann": true},
+  "text": {
+    "type": "string",
+    "full_text_search": {
+      "tokenizer": "word_v3",
+      "stemming": true,
+      "remove_stopwords": false,
+      "language": "english",
+      "ascii_folding": true
+    }
+  },
+  "title": {
+    "type": "string",
+    "full_text_search": {
+      "tokenizer": "word_v3",
+      "stemming": false,
+      "remove_stopwords": false,
+      "language": "english",
+      "ascii_folding": true
+    },
+    "filterable": true
+  },
+  "chunk_index": "uint",
+  "start_page": "uint",
+  "end_page": "uint",
+  "edition_id": "uint",
+  "publication_date": "datetime",
+  "author": {
+    "type": "[]string",
+    "full_text_search": {
+      "tokenizer": "word_v3",
+      "stemming": false,
+      "remove_stopwords": false,
+      "language": "english",
+      "ascii_folding": true
+    },
+    "filterable": true
+  },
+  "subject": {
+    "type": "[]string",
+    "full_text_search": {
+      "tokenizer": "word_v3",
+      "stemming": false,
+      "remove_stopwords": false,
+      "language": "english",
+      "ascii_folding": true
+    },
+    "filterable": true
+  },
+  "language": "[]string",
+  "barcode": "string",
+  "book_id": "string"
+}

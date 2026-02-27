@@ -1,6 +1,7 @@
 import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
 import { MessageItem, MessageRole } from "~/src/types/ResearchAssistant";
+import { parseEditionLinks, scrollToEdition } from "~/src/util/EditionLinkParser";
 import styles from "../../../styles/components/MessageBubble.module.scss";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import FeedbackButtons from "./FeedbackButtons";
@@ -20,6 +21,10 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
     const bubbleClasses = isUser
       ? `${styles.messageBubble} ${styles.userBubble}`
       : `${styles.messageBubble} ${styles.assistantBubble}`;
+
+    const handleEditionClick = (editionId: string) => {
+      scrollToEdition(editionId);
+    };
 
     return (
       <Box
@@ -47,7 +52,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                     >
                       VRA:{" "}
                     </Text>
-                    {contentItem.text}
+                    {parseEditionLinks(contentItem.text, handleEditionClick)}
                   </Box>
                   {index === 0 ? (
                     <AiGeneratedText isInitial />
