@@ -1,6 +1,6 @@
 import { Box } from "@nypl/design-system-react-components";
-import React from "react";
 import dynamic from "next/dynamic";
+import React from "react";
 const WebReader = dynamic(() => import("@nypl/web-reader"), { ssr: false });
 
 const origin =

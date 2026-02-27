@@ -7,7 +7,6 @@ import {
 } from "~/src/constants/researchAssistant";
 import { CatalogSearchResults } from "~/src/types/ResearchAssistant";
 import { SearchQueryDefaults } from "~/src/types/SearchQuery";
-import { normalizeCatalogEditionsToApiWorks } from "~/src/util/NormalizeCatalogEdition";
 import ResultsList from "../NewResultsList/ResultsList";
 import ResultsBanner from "./ResultsBanner";
 
@@ -69,10 +68,6 @@ const CatalogResults: React.FC<{
   //   }));
   // };
 
-  const works = results.editions
-    ? normalizeCatalogEditionsToApiWorks(results.editions)
-    : [];
-
   return (
     <Flex flexDir="column" bgColor="ui.bg.default" gap="s">
       <Text
@@ -97,7 +92,7 @@ const CatalogResults: React.FC<{
       <ResultsBanner />
       {Object.keys(results).length > 0 && (
         <>
-          <ResultsList works={works} />
+          <ResultsList works={results.editions} />
           <Pagination
             pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
             initialPage={resultsPaging.currentPage}

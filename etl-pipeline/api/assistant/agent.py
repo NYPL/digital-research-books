@@ -466,7 +466,9 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         agent,
         conversation,
         context=exec_context,
-        run_config=RunConfig(tracing_disabled=True),
+        run_config=RunConfig(
+            tracing_disabled=True, model_settings=ModelSettings(temperature=0.0)
+        ),
     )
 
     return run_result

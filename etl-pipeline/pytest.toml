@@ -1,2 +1,3 @@
 [pytest]
-addopts = ["-ra"]
+addopts = ["-rA"]
+
