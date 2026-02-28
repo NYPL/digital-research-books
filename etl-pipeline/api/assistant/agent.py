@@ -61,69 +61,6 @@ INDEX_NAME = "vra-dev"
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 
-class LLMLoggingHooks(RunHooks):
-    """Agent lifecycle hooks that log LLM call start/end with timing and response."""
-
-    def __init__(self):
-        self._llm_start_time: Optional[float] = None
-        self._tool_start_time: Optional[float] = None
-
-    async def on_llm_start(
-        self,
-        context: RunContextWrapper,
-        agent: Agent,
-        system_prompt: Optional[str],
-        input_items: list,
-    ) -> None:
-        self._llm_start_time = time.perf_counter()
-
-    async def on_llm_end(
-        self,
-        context: RunContextWrapper,
-        agent: Agent,
-        response: ModelResponse,
-    ) -> None:
-        elapsed = (
-            time.perf_counter() - self._llm_start_time
-            if self._llm_start_time is not None
-            else None
-        )
-        self._llm_start_time = None
-        elapsed_str = f"{elapsed:.3f}s" if elapsed is not None else "unknown"
-
-        output_types = [o.type for o in response.output]
-        logger.info(
-            f"LLM response received | elapsed: {elapsed_str} | output types: {output_types} | token usage: input={response.usage.input_tokens} output={response.usage.output_tokens}"
-        )
-
-    async def on_tool_start(
-        self,
-        context: RunContextWrapper,
-        agent: Agent,
-        tool,
-    ) -> None:
-        self._tool_start_time = time.perf_counter()
-        # logger.info(f"Tool starting | tool: {tool.name}")
-
-    async def on_tool_end(
-        self,
-        context: RunContextWrapper,
-        agent: Agent,
-        tool,
-        result: str,
-    ) -> None:
-        elapsed = (
-            time.perf_counter() - self._tool_start_time
-            if self._tool_start_time is not None
-            else None
-        )
-        self._tool_start_time = None
-        elapsed_str = f"{elapsed:.3f}s" if elapsed is not None else "unknown"
-        logger.info(
-            f"Tool execution completed | tool: {tool.name} | elapsed: {elapsed_str}"
-        )
-
-
 ## Turbopuffer filter parsing
 
 # Attributes that may be incomplete/null in the index
@@ -335,6 +272,69 @@ class ContentSearchExecutionContext:
     item_id: int
     search_results: Dict = field(default_factory=dict)
     frbr_fields: Dict = field(default_factory=dict)
+
+
+class LLMLoggingHooks(RunHooks):
+    """Agent lifecycle hooks that log LLM call start/end with timing and response."""
+
+    def __init__(self):
+        self._llm_start_time: Optional[float] = None
+        self._tool_start_time: Optional[float] = None
+
+    async def on_llm_start(
+        self,
+        context: RunContextWrapper,
+        agent: Agent,
+        system_prompt: Optional[str],
+        input_items: list,
+    ) -> None:
+        self._llm_start_time = time.perf_counter()
+
+    async def on_llm_end(
+        self,
+        context: RunContextWrapper,
+        agent: Agent,
+        response: ModelResponse,
+    ) -> None:
+        elapsed = (
+            time.perf_counter() - self._llm_start_time
+            if self._llm_start_time is not None
+            else None
+        )
+        self._llm_start_time = None
+        elapsed_str = f"{elapsed:.3f}s" if elapsed is not None else "unknown"
+
+        output_types = [o.type for o in response.output]
+        logger.info(
+            f"LLM response received | elapsed: {elapsed_str} | output types: {output_types} | token usage: input={response.usage.input_tokens} output={response.usage.output_tokens}"
+        )
+
+    async def on_tool_start(
+        self,
+        context: RunContextWrapper,
+        agent: Agent,
+        tool,
+    ) -> None:
+        self._tool_start_time = time.perf_counter()
+        # logger.info(f"Tool starting | tool: {tool.name}")
+
+    async def on_tool_end(
+        self,
+        context: RunContextWrapper,
+        agent: Agent,
+        tool,
+        result: str,
+    ) -> None:
+        elapsed = (
+            time.perf_counter() - self._tool_start_time
+            if self._tool_start_time is not None
+            else None
+        )
+        self._tool_start_time = None
+        elapsed_str = f"{elapsed:.3f}s" if elapsed is not None else "unknown"
+        logger.info(
+            f"Tool execution completed | tool: {tool.name} | elapsed: {elapsed_str}"
+        )
 
 
 @timer(logger)
