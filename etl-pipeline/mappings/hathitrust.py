@@ -105,7 +105,9 @@ class HathiMapping(CSVMapping):
 
         self.record.has_part = [embed_link]
 
-        if self.source[23].lower() != "google":
+        # Check if digitization source column exists and is not Google before adding PDF link
+        digitization_source = self.source[23].lower() if len(self.source) > 23 else ""
+        if digitization_source != "google":
             file_link = str(
                 Part(
                     index=1,
