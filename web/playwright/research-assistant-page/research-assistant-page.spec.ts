@@ -16,31 +16,31 @@ test.describe("Research Assistant Page UI", { tag: "@vra" }, () => {
   });
 
   test("Research Assistant panel heading is visible", async () => {
-    await researchAssistantPage.researchAssistantPanelHeading.isVisible();
+    await expect(researchAssistantPage.researchAssistantPanelHeading).toBeVisible();
   });
 
   test("A message bubble from the agent is visible", async () => {
-    await researchAssistantPage.messageBubbles.nth(0).isVisible();
+    await expect(researchAssistantPage.messageBubbles.nth(0)).toBeVisible();
   });
 
   test("Chat input text box is visible", async () => {
-    await researchAssistantPage.chatInputTextBox.isVisible();
+    await expect(researchAssistantPage.chatInputTextBox).toBeVisible();
   });
 
   test("Results banner is visible", async () => {
-    await researchAssistantPage.resultsBanner.isVisible();
+    await expect(researchAssistantPage.resultsBanner).toBeVisible();
   });
 
   test("Empty search prompt is visible", async () => {
-    await researchAssistantPage.emptySearchPrompt.isVisible();
+    await expect(researchAssistantPage.emptySearchPrompt).toBeVisible();
   });
 
   test("'Start over' button is visible", async () => {
-    await researchAssistantPage.startOverBtn.isVisible();
+    await expect(researchAssistantPage.startOverBtn).toBeVisible();
   });
 
   test("'Hide chat' button is visible", async () => {
-    await researchAssistantPage.hideChatBtn.isVisible();
+    await expect(researchAssistantPage.hideChatBtn).toBeVisible();
   });
 });
 
@@ -53,7 +53,6 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
     await researchAssistantPage.navigateTo();
     await researchAssistantPage.logIn(process.env.VRA_USERNAME, process.env.VRA_PASSWORD);
     await researchAssistantPage.navigateTo(); // Return to the RA page after logging in (SCHOL-279)
-
   });
 
   test("Chat input text box is ready for input", async () => {
