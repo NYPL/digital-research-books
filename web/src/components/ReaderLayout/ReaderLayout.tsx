@@ -1,4 +1,4 @@
-import { Box, Breadcrumbs, Icon } from "@nypl/design-system-react-components";
+import { Box, Breadcrumbs } from "@nypl/design-system-react-components";
 import { addTocToManifest } from "@nypl/web-reader";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
@@ -15,9 +15,7 @@ import EditionCardUtils from "~/src/util/EditionCardUtils";
 import { formatUrl, truncateStringOnWhitespace } from "~/src/util/Util";
 import IFrameReader from "../IFrameReader/IFrameReader";
 import Layout from "../Layout/Layout";
-import Link from "../Link/Link";
 import Loading from "../Loading/Loading";
-import ReaderLogoSvg from "../Svgs/ReaderLogoSvg";
 
 const WebReader = dynamic(() => import("@nypl/web-reader"), { ssr: false });
 
@@ -136,18 +134,6 @@ const ReaderLayout: React.FC<{
       }
     }
   }, [isLimitedAccess, isRead, pdfWorkerSrc, proxyUrl, url, page]);
-
-  const BackButton = () => {
-    return (
-      //Apends design system classname to use Design System Link.
-      <Link to={props.backUrl} variant="action" className="nypl-ds logo-link">
-        <Icon decorative className="logo-link__icon">
-          <ReaderLogoSvg />
-        </Icon>
-        <span className="logo-link__label">Back to Digital Research Books</span>
-      </Link>
-    );
-  };
 
   if (!isEmbed && !isRead) {
     return <ErrorComponent statusCode={404} />;
