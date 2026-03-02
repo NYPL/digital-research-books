@@ -1,7 +1,7 @@
 import { expect, Page, test } from "@playwright/test";
 import { ResearchAssistantPage } from "./research-assistant-page";
 
-test.describe("Research Assistant Page UI", () => {
+test.describe("Research Assistant Page UI", { tag: "@vra" }, () => {
   let page: Page;
   let researchAssistantPage: ResearchAssistantPage;
 
@@ -44,7 +44,7 @@ test.describe("Research Assistant Page UI", () => {
   });
 });
 
-test.describe("Research Assistant Page Functionality", () => {
+test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
   let researchAssistantPage: ResearchAssistantPage;
   const testQuery = "I want to learn about Bryant Park.";
 
