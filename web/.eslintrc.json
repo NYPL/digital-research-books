@@ -14,5 +14,13 @@
     // TODO: SFR-2318 enable in the future
     "@typescript-eslint/no-explicit-any": "off",
     "testing-library/no-node-access": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["playwright/**/*.ts"],
+      "rules": {
+        "testing-library/prefer-screen-queries": "off"
+      }
+    }
+  ]
 }
