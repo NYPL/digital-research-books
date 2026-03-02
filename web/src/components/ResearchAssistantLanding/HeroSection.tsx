@@ -25,12 +25,16 @@ const HeroSection: React.ForwardRefExoticComponent<
           <span>The NYPL Virtual Research Assistant</span>
         </Box>
       </Heading>
-      <Heading level="h2" size="heading4" fontWeight="medium">
+      <Text
+        fontSize="desktop.heading.heading4"
+        fontWeight="medium"
+        color="ui.gray.x-dark"
+      >
         <span>Your AI partner in discovering content from over</span>
         <Text as="span" color="section.research.secondary">
           &nbsp;1 million digitized research books
         </Text>
-      </Heading>
+      </Text>
     </Box>
     <SearchSection helpSectionRef={helpSectionRef} />
   </SectionContainer>

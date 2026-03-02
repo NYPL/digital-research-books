@@ -1,84 +1,72 @@
 import { Box, Heading, Text } from "@nypl/design-system-react-components";
+import LandingButtons from "./LandingButtons";
 import SectionContainer from "./SectionContainer";
 
-const AccessSection: React.FC = () => {
-    const features = [
-        {
-            title: "Discover relevant content",
-            description:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-        },
-        {
-            title: "Get oriented quickly",
-            description:
-                "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit.",
-        },
-        {
-            title: "Find the important parts",
-            description:
-                "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione.",
-        },
-        {
-            title: "Explore rich pathways",
-            description:
-                "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo.",
-        },
-    ];
+interface AccessSectionProps {
+  heroSectionRef: React.RefObject<HTMLDivElement>;
+}
 
-    return (
-        <SectionContainer backgroundColor="section.research.primary">
-            <Heading
-                level="h2"
-                size="heading3"
-                fontWeight="semibold"
-                color="ui.white"
-                marginBottom="l"
-            >
-                Access and engage with scholarly e-books in minutes
-            </Heading>
-            <Box
-                display="grid"
-                gridTemplateColumns="repeat(4, 1fr)"
-                gridTemplateRows="auto"
-                gap="xl"
-            >
-                {features.map((feature, index) => (
-                    <Box
-                        key={index}
-                        gridColumn={index + 1}
-                        display="grid"
-                        gridTemplateColumns="1fr"
-                        gridTemplateRows="auto auto 1fr"
-                        justifyItems="center"
-                        textAlign="center"
-                        gap="s"
-                        backgroundColor="section.research.secondary"
-                        borderRadius="8px"
-                        paddingX="s"
-                        paddingBottom="s"
-                    >
-                        <Text
-                            gridRow="2"
-                            size="body1"
-                            fontWeight="medium"
-                            color="ui.white"
-                        >
-                            {feature.title}
-                        </Text>
-                        <Box
-                            gridRow="3"
-                            fontSize="body2"
-                            fontWeight="medium"
-                            width="100%"
-                            height="200px"
-                            borderRadius="8px"
-                            backgroundColor="rgba(0, 131, 138, 0.20)"
-                        ></Box>
-                    </Box>
-                ))}
-            </Box>
-        </SectionContainer>
-    );
+const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
+  const features = [
+    {
+      title: "Discover relevant content",
+      description:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    },
+    {
+      title: "Get oriented quickly",
+      description:
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit.",
+    },
+    {
+      title: "Find the important parts",
+      description:
+        "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione.",
+    },
+    {
+      title: "Explore rich pathways",
+      description:
+        "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo.",
+    },
+  ];
+
+  return (
+    <SectionContainer
+      borderTop="1px solid"
+      borderColor="section.research.primary-10"
+      backgroundImage={`
+        radial-gradient(circle, var(--nypl-colors-section-research-primary-10) 3px, transparent 3px)`}
+      backgroundSize="16px 16px"
+      backgroundPosition="center"
+      color="ui.typography.body"
+    >
+      <Heading
+        level="h2"
+        size="heading2"
+        fontFamily="Domine"
+        fontWeight="bold"
+        marginBottom="xs"
+      >
+        How does the Assistant work?
+      </Heading>
+      <Text
+        color="ui.gray.dark"
+        fontSize="desktop.heading.heading5"
+        fontWeight="semibold"
+        marginBottom="xxl"
+      >
+        The power of technology backed by the stewardship of the New York Public
+        Library
+      </Text>
+      <Box
+        display="grid"
+        gridTemplateColumns="repeat(4, 1fr)"
+        gridTemplateRows="auto"
+        gap="xl"
+      ></Box>
+      <LandingButtons heroSectionRef={null} />
+    </SectionContainer>
+  );
 };
 
 export default AccessSection;
