@@ -1,4 +1,4 @@
-name: Playwright Tests for DRB Web
+name: Playwright Tests
 
 on:
   workflow_dispatch:
@@ -8,6 +8,11 @@ on:
         default: "http://local.nypl.org:3000/"
         required: false
         type: string
+      api_url:
+        description: "API URL for environment"
+        default: "https://drb-api-qa.nypl.org"
+        required: false
+        type: string
   workflow_call:
     inputs:
       base_url:
@@ -15,10 +20,19 @@ on:
         default: "http://local.nypl.org:3000/"
         required: false
         type: string
+      api_url:
+        description: "API URL for environment"
+        default: "https://drb-api-qa.nypl.org"
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
-  tests:
-    name: Run Playwright Tests for DRB Web
+  playwright_tests:
+    name: Run Playwright Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -32,11 +46,27 @@ jobs:
           cache: npm
           cache-dependency-path: "web/package-lock.json"
 
+      - name: Configure AWS credentials for fetching VRA secrets from SSM
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::946183545209:role/GithubActionsDeployerRole
+          aws-region: us-east-1
+
+      - name: Fetch API key and HTTP Basic Auth creds for VRA from SSM
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "API_KEY=$(aws ssm get-parameter --name '/drb/qa/api-key' --with-decryption --query 'Parameter.Value' --output text)" >> "$GITHUB_ENV"
+          echo "VRA_USERNAME=$(aws ssm get-parameter --name '/drb/qa/vra-test-user/user' --with-decryption --query 'Parameter.Value' --output text)" >> "$GITHUB_ENV"
+          echo "VRA_PASSWORD=$(aws ssm get-parameter --name '/drb/qa/vra-test-user/pswd' --with-decryption --query 'Parameter.Value' --output text)" >> "$GITHUB_ENV"
+
       - name: Set environment for branch
         working-directory: ./web
         run: |
           touch .env
           echo "BASE_URL=${{ inputs.base_url }}" >> .env
+          echo "API_URL=${{ inputs.api_url }}" >> .env
+          echo "API_KEY=$API_KEY" >> .env
         shell: bash
 
       - name: Add hosts to /etc/hosts
@@ -64,9 +94,17 @@ jobs:
           sleep 5
         shell: bash
 
-      - name: Run Playwright tests
+      - name: Run Playwright tests (DRB)
         working-directory: ./web
-        run: npm run playwright
+        run: npm run playwright:drb
         env:
           CATALOG_USERNAME: ${{ secrets.CATALOG_USERNAME }}
           CATALOG_USER_PIN: ${{ secrets.CATALOG_USER_PIN }}
+
+      - name: Run Playwright tests (VRA)
+        if: always()
+        working-directory: ./web
+        run: npm run playwright:vra
+        env:
+          VRA_USERNAME: $VRA_USERNAME
+          VRA_PASSWORD: $VRA_PASSWORD
