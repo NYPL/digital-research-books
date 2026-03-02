@@ -1,4 +1,4 @@
-import { Breadcrumbs, Icon } from "@nypl/design-system-react-components";
+import { Box, Breadcrumbs, Icon } from "@nypl/design-system-react-components";
 import { addTocToManifest } from "@nypl/web-reader";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
@@ -68,7 +68,7 @@ const ReaderLayout: React.FC<{
   const nyplIdentityCookie = cookies[NYPL_SESSION_ID];
   const router = useRouter();
 
-  const pdfWorkerSrc = `${origin}/pdf-worker/pdf.worker.min.js`;
+  const pdfWorkerSrc = `${origin}/pdf-worker/pdf.worker.min.mjs`;
 
   const { page } = useResultPageContext();
 
@@ -179,18 +179,19 @@ const ReaderLayout: React.FC<{
       )}
       {isRead && isLoading && <Loading />}
       {isRead && !isLoading && (
-        <WebReader
-          webpubManifestUrl={manifestUrl}
-          proxyUrl={!isLimitedAccess && useProxyUrl ? proxyUrl : undefined}
-          pdfWorkerSrc={pdfWorkerSrc}
-          headerLeft={<BackButton />}
-          injectablesFixed={injectables}
-          getContent={
-            isLimitedAccess
-              ? EditionCardUtils.createGetContent(nyplIdentityCookie, router)
-              : undefined
-          }
-        />
+        <Box>
+          <WebReader
+            webpubManifestUrl={manifestUrl}
+            proxyUrl={!isLimitedAccess && useProxyUrl ? proxyUrl : undefined}
+            pdfWorkerSrc={pdfWorkerSrc}
+            injectablesFixed={injectables}
+            getContent={
+              isLimitedAccess
+                ? EditionCardUtils.createGetContent(nyplIdentityCookie, router)
+                : undefined
+            }
+          />
+        </Box>
       )}
     </>
   );
