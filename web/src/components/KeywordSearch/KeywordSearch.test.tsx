@@ -1,17 +1,16 @@
-import React from "react";
 import { act, cleanup, screen, within } from "@testing-library/react";
-import KeywordSearch from "./KeywordSearch";
-import { FilterYearsTests } from "./SearchFilters/FilterYearsTests";
 import userEvent from "@testing-library/user-event";
-import { FilterLanguagesCommonTests } from "./SearchFilters/FilterLanguagesTests";
 import mockRouter from "next-router-mock";
 import { searchResults } from "~/src/__tests__/fixtures/SearchResultFixture";
-import { ApiSearchResult, SearchQuery } from "~/src/types/SearchQuery";
-import { FacetItem, SearchField } from "~/src/types/DataModel";
 import { render } from "~/src/__tests__/testUtils/render";
 import { resizeWindow } from "~/src/__tests__/testUtils/screen";
-import { findFiltersForField } from "~/src/util/SearchQueryUtils";
 import filterFields from "~/src/constants/filters";
+import { FacetItem, SearchField } from "~/src/types/DataModel";
+import { ApiSearchResult, SearchQuery } from "~/src/types/SearchQuery";
+import { findFiltersForField } from "~/src/util/SearchQueryUtils";
+import KeywordSearch from "./KeywordSearch";
+import { FilterLanguagesCommonTests } from "./SearchFilters/FilterLanguagesTests";
+import { FilterYearsTests } from "./SearchFilters/FilterYearsTests";
 
 const searchQuery: SearchQuery = {
   queries: [{ field: SearchField.Keyword, query: "Animal Crossing" }],
@@ -252,7 +251,10 @@ describe("Renders Search Results Page", () => {
       });
       test("Shows Full Publisher", () => {
         expect(
-          screen.getByText("Published in Island Getaway by Nook Industries")
+          screen.getByText("Island Getaway")
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText("Nook Industries")
         ).toBeInTheDocument();
       });
       test("Shows download as link", () => {
@@ -267,11 +269,6 @@ describe("Renders Search Results Page", () => {
       });
     });
     describe("Second result has no data", () => {
-      test("Shows Unknown Publisher", () => {
-        expect(
-          screen.getByText("Publisher and Location Unknown")
-        ).toBeInTheDocument();
-      });
       test("Not available ctas", () => {
         expect(screen.getByText("Not yet available")).toBeInTheDocument();
       });
@@ -301,8 +298,11 @@ describe("Renders Search Results Page", () => {
       test("Truncates publisher place and first full publisher name", () => {
         expect(
           screen.getByText(
-            "Published in Taumatawhakatangihangakoauauotamateaturipukakapikimaungahoronukupokaiwhenuaki... by Nook Industries Nook Industries Nook Industries Nook Industries Nook... + 4 more"
+            "Taumatawhakatangihangakoauauotamateaturipukakapikimaungahoronukupokaiwhenuaki..."
           )
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText("Nook Industries Nook Industries Nook Industries Nook Industries Nook... + 4 more")
         ).toBeInTheDocument();
       });
       test("Does not show download link", () => {

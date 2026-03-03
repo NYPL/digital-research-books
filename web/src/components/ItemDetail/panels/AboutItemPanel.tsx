@@ -1,17 +1,21 @@
 import { Box, Text, VStack } from "@nypl/design-system-react-components";
 import { ApiItem, WorkEdition } from "~/src/types/DataModel";
+import { ApiWork } from "~/src/types/WorkQuery";
+import AuthorsList from "../../AuthorsList/AuthorsList";
 import Link from "../../Link/Link";
 
 interface AboutItemPanelProps {
   previewItem: ApiItem;
   previewEdition: WorkEdition;
   publisherNames: string[];
+  work: ApiWork;
 }
 
 const AboutItemPanel: React.FC<AboutItemPanelProps> = ({
   previewItem,
   previewEdition,
   publisherNames,
+  work,
 }) => (
   <VStack alignItems="left" gap="xs">
     <Box>
@@ -33,6 +37,43 @@ const AboutItemPanel: React.FC<AboutItemPanelProps> = ({
     <Box>
       <Text fontWeight="bold">Place of publication</Text>
       <Text>{previewEdition.publication_place || "Unknown"}</Text>
+    </Box>
+    {work.authors && work.authors.length > 0 && (
+      <Box>
+        <Text fontWeight="bold">Authors</Text>
+        <AuthorsList authors={work.authors} />
+      </Box>
+    )}
+    <Box>
+      <Text fontWeight="bold">Subjects</Text>
+      {work.subjects && work.subjects.length > 0 ? (
+        <VStack alignItems="left" gap="xxs">
+          {work.subjects
+            .filter((subject) => subject.heading)
+            .map((subject, i) => (
+              <Link
+                key={`subject-link-${i}`}
+                to={{
+                  pathname: "/keyword-search",
+                  query: { query: `subject:${subject.heading}` },
+                }}
+                isUnderlined={false}
+              >
+                {subject.heading}
+              </Link>
+            ))}
+        </VStack>
+      ) : (
+        <Text>Unknown</Text>
+      )}
+    </Box>
+    <Box>
+      <Text fontWeight="bold">Languages</Text>
+      <Text>
+        {work.languages && work.languages.length > 0
+          ? work.languages.map((l) => l.language).join(", ")
+          : "Unknown"}
+      </Text>
     </Box>
   </VStack>
 );

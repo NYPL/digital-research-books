@@ -15,13 +15,14 @@ import {
 } from "~/src/constants/links";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
 import { Agent, WorkEdition } from "~/src/types/DataModel";
+import { CatalogEdition } from "~/src/types/ResearchAssistant";
 import { ApiWork } from "~/src/types/WorkQuery";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import AuthorsList from "../AuthorsList/AuthorsList";
-import PublisherAndLocation from "../EditionCard/PublisherAndLocation";
 import Link from "../Link/Link";
+import FeedbackButtons from "../ResearchAssistant/FeedbackButtons";
 import PublicDomainBadge from "../ResearchAssistant/PublicDomainBadge";
 import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import CardRequiredBadge from "./CardRequiredBadge";
@@ -29,11 +30,20 @@ import Ctas from "./Ctas/Ctas";
 import EditionLinks from "./EditionLinks";
 import FeaturedEditionBadge from "./FeaturedEditionBadge";
 import PhysicalEditionBadge from "./PhysicalEditionBadge";
+import RelevantSections from "./RelevantSections";
+import ResultPublisherAndLocation from "./ResultPublisherAndLocation";
 
 interface ResultCardProps {
   authors: Agent[];
-  edition: WorkEdition;
-  work: ApiWork;
+  edition: WorkEdition | CatalogEdition;
+  work:
+    | ApiWork
+    | {
+        uuid?: string;
+        title?: string;
+        editions?: CatalogEdition[];
+        edition_count?: number;
+      };
   isFeaturedEdition?: boolean;
 }
 
@@ -44,13 +54,13 @@ export const ResultCard: React.FC<ResultCardProps> = ({
   isFeaturedEdition,
 }) => {
   const { page } = useResultPageContext();
-  const previewItem = EditionCardUtils.getPreviewItem(edition.items);
+  const previewItem = EditionCardUtils.getPreviewItem((edition as any)?.items);
 
   const editionYearElem = () => {
     const editionDisplay =
       edition && edition.publication_date
         ? `${edition.publication_date} edition`
-        : "Edition year unknown";
+        : "Unknown edition";
     const additionalEditions =
       isFeaturedEdition && page === "vra"
         ? ` + ${work.edition_count - 1} more`
@@ -70,6 +80,51 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
   const accordionSummaryData = () => {
     const accordionData: AccordionDataProps[] = [];
+    if (
+      page === "vra" &&
+      (edition as any)?.snippets &&
+      (edition as any)?.snippets.length > 0
+    ) {
+      accordionData.push({
+        label: (
+          <Box
+            display="flex"
+            gap="xxs"
+            alignItems="center"
+            margin="0"
+            __css={{ svg: { marginInlineStart: "0 !important" } }}
+          >
+            <ResearchAssistantIcon />
+            <Text>Why am I seeing this result?</Text>
+          </Box>
+        ),
+        panel: (
+          <>
+            <Flex flexDir="column" gap="s">
+              <Text>
+                You&apos;re seeing this result because this book covers topics
+                relevant to your request. The following sections were identified
+                as matching your query.
+              </Text>
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                height="1.125rem"
+                __css={{ button: { padding: "xs" } }}
+              >
+                <AiGeneratedText />
+                <FeedbackButtons />
+              </Box>
+            </Flex>
+            <RelevantSections
+              snippets={(edition as any)?.snippets}
+              workId={work.uuid}
+            />
+          </>
+        ),
+      });
+    }
     accordionData.push({
       label: (
         <Box
@@ -91,29 +146,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         </Box>
       ),
     });
-    if (page === "vra") {
-      accordionData.push({
-        label: (
-          <Box
-            display="flex"
-            gap="xxs"
-            alignItems="center"
-            margin="0"
-            __css={{ svg: { marginInlineStart: "0 !important" } }}
-          >
-            <ResearchAssistantIcon />
-            <Text>Why is this result relevant?</Text>
-          </Box>
-        ),
-        panel: (
-          <Box>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            <AiGeneratedText />
-          </Box>
-        ),
-      });
-    } else if (work.editions.length > 1) {
+    if (work.editions.length > 1) {
       accordionData.push({
         label: (
           <Text>
@@ -121,14 +154,17 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             {work.editions.length - 1 !== 1 ? "s" : ""}
           </Text>
         ),
-        panel: <EditionLinks work={work} />,
+        panel: <EditionLinks work={work as ApiWork} />,
       });
     }
     return accordionData;
   };
 
+  const editionId = (edition as any)?.edition_id ?? (edition as any)?.id;
+
   return (
     <Box
+      id={`edition-${editionId}`}
       border="1px solid"
       borderColor="ui.border.default"
       padding="s"
@@ -138,56 +174,43 @@ export const ResultCard: React.FC<ResultCardProps> = ({
       fontSize="desktop.body.body2"
     >
       <Flex gap="s" flexDirection="column">
-        <Flex
-          gap="xs"
-          flexDirection="row"
-          alignItems="center"
-          marginBottom="xs"
-        >
+        <Flex gap="xs" flexDirection="row" alignItems="center">
           {isPublicDomain && <PublicDomainBadge />}
           {isFeaturedEdition && <FeaturedEditionBadge />}
           {isPhysicalEdition && <PhysicalEditionBadge />}
           {isLoginRequired && <CardRequiredBadge />}
         </Flex>
-        <Flex gap="s" flexDirection="row">
-          <Box width="120px" bgColor="ui.gray.light-cool" flexShrink="0" />
-          <Box>
-            <Text size="caption" marginBottom="xxs">
-              E-BOOK
-            </Text>
-            <Heading size="heading7" marginBottom="xxs">
-              <Link
-                to={{
-                  pathname: `/${page === "vra" ? "item" : "work"}/${work.uuid}`,
-                  ...(previewItem && {
-                    query: { featured: edition.edition_id },
-                  }),
-                }}
-                isUnderlined={false}
-              >
-                {truncateStringOnWhitespace(work.title, MAX_TITLE_LENGTH)}
-              </Link>
-            </Heading>
-            <Box minHeight="1.5rem">
-              {authors.length > 0 && (
-                <>
-                  By <AuthorsList authors={authors} />
-                </>
-              )}
-            </Box>
-            <Box marginTop="m">
-              <PublisherAndLocation
-                pubPlace={edition.publication_place}
-                publishers={edition.publishers}
-              />
-            </Box>
-            <Box>{editionYearElem()}</Box>
-          </Box>
-        </Flex>
+        <Box>
+          <Heading size="heading7" marginBottom="xxs">
+            <Link
+              to={{
+                pathname: `/${page === "vra" ? "item" : "work"}/${work.uuid}`,
+                ...(previewItem && {
+                  query: { featured: editionId },
+                }),
+              }}
+              isUnderlined={false}
+            >
+              {truncateStringOnWhitespace(work.title, MAX_TITLE_LENGTH)}
+            </Link>
+          </Heading>
+          {authors.length > 0 && (
+            <>
+              By <AuthorsList authors={authors} />
+            </>
+          )}
+          <Flex marginTop="xs" flexWrap="wrap" alignItems="center">
+            <ResultPublisherAndLocation
+              pubPlace={edition.publication_place}
+              publishers={edition.publishers}
+            />
+            <Box whiteSpace="normal">{editionYearElem()}</Box>
+          </Flex>
+        </Box>
         {!isPhysicalEdition && (
           <Accordion
             width="100%"
-            id={`accordion-summary-${edition.edition_id}`}
+            id={`accordion-summary-${editionId}`}
             accordionData={accordionSummaryData()}
             sx={{
               span: {
@@ -231,7 +254,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             item={previewItem}
             title={work.title}
             workId={work.uuid}
-            editionId={edition.edition_id}
+            editionId={editionId}
           />
         </Flex>
       </Flex>
