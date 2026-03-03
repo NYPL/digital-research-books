@@ -124,8 +124,7 @@ const ResearchAssistantInput: React.FC = () => {
             ? {
                 boxShadow: "none",
                 outline: "2px solid",
-                outlineOffset: "2px",
-                outlineColor: "ui.focus",
+                outlineColor: "section.research.secondary",
               }
             : {}
         }

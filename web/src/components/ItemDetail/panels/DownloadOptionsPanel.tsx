@@ -25,6 +25,17 @@ const DownloadOptionsPanel: React.FC<DownloadOptionsPanelProps> = () =>
       <Box>
         <RadioGroup
           defaultValue="full"
+          labelText="Format"
+          onChange={onDownloadOptionChange}
+          name="downloadOptionFormat"
+          sx={{ ".ds-radioGroup-stack": { gap: "xs" } }}
+        >
+          <Radio labelText="E-book (PDF)" value="pdf" />
+          <Radio labelText="Text (.txt)" value="txt" />
+          <Radio labelText="Text (.zip)" value="zip" />
+        </RadioGroup>
+        <RadioGroup
+          defaultValue="full"
           labelText="Range"
           onChange={onDownloadOptionChange}
           name="downloadOptionRange"
