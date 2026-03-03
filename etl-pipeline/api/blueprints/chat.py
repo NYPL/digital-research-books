@@ -37,7 +37,9 @@ def get_relevant_snippets(chunk_hits):
             "text": shorten(h["text"]),
             "start_page": h.get("start_page") or h.get("chunk_start_page"),
             "end_page": h.get("end_page") or h.get("chunk_end_page"),
-            "item_id": h.get("item_id"),
+            "item_id": h.get(
+                "item_id"
+            ),  # item id is needed in case multiple items per edition the correct item link can be used to link to the pdf
             "chunk_score": h.get("score") or h.get("meta", {}).get("score"),
         }
         for h in chunk_hits

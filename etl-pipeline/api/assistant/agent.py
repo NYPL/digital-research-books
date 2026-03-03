@@ -758,14 +758,14 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
         # Get chunk hits for this edition
         chunk_hits = edition_hit.get("chunk_hits", [])
 
-        # Display work/edition data
+        # Display book level data
         base_indent = "  "
         lines.append(f"EDITION {i}:")
-        lines.append(
-            indent(
-                f"WORK ID: {orm_work.id} | EDITION ID: {orm_edition.id}", base_indent
-            )
-        )
+        # lines.append(
+        #     indent(
+        #         f"WORK ID: {orm_work.id} | EDITION ID: {orm_edition.id}", base_indent
+        #     )
+        # )
         lines.append(indent(f"TITLE: {frbr_fields['title']}", base_indent))
         lines.append(indent(f"AUTHORS: {frbr_fields['author_names']}", base_indent))
         lines.append(
