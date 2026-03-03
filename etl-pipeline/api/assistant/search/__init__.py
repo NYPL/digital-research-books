@@ -26,167 +26,6 @@ logger = create_log(__name__)
 ScoredHit: TypeAlias = tuple[ChunkDocument, Optional[float]]
 
 
-# Common English stopwords for keyword extraction
-STOPWORDS = frozenset(
-    [
-        "i",
-        "me",
-        "my",
-        "myself",
-        "we",
-        "our",
-        "ours",
-        "ourselves",
-        "you",
-        "your",
-        "yours",
-        "yourself",
-        "yourselves",
-        "he",
-        "him",
-        "his",
-        "himself",
-        "she",
-        "her",
-        "hers",
-        "herself",
-        "it",
-        "its",
-        "itself",
-        "they",
-        "them",
-        "their",
-        "theirs",
-        "themselves",
-        "what",
-        "which",
-        "who",
-        "whom",
-        "this",
-        "that",
-        "these",
-        "those",
-        "am",
-        "is",
-        "are",
-        "was",
-        "were",
-        "be",
-        "been",
-        "being",
-        "have",
-        "has",
-        "had",
-        "having",
-        "do",
-        "does",
-        "did",
-        "doing",
-        "a",
-        "an",
-        "the",
-        "and",
-        "but",
-        "if",
-        "or",
-        "because",
-        "as",
-        "until",
-        "while",
-        "of",
-        "at",
-        "by",
-        "for",
-        "with",
-        "about",
-        "against",
-        "between",
-        "into",
-        "through",
-        "during",
-        "before",
-        "after",
-        "above",
-        "below",
-        "to",
-        "from",
-        "up",
-        "down",
-        "in",
-        "out",
-        "on",
-        "off",
-        "over",
-        "under",
-        "again",
-        "further",
-        "then",
-        "once",
-        "here",
-        "there",
-        "when",
-        "where",
-        "why",
-        "how",
-        "all",
-        "any",
-        "both",
-        "each",
-        "few",
-        "more",
-        "most",
-        "other",
-        "some",
-        "such",
-        "no",
-        "nor",
-        "not",
-        "only",
-        "own",
-        "same",
-        "so",
-        "than",
-        "too",
-        "very",
-        "s",
-        "t",
-        "can",
-        "will",
-        "just",
-        "don",
-        "should",
-        "now",
-    ]
-)
-
-
-def to_bm25_query(
-    query: str,
-    stopwords: frozenset[str] = STOPWORDS,
-    min_length: int = 2,
-) -> str:
-    """
-    Convert a natural language query to a BM25 query string.
-
-    Args:
-        query: The input query string
-        stopwords: Set of words to exclude (defaults to STOPWORDS)
-        min_length: Minimum token length to include
-
-    Returns:
-        Space-separated keywords for BM25 search
-    """
-    tokens = re.split(r"[^a-zA-Z0-9]+", query.lower())
-    keywords = [
-        token
-        for token in tokens
-        if token and len(token) >= min_length and token not in stopwords
-    ]
-    bm25_query = " ".join(keywords) if keywords else query
-    logger.debug(f"BM25 query: '{query}' -> '{bm25_query}'")
-    return bm25_query
-
-
 def hit_from_row(row) -> ScoredHit:
     """Convert a Turbopuffer row to a ScoredHit tuple."""
     chunk = chunk_from_tpuf_row(row)
@@ -223,15 +62,14 @@ def hybrid_search(
     Returns:
         Fused list of ScoredHits sorted by relevance.
     """
-    bm25_query = to_bm25_query(ranking_query)
 
     # Multi-field BM25 with provided boosts
     bm25_rank_by = (
         "Sum",
         (
-            ("Product", title_boost, ("title", "BM25", bm25_query)),
-            ("Product", subject_boost, ("subject", "BM25", bm25_query)),
-            ("text", "BM25", bm25_query),
+            ("Product", title_boost, ("title", "BM25", ranking_query)),
+            ("Product", subject_boost, ("subject", "BM25", ranking_query)),
+            ("text", "BM25", ranking_query),
         ),
     )
 
