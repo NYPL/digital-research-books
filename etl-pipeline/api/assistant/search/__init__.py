@@ -5,7 +5,6 @@ Provides search execution with result fusion for combining
 vector similarity search and BM25 keyword search via Turbopuffer multi-query.
 """
 
-import re
 from typing import Optional, TypeAlias
 
 from vector_indexing.core.types import ChunkDocument
@@ -113,9 +112,6 @@ __all__ = [
     "hybrid_search",
     # Row conversion
     "hit_from_row",
-    # Keyword extraction
-    "to_bm25_query",
-    "STOPWORDS",
     # Rank fusion
     "RankFuser",
     "ReciprocalRankFuser",
