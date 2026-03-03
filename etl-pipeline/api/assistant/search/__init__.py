@@ -101,7 +101,8 @@ def hybrid_search(
     for i, hits in enumerate(result_lists):
         logger.debug(f"Query {i} returned {len(hits)} hits")
 
-    # return fused results
+    # return fused results. if a fuser is not provided use RRF with k=60
+    fuser = fuser or ReciprocalRankFuser(k=60)
     return fuser.fuse(result_lists)
 
 
