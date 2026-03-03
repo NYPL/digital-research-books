@@ -1,4 +1,4 @@
-from api.assistant.search import Searcher
+from api.assistant.legacy.search import Searcher
 from vector_indexing.embedding import GEMINI_EMBEDDING_DIMS
 
 
@@ -7,7 +7,7 @@ class TestSearcher:
         """Test Searcher can be initialized."""
 
         # Mock Elasticsearch connection and embedding model
-        mocker.patch("api.assistant.search.get_or_create_default_connection")
+        mocker.patch("api.assistant.legacy.search.get_or_create_default_connection")
         mock_embedder = mocker.MagicMock()
 
         # Initialize Searcher with mocked arguments
@@ -21,14 +21,14 @@ class TestSearcher:
         """Test vector_search executes without errors and returns correct response."""
 
         # Mock Elasticsearch connection
-        mocker.patch("api.assistant.search.get_or_create_default_connection")
+        mocker.patch("api.assistant.legacy.search.get_or_create_default_connection")
 
         # Mock embedding model to return a fixed output vector
         mock_embedder = mocker.MagicMock()
         mock_embedder.get_embedding.return_value = [0.1] * GEMINI_EMBEDDING_DIMS
 
         # Mock the Search class
-        mock_search = mocker.patch("api.assistant.search.Search")
+        mock_search = mocker.patch("api.assistant.legacy.search.Search")
 
         # Create fake search object
         mock_instance = mocker.MagicMock()
