@@ -67,7 +67,7 @@ services:
       - elasticsearch
     build:
       context: .
-    command: -e local-compose -p APIProcess
+    command: -e docker-compose -p APIProcess
     ports:
       # TODO: this port spec should read from the local env files
       - 5050:5050
@@ -126,7 +126,7 @@ services:
         condition: service_healthy
     build:
       context: .
-    command: -e local-compose -p LocalDevelopmentSetupProcess
+    command: -e docker-compose -p LocalDevelopmentSetupProcess
     environment:
       - AWS_PROFILE
       - AWS_REGION

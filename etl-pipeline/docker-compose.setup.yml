@@ -14,8 +14,8 @@ services:
     
     # Run setup AND seed sequentially. If setup fails, seed won't run. And seed won't start until set up finishes.
     command: > 
-      /bin/sh -c "python3 main.py -e local-compose -p LocalDevelopmentSetupProcess &&
-      python3 main.py -e local-compose -p SeedLocalDataProcess -i daily"
+      /bin/sh -c "python3 main.py -e docker-compose -p LocalDevelopmentSetupProcess &&
+      python3 main.py -e docker-compose -p SeedLocalDataProcess -i daily"
     # Q: Why not make LocalDevelopmentSetupProcess and SeedLocalDataProcess both fully idempotent, merge them, \
     # and just have a single docker compose. Otherwise, why not fully split the docker composes into a set up \
     # (onetime) and runtime (regular) file (move devsetup into this file). 
