@@ -27,6 +27,7 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({ heroSectionRef }) => {
       <Button
         id="learn-more-button"
         variant="secondary"
+        backgroundColor="ui.white"
         borderColor="section.research.secondary"
         color="section.research.secondary"
         margin="0 auto"
