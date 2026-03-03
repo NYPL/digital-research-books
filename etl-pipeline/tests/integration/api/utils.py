@@ -14,10 +14,11 @@ def assert_response_status(url: str, response, expected_status_code: int):
 
 
 def get_vra_auth_headers():
-    api_key = require_env("API_KEY")
+    api_key = require_env("VRA_API_KEY")
 
-    username = require_env("VRA_USERNAME")
-    password = require_env("VRA_PASSWORD")
+    # username = require_env("VRA_TEST_USERNAME")
+    username = "vra_integration_test_user"
+    password = require_env("VRA_TEST_PASSWORD")
     credentials = f"{username}:{password}".encode("utf-8")
     basic_auth_token = b64encode(credentials).decode("utf-8")
 

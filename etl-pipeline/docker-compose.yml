@@ -1,6 +1,8 @@
 # NOTE on inheriting AWS authentication from host machine:
 # - `aws sso login` sets credentials in host ~/.aws/sso/cache which are 
-# made available in the service docker container via the read only bind mount
+# made available in the service docker container via the read only bind mount.
+# - ~/.aws/sso/cache is mounted read/write (overlaying the read-only ~/.aws mount)
+# so botocore can write refreshed SSO token cache entries inside the container.
 # - "aws-actions/configure-aws-credentials" sets environment variables for 
 # aws auth which are read into the docker service via the `environment` inheritance
 
@@ -69,7 +71,7 @@ services:
       context: .
     command: -e docker-compose -p APIProcess
     ports:
-      # TODO: this port spec should read from the local env files
+      # TODO: this port spec should be read from an env file
       - 5050:5050
     environment:
       - AWS_PROFILE
@@ -79,14 +81,21 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - AWS_SESSION_TOKEN
     volumes:
+      # this overrides `ADD . /src` in the DockerFile, mapping the \
+      # current local filesystem to "/src" in the docker image.
       - type: bind
         source: .
         target: /src
         read_only: true
+      # Expose host machine AWS creds to the container to use
       - type: bind
         source: ${HOME}/.aws
         target: /root/.aws
         read_only: true
+      - type: bind
+        source: ${HOME}/.aws/sso/cache
+        target: /root/.aws/sso/cache
+        read_only: false
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5050/apidocs/ || exit 1"]
       interval: 10s
@@ -127,23 +136,12 @@ services:
     build:
       context: .
     command: -e docker-compose -p LocalDevelopmentSetupProcess
-    environment:
-      - AWS_PROFILE
-      - AWS_REGION
-      - AWS_DEFAULT_REGION
-      - AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY
-      - AWS_SESSION_TOKEN
     volumes:
       # this overrides `ADD . /src` in the DockerFile, mapping the \
       # current local filesystem to "/src" in the docker image.
       - type: bind
         source: .
         target: /src
-        read_only: true
-      - type: bind
-        source: ${HOME}/.aws
-        target: /root/.aws
         read_only: true
 
 volumes:
