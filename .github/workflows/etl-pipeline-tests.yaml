@@ -73,6 +73,7 @@ jobs:
           make unit
 
       - name: Build Docker images with cache
+        id: build-images
         working-directory: ./etl-pipeline
         run: |
           docker compose build --progress plain \
@@ -110,8 +111,8 @@ jobs:
         run: |
           make integration-vra
 
-      - name: Dump service logs (on failure)
-        if: failure()
+      - name: Dump service logs
+        if: always() && steps.build-images.outcome == 'success'
         working-directory: ./etl-pipeline
         run: |
           docker compose ps

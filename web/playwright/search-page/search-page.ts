@@ -4,6 +4,7 @@ class SearchPage {
   readonly page: Page;
   readonly homepageSearchBox: Locator;
   readonly searchButton: Locator;
+  readonly searchSelector: Locator;
 
   readonly requestableCheckbox: Locator;
   readonly firstLoginForOptionsButton: Locator;
@@ -44,6 +45,9 @@ class SearchPage {
     this.page = page;
     this.homepageSearchBox = page.locator("[aria-label='Item Search']");
     this.searchButton = page.locator("#search-bar-submit-button");
+    this.searchSelector = page.getByRole("combobox", {
+      name: "Select a search category",
+    });
 
     this.requestableCheckbox = page.locator("span:text('Requestable')");
     this.firstLoginForOptionsButton = page.locator(
@@ -60,10 +64,16 @@ class SearchPage {
     this.firstGovernmentDocumentAuthor = page.locator(
       "a:text('United States') >> nth=0"
     );
-    this.firstSearchResultKeyword = page.locator("a:text('IBM 1401') >> nth=0");
+    // this.firstSearchResultKeyword = page.locator("a:text('IBM 1401') >> nth=0");
+    this.firstSearchResultKeyword = page.locator(
+      "a:text('The Mediterranean region under climate change') >> nth=0"
+    );
     this.firstReadOnlineButton = page.locator("a:text('Read Online') >> nth=0");
+    // this.hathiTrustWebsite = page.locator(
+    //   "iframe[src='https://babel.hathitrust.org/cgi/pt?id=hvd.32044079201976']"
+    // );
     this.hathiTrustWebsite = page.locator(
-      "iframe[src='https://babel.hathitrust.org/cgi/pt?id=hvd.32044079201976']"
+      "iframe[src='https://babel.hathitrust.org/cgi/pt?id=uc2.ark:/13960/t9k35tr7n']"
     );
 
     this.frenchLanguageCheckbox = page.locator("span:text('French')");
@@ -101,11 +111,18 @@ class SearchPage {
     this.firstSearchResultSubject = page.locator(
       "a:text('Petroleum') >> nth=0"
     );
-    this.firstSearchResultTitle = page.locator("a:text('IBM 1401') >> nth=0");
+    // this.firstSearchResultTitle = page.locator("a:text('IBM 1401') >> nth=0");
+    this.firstSearchResultTitle = page.locator(
+      "a:text('The Mediterranean region under climate change') >> nth=0"
+    );
   }
 
   async navigateToSearchPage() {
     await this.page.goto("/search?query=subject%3Awashington+dc");
+  }
+
+  async selectSearchCategory(category: string) {
+    await this.searchSelector.selectOption(category);
   }
 
   async fillSearchBox(query: string) {

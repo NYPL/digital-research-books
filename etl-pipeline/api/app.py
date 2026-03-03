@@ -77,6 +77,8 @@ class API:
             self.app.register_blueprint(blueprint)
 
     def run(self):
+        logger.info(f"API server running in process id: {os.getpid()}")
+
         if os.environ.get("STAGE") == "development":
             self.app.config["DEBUG"] = True
             self.app.run(host=os.environ.get("DRB_API_HOST"), port=5050)

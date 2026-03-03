@@ -1,19 +1,77 @@
 import { Box, VStack } from "@nypl/design-system-react-components";
 import React from "react";
+import { Agent } from "~/src/types/DataModel";
+import { CatalogEdition } from "~/src/types/ResearchAssistant";
 import { ApiWork } from "~/src/types/WorkQuery";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
 import ResultCard from "../ResultCard/ResultCard";
 
 // TODO: rename folder to ResultsList when we switch to VRA/Keyword search
-const ResultsList: React.FC<{ works: ApiWork[] }> = ({ works }) => {
-  if (works.length === 0) {
+const ResultsList: React.FC<{ works: ApiWork[] | CatalogEdition[] }> = ({
+  works,
+}) => {
+  if (!works || works.length === 0) {
     return (
       <EmptySearchPrompt message="No results found. Try a different topic." />
     );
   }
+
+  const isCatalogEditions = (arr: any[]): arr is CatalogEdition[] =>
+    arr.length > 0 && typeof arr[0] === "object" && "work_uuid" in arr[0];
+
+  if (isCatalogEditions(works)) {
+    const workMap = new Map<
+      string,
+      {
+        uuid?: string;
+        title?: string;
+        authors?: Agent[];
+        editions: CatalogEdition[];
+      }
+    >();
+
+    for (const ed of works) {
+      const key = ed.work_uuid;
+      const wk = workMap.get(key) ?? {
+        uuid: ed.work_uuid,
+        title: ed.work_title ?? ed.title,
+        authors: ed.work_authors ?? [],
+        editions: [] as CatalogEdition[],
+      };
+      wk.editions.push(ed);
+      workMap.set(key, wk);
+    }
+
+    const groupedWorks = Array.from(workMap.values());
+    return (
+      <VStack align="left" spacing="s">
+        {groupedWorks.map((work) => {
+          const previewEdition = work.editions && work.editions[0];
+
+          return (
+            <Box key={`search-result-${work.uuid}`} className="search-result">
+              <ResultCard
+                authors={work.authors}
+                edition={previewEdition}
+                work={{
+                  uuid: work.uuid,
+                  title: work.title,
+                  editions: work.editions,
+                  edition_count: work.editions.length,
+                }}
+                isFeaturedEdition={work.editions.length > 1}
+              />
+            </Box>
+          );
+        })}
+      </VStack>
+    );
+  }
+
+  const apiWorks = works as ApiWork[];
   return (
     <VStack align="left" spacing="s">
-      {works.map((work) => {
+      {apiWorks.map((work) => {
         const previewEdition = work.editions && work.editions[0];
 
         return (
