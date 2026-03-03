@@ -1,4 +1,4 @@
-import { Box, Breadcrumbs } from "@nypl/design-system-react-components";
+import { Breadcrumbs, DSProvider } from "@nypl/design-system-react-components";
 import { addTocToManifest } from "@nypl/web-reader";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
@@ -165,7 +165,7 @@ const ReaderLayout: React.FC<{
       )}
       {isRead && isLoading && <Loading />}
       {isRead && !isLoading && (
-        <Box>
+        <DSProvider>
           <WebReader
             webpubManifestUrl={manifestUrl}
             proxyUrl={!isLimitedAccess && useProxyUrl ? proxyUrl : undefined}
@@ -177,7 +177,7 @@ const ReaderLayout: React.FC<{
                 : undefined
             }
           />
-        </Box>
+        </DSProvider>
       )}
     </>
   );
