@@ -422,10 +422,6 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     agent = Agent[type(exec_context)](
         name="Research Library Assistant",
         model=model,
-        # model_settings=ModelSettings(
-        #     # include_usage=True,  # only for chatcompletions based agents/models # requires openai model?
-        #     # reasoning=Reasoning(effort="low"),  # converted to chat completions API  reasoning_effort= which  is consistently supported in litellm
-        # ),
         instructions=system_prompt,
         tools=tools,
     )
@@ -435,7 +431,12 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         conversation,
         context=exec_context,
         run_config=RunConfig(
-            tracing_disabled=True, model_settings=ModelSettings(temperature=0.0)
+            tracing_disabled=True,
+            model_settings=ModelSettings(
+                temperature=0.0,
+                reasoning=Reasoning(effort="none"),
+                # include_usage=True, # TODO: research if this returns loggable usage info
+            ),
         ),
     )
 

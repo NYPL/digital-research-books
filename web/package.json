@@ -10,7 +10,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "next lint --fix",
-    "playwright": "playwright test"
+    "playwright": "playwright test",
+    "playwright:drb": "playwright test --grep-invert @vra",
+    "playwright:vra": "playwright test --grep @vra"
   },
   "dependencies": {
     "@chakra-ui/react": "2.5.4",
