@@ -3,7 +3,7 @@ import React, { useRef } from "react";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
 import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
-import AccessSection from "./AccessSection";
+import AccessSection from "./AccessSection/AccessSection";
 import FaqSection from "./FaqSection";
 import FeaturesSection from "./FeaturesSection/FeaturesSection";
 import HelpSection from "./HelpSection";
