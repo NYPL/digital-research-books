@@ -33,6 +33,6 @@ def vra_test_user(setup_env):
         os.environ,
         {"VRA_TEST_USERNAME": TEST_USERNAME, "VRA_TEST_PASSWORD": test_password},
     ):
-        yield {"username": TEST_USERNAME, "password": test_password}
+        yield
 
     # TODO: Tear down - delete the test user from the database
