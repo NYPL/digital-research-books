@@ -533,7 +533,9 @@ def search_catalog(
 
         # TODO: if fewer than PAGE_SIZE editions, re-query more chunks until PAGE_SIZE editions are retrieved
 
-        # Sort editions (by aggregate chunk score, descending)
+        # NOTE: RRF scores are higher-is-better, unlike raw ANN distances (lower-is-better).
+        # This sort order change (reverse=True) was intentional and also fixes a pre-existing
+        # inconsistency between ES9 and Turbopuffer score semantics.
         edition_hits = sorted(
             edition_hits, key=lambda eh: eh["agg_score"], reverse=True
         )
