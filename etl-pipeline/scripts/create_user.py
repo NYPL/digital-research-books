@@ -13,6 +13,7 @@ from managers import DBManager
 from logger import create_log
 
 from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError, StatementError
 
 logger = create_log(__file__)
 
@@ -113,6 +114,8 @@ def create_user(username: str, password: str):
             f'Succeeded at inserting username "{username}" and password into user table.'
         )
     except Exception as e:
-        # PROBLEM: this prints the password hex
+        # Disable display of password_hex in traceback
+        if isinstance(e, (DBAPIError, StatementError)):
+            e.hide_parameters = True
         logger.exception(f"\nError creating user: {e}")
         raise e
