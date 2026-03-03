@@ -1,7 +1,7 @@
-import { test, expect, Page } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { ResearchAssistantLandingPage } from "./research-assistant-landing-page";
 
-test.describe("Research Assistant Landing Page UI", () => {
+test.describe("Research Assistant Landing Page UI", { tag: "@vra" }, () => {
   let page: Page;
   let researchAssistantLandingPage: ResearchAssistantLandingPage;
 
@@ -67,7 +67,7 @@ test.describe("Research Assistant Landing Page UI", () => {
   });
 });
 
-test.describe("Research Assistant Landing Page Functionality", () => {
+test.describe("Research Assistant Landing Page Functionality", { tag: "@vra" }, () => {
   let researchAssistantLandingPage: ResearchAssistantLandingPage;
 
   test.beforeEach(async ({ page }) => {
