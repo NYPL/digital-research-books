@@ -7,7 +7,7 @@ interface LandingButtonsProps {
 
 const LandingButtons: React.FC<LandingButtonsProps> = ({ heroSectionRef }) => {
   return (
-    <Flex marginTop="l" width="fit-content" gap="s" marginX="auto">
+    <Flex marginTop="xxl" width="fit-content" gap="s" marginX="auto">
       <Button
         id="try-it-button"
         variant="primary"

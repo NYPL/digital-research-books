@@ -64,7 +64,7 @@ const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
         gridTemplateRows="auto"
         gap="xl"
       ></Box>
-      <LandingButtons heroSectionRef={null} />
+      <LandingButtons heroSectionRef={heroSectionRef} />
     </SectionContainer>
   );
 };

@@ -6,7 +6,6 @@ import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
 import AccessSection from "./AccessSection";
 import FaqSection from "./FaqSection";
 import FeaturesSection from "./FeaturesSection/FeaturesSection";
-import FocusedResearchSection from "./FocusedResearchSection";
 import HelpSection from "./HelpSection";
 import HeroSection from "./HeroSection";
 
@@ -28,7 +27,6 @@ const ResearchAssistantLanding: React.FC = () => {
         <HeroSection ref={heroSectionRef} helpSectionRef={helpSectionRef} />
         <FeaturesSection heroSectionRef={heroSectionRef} />
         <AccessSection heroSectionRef={heroSectionRef} />
-        <FocusedResearchSection />
         <FaqSection />
         <HelpSection ref={helpSectionRef} heroSectionRef={heroSectionRef} />
       </Box>
