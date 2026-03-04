@@ -1,9 +1,16 @@
-import { Grid, Heading, Text } from "@nypl/design-system-react-components";
+import {
+  Flex,
+  Grid,
+  Heading,
+  Text,
+} from "@nypl/design-system-react-components";
 import {
   ItemType,
   MessageRole,
   MessageStatus,
 } from "~/src/types/ResearchAssistant";
+import KeywordSearchIcon from "../../ResearchAssistant/icons/KeywordSearchIcon";
+import ResearchAssistantIcon from "../../ResearchAssistant/icons/ResearchAssistantIcon";
 import MessageBubble from "../../ResearchAssistant/MessageBubble";
 import LandingButtons from "../LandingButtons";
 import LandingCard from "../LandingCard";
@@ -179,28 +186,51 @@ const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
           heading={
             <Heading level="h3" size="heading4">
               <Text as="span" color="section.research.secondary">
-                Shows you the source
+                Keeps you in control
               </Text>{" "}
-              so that you can verify its responses on the spot
+              by letting you opt out of the tool at any time
             </Heading>
           }
           body={
-            <MessageBubble
-              message={{
-                type: ItemType.Message,
-                role: MessageRole.Assistant,
-                content: [
-                  {
-                    type: "output_text",
-                    text:
-                      "Yes, this book mentions Smith's birth and childhood (p3). It also describes his early schooling in Kansas. (p8).",
-                  },
-                ],
-                id: "assistant-message-3",
-                status: MessageStatus.Sending,
-              }}
-              index={1}
-            />
+            <Flex
+              gap="xs"
+              backgroundColor="ui.white"
+              alignItems="center"
+              border="1px solid"
+              borderColor="ui.border.default"
+              borderRadius="8px"
+              paddingX="s"
+              paddingY="m"
+            >
+              <Flex
+                alignItems="center"
+                gap="xxs"
+                backgroundColor="ui.white"
+                color="ui.typography.body"
+                paddingX="s"
+                paddingY="xxs"
+                _hover={{
+                  backgroundColor: "transparent",
+                }}
+              >
+                <ResearchAssistantIcon />
+                <Text>Virtual Research Assistant</Text>
+              </Flex>
+              <Flex
+                gap="xxs"
+                backgroundColor="section.research.primary-05"
+                border="1px solid"
+                borderColor="section.research.primary"
+                borderRadius="6px"
+                color="section.research.secondary"
+                fontWeight="semibold"
+                paddingX="s"
+                paddingY="xxs"
+              >
+                <KeywordSearchIcon color="transparent" />
+                Keyword search
+              </Flex>
+            </Flex>
           }
         />
       </Grid>
