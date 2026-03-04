@@ -4,14 +4,14 @@ import { ApiWork } from "~/src/types/WorkQuery";
 import AuthorsList from "../../AuthorsList/AuthorsList";
 import Link from "../../Link/Link";
 
-interface AboutItemPanelProps {
+interface DetailsPanelProps {
   previewItem: ApiItem;
   previewEdition: WorkEdition;
   publisherNames: string[];
   work: ApiWork;
 }
 
-const AboutItemPanel: React.FC<AboutItemPanelProps> = ({
+const DetailsPanel: React.FC<DetailsPanelProps> = ({
   previewItem,
   previewEdition,
   publisherNames,
@@ -78,4 +78,4 @@ const AboutItemPanel: React.FC<AboutItemPanelProps> = ({
   </VStack>
 );
 
-export default AboutItemPanel;
+export default DetailsPanel;
