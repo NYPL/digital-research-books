@@ -114,7 +114,7 @@ const ResearchAssistantInput: React.FC = () => {
         border="1px solid"
         borderColor="ui.border.default"
         borderRadius="8px"
-        backgroundColor="ui.white"
+        backgroundColor={isDisabled ? "ui.disabled.secondary" : "ui.white"}
         display="flex"
         flexDir="row"
         gap="0"
@@ -123,7 +123,8 @@ const ResearchAssistantInput: React.FC = () => {
           isFocused
             ? {
                 boxShadow: "none",
-                outline: "2px solid",
+                outline: "3px solid",
+                outlineOffset: "-3px",
                 outlineColor: "section.research.secondary",
               }
             : {}
