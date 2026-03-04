@@ -20,7 +20,7 @@ describe("VRA Layout component", () => {
     });
     test("DRB Header is shown", () => {
         expect(
-            screen.getByRole("heading", { name: "Digital Research Books Beta" })
+            screen.getByRole("heading", { name: "Digital Research Books" })
         ).toBeInTheDocument();
     });
     test("should have text in layout body", () => {

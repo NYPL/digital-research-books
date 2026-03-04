@@ -61,7 +61,7 @@ describe("Renders Search Results Page", () => {
   });
   test("DRB Header is shown", () => {
     expect(
-      screen.getByRole("heading", { name: "Digital Research Books Beta" })
+      screen.getByRole("heading", { name: "Digital Research Books" })
     ).toBeInTheDocument();
   });
   describe("Header search Functionality", () => {

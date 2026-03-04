@@ -29,7 +29,7 @@ describe("Renders Index Page", () => {
   });
   test("Shows Heading", () => {
     expect(
-      screen.getByRole("heading", { name: "Digital Research Books Beta" })
+      screen.getByRole("heading", { name: "Digital Research Books" })
     ).toBeInTheDocument();
   });
 
