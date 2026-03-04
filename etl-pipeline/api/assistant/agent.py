@@ -414,7 +414,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         system_prompt = remove_markdown_comments(
             template.render(conversation_type="catalogSearch")
         )
-        tools = [search_catalog]
+        tools = [search_catalog, select_relevant_snippets]
 
     agent = Agent[type(exec_context)](
         name="Research Library Assistant",
@@ -592,7 +592,7 @@ def search_catalog(
         return verbose_display_editions(edition_data, as_str=True)
 
     except Exception as e:
-        logger.exception("Error during search_library_catalog tool execution.")
+        logger.exception(f"Error during {ctx.tool_name} tool execution.")
         raise e
 
 
@@ -664,8 +664,338 @@ def search_book(
         )
 
     except Exception as e:
-        logger.exception("Error during search_in_book tool execution.")
+        logger.exception(f"Error during {ctx.tool_name} tool execution.")
         raise e
+
+
+def match_snippet(snippet_text: str, chunk_text: str) -> List[str]:
+    """Return all non-overlapping occurrences of snippet_text in chunk_text."""
+    matches = []
+    start = 0
+    while True:
+        pos = chunk_text.find(snippet_text, start)
+        if pos == -1:
+            break
+        matches.append(snippet_text)
+        start = pos + len(snippet_text)
+    return matches
+
+
+def match_elided_snippet(lead: str, trail: str, chunk_text: str) -> List[str]:
+    """Return all resolved spans in chunk_text where lead appears before trail.
+
+    For each occurrence of lead, searches for the first occurrence of trail that
+    starts after the lead ends. Enforces lead-before-trail ordering.
+
+    Returns:
+        List of resolved substrings (from start of lead to end of trail) for each
+        valid lead/trail pair found in chunk_text.
+    """
+    matches = []
+    search_from = 0
+    while True:
+        lead_pos = chunk_text.find(lead, search_from)
+        if lead_pos == -1:
+            break
+        trail_pos = chunk_text.find(trail, lead_pos + len(lead))
+        if trail_pos != -1:
+            matches.append(chunk_text[lead_pos : trail_pos + len(trail)])
+        search_from = lead_pos + 1
+    return matches
+
+
+def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id):
+    """
+    Validate snippets, save valid snippets, and produce a message requesting
+    resubmission of invalid snippets.
+    """
+
+    rejected: List[tuple] = []  # (edition_id_display, snippet_obj_or_None, reason)
+
+    for edition_id, snippet_list in snippets.items():
+        # --- Validate edition: edition_id must be in the referenced search result ---
+        if edition_id not in edition_entry_map:
+            rejected.append(
+                (
+                    edition_id,
+                    None,
+                    f"edition_id {edition_id} was not found in the search results "
+                    f"for tool call '{search_tool_call_id}'.",
+                )
+            )
+            continue
+
+        chunk_hits = edition_entry_map[edition_id]["edition_hit"].get("chunk_hits", [])
+
+        # --- Validate edition: 1-5 snippets per edition ---
+        if not (1 <= len(snippet_list) <= 5):
+            rejected.append(
+                (
+                    edition_id,
+                    None,
+                    f"Edition {edition_id} has {len(snippet_list)} snippet(s); "
+                    f"must be between 1 and 5 inclusive.",
+                )
+            )
+            continue
+
+        for snippet_obj in snippet_list:
+            item_id = snippet_obj.get("item_id")
+            snippet_text = snippet_obj.get("snippet", "")
+
+            # --- Step 1: Validate the snippet has an exact single match in at
+            # least one chunk
+            is_elided = "//...//" in snippet_text
+
+            if is_elided:
+                parts = snippet_text.split("//...//", 1)
+                lead = parts[0].rstrip()
+                trail = parts[1].lstrip()
+
+                if not lead or not trail:
+                    rejected.append(
+                        (
+                            edition_id,
+                            snippet_obj,
+                            "Elided snippet must have non-empty text both before and "
+                            "after '//...//'. "
+                            "Provide sufficient lead and trail text.",
+                        )
+                    )
+                    continue
+
+            # Collect matches from every chunk: (chunk_index, [matched_spans])
+            all_chunk_matches = []
+            for chunk_idx, chunk_hit in enumerate(chunk_hits):
+                chunk_text = chunk_hit.get("text", "")
+                if is_elided:
+                    chunk_matches = match_elided_snippet(lead, trail, chunk_text)
+                else:
+                    chunk_matches = match_snippet(snippet_text, chunk_text)
+                if chunk_matches:
+                    all_chunk_matches.append((chunk_idx, chunk_matches))
+
+            # Find the first chunk with a single match
+            first_single = next(
+                (
+                    (idx, matches[0])
+                    for idx, matches in all_chunk_matches
+                    if len(matches) == 1
+                ),
+                None,
+            )
+
+            if not all_chunk_matches:
+                if is_elided:
+                    rejected.append(
+                        (
+                            edition_id,
+                            snippet_obj,
+                            f"Elided snippet lead ({repr(lead[:50])}{'...' if len(lead) > 50 else ''}) "
+                            f"and/or trail ({repr(trail[:50])}{'...' if len(trail) > 50 else ''}) "
+                            f"did not match any chunk for edition {edition_id}. "
+                            f"Ensure the lead and trail are copied verbatim from the chunk text.",
+                        )
+                    )
+                else:
+                    rejected.append(
+                        (
+                            edition_id,
+                            snippet_obj,
+                            f"Snippet text was not found in any chunk for edition "
+                            f"{edition_id}. Ensure the text is copied verbatim from "
+                            f"the chunk.",
+                        )
+                    )
+                continue
+
+            if first_single is None:
+                # Every chunk that matched had multiple matches within it
+                if is_elided:
+                    rejected.append(
+                        (
+                            edition_id,
+                            snippet_obj,
+                            f"Elided snippet lead and trail produce multiple matches in "
+                            f"every chunk where they appear for edition {edition_id}. "
+                            f"Use longer or more specific lead and trail text to "
+                            f"produce a single match within each chunk.",
+                        )
+                    )
+                else:
+                    rejected.append(
+                        (
+                            edition_id,
+                            snippet_obj,
+                            f"Snippet text produces multiple matches in every chunk "
+                            f"where it appears for edition {edition_id}. "
+                            f"Use a longer, more specific excerpt.",
+                        )
+                    )
+                continue
+
+            chunk_idx, resolved_snippet = first_single
+            matched_chunk = chunk_hits[chunk_idx]
+
+            # --- Step 2: Validate word count on the resolved snippet ---
+            word_count = len(resolved_snippet.split())
+            if word_count > 150:
+                rejected.append(
+                    (
+                        edition_id,
+                        snippet_obj,
+                        f"Resolved snippet has {word_count} words, exceeding the "
+                        f"150-word hard limit (100-word target + 50-word grace margin). "
+                        f"Please shorten or use tighter elision.",
+                    )
+                )
+                continue
+
+            # --- Step 3: Verify snippet item_id ---
+            matched_item_id = matched_chunk.get("item_id")
+            if matched_item_id is None or matched_item_id != item_id:
+                rejected.append(
+                    (
+                        edition_id,
+                        snippet_obj,
+                        f"Snippet matched a chunk with item_id {matched_item_id}, "
+                        f"not the claimed item_id {item_id}. "
+                        f"Use the item_id shown in the search result for this chunk.",
+                    )
+                )
+                continue
+
+            # All validations passed —incrementally store resolved snippet with chunk metadata
+            # This may leave some editions without snippets if an error occurs, \
+            # snippets weren't submitted for them, or snippets were invalid.
+            edition_entry_map[edition_id].setdefault("snippets", []).append(
+                {
+                    "text": resolved_snippet,
+                    "start_page": matched_chunk.get("start_page")
+                    or matched_chunk.get("chunk_start_page"),
+                    "end_page": matched_chunk.get("end_page")
+                    or matched_chunk.get("chunk_end_page"),
+                    "item_id": matched_chunk.get("item_id"),
+                    "chunk_score": matched_chunk.get("score")
+                    or matched_chunk.get("meta", {}).get("score"),
+                }
+            )
+
+    # TODO: validate that every edition has snippets saved (2nd or later submissions of the function)
+
+    # --- Build response message ---
+    if not rejected:
+        return "Snippets successfully saved!"
+
+    # TODO: the following validation errors occured resubject for teh effected snippets
+    lines = [f"REJECTED: {len(rejected)} snippet(s) could not be stored."]
+    for eid, snippet_obj, reason in rejected:
+        snippet_preview = ""
+        if snippet_obj and snippet_obj.get("snippet"):
+            raw = snippet_obj["snippet"]
+            preview = raw[:60] + ("..." if len(raw) > 60 else "")
+            snippet_preview = f" | snippet: {repr(preview)}"
+        lines.append(f"  Edition {eid}{snippet_preview}: {reason}")
+    lines.append(
+        "\nPlease resubmit select_relevant_snippets with corrected versions "
+        "of the rejected snippets."
+    )
+
+    return "\n".join(lines)
+
+
+@function_tool
+def select_relevant_snippets(
+    ctx: ToolContext[CatalogSearchExecutionContext],
+    search_tool_call_id: str,
+    snippets: Dict[str, List[Dict[str, int | str]]],
+) -> str:
+    """Select and validate relevant text snippets from a prior catalog search result.
+
+    After calling search_catalog, use this tool to select 1-5 representative text
+    snippets per book. The snippets will be shown to the user alongside each book
+    to provide context for why the book was returned.
+
+
+    Example::
+
+        select_relevant_snippets(
+            search_tool_call_id="call_abc123",
+            snippets={
+                "4872": [
+                    {
+                        "item_id": 9021,
+                        "snippet": "the mitochondria is the powerhouse of the cell",
+                    },
+                    {
+                        "item_id": 9021,
+                        "snippet": "Cellular respiration begins //...// and terminates with the synthesis of ATP.",
+                    },
+                ],
+                "5310": [
+                    {
+                        "item_id": 9834,
+                        "snippet": "Darwin observed that species adapted over generations",
+                    },
+                ],
+            },
+        )
+
+
+    Args:
+        search_tool_call_id: The tool_call_id returned by the search_catalog call
+            whose results you are annotating. Must correspond to a result already
+            stored in the session.
+        snippets: Mapping from edition_id (as a string or integer key) to a list
+            of snippet objects for that edition. Each snippet object must contain:
+
+            - ``item_id`` (int): The item ID the snippet belongs to, exactly as
+              shown in the search result.
+            - ``snippet`` (str): The snippet text. The following rules apply:
+
+              * Select 1-5 snippets per edition/book.
+              * Each snippet must be no more than 100 words. A grace margin of
+                50 words is permitted before rejection (hard limit: 150 words).
+              * You may elide words from the middle using the **exact** token
+                ``//...//`` to save space and writing time. The text before
+                ``//...//`` is the *lead* and the text after is the *trail*;
+                each is matched as a literal substring across all chunk texts
+                for that edition. Both the lead and the trail must each match in
+                exactly one chunk (and in the same chunk); if either matches in
+                zero chunks or more than one chunk the snippet is rejected.
+              * When no elision is used the full snippet text must appear as a
+                literal substring in exactly one chunk.
+              * Only elide the middle when the lead and trail are individually
+                long enough to uniquely identify the snippet. If the text is
+                short enough to include in full, do so.
+
+    Returns:
+        A summary listing accepted snippets and any rejected snippets with the
+        reason for rejection. If any snippets were rejected the response asks
+        for a corrected resubmission.
+
+    """
+    logger.info(
+        f"{ctx.tool_name} tool called for search_tool_call_id='{search_tool_call_id}'"
+    )
+    # TODO: make a callback for any tool, and add a edition_id log message
+
+    # --- Validation: search_tool_call_id must be in search_results ---
+    if search_tool_call_id not in ctx.context.search_results:
+        known = list(ctx.context.search_results.keys())
+        return (
+            f"ERROR: search_tool_call_id '{search_tool_call_id}' was not found in "
+            f"search results. Known IDs: {known}. "
+            f"Please resubmit with a valid search_tool_call_id."
+        )
+
+    edition_data = ctx.context.search_results[search_tool_call_id].get(
+        "edition_data", []
+    )
+    # Build lookup: edition_id (int) -> edition_data entry
+    edition_entry_map = {entry["orm_edition"].id: entry for entry in edition_data}
+
+    return validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
 
 
 def format_frbr_fields(orm_work, orm_edition):
@@ -726,9 +1056,66 @@ def format_frbr_fields(orm_work, orm_edition):
     }
 
 
+def display_book(lines, frbr_fields, chunk_hits, edition_id):
+    """
+    Create lines of str for a text display of book and chunk search results.
+    Chunk display order controlled by input data order.
+    """
+
+    # Display book level data
+    base_indent = "  "
+    # lines.append("BOOK INFORMATION:")
+    # lines.append(f"EDITION {i}:")
+    lines.append(indent(f"EDITION ID: {edition_id}", base_indent))
+    # lines.append(indent(f"WORK ID: {orm_work.id}", base_indent))
+    lines.append(indent(f"TITLE: {frbr_fields['title']}", base_indent))
+    lines.append(indent(f"AUTHORS: {frbr_fields['author_names']}", base_indent))
+    lines.append(indent(f"PUBLISHER: {frbr_fields['publisher_names']}", base_indent))
+    lines.append(indent(f"DATE: {frbr_fields['pub_date']}", base_indent))
+    lines.append(
+        indent(f"SUBJECTS: {frbr_fields['subject_list']}", base_indent)
+    )  # Does this need to be wrap()'ed to multi-line
+    lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", base_indent))
+    # lines.append(indent(f"MAX SCORE: {edition_hit['agg_score']:.4f}", base_indent))
+    lines.append(indent(f"FOUND {len(chunk_hits)} MATCHING SECTIONS:", base_indent))
+    lines.append("")
+
+    # Display chunk level information
+    # MAYBE: sort chunks by score (bigger is better, missing last) and limit display
+    for j, chunk_hit in enumerate(chunk_hits, 1):
+        text = chunk_hit.get("text", "(No Text)")
+        score = chunk_hit.get("score", 0)
+        chunk_id = chunk_hit.get("doc_id", "unknown")
+        # Extract page range from chunk metadata (supports both formats)
+        start_page = chunk_hit.get("start_page") or chunk_hit.get("chunk_start_page")
+        end_page = chunk_hit.get("end_page") or chunk_hit.get("chunk_end_page")
+        if start_page is not None and end_page is not None:
+            if start_page == end_page:
+                page_display = str(start_page)
+            else:
+                page_display = f"{start_page}-{end_page}"
+        else:
+            page_display = "?"
+
+        # lines.append(indent("CHUNK INFORMATION:", base_indent * 2))
+        lines.append(indent(f"CHUNK {j}:", base_indent * 2))
+        # lines.append(indent(f"ID: {chunk_id}", base_indent * 3))
+        lines.append(
+            indent(f"ITEM ID: {chunk_hit['item_id']}", base_indent * 3)
+        )  # currently an edition might include chunks from multiple items
+        lines.append(indent(f"PAGE: {page_display}", base_indent * 3))
+        # lines.append(indent(f"SCORE: {score:.4f}", base_indent * 3))
+        lines.append(indent(f"TEXT:\n{wrap(text)}", base_indent * 3))
+        lines.append("")
+
+    return lines
+
+
 # TODO: rely on sort order from edition (and nested chunks) as passed (add to doc str)
 # TODO: move to agent.py
-def verbose_display_editions(edition_data, query=None, as_str=False):
+def verbose_display_editions(
+    edition_data, search_tool_call_id=None, query=None, as_str=False
+):
     """
     Print or return a formatted str containing an ordered list book search
     results and their associated text excerpts. For each book, metadata is
@@ -748,6 +1135,10 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
         lines.append(f'QUERY: "{wrap(query)}"')
         lines.append("\n")
 
+    if search_tool_call_id is not None:
+        lines.append(f'SEARCH TOOL CALL ID: "{search_tool_call_id}"')
+        lines.append("\n")
+
     for i, edition_entry in enumerate(edition_data, 1):
         orm_work = edition_entry["orm_work"]
         orm_edition = edition_entry["orm_edition"]
@@ -758,55 +1149,52 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
         # Get chunk hits for this edition
         chunk_hits = edition_hit.get("chunk_hits", [])
 
-        # Display book level data
-        base_indent = "  "
-        lines.append(f"EDITION {i}:")
-        # lines.append(
-        #     indent(
-        #         f"WORK ID: {orm_work.id} | EDITION ID: {orm_edition.id}", base_indent
-        #     )
-        # )
-        lines.append(indent(f"TITLE: {frbr_fields['title']}", base_indent))
-        lines.append(indent(f"AUTHORS: {frbr_fields['author_names']}", base_indent))
-        lines.append(
-            indent(f"PUBLISHER: {frbr_fields['publisher_names']}", base_indent)
-        )
-        lines.append(indent(f"DATE: {frbr_fields['pub_date']}", base_indent))
-        lines.append(
-            indent(f"SUBJECTS: {frbr_fields['subject_list']}", base_indent)
-        )  # Does this need to be wrap()'ed to multi-line
-        lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", base_indent))
-        lines.append(indent(f"MAX SCORE: {edition_hit['agg_score']:.4f}", base_indent))
-        lines.append(indent(f"CHUNKS FOUND: {len(chunk_hits)}", base_indent))
-        lines.append("")
-
-        # Display chunk data (for this edition)
-        # MAYBE: sort chunks by score and limit display
-        for j, chunk_hit in enumerate(chunk_hits, 1):
-            text = chunk_hit.get("text", "(No Text)")
-            score = chunk_hit.get("score", 0)
-            chunk_id = chunk_hit.get("doc_id", "unknown")
-            # Extract page range from chunk metadata (supports both formats)
-            start_page = chunk_hit.get("start_page") or chunk_hit.get(
-                "chunk_start_page"
-            )
-            end_page = chunk_hit.get("end_page") or chunk_hit.get("chunk_end_page")
-            if start_page is not None and end_page is not None:
-                if start_page == end_page:
-                    page_display = str(start_page)
-                else:
-                    page_display = f"{start_page}-{end_page}"
-            else:
-                page_display = "?"
-
-            lines.append(indent(f"CHUNK {j}:", base_indent * 2))
-            lines.append(indent(f"ID: {chunk_id}", base_indent * 3))
-            lines.append(indent(f"PAGE: {page_display}", base_indent * 3))
-            lines.append(indent(f"SCORE: {score:.4f}", base_indent * 3))
-            lines.append(indent(f"TEXT:\n{wrap(text)}", base_indent * 3))
-            lines.append("")
+        lines = display_book(lines, frbr_fields, chunk_hits, orm_edition.id)
 
         lines.append("-" * 80)
+
+    msg = "\n".join(lines)
+    if as_str:
+        return msg
+    else:
+        print(msg)
+
+
+# TODO: When we insert messages in context specifying book for content search \
+# context, remove book level info from search response to save tokens.
+def verbose_display_chunks(
+    chunk_hits,
+    edition_id,
+    search_tool_call_id=None,
+    query=None,
+    as_str=False,
+    frbr_fields=None,
+):
+    """
+    Print or return a formatted str containing an ordered list book excerpts.
+    Book metadata  including title, subjects, publication date is optionally
+    displayed. For each text excerpt, page number and search score is displayed.
+    Excerpts are ordered by the input list.
+
+    Args:
+        chunk_hits: List of chunk hit dictionaries
+        query: The search query string
+        as_str: If True, return as string; otherwise print
+        frbr_fields: Optional dict of formatted FRBR fields for book context
+    """
+    if not chunk_hits:
+        return "There are no results for your query."
+
+    lines = []
+    if query is not None:
+        lines.append(f'QUERY: "{wrap(query)}"')
+        lines.append("\n")
+
+    if search_tool_call_id is not None:
+        lines.append(f'SEARCH TOOL CALL ID: "{search_tool_call_id}"')
+        lines.append("\n")
+
+    lines = display_book(lines, frbr_fields, chunk_hits, edition_id)
 
     msg = "\n".join(lines)
     if as_str:
@@ -844,81 +1232,6 @@ def compact_display_editions(edition_data, query, as_str=False):
         lines.append(
             f" {i:>3}:  ({edition_hit['agg_score']:.3f}) Ed:{orm_edition.id:<6} W:{orm_work.id:<6} [{len(chunk_hits)} chunks] - {title_display}"
         )
-
-    msg = "\n".join(lines)
-    if as_str:
-        return msg
-    else:
-        print(msg)
-
-
-def get_score(entry):
-    return entry.get("score", float("-inf"))
-
-
-# TODO: When we insert messages in context specifying book for content search \
-# context, remove book level info from search response to save tokens.
-# TODO: deduplicate book level metadata code in this and verbose_display_editions()
-def verbose_display_chunks(chunk_hits, query=None, as_str=False, frbr_fields=None):
-    """
-    Print or return a formatted str containing an ordered list book excerpts.
-    Book metadata  including title, subjects, publication date is optionally
-    displayed. For each text excerpt, page number and search score is displayed.
-    Excerpts are ordered by the input list.
-
-    Args:
-        chunk_hits: List of chunk hit dictionaries
-        query: The search query string
-        as_str: If True, return as string; otherwise print
-        frbr_fields: Optional dict of formatted FRBR fields for book context
-    """
-    if not chunk_hits:
-        return "There are no results for your query."
-
-    # TODO: should sorting be handled by the calling code
-    # Sort entries by ['meta']['score'] descending, missing scores last
-    sorted_hits = sorted(chunk_hits, key=get_score, reverse=True)
-
-    lines = []
-    if query is not None:
-        lines.append(f'QUERY: "{wrap(query)}"')
-        lines.append("\n")
-
-    # Display book context (if FRBR data provided)
-    if frbr_fields:
-        lines.append("BOOK INFORMATION:")
-        lines.append(indent(f"TITLE: {frbr_fields['title']}", "  "))
-        lines.append(indent(f"AUTHORS: {frbr_fields['author_names']}", "  "))
-        lines.append(indent(f"DATE: {frbr_fields['pub_date']}", "  "))
-        lines.append(indent(f"SUBJECTS: {frbr_fields['subject_list']}", "  "))
-        lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", "  "))
-        lines.append("")
-        lines.append(f"FOUND {len(sorted_hits)} MATCHING SECTIONS:")
-        lines.append("-" * 80)
-
-    # Display chunk level information
-    for i, entry in enumerate(sorted_hits, 1):
-        text = entry.get("text", "(No Text)")
-        score = get_score(entry)
-
-        # Extract page range from chunk metadata (supports both formats)
-        start_page = entry.get("start_page") or entry.get("chunk_start_page")
-        end_page = entry.get("end_page") or entry.get("chunk_end_page")
-        if start_page is not None and end_page is not None:
-            if start_page == end_page:
-                page_display = str(start_page)
-            else:
-                page_display = f"{start_page}-{end_page}"
-        else:
-            page_display = "?"
-
-        lines.append(f"RESULT {i}:")
-        lines.append(indent(f"ID: {entry['doc_id']}", "  "))
-        lines.append(indent(f"PAGE: {page_display}", "  "))
-        lines.append(indent(f"SCORE: {score}", "  "))
-        lines.append(indent("TEXT:", "  "))
-        lines.append(indent(f"{wrap(text)}\n", "  "))
-        lines.append("-" * 60)
 
     msg = "\n".join(lines)
     if as_str:
