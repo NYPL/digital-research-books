@@ -14,10 +14,12 @@ import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantI
 import ResearchAssistantSendIcon from "../ResearchAssistant/icons/ResearchAssistantSendIcon";
 
 interface SearchSectionProps {
-  helpSectionRef: React.RefObject<HTMLDivElement>;
+  featuresSectionRef: React.RefObject<HTMLDivElement>;
 }
 
-const SearchSection: React.FC<SearchSectionProps> = ({ helpSectionRef }) => {
+const SearchSection: React.FC<SearchSectionProps> = ({
+  featuresSectionRef,
+}) => {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
 
@@ -209,7 +211,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ helpSectionRef }) => {
         borderRadius="8px"
         margin="0 auto"
         onClick={() =>
-          helpSectionRef.current?.scrollIntoView({ behavior: "smooth" })
+          featuresSectionRef.current?.scrollIntoView({ behavior: "smooth" })
         }
         _hover={{
           backgroundColor: "section.research.primary-05",

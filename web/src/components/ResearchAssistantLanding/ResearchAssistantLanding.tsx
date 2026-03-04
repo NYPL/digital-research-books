@@ -11,7 +11,7 @@ import HeroSection from "./HeroSection";
 
 const ResearchAssistantLanding: React.FC = () => {
   const heroSectionRef = useRef<HTMLDivElement>(null);
-  const helpSectionRef = useRef<HTMLDivElement>(null);
+  const featuresSectionRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
@@ -24,11 +24,17 @@ const ResearchAssistantLanding: React.FC = () => {
         <ResearchAssistantNav activePage="vra" />
       </DrbBreakout>
       <Box display="flex" flexDir="column">
-        <HeroSection ref={heroSectionRef} helpSectionRef={helpSectionRef} />
-        <FeaturesSection heroSectionRef={heroSectionRef} />
+        <HeroSection
+          ref={heroSectionRef}
+          featuresSectionRef={featuresSectionRef}
+        />
+        <FeaturesSection
+          ref={featuresSectionRef}
+          heroSectionRef={heroSectionRef}
+        />
         <AccessSection heroSectionRef={heroSectionRef} />
         <FaqSection />
-        <HelpSection ref={helpSectionRef} heroSectionRef={heroSectionRef} />
+        <HelpSection heroSectionRef={heroSectionRef} />
       </Box>
     </>
   );

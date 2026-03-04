@@ -1,5 +1,4 @@
 import { Flex, Heading, Text } from "@nypl/design-system-react-components";
-import { forwardRef } from "react";
 import Link from "../../Link/Link";
 import ArrowIcon from "../../ResearchAssistant/icons/ArrowIcon";
 import LandingButtons from "../LandingButtons";
@@ -12,9 +11,7 @@ interface HelpSectionProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
 }
 
-const HelpSection: React.ForwardRefExoticComponent<
-  HelpSectionProps & React.RefAttributes<HTMLDivElement>
-> = forwardRef<HTMLDivElement, HelpSectionProps>(({ heroSectionRef }, ref) => {
+const HelpSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
   return (
     <SectionContainer
       backgroundImage={`
@@ -25,7 +22,6 @@ const HelpSection: React.ForwardRefExoticComponent<
       display="flex"
       flexDir="column"
       alignItems="center"
-      ref={ref}
     >
       <Heading
         level="h2"
@@ -96,7 +92,7 @@ const HelpSection: React.ForwardRefExoticComponent<
       <LandingButtons heroSectionRef={heroSectionRef} />
     </SectionContainer>
   );
-});
+};
 
 HelpSection.displayName = "HelpSection";
 

@@ -5,19 +5,22 @@ import {
   Image,
   Text,
 } from "@nypl/design-system-react-components";
-import { FIND_FEATURE_IMAGE } from "~/src/constants/researchAssistant";
 import ResearchAssistantIcon from "../../ResearchAssistant/icons/ResearchAssistantIcon";
 
 interface FeatureCardProps {
   featureName: string;
   title: string;
   description: string;
+  imageSrc: string;
+  imageAlt: string;
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({
   featureName,
   title,
   description,
+  imageSrc,
+  imageAlt,
 }) => {
   return (
     <Box
@@ -59,7 +62,8 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
           </Flex>
         </Box>
         <Image
-          src={FIND_FEATURE_IMAGE}
+          src={imageSrc}
+          alt={imageAlt}
           width="820px"
           height="540px"
           borderRadius="32px"
