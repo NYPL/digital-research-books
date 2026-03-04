@@ -1,3 +1,4 @@
+import os
 from api.assistant.agent import update_chat
 
 
@@ -6,8 +7,9 @@ class TestAgent:
         """Test update_chat in catalogSearch mode returns the expected result."""
 
         # Mock search dependencies
-        mocker.patch("api.assistant.agent.Searcher")
-        mocker.patch("api.assistant.agent.GoogleEmbedder")
+        mocker.patch("api.assistant.agent.TurbopufferBackend")
+        mocker.patch("api.assistant.agent.get_config")
+        mocker.patch.dict(os.environ, {"GOOGLE_API_KEY": "fake-key"})
 
         # Mock the agent and its runner to simulate execution
         mocker.patch("api.assistant.agent.Agent")

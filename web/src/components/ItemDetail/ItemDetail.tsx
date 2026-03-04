@@ -33,7 +33,7 @@ import Link from "../Link/Link";
 import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel";
 import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
 import AccordionLabelWithIcon from "./AccordionLabelWithIcon";
-import AboutItemPanel from "./panels/AboutItemPanel";
+import DetailsPanel from "./panels/DetailsPanel";
 import DownloadOptionsPanel from "./panels/DownloadOptionsPanel";
 import OtherEditionsPanel from "./panels/OtherEditionsPanel";
 import RelatedBooksPanel from "./panels/RelatedBooksPanel";
@@ -248,10 +248,10 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             <Accordion
               accordionData={[
                 {
-                  ariaLabel: "About this book",
-                  label: "About this book",
+                  ariaLabel: "Details",
+                  label: "Details",
                   panel: (
-                    <AboutItemPanel
+                    <DetailsPanel
                       previewItem={previewItem}
                       previewEdition={previewEdition}
                       publisherNames={publisherNames}

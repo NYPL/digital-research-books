@@ -7,6 +7,7 @@ from sqlalchemy.orm import (
     contains_eager,
     aliased,
     scoped_session,
+    selectinload,
 )
 from sqlalchemy.sql import column, func, select, text, values
 from uuid import uuid4
@@ -56,41 +57,33 @@ def get_session():
 
 def get_frbr_data_by_edition(edition_ids: List):
     """
-    Return list of (Work, Edition) Rows for each of the passed edition_ids
-    present in the DB.
-    Edition includes the following eager loaded relationships: Edition.items,
-    Edition.items.links, Edition.items.rights, Edition.links.
-    """
-    # ALT: also sort the results by edition_ids order (using CTE as in fetchEditions() below)
+    Return list of (Work, Edition) tuples for each of the passed edition_ids.
+    Edition includes eager loaded: Edition.items, Edition.items.links,
+    Edition.items.rights, Edition.links.
 
-    edition_link_alias = aliased(Link)
-    item_link_alias = aliased(Link)
+    Uses selectinload to avoid cartesian product explosion from chained outer joins.
+    """
+    if edition_ids is None or len(edition_ids) == 0:
+        return []
+
+    from collections import namedtuple
+
+    Row = namedtuple("Row", ["Work", "Edition"])
 
     Session = get_session()
     with Session() as session:
-        rows = (
-            session.query(Work, Edition)
-            .join(Work.editions)  # Work → Edition
-            # Edition.links (draws from aliased Link via edition_links crosswalk)
-            .outerjoin(Edition.links.of_type(edition_link_alias))
-            .outerjoin(Edition.items)  # Edition → Item
-            # Item.links (draws from aliased Link via item_links crosswalk)
-            .outerjoin(Item.links.of_type(item_link_alias))
-            .outerjoin(Item.rights)
+        editions = (
+            session.query(Edition)
             .filter(Edition.id.in_(edition_ids))
             .options(
-                # Eager-load Edition.items.links (Item.links)
-                contains_eager(Edition.items).contains_eager(
-                    Item.links.of_type(item_link_alias)
-                ),
-                # Eager-load Edition.items.rights (Item.rights)
-                contains_eager(Edition.items).contains_eager(Item.rights),
-                # Eager-load Edition.links (Edition.links)
-                contains_eager(Edition.links.of_type(edition_link_alias)),
+                selectinload(Edition.work),
+                selectinload(Edition.links),
+                selectinload(Edition.items).selectinload(Item.links),
+                selectinload(Edition.items).selectinload(Item.rights),
             )
             .all()
         )
-    return rows
+        return [Row(Work=e.work, Edition=e) for e in editions]
 
 
 class DBClient:

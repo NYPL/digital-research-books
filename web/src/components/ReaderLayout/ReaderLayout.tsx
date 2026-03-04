@@ -1,4 +1,4 @@
-import { Breadcrumbs, Icon } from "@nypl/design-system-react-components";
+import { Breadcrumbs, DSProvider } from "@nypl/design-system-react-components";
 import { addTocToManifest } from "@nypl/web-reader";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
@@ -15,9 +15,7 @@ import EditionCardUtils from "~/src/util/EditionCardUtils";
 import { formatUrl, truncateStringOnWhitespace } from "~/src/util/Util";
 import IFrameReader from "../IFrameReader/IFrameReader";
 import Layout from "../Layout/Layout";
-import Link from "../Link/Link";
 import Loading from "../Loading/Loading";
-import ReaderLogoSvg from "../Svgs/ReaderLogoSvg";
 
 const WebReader = dynamic(() => import("@nypl/web-reader"), { ssr: false });
 
@@ -68,7 +66,7 @@ const ReaderLayout: React.FC<{
   const nyplIdentityCookie = cookies[NYPL_SESSION_ID];
   const router = useRouter();
 
-  const pdfWorkerSrc = `${origin}/pdf-worker/pdf.worker.min.js`;
+  const pdfWorkerSrc = `${origin}/pdf-worker/pdf.worker.min.mjs`;
 
   const { page } = useResultPageContext();
 
@@ -137,18 +135,6 @@ const ReaderLayout: React.FC<{
     }
   }, [isLimitedAccess, isRead, pdfWorkerSrc, proxyUrl, url, page]);
 
-  const BackButton = () => {
-    return (
-      //Apends design system classname to use Design System Link.
-      <Link to={props.backUrl} variant="action" className="nypl-ds logo-link">
-        <Icon decorative className="logo-link__icon">
-          <ReaderLogoSvg />
-        </Icon>
-        <span className="logo-link__label">Back to Digital Research Books</span>
-      </Link>
-    );
-  };
-
   if (!isEmbed && !isRead) {
     return <ErrorComponent statusCode={404} />;
   }
@@ -179,18 +165,19 @@ const ReaderLayout: React.FC<{
       )}
       {isRead && isLoading && <Loading />}
       {isRead && !isLoading && (
-        <WebReader
-          webpubManifestUrl={manifestUrl}
-          proxyUrl={!isLimitedAccess && useProxyUrl ? proxyUrl : undefined}
-          pdfWorkerSrc={pdfWorkerSrc}
-          headerLeft={<BackButton />}
-          injectablesFixed={injectables}
-          getContent={
-            isLimitedAccess
-              ? EditionCardUtils.createGetContent(nyplIdentityCookie, router)
-              : undefined
-          }
-        />
+        <DSProvider>
+          <WebReader
+            webpubManifestUrl={manifestUrl}
+            proxyUrl={!isLimitedAccess && useProxyUrl ? proxyUrl : undefined}
+            pdfWorkerSrc={pdfWorkerSrc}
+            injectablesFixed={injectables}
+            getContent={
+              isLimitedAccess
+                ? EditionCardUtils.createGetContent(nyplIdentityCookie, router)
+                : undefined
+            }
+          />
+        </DSProvider>
       )}
     </>
   );

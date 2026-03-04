@@ -21,11 +21,9 @@ export default async function handler(
   const host = req.headers.host;
   const baseUrl = `${protocol}://${host}`;
 
-  const pageIds: string[] = [
-    ...(data.previousPages || []),
-    pageId!,
-    ...(data.nextPages || []),
-  ].filter(Boolean);
+  const pageIds: string[] = [pageId!, ...(data.nextPages || [])].filter(
+    Boolean
+  );
 
   const readingOrder = pageIds.map((pid) => ({
     href: `${baseUrl}/api/pdf/${itemId}/${pid}`,
