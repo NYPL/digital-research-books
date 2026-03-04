@@ -129,7 +129,7 @@ const ResearchAssistantPanel: React.FC = () => {
           >
             <Flex gap="xxs" alignItems="center">
               <ArrowIcon direction="left" color="#FFF" />
-              <Text>Show chat</Text>
+              <Text fontSize="desktop.body.body2">Show chat</Text>
             </Flex>
           </Button>
         </ResearchAssistantHeader>

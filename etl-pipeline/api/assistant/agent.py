@@ -46,6 +46,9 @@ from vector_indexing.core.utils import Timer
 from logger import create_log
 from utils.common import wrap, require_env
 
+# hybrid search
+from .search import hybrid_search, ReciprocalRankFuser
+
 
 logger = create_log(__name__)
 
@@ -467,29 +470,31 @@ def search_catalog(
         # Embed the query for semantic search
         query_vector = ctx.context.embedder.embed_one(ranking_query)
 
-        # Execute vector search via TurbopufferBackend
-        # take top 100 chunks and group by edition (then take top 10 editions)
-        results = ctx.context.backend.query(
-            rank_by=("vector", "ANN", query_vector),
+        # Execute hybrid search (vector + BM25) with RRF
+        results = hybrid_search(
+            backend=ctx.context.backend,
+            query_vector=query_vector,
+            ranking_query=ranking_query,
             top_k=100,
             filters=filters,
+            fuser=ReciprocalRankFuser(k=60),
         )
-        logger.info(f"Retrieved {len(results)} chunk hits from vector backend")
+        logger.info(f"Retrieved {len(results)} chunk hits from hybrid search")
 
         if not len(results):
             return "No results found for your query."
 
         # MAYBE: turn the below into 2 functions: group_by_edition_and_sort() and enrich_edition_hits() (with limit to top 10 in between)
 
-        # Group ES Chunk hits by Edition (before adding FRBR data)
+        # Group chunk hits by Edition (before adding FRBR data)
         record_ids = set(cd.book_id for cd, _ in results)
         mapper = map_editions_and_records(record_ids=record_ids)
         edition_hits = {}
         missing_edition_ids = []
-        # Results from TurbopufferBackend are list of (ChunkDocument, distance) tuples
-        for chunk_doc, distance in results:
+        # Results from hybrid_search are (ChunkDocument, rrf_score) tuples
+        for chunk_doc, rrf_score in results:
             chunk_hit = chunk_doc.to_dict()
-            chunk_hit["score"] = distance if distance is not None else 0.0
+            chunk_hit["score"] = rrf_score if rrf_score is not None else 0.0
             if not chunk_hit.get("book_id"):
                 logger.error(
                     f"Chunk missing book_id: id={chunk_hit.get('doc_id')}, keys={chunk_hit.keys()}"
@@ -528,8 +533,12 @@ def search_catalog(
 
         # TODO: if fewer than PAGE_SIZE editions, re-query more chunks until PAGE_SIZE editions are retrieved
 
-        # Sort editions (by aggregate chunk score)
-        edition_hits = sorted(edition_hits, key=lambda eh: eh["agg_score"])
+        # NOTE: RRF scores are higher-is-better, unlike raw ANN distances (lower-is-better).
+        # This sort order change (reverse=True) was intentional and also fixes a pre-existing
+        # inconsistency between ES9 and Turbopuffer score semantics.
+        edition_hits = sorted(
+            edition_hits, key=lambda eh: eh["agg_score"], reverse=True
+        )
 
         # Limit results to the 10 top scoring editions
         logger.info(f"Limiting results to top {PAGE_SIZE} editions")
@@ -629,25 +638,27 @@ def search_book(
         # Embed the query for semantic search
         query_vector = ctx.context.embedder.embed_one(ranking_query)
 
-        # Execute vector search via TurbopufferBackend
-        results = ctx.context.backend.query(
-            rank_by=("vector", "ANN", query_vector),
+        # Execute hybrid search (vector + BM25) with RRF fusion
+        results = hybrid_search(
+            backend=ctx.context.backend,
+            query_vector=query_vector,
+            ranking_query=ranking_query,
             top_k=10,
             filters=combined_filters,
         )
-        logger.info(f"Retrieved {len(results)} chunk hits from vector backend for book")
+        logger.info(f"Retrieved {len(results)} chunk hits from hybrid search for book")
 
         if not len(results):
             return "No results found for your query in this book."
 
-        # Convert chunk hits to dict format
+        # Convert (ChunkDocument, rrf_score) tuples to dict format
         chunk_hits = []
-        for chunk_doc, distance in results:
+        for chunk_doc, rrf_score in results:
             chunk_hit = chunk_doc.to_dict()
             chunk_hit["item_id"] = (
                 ctx.context.item_id
             )  # NOTE: future: the item_id will be directly indexed in the chunk hit.
-            chunk_hit["score"] = distance if distance is not None else 0.0
+            chunk_hit["score"] = rrf_score if rrf_score is not None else 0.0
             chunk_hits.append(chunk_hit)
 
         # Store search results for later reference
