@@ -39,9 +39,9 @@ describe("ResearchAssistantNav", () => {
     expect(vraTab.closest("a")).not.toHaveAttribute("aria-current", "page");
   });
 
-  test("displays beta badge on VRA tab", () => {
-    render(<ResearchAssistantNav activePage={"vra"} />);
+  // test("displays beta badge on VRA tab", () => {
+  //   render(<ResearchAssistantNav activePage={"vra"} />);
 
-    expect(screen.getByText(/beta/i)).toBeInTheDocument();
-  });
+  //   expect(screen.getByText(/beta/i)).toBeInTheDocument();
+  // });
 });

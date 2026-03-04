@@ -27,7 +27,7 @@ describe("Renders edition component when given valid edition", () => {
   });
   test("Shows Header with Searchbar", () => {
     expect(
-      screen.getByRole("heading", { name: breadcrumbTitles.drb })
+      screen.getByRole("heading", { name: "Digital Research Books" })
     ).toBeInTheDocument();
     expect(screen.getByRole("combobox")).toHaveValue(inputTerms[0].value);
     expect(screen.getByRole("textbox")).toBeInTheDocument();
