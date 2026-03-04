@@ -1,9 +1,4 @@
-import {
-  Grid,
-  Heading,
-  Icon,
-  Text,
-} from "@nypl/design-system-react-components";
+import { Grid, Heading, Text } from "@nypl/design-system-react-components";
 import {
   ItemType,
   MessageRole,
@@ -14,10 +9,59 @@ import LandingButtons from "../LandingButtons";
 import LandingCard from "../LandingCard";
 import SectionContainer from "../SectionContainer";
 import AccessCard from "./AccessCard";
+import BuildingIcon from "./BuildingIcon";
+import CheckVerifiedIcon from "./CheckVerifiedIcon";
+import DataFlowIcon from "./DataFlowIcon";
+import FileCheckIcon from "./FileCheckIcon";
+import GraduationHatIcon from "./GraduationHatIcon";
+import LikeIcon from "./LikeIcon";
+import LockIcon from "./LockIcon";
+import MessageIcon from "./MessageIcon";
+import OpenBookIcon from "./OpenBookIcon";
+import TargetIcon from "./TargetIcon";
 
 interface AccessSectionProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
 }
+
+const accessCardData = [
+  {
+    icon: <BuildingIcon />,
+    title: "Grounded in authoritative sources",
+    description:
+      "We only search within our corpus of digitized research books to ensure that all responses are trustworthy and verifiable.",
+  },
+  {
+    icon: <OpenBookIcon />,
+    title: "Built in partnership with librarians",
+    description:
+      "We collaborate with our staff and experts to build features and flows that meet the needs of real-world researchers.",
+  },
+  {
+    icon: <FileCheckIcon />,
+    title: "Backed by rigorous quality checks",
+    description:
+      "We regularly evaluate our technical frameworks and the tool’s outputs to ensure quality and accuracy.",
+  },
+  {
+    icon: <TargetIcon />,
+    title: "Designed for deep engagement",
+    description:
+      "We strive to connect you with scholarly sources as fast as possible so that you can free up time for deeper analysis.",
+  },
+  {
+    icon: <GraduationHatIcon />,
+    title: "Underpinned by academic integrity",
+    description:
+      "We're committed to using AI to enhance and democratize access to scholarly research - not replace or undermine it.",
+  },
+  {
+    icon: <DataFlowIcon />,
+    title: "Developed for research workflows",
+    description:
+      "We solicit feedback from the academic community so that we can continue to enhance the research experience.",
+  },
+];
 
 const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
   return (
@@ -50,7 +94,7 @@ const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
       </Text>
       <Grid gridTemplateColumns="repeat(2, 1fr)" gap="l">
         <LandingCard
-          icon={<Icon name="communicationChatBubble" size="large" />}
+          icon={<MessageIcon />}
           heading={
             <Heading level="h3" size="heading4">
               <Text as="span" color="section.research.secondary">
@@ -74,7 +118,7 @@ const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
           }
         />
         <LandingCard
-          icon={<Icon name="actionLightbulb" size="large" />}
+          icon={<LikeIcon />}
           heading={
             <Heading level="h3" size="heading4">
               <Text as="span" color="section.research.secondary">
@@ -102,7 +146,7 @@ const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
           }
         />
         <LandingCard
-          icon={<Icon name="actionLightbulb" size="large" />}
+          icon={<CheckVerifiedIcon />}
           heading={
             <Heading level="h3" size="heading4">
               <Text as="span" color="section.research.secondary">
@@ -131,7 +175,7 @@ const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
           }
         />
         <LandingCard
-          icon={<Icon name="actionLightbulb" size="large" />}
+          icon={<LockIcon />}
           heading={
             <Heading level="h3" size="heading4">
               <Text as="span" color="section.research.secondary">
@@ -173,72 +217,14 @@ const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
         </Text>
       </Text>
       <Grid gridTemplateColumns="repeat(3, 1fr)" rowGap="xxl" columnGap="l">
-        <AccessCard
-          icon={
-            <Icon
-              name="actionLightbulb"
-              size="3xlarge"
-              color="section.research.secondary"
-            />
-          }
-          title="Grounded in authoritative sources"
-          description="We only search within our corpus of digitized research books to ensure that all responses are trustworthy and verifiable."
-        />
-        <AccessCard
-          icon={
-            <Icon
-              name="actionLightbulb"
-              size="3xlarge"
-              color="section.research.secondary"
-            />
-          }
-          title="Built in partnership with librarians"
-          description="We collaborate with our staff and experts to build features and flows that meet the needs of real-world researchers."
-        />
-        <AccessCard
-          icon={
-            <Icon
-              name="actionLightbulb"
-              size="3xlarge"
-              color="section.research.secondary"
-            />
-          }
-          title="Backed by rigorous quality checks"
-          description="We regularly evaluate our technical frameworks and the tool’s outputs to ensure quality and accuracy."
-        />
-        <AccessCard
-          icon={
-            <Icon
-              name="actionLightbulb"
-              size="3xlarge"
-              color="section.research.secondary"
-            />
-          }
-          title="Designed for deep engagement"
-          description="We strive to connect you with scholarly sources as fast as possible so that you can free up time for deeper analysis."
-        />
-        <AccessCard
-          icon={
-            <Icon
-              name="actionLightbulb"
-              size="3xlarge"
-              color="section.research.secondary"
-            />
-          }
-          title="Underpinned by academic integrity"
-          description="We're committed to using AI to enhance and democratize access to scholarly research - not replace or undermine it."
-        />
-        <AccessCard
-          icon={
-            <Icon
-              name="actionLightbulb"
-              size="3xlarge"
-              color="section.research.secondary"
-            />
-          }
-          title="Developed for research workflows"
-          description="We solicit feedback from the academic community so that we can continue to enhance the research experience."
-        />
+        {accessCardData.map((card, index) => (
+          <AccessCard
+            key={index}
+            icon={card.icon}
+            title={card.title}
+            description={card.description}
+          />
+        ))}
       </Grid>
       <LandingButtons heroSectionRef={heroSectionRef} />
     </SectionContainer>

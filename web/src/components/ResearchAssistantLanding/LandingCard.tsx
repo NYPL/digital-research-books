@@ -1,4 +1,4 @@
-import { Flex } from "@nypl/design-system-react-components";
+import { Box, Flex } from "@nypl/design-system-react-components";
 import React from "react";
 
 interface LandingCardProps {
@@ -24,17 +24,20 @@ const LandingCard: React.FC<LandingCardProps> = ({
       gap={gap}
       padding="l"
       textAlign="left"
-      sx={{
-        ".messageBubble": {
-          maxWidth: "100%",
-        },
-      }}
     >
       <Flex flexDir="column" gap="s">
         {icon}
         {heading}
       </Flex>
-      {body}
+      <Box
+        sx={{
+          "> div > div": {
+            maxWidth: "100%",
+          },
+        }}
+      >
+        {body}
+      </Box>
     </Flex>
   );
 };

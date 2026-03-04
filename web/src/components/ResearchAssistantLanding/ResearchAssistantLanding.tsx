@@ -6,7 +6,7 @@ import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
 import AccessSection from "./AccessSection/AccessSection";
 import FaqSection from "./FaqSection";
 import FeaturesSection from "./FeaturesSection/FeaturesSection";
-import HelpSection from "./HelpSection";
+import HelpSection from "./HelpSection/HelpSection";
 import HeroSection from "./HeroSection";
 
 const ResearchAssistantLanding: React.FC = () => {

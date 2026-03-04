@@ -1,15 +1,12 @@
-import {
-  Flex,
-  Heading,
-  Icon,
-  Text,
-} from "@nypl/design-system-react-components";
+import { Flex, Heading, Text } from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
-import Link from "../Link/Link";
-import ArrowIcon from "../ResearchAssistant/icons/ArrowIcon";
-import LandingButtons from "./LandingButtons";
-import LandingCard from "./LandingCard";
-import SectionContainer from "./SectionContainer";
+import Link from "../../Link/Link";
+import ArrowIcon from "../../ResearchAssistant/icons/ArrowIcon";
+import LandingButtons from "../LandingButtons";
+import LandingCard from "../LandingCard";
+import SectionContainer from "../SectionContainer";
+import LightbulbIcon from "./LightbulbIcon";
+import MailIcon from "./MailIcon";
 
 interface HelpSectionProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
@@ -42,7 +39,7 @@ const HelpSection: React.ForwardRefExoticComponent<
       <Flex gap="l">
         <LandingCard
           gap="l"
-          icon={<Icon name="communicationEmail" size="large" />}
+          icon={<MailIcon />}
           heading={
             <Heading level="h3" size="heading4">
               Connect with an expert
@@ -69,7 +66,7 @@ const HelpSection: React.ForwardRefExoticComponent<
         />
         <LandingCard
           gap="l"
-          icon={<Icon name="actionLightbulb" size="large" />}
+          icon={<LightbulbIcon />}
           heading={
             <Heading level="h3" size="heading4">
               Learn more about this project
