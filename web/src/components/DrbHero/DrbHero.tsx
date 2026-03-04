@@ -8,7 +8,8 @@ export const DrbHero: React.FC = () => {
       variant="tertiary"
       heading={
         <Heading level="h1" id="tertiary-hero">
-            Digital Research Books <sup>Beta</sup>
+          Digital Research Books
+          {/*<sup>Beta</sup>*/}
         </Heading>
       }
     />

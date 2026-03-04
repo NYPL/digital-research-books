@@ -22,7 +22,7 @@ class ResearchAssistantLandingPage {
     this.page = page;
     this.heroHeading = page.getByText("NYPL Virtual Research Assistant");
     this.heroSubheading = page.getByText("Your AI partner in discovering relevant research");
-    this.subNav = page.getByText('Virtual Research AssistantBETAKeyword search')
+    this.subNav = page.getByText('Virtual Research AssistantKeyword search')
     this.searchTextBox = page.getByRole("textbox", { name: "What research topic"});
     this.searchSubmitBtn = page.getByRole("button", { name: "Send" });
     this.suggestBtnRomanEmpire = page.getByRole("button", { name: "the Roman Empire" });

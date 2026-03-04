@@ -3,7 +3,7 @@ import {
   Icon,
   SubNav,
   SubNavLink,
-  Text,
+  // Text,
 } from "@nypl/design-system-react-components";
 import React, { useEffect, useState } from "react";
 import { PageType } from "~/src/types/ResearchAssistant";
@@ -43,7 +43,7 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
               />
             </Box>
             <>Virtual Research Assistant</>
-            <Text
+            {/*<Text
               padding="2px 8px"
               bg="#F9E08E"
               borderRadius="24px"
@@ -52,7 +52,7 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
               fontWeight="semibold"
             >
               BETA
-            </Text>
+            </Text>*/}
           </SubNavLink>
           <SubNavLink
             href="/keyword-search-landing"
