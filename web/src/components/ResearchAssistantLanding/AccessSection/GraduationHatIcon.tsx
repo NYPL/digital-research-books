@@ -1,7 +1,7 @@
 import { Icon } from "@nypl/design-system-react-components";
 import React from "react";
 
-const OpenBookIcon: React.FC = () => {
+const GraduationHatIcon: React.FC = () => {
   return (
     <Icon size="3xlarge" color="transparent">
       <svg
@@ -23,4 +23,4 @@ const OpenBookIcon: React.FC = () => {
   );
 };
 
-export default OpenBookIcon;
+export default GraduationHatIcon;

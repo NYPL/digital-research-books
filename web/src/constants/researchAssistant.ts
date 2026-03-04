@@ -18,7 +18,7 @@ export const FEATURES = [
       "The Assistant searches over 1 million digitized research books from our corpus, connecting you with trusted materials relevant to your research.",
     imageSrc: FIND_FEATURE_IMAGE,
     imageAlt:
-      'Screenshot of a split-screen interface showing the "Virtual Research Assistant" chat on the right. A user has typed, "I want to learn about the history of copyright law in the United States," and the AI assistant has responded that it found matching items. Suggested follow-up chips at the bottom include "Digital Copyright Act," "Intellectual property law," and "Fair use doctrine."',
+      'Split-screen interface with a "Virtual Research Assistant" chat. A user asks about US copyright law history. The VRA confirms matching items found and provides follow-up chips: "Digital Copyright Act," "Intellectual property law," and "Fair use doctrine."',
   },
   {
     featureName: "EVALUATE",
@@ -27,7 +27,7 @@ export const FEATURES = [
       "The Assistant provides summaries and explains why you're seeing a particular result, so that you can quickly determine a book's usefulness upfront. ",
     imageSrc: EVALUATE_FEATURE_IMAGE,
     imageAlt:
-      'Screenshot of sample search results for an e-book titled Privilege and Property: Essays on the History of Copyright. An expanded "Why am I seeing this result?" section explains that specific chapters (7, 8, and 10) discuss the history of printing presses in North American colonies and the evolution of rights in the United States.',
+      'Search result for "Privilege and Property: Essays on the History of Copyright." An expanded "Why am I seeing this result?" section notes that chapters 7, 8, and 10 cover North American printing presses and the evolution of legal rights.',
   },
   {
     featureName: "ACCESS",
@@ -36,7 +36,7 @@ export const FEATURES = [
       "The Assistant helps you locate specific sections in a book and cites its answers, so that you can research with efficiency and confidence.",
     imageSrc: ACCESS_FEATURE_IMAGE,
     imageAlt:
-      "A document viewer showing a page from a biography of Charles Thomas Walker. On the right, the VRA chat confirms the book mentions Walker’s early life, citing page 2. The text on the left details Walker’s birth in January 1858 in Hephzibah, Georgia, as the youngest of 11 children.",
+      "PDF viewer showing a biography of Charles Thomas Walker. The AI assistant on the right confirms the book covers his early life, citing page 2. The document text details his 1858 birth in Hephzibah, Georgia, as the youngest of 11 children.",
   },
   {
     featureName: "EXPLORE",
@@ -45,7 +45,7 @@ export const FEATURES = [
       "The Assistant provides recommendations based on your interests, so that you can discover more from our corpus and expand your research.",
     imageSrc: EXPLORE_FEATURE_IMAGE,
     imageAlt:
-      'Screenshot of a pdf viewer displaying the cover of a historical sketch. The VRA panel on the right displays a "Show related content" response, suggesting two related books: Life of Charles T. Walker, D.D. by Silas Xavier Floyd and The first Colored Baptist church in North America by James Simms.',
+      'PDF viewer showing a book cover. The AI panel suggests related content, including "Life of Charles T. Walker, D.D." by Silas Xavier Floyd and "The first Colored Baptist church in North America" by James Simms.',
   },
 ];
 
