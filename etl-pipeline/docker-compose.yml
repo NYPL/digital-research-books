@@ -7,6 +7,9 @@
 # aws auth which are read into the docker service via the `environment` inheritance
 
 services:
+
+  # NOTE: the DB USER and PASSWORD are created by the devsetup service in  \
+  # LocalDevelopmentSetupProcess.create_database_user() using env vars from the .env file
   database:
     container_name: drb_local_db
     volumes:
@@ -14,8 +17,6 @@ services:
     image: postgres:16.3
     ports:
       - 5432:5432
-    environment:
-      POSTGRES_PASSWORD: localpsql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"] # pg_ready never needs a password, postgres user simply prevents log message telling us default root user does not exist
       interval: 10s
@@ -74,6 +75,7 @@ services:
       # TODO: this port spec should be read from an env file
       - 5050:5050
     environment:
+      # Read from host environment (used in GHA IAM assume role auth)
       - AWS_PROFILE
       - AWS_REGION
       - AWS_DEFAULT_REGION
@@ -87,7 +89,7 @@ services:
         source: .
         target: /src
         read_only: true
-      # Expose host machine AWS creds to the container to use
+      # Expose host machine AWS creds to the container (for laptop sso AWS auth)
       - type: bind
         source: ${HOME}/.aws
         target: /root/.aws
@@ -136,6 +138,14 @@ services:
     build:
       context: .
     command: -e docker-compose -p LocalDevelopmentSetupProcess
+    environment:
+      # Read from host environment (used in GHA IAM assume role auth)
+      - AWS_PROFILE
+      - AWS_REGION
+      - AWS_DEFAULT_REGION
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
     volumes:
       # this overrides `ADD . /src` in the DockerFile, mapping the \
       # current local filesystem to "/src" in the docker image.
@@ -143,6 +153,15 @@ services:
         source: .
         target: /src
         read_only: true
+      # Expose host machine AWS creds to the container (for laptop sso AWS auth)
+      - type: bind
+        source: ${HOME}/.aws
+        target: /root/.aws
+        read_only: true
+      - type: bind
+        source: ${HOME}/.aws/sso/cache
+        target: /root/.aws/sso/cache
+        read_only: false
 
 volumes:
   drb_local_dbdata:
