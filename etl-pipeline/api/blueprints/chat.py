@@ -160,9 +160,9 @@ def chat(user=None):
 
     # Add custom attributes to transaction in New Relic
     if conversation_type is not None:
-        newrelic.agent.add_custom_attribute("conversation_type", conversation_type)
+        newrelic.agent.add_custom_attribute("conversationType", conversation_type)
     if edition_id is not None:
-        newrelic.agent.add_custom_attribute("edition_id", edition_id)
+        newrelic.agent.add_custom_attribute("editionId", edition_id)
 
     logger.info(
         f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, messages_count={len(conversation) if conversation else 0}"
