@@ -8,8 +8,6 @@
 
 services:
 
-  # NOTE: the DB USER and PASSWORD are created by the devsetup service in  \
-  # LocalDevelopmentSetupProcess.create_database_user() using env vars from the .env file
   database:
     container_name: drb_local_db
     volumes:
@@ -17,6 +15,11 @@ services:
     image: postgres:16.3
     ports:
       - 5432:5432
+    environment:
+      # NOTE: DB server will not start unless the postgres superuser passoword is set via env var. \
+      # however the non-superuser POSTGRES_USER/PSWD is created by the devsetup service in  \
+      # LocalDevelopmentSetupProcess.create_database_user() using env vars from the .env file
+      POSTGRES_PASSWORD: localpsql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"] # pg_ready never needs a password, postgres user simply prevents log message telling us default root user does not exist
       interval: 10s
