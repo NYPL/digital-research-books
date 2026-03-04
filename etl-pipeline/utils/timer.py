@@ -7,12 +7,10 @@ def timer(logger):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             start_time = perf_counter()
-            result = func(*args, **kwargs)
-            end_time = perf_counter()
-
-            logger.info(f"{func.__name__} took {end_time - start_time:.2f}s")
-
-            return result
+            try:
+                return func(*args, **kwargs)
+            finally:
+                logger.info(f"{func.__name__} took {perf_counter() - start_time:.2f}s")
 
         return wrapper
 
