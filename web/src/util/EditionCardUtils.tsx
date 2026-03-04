@@ -16,6 +16,7 @@ import {
   Language,
   WorkEdition,
 } from "../types/DataModel";
+import { CatalogItem } from "../types/ResearchAssistant";
 import { formatUrl, truncateStringOnWhitespace } from "./Util";
 
 // EditionCard holds all the methods needed to build an Edition Card
@@ -222,12 +223,16 @@ export default class EditionCardUtils {
     return universityPress !== undefined;
   }
 
-  static isPublicDomain(item: ApiItem): boolean {
+  static isPublicDomain(item: ApiItem | CatalogItem): boolean {
     const regex = /public[ _]?domain( \(x\))?/i;
     const publicDomain =
-      item && item.rights && item.rights.length > 0
-        ? item.rights.find((right) => regex.test(right.rightsStatement))
-        : undefined;
+      item &&
+      item.rights &&
+      item.rights.some((right) => {
+        const rightsStatement =
+          (right as any).rightsStatement || (right as any).rights_statement;
+        return regex.test(rightsStatement);
+      });
     return publicDomain !== undefined;
   }
 
