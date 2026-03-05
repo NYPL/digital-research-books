@@ -10,7 +10,6 @@ const ResearchAssistantSendIcon: React.FC<ResearchAssistantSendIconProps> = ({
 }) => {
   return (
     <Icon
-      align="right"
       // @ts-expect-error: Override color value type
       color={isDisabled ? "transparent" : "#9DDEE3"}
       size="large"
