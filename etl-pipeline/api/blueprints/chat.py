@@ -1,5 +1,6 @@
 from textwrap import indent
 from flask import Blueprint, current_app, request
+import newrelic.agent
 
 # shared code
 from logger import create_log
@@ -156,6 +157,12 @@ def chat(user=None):
     conversation_type = request.json.get("conversationType")
     conversation = request.json.get("messages")
     edition_id = request.json.get("editionId")
+
+    # Add custom attributes to transaction in New Relic
+    if conversation_type is not None:
+        newrelic.agent.add_custom_attribute("conversationType", conversation_type)
+    if edition_id is not None:
+        newrelic.agent.add_custom_attribute("editionId", edition_id)
 
     logger.info(
         f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, messages_count={len(conversation) if conversation else 0}"
