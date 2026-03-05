@@ -1,6 +1,5 @@
 """Sentence-based text chunker using LlamaIndex SentenceSplitter."""
 
-from dataclasses import dataclass
 from itertools import accumulate
 from typing import Iterator, Optional
 
@@ -9,17 +8,7 @@ from llama_index.core.schema import Document
 
 from vector_indexing.core.types import Book, BookMetadata, ChunkDocument
 from vector_indexing.core.config import get_config, GlobalConfig
-from vector_indexing.components.chunkers.base import TextChunker
-
-
-@dataclass
-class ChunkWithPages:
-    """A text chunk with its page span (used for testing)."""
-
-    index: int
-    text: str
-    start_page: int
-    end_page: int
+from vector_indexing.components.chunkers.base import ChunkWithPages, TextChunker
 
 
 def char_to_page(
@@ -115,7 +104,7 @@ class SentenceSplitterChunker(TextChunker):
         Yields:
             ChunkWithPages with index, text, start_page, end_page.
         """
-        # Join pages with newlines
+        # Join pages with newlines (could be bad for memory, optimize if needed)
         pages_with_newlines = [page + "\n" for page in pages]
         full_text = "".join(pages_with_newlines)
         page_end_indices = list(accumulate(len(p) for p in pages_with_newlines))
