@@ -48,7 +48,7 @@ def pytest_addoption(parser):
 # occurrence of the error
 @pytest.fixture(scope="session", autouse=True)
 def setup_env(pytestconfig, request):
-    # Check if test session is all tests in the unit/ folder
+    # Check if session is all tests in the unit/ folder
     only_unit_tests = all("unit" in item.keywords for item in request.session.items)
     # NOTE: pytest item keywords are based on the path from the pytest rootdir, \
     # which is set by default to the highest dir containing conftest.py. So as long as \
