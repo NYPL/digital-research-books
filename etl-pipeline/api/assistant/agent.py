@@ -804,7 +804,9 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
             indent(f"SUBJECTS: {frbr_fields['subject_list']}", base_indent)
         )  # Does this need to be wrap()'ed to multi-line
         lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", base_indent))
-        lines.append(indent(f"{score_label}: {edition_entry.agg_score:.4f}", base_indent))
+        lines.append(
+            indent(f"{score_label}: {edition_entry.agg_score:.4f}", base_indent)
+        )
         lines.append(indent(f"CHUNKS FOUND: {len(chunk_hits)}", base_indent))
         lines.append("")
 
