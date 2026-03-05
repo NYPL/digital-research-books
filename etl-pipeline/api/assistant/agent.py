@@ -4,7 +4,7 @@ from importlib.resources import read_text
 import json
 from pathlib import Path
 import traceback
-from typing import Dict, Any, Optional, Union, List
+from typing import Dict, Any, Literal, Optional, Union, List, Iterator
 import uuid
 from textwrap import indent
 import sys
@@ -47,7 +47,7 @@ from logger import create_log
 from utils.common import wrap, require_env
 
 # hybrid search
-from .search import hybrid_search, ReciprocalRankFuser
+from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
 
 
 logger = create_log(__name__)
@@ -268,9 +268,19 @@ class ContentSearchExecutionContext:
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
     edition_id: int
-    item_id: int
     search_results: Dict = field(default_factory=dict)
     frbr_fields: Dict = field(default_factory=dict)
+
+
+@dataclass
+class EditionResult:
+    """Value object representing a single edition search result."""
+
+    orm_work: Any
+    orm_edition: Any
+    edition_id: int
+    chunk_hits: list
+    agg_score: float
 
 
 def map_editions_and_records(record_ids=None, edition_ids=None):
@@ -373,13 +383,6 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
 
     # Search within single book
     if conversation_type == "contentSearch":
-        # TEMP: convert edition_id to record_id to filter ES search
-        mapped_ids = map_editions_and_records(edition_ids=[edition_id])[edition_id]
-        record_id = mapped_ids["record_id"]
-        item_id = mapped_ids["item_id"]  # BUG: this item_id may not be correct \
-        # for the returned chunks in the case of multiple items per edition, in \
-        # that case it was arbitrarily selected by map_editions_and_records().
-
         # Fetch FRBR data for the book
         with Timer(
             "get_frbr_data_by_edition",
@@ -394,13 +397,10 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
             )
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
-        # NOTE: intentionally passing record_id as edition_id to make future state a smaller refactor
-        # NOTE: future item_id will be extracted directly from the chunk hit, not passed from the mapper as here
         exec_context = ContentSearchExecutionContext(
             backend=backend,
             embedder=embedder,
-            edition_id=record_id,
-            item_id=item_id,
+            edition_id=edition_id,
             frbr_fields=frbr_fields,
         )
 
@@ -447,8 +447,61 @@ def max_chunk_score(chunk_hits):
     return max([h["score"] for h in chunk_hits])
 
 
+def min_chunk_score(chunk_hits):
+    return min([h["score"] for h in chunk_hits])
+
+
 def mean_chunk_score(chunk_hits):
     return np.mean([h["score"] for h in chunk_hits])
+
+
+def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
+    """
+    Yield chunk_hit's from search results. Adding item_id to each
+    chunk_hit by mapping chunk record_id to item_id in DB.
+
+    Args:
+        results: List of (ChunkDocument, score) tuples
+    """
+    # chunk_hit = ChunkDocument + score (+ item_id)
+    # NOTE: future: the item_id will be directly indexed in the chunk hit \
+    # making this function unnecessary, ScoredHit can be used instead.
+
+    missing_item_ids = []
+    try:
+        # Retrieve map of record_id->item_id from DB
+        # book_id = record_id
+        record_ids = set(cd.book_id for cd, _ in results)
+        mapper = map_editions_and_records(record_ids=record_ids)
+
+        # Results from hybrid_search are (ChunkDocument, rrf_score) tuples
+        for chunk_doc, rrf_score in results:
+            chunk_hit = chunk_doc.to_dict()
+            chunk_hit["score"] = rrf_score if rrf_score is not None else 0.0
+            # book_id was incorrectly indexed as a str
+            item_id = mapper.get(int(chunk_hit["book_id"]), {}).get("item_id")
+            if item_id is None:
+                missing_item_ids.append(chunk_hit["book_id"])
+                continue
+            chunk_hit["item_id"] = item_id
+            yield chunk_hit
+    finally:
+        if missing_item_ids:
+            logger.error(
+                f"These {len(set(missing_item_ids))} record_ids do not map to an item_id: {set(missing_item_ids)}"
+            )
+
+
+CHUNK_SCORE_TYPE: Literal["higher-is-better", "lower-is-better"] = "higher-is-better"
+
+if CHUNK_SCORE_TYPE == "higher-is-better":
+    score_aggregator = max_chunk_score
+    sort_direction = {"reverse": True}
+    score_label = "MAX SCORE"
+else:
+    score_aggregator = min_chunk_score
+    sort_direction = {"reverse": False}
+    score_label = "MIN SCORE"
 
 
 @function_tool
@@ -487,49 +540,22 @@ def search_catalog(
         # MAYBE: turn the below into 2 functions: group_by_edition_and_sort() and enrich_edition_hits() (with limit to top 10 in between)
 
         # Group chunk hits by Edition (before adding FRBR data)
-        record_ids = set(cd.book_id for cd, _ in results)
-        mapper = map_editions_and_records(record_ids=record_ids)
+        # edition_hit = {"chunk_hits", "agg_score", "edition_id"}
         edition_hits = {}
-        missing_edition_ids = []
-        # Results from hybrid_search are (ChunkDocument, rrf_score) tuples
-        for chunk_doc, rrf_score in results:
-            chunk_hit = chunk_doc.to_dict()
-            chunk_hit["score"] = rrf_score if rrf_score is not None else 0.0
-            if not chunk_hit.get("book_id"):
-                logger.error(
-                    f"Chunk missing book_id: id={chunk_hit.get('doc_id')}, keys={chunk_hit.keys()}"
-                )
-                continue
-            # book_id was incorrectly indexed as a str for a while
-            chunk_hit["book_id"] = int(chunk_hit["book_id"])
+        for chunk_hit in results_to_chunk_hits(results):
+            edition_hits.setdefault(
+                chunk_hit["edition_id"],
+                {"edition_id": chunk_hit["edition_id"], "chunk_hits": []},
+            )["chunk_hits"].append(chunk_hit)
 
-            # convert record_ids to edition_ids (for fetching FRBR data)
-            # TODO: FUTURE: index books with book_id=edition_id so we don't have to convert
-            frbr_ids = mapper.get(chunk_hit["book_id"])
-            if frbr_ids is None:
-                missing_edition_ids.append(chunk_hit["book_id"])
-                continue
-            chunk_hit.update(frbr_ids)
-            if frbr_ids["edition_id"] not in edition_hits:
-                edition_hits[frbr_ids["edition_id"]] = {
-                    "edition_id": frbr_ids["edition_id"],
-                    "chunk_hits": [chunk_hit],
-                }
-            else:
-                edition_hits[frbr_ids["edition_id"]]["chunk_hits"].append(chunk_hit)
-        # set aggregate edition score
+        # Calculate aggregate edition score
         edition_hits = [
-            {**eh, "agg_score": max_chunk_score(eh["chunk_hits"])}
+            {**eh, "agg_score": score_aggregator(eh["chunk_hits"])}
             for eh in edition_hits.values()
         ]
         logger.info(
             f"Aggregated {len(edition_hits)} editions from {len(results)} chunk hits"
         )
-        if missing_edition_ids:
-            logger.error(
-                f"These {len(set(missing_edition_ids))} record_ids failed to map to an edition: {set(missing_edition_ids)}"
-            )
-            # this case of missing record_ids is also logged in map_editions_and_records()
 
         # TODO: if fewer than PAGE_SIZE editions, re-query more chunks until PAGE_SIZE editions are retrieved
 
@@ -537,11 +563,13 @@ def search_catalog(
         # This sort order change (reverse=True) was intentional and also fixes a pre-existing
         # inconsistency between ES9 and Turbopuffer score semantics.
         edition_hits = sorted(
-            edition_hits, key=lambda eh: eh["agg_score"], reverse=True
+            edition_hits, key=lambda eh: eh["agg_score"], **sort_direction
         )
 
         # Limit results to the 10 top scoring editions
-        logger.info(f"Limiting results to top {PAGE_SIZE} editions")
+        logger.info(
+            f"Limiting results to first {PAGE_SIZE} editions sorted by '{CHUNK_SCORE_TYPE}'"
+        )
         edition_hits = edition_hits[:PAGE_SIZE]
         # TODO: handle paginating or providing more edition hits
 
@@ -560,7 +588,7 @@ def search_catalog(
 
         # Merge ES hit data and FRBR metadata (maintaining edition sort order)
         frbr_data = {row.Edition.id: row for row in frbr_data}
-        edition_data = []  # dict with keys: orm_work, orm_edition, edition_hit
+        edition_data = []  # list of EditionResult
         missing_data = []
         for edition_hit in edition_hits:
             # match DB orm work/edition to vector search edition hit
@@ -569,11 +597,13 @@ def search_catalog(
                 missing_data.append(edition_hit["edition_id"])
             else:
                 edition_data.append(
-                    {
-                        "orm_work": row.Work,
-                        "orm_edition": row.Edition,
-                        "edition_hit": edition_hit,
-                    }
+                    EditionResult(
+                        orm_work=row.Work,
+                        orm_edition=row.Edition,
+                        edition_id=edition_hit["edition_id"],
+                        chunk_hits=edition_hit["chunk_hits"],
+                        agg_score=edition_hit["agg_score"],
+                    )
                 )
         # ALT: if frbr_data was pre-sorted by edition_ids in the SQL call, we \
         # could zip frbr data and edition hits bc order would be the same
@@ -616,7 +646,7 @@ def search_book(
 ) -> str:
     try:
         logger.info(
-            f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}', for edition_id (record_id) = {ctx.context.edition_id}"
+            f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}', for edition_id = {ctx.context.edition_id}"
         )
 
         # Post-process filters through the pipeline
@@ -625,9 +655,7 @@ def search_book(
         )
 
         # Build filter to restrict search to single book
-        # NOTE: book_id was (incorrectly) indexed as str initially
-        # TODO: current book_id=record_id, future book_id=edition_id (record_id currently passed to context under name edition_id)
-        book_filter = ["book_id", "Eq", str(ctx.context.edition_id)]
+        book_filter = ["edition_id", "Eq", ctx.context.edition_id]
 
         # Combine with user filters if provided
         if filters is not None:
@@ -651,22 +679,12 @@ def search_book(
         if not len(results):
             return "No results found for your query in this book."
 
-        # Convert (ChunkDocument, rrf_score) tuples to dict format
-        chunk_hits = []
-        for chunk_doc, rrf_score in results:
-            chunk_hit = chunk_doc.to_dict()
-            chunk_hit["item_id"] = (
-                ctx.context.item_id
-            )  # NOTE: future: the item_id will be directly indexed in the chunk hit.
-            chunk_hit["score"] = rrf_score if rrf_score is not None else 0.0
-            chunk_hits.append(chunk_hit)
+        chunk_hits = list(results_to_chunk_hits(results))
 
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
             "tool_name": ctx.tool_name,
             "chunk_hits": chunk_hits,
-            # "work": orm_work,
-            # "edition": orm_edition,
             "search_params": json.loads(ctx.tool_arguments),
         }
 
@@ -748,7 +766,7 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
     page number and search score is displayed. Books are ordered by the input list.
 
     Args:
-        edition_data: List of dicts containing 'orm_work', 'orm_edition', 'edition_hit'
+        edition_data: List of EditionResult containing 'orm_work', 'orm_edition', 'edition_hit'
         query: The search query string
         as_str: If True, return as string; otherwise print
     """
@@ -761,14 +779,12 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
         lines.append("\n")
 
     for i, edition_entry in enumerate(edition_data, 1):
-        orm_work = edition_entry["orm_work"]
-        orm_edition = edition_entry["orm_edition"]
-        edition_hit = edition_entry["edition_hit"]
+        orm_work = edition_entry.orm_work
+        orm_edition = edition_entry.orm_edition
         # Format work and edition metadata
         frbr_fields = format_frbr_fields(orm_work, orm_edition)
 
-        # Get chunk hits for this edition
-        chunk_hits = edition_hit.get("chunk_hits", [])
+        chunk_hits = edition_entry.chunk_hits
 
         # Display work/edition data
         base_indent = "  "
@@ -788,7 +804,9 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
             indent(f"SUBJECTS: {frbr_fields['subject_list']}", base_indent)
         )  # Does this need to be wrap()'ed to multi-line
         lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", base_indent))
-        lines.append(indent(f"MAX SCORE: {edition_hit['agg_score']:.4f}", base_indent))
+        lines.append(
+            indent(f"{score_label}: {edition_entry.agg_score:.4f}", base_indent)
+        )
         lines.append(indent(f"CHUNKS FOUND: {len(chunk_hits)}", base_indent))
         lines.append("")
 
@@ -832,7 +850,7 @@ def compact_display_editions(edition_data, query, as_str=False):
     Display edition search results in compact format.
 
     Args:
-        edition_data: List of dicts containing 'orm_work', 'orm_edition', 'edition_hit'
+        edition_data: List of EditionResult containing 'orm_work', 'orm_edition', 'edition_hit'
         query: The search query string
         as_str: If True, return as string; otherwise print
     """
@@ -844,17 +862,16 @@ def compact_display_editions(edition_data, query, as_str=False):
     lines.append("RESULTS:")
 
     for i, edition_entry in enumerate(edition_data, 1):
-        orm_work = edition_entry["orm_work"]
-        orm_edition = edition_entry["orm_edition"]
-        edition_hit = edition_entry["edition_hit"]
+        orm_work = edition_entry.orm_work
+        orm_edition = edition_entry.orm_edition
         title = orm_work.title or "(No Title)"
-        chunk_hits = edition_hit.get("chunk_hits", [])
+        chunk_hits = edition_entry.chunk_hits
 
         # Truncate title if too long
         title_display = title[:60] + "..." if len(title) > 60 else title
 
         lines.append(
-            f" {i:>3}:  ({edition_hit['agg_score']:.3f}) Ed:{orm_edition.id:<6} W:{orm_work.id:<6} [{len(chunk_hits)} chunks] - {title_display}"
+            f" {i:>3}:  ({edition_entry.agg_score:.3f}) Ed:{orm_edition.id:<6} W:{orm_work.id:<6} [{len(chunk_hits)} chunks] - {title_display}"
         )
 
     msg = "\n".join(lines)

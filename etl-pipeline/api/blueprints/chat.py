@@ -67,16 +67,16 @@ def format_search_results(search_results):
     if search_result:
         if search_result["tool_name"] == "search_catalog":
             editions = []
-            for edition_datum in search_result["edition_data"]:
+            for edition_result in search_result["edition_data"]:
                 # FRBR ORM to dict
                 work_dict = orm_to_dict(
-                    edition_datum["orm_work"],
+                    edition_result.orm_work,
                     exclude=[(Work, "date_created"), (Work, "date_modified")],
                 )
                 # prepend "work_" to work fields
                 work_dict = {f"work_{k}": v for k, v in work_dict.items()}
                 edition_dict = orm_to_dict(
-                    edition_datum["orm_edition"],
+                    edition_result.orm_edition,
                     exclude=[
                         (Edition, "date_created"),
                         (Edition, "date_modified"),
@@ -104,9 +104,7 @@ def format_search_results(search_results):
                 edition_dict.update(
                     {
                         **work_dict,
-                        "snippets": get_relevant_snippets(
-                            edition_datum["edition_hit"]["chunk_hits"]
-                        ),
+                        "snippets": get_relevant_snippets(edition_result.chunk_hits),
                     }
                 )
                 editions.append(edition_dict)
