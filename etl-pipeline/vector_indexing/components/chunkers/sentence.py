@@ -4,17 +4,36 @@ from itertools import accumulate
 from typing import Iterator, Optional
 
 from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core.schema import Document
 
 from vector_indexing.core.types import Book, BookMetadata, ChunkDocument
 from vector_indexing.core.config import get_config, GlobalConfig
-from vector_indexing.components.chunkers.base import TextChunker
+from vector_indexing.components.chunkers.base import ChunkWithPages, TextChunker
+
+
+def char_to_page(
+    char_index: int, page_end_indices: list[int], exclusive: bool = False
+) -> int:
+    """Convert character index to 1-indexed page number.
+
+    Args:
+        char_index: Character position in the joined text.
+        page_end_indices: Cumulative end index of each page.
+        exclusive: If True, treats char_index as exclusive (one past the last char).
+    """
+    if exclusive:
+        return sum(char_index > end for end in page_end_indices) + 1
+    else:
+        return sum(char_index >= end for end in page_end_indices) + 1
 
 
 class SentenceSplitterChunker(TextChunker):
     """Chunker using LlamaIndex's SentenceSplitter.
+
     Splits text at sentence boundaries while respecting token limits.
     Preserves paragraph structure where possible.
-    Takes in:
+
+    Args:
         chunk_size: Target chunk size in tokens (default from config).
         chunk_overlap: Overlap between chunks in tokens (default from config).
         config: Optional GlobalConfig override.
@@ -48,9 +67,16 @@ class SentenceSplitterChunker(TextChunker):
         return self._chunk_overlap
 
     def chunk(self, book: Book) -> Iterator[ChunkDocument]:
-        """Split book into sentence-boundary chunks. Takes in a Book
-        with populated pages and metadata. Yields chunk documents. Will raise
-        a ValueError if book.metadata is None.
+        """Split book into sentence-boundary chunks.
+
+        Args:
+            book: Book with populated pages and metadata.
+
+        Yields:
+            ChunkDocument for each chunk.
+
+        Raises:
+            ValueError: If book.metadata is None.
         """
         if book.metadata is None:
             raise ValueError(
@@ -58,56 +84,43 @@ class SentenceSplitterChunker(TextChunker):
                 "Run metadata enrichment before chunking."
             )
 
-        metadata = book.metadata
-
-        # Join pages with newlines to preserve page structure.
-        # NOTE: This creates a full copy of the book text in memory.
-        # We should optimize this for very large books with a sliding
-        # window approach that joins N pages at a time with overlap.
-        pages_with_newlines = [page + "\n" for page in book.pages]
-        book_text = "".join(pages_with_newlines)
-
-        # Calculate cumulative end index of each page
-        # (accounts for the newline added after each page)
-        page_end_indices = list(accumulate(len(p) for p in pages_with_newlines))
-
-        # Split into chunks
-        chunks = self._splitter.split_text(book_text)
-
-        # Track position through the text
-        chunk_end_char = 0
-
-        for chunk_index, chunk_text in enumerate(chunks):
-            chunk_start_char = chunk_end_char
-            chunk_end_char = chunk_start_char + len(chunk_text)
-
-            # Map character positions to page numbers (1-indexed)
-            start_page = self._char_to_page(chunk_start_char, page_end_indices)
-            end_page = self._char_to_page(chunk_end_char, page_end_indices)
-
+        for chunk in self.iter_chunks(book.pages):
             yield ChunkDocument.create(
                 barcode=book.barcode,
                 book_id=book.book_id,
-                chunk_index=chunk_index,
-                text=chunk_text,
-                start_page=start_page,
-                end_page=end_page,
-                book_metadata=metadata,
+                chunk_index=chunk.index,
+                text=chunk.text,
+                start_page=chunk.start_page,
+                end_page=chunk.end_page,
+                book_metadata=book.metadata,
             )
 
-    @staticmethod
-    def _char_to_page(char_index: int, page_end_indices: list[int]) -> int:
-        """Convert character index to 1-indexed page number.
+    def iter_chunks(self, pages: list[str]) -> Iterator[ChunkWithPages]:
+        """Split pages into chunks with page positions.
 
         Args:
-            char_index: Character position in the joined text.
-            page_end_indices: Cumulative end index of each page.
+            pages: List of page text strings.
 
-        Returns:
-            1-indexed page number containing the character.
+        Yields:
+            ChunkWithPages with index, text, start_page, end_page.
         """
-        # Count how many page boundaries we've passed
-        # Page 1 is from 0 to page_end_indices[0]
-        # Page 2 is from page_end_indices[0] to page_end_indices[1], etc.
-        page_num = sum(char_index >= end_idx for end_idx in page_end_indices) + 1
-        return page_num
+        # Join pages with newlines (could be bad for memory, optimize if needed)
+        pages_with_newlines = [page + "\n" for page in pages]
+        full_text = "".join(pages_with_newlines)
+        page_end_indices = list(accumulate(len(p) for p in pages_with_newlines))
+
+        # Get nodes from LlamaIndex (includes char indices)
+        doc = Document(text=full_text)
+        nodes = self._splitter.get_nodes_from_documents([doc])
+
+        for chunk_index, node in enumerate(nodes):
+            yield ChunkWithPages(
+                index=chunk_index,
+                text=node.text,
+                start_page=char_to_page(
+                    node.start_char_idx, page_end_indices, exclusive=False
+                ),
+                end_page=char_to_page(
+                    node.end_char_idx, page_end_indices, exclusive=True
+                ),
+            )
