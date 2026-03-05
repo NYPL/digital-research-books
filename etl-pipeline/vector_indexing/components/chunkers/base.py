@@ -1,9 +1,18 @@
 """Abstract base class for text chunkers."""
 
 from abc import ABC, abstractmethod
-from typing import Iterator
+from typing import Iterator, NamedTuple
 
 from vector_indexing.core.types import Book, ChunkDocument
+
+
+class ChunkWithPages(NamedTuple):
+    """A text chunk with its page span."""
+
+    index: int
+    text: str
+    start_page: int
+    end_page: int
 
 
 class TextChunker(ABC):

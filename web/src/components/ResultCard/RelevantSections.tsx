@@ -58,7 +58,9 @@ const RelevantSections: React.FC<RelevantSectionsProps> = ({
         }}
       >
         <Text>
-          {isOpen ? "Hide relevant sections" : "View relevant sections"}
+          {isOpen
+            ? "Hide relevant sections"
+            : `View ${snippets.length} relevant sections`}
         </Text>
         <Icon
           name="arrow"

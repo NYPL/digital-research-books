@@ -27,13 +27,17 @@ describe("RelevantSections", () => {
   });
 
   test("should render the component with snippets", () => {
-    expect(screen.getByText("View relevant sections")).toBeInTheDocument();
+    expect(
+      screen.getByText(`View ${mockSnippets.length} relevant sections`)
+    ).toBeInTheDocument();
   });
 
   test("should toggle open and display snippets when 'View relevant sections' is clicked", () => {
     expect(screen.queryByText("Page 5")).not.toBeInTheDocument();
     expect(screen.queryByText("Page 10")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByText("View relevant sections"));
+    fireEvent.click(
+      screen.getByText(`View ${mockSnippets.length} relevant sections`)
+    );
     expect(screen.getByText("Relevant sections")).toBeInTheDocument();
     expect(screen.getByText("Page 5")).toBeInTheDocument();
     expect(screen.getByText("Page 10")).toBeInTheDocument();
@@ -44,7 +48,9 @@ describe("RelevantSections", () => {
   });
 
   test("should toggle closed when 'Hide relevant sections' is clicked", () => {
-    fireEvent.click(screen.getByText("View relevant sections"));
+    fireEvent.click(
+      screen.getByText(`View ${mockSnippets.length} relevant sections`)
+    );
     expect(screen.getByText("Page 5")).toBeInTheDocument();
     expect(screen.getByText("Page 10")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Hide relevant sections"));
@@ -53,7 +59,9 @@ describe("RelevantSections", () => {
   });
 
   test("should generate correct links for snippets", () => {
-    fireEvent.click(screen.getByText("View relevant sections"));
+    fireEvent.click(
+      screen.getByText(`View ${mockSnippets.length} relevant sections`)
+    );
     const links = screen.getAllByRole("link");
     expect(links).toHaveLength(2);
     expect(links[0]).toHaveAttribute(
