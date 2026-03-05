@@ -496,11 +496,11 @@ CHUNK_SCORE_TYPE: Literal["higher-is-better", "lower-is-better"] = "higher-is-be
 
 if CHUNK_SCORE_TYPE == "higher-is-better":
     score_aggregator = max_chunk_score
-    sort_direction = {"reversed": True}
+    sort_direction = {"reverse": True}
     score_label = "MAX SCORE"
 else:
     score_aggregator = min_chunk_score
-    sort_direction = {"reversed": False}
+    sort_direction = {"reverse": False}
     score_label = "MIN SCORE"
 
 
