@@ -565,7 +565,9 @@ def search_catalog(
         )
 
         # Limit results to the 10 top scoring editions
-        logger.info(f"Limiting results to most relevant {PAGE_SIZE} editions")
+        logger.info(
+            f"Limiting results to first {PAGE_SIZE} editions sorted by '{CHUNK_SCORE_TYPE}'"
+        )
         edition_hits = edition_hits[:PAGE_SIZE]
         # TODO: handle paginating or providing more edition hits
 
