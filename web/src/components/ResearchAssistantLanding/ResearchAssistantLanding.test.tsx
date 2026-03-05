@@ -1,59 +1,59 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { DSProvider } from "@nypl/design-system-react-components";
+import { fireEvent, render, screen } from "@testing-library/react";
 import mockRouter from "next-router-mock";
+import React from "react";
 import ResearchAssistantLanding from "./ResearchAssistantLanding";
 
 describe("ResearchAssistantLanding", () => {
-    beforeEach(() => {
-        mockRouter.setCurrentUrl("/research-assistant-landing");
-    });
+  const renderWithProvider = (ui: React.ReactElement) => {
+    return render(<DSProvider>{ui}</DSProvider>);
+  };
 
-    test("renders the ResearchAssistantLanding component", () => {
-        render(<ResearchAssistantLanding />);
-        expect(
-            screen.getByRole("heading", {
-                name: /introducing the nypl virtual research assistant/i,
-            })
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/your ai partner in discovering relevant research/i)
-        ).toBeInTheDocument();
-        expect(
-            screen.getByPlaceholderText(
-                /what research topic can i help you explore today?/i
-            )
-        ).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /send/i })).toBeInTheDocument();
-    });
+  beforeEach(() => {
+    mockRouter.setCurrentUrl("/research-assistant-landing");
+    renderWithProvider(<ResearchAssistantLanding />);
+  });
 
-    test("navigates to /research-assistant when search is submitted", () => {
-        render(<ResearchAssistantLanding />);
-        const inputElement = screen.getByPlaceholderText(
-            /what research topic can i help you explore today?/i
-        ) as HTMLInputElement;
-        const sendButton = screen.getByRole("button", { name: /send/i });
+  test("renders the ResearchAssistantLanding component", () => {
+    expect(
+      screen.getByRole("heading", {
+        name: /New! The NYPL Virtual Research Assistant/i,
+      })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Your AI partner in discovering content from over/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(
+        /what research topic can i help you explore today?/i
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /send/i })).toBeInTheDocument();
+  });
 
-        fireEvent.change(inputElement, { target: { value: "ancient Egypt" } });
-        fireEvent.click(sendButton);
-        expect(mockRouter.asPath).toBe("/research-assistant");
-    });
+  test("navigates to /research-assistant when search is submitted", () => {
+    const inputElement = screen.getByPlaceholderText(
+      /what research topic can i help you explore today?/i
+    ) as HTMLInputElement;
+    const sendButton = screen.getByRole("button", { name: /send/i });
 
-    test("navigates to /research-assistant when a suggestion is clicked", () => {
-        render(<ResearchAssistantLanding />);
-        const suggestionButton = screen.getByText(
-            /show me books on feminism in medieval times/i
-        );
+    fireEvent.change(inputElement, { target: { value: "ancient Egypt" } });
+    fireEvent.click(sendButton);
+    expect(mockRouter.asPath).toBe("/research-assistant");
+  });
 
-        fireEvent.click(suggestionButton);
+  test("navigates to /research-assistant when a suggestion is clicked", () => {
+    const suggestionButton = screen.getByText(/the science of shipbuilding/i);
 
-        expect(mockRouter.asPath).toBe("/research-assistant");
-    });
+    fireEvent.click(suggestionButton);
 
-    test("does not navigate if the query is empty", () => {
-        render(<ResearchAssistantLanding />);
-        const sendButton = screen.getByRole("button", { name: /send/i });
+    expect(mockRouter.asPath).toBe("/research-assistant");
+  });
 
-        fireEvent.click(sendButton);
-        expect(mockRouter.asPath).toBe("/research-assistant-landing");
-    });
+  test("does not navigate if the query is empty", () => {
+    const sendButton = screen.getByRole("button", { name: /send/i });
+
+    fireEvent.click(sendButton);
+    expect(mockRouter.asPath).toBe("/research-assistant-landing");
+  });
 });

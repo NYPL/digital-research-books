@@ -1,3 +1,8 @@
+jest.mock("@nypl/web-reader", () => ({
+  addTocToManifest: jest.fn(),
+  PdfReader: () => <div data-testid="mock-pdf-reader" />,
+}));
+
 import { fireEvent, render, screen } from "@testing-library/react";
 import ResearchAssistant from "../ResearchAssistant";
 

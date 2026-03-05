@@ -7,11 +7,11 @@ class ResearchAssistantLandingPage {
   readonly subNav: Locator;
   readonly searchTextBox: Locator;
   readonly searchSubmitBtn: Locator;
-  readonly suggestBtnRomanEmpire: Locator;
-  readonly suggestBtnFeminism: Locator;
-  readonly suggestBtnMethodistChurch: Locator;
-  readonly suggestBtnAmericanCivilWar: Locator;
-  readonly learnMoreBtn: Locator;
+  readonly suggestBtnAncientRome: Locator;
+  readonly suggestButtonMedievalWarfare: Locator;
+  readonly suggestBtnOrnithology: Locator;
+  readonly suggestBtnShipbuilding: Locator;
+  readonly learnMoreBtns: Locator;
   readonly featuresSectionHeading: Locator;
   readonly accessSectionHeading: Locator;
   readonly focusedResearchSectionHeading: Locator;
@@ -21,34 +21,44 @@ class ResearchAssistantLandingPage {
   constructor(page: Page) {
     this.page = page;
     this.heroHeading = page.getByText("NYPL Virtual Research Assistant");
-    this.heroSubheading = page.getByText("Your AI partner in discovering relevant research");
-    this.subNav = page.getByText('Virtual Research AssistantBETAKeyword search')
-    this.searchTextBox = page.getByRole("textbox", { name: "What research topic"});
+    this.heroSubheading = page.getByText(
+      "Your AI partner in discovering content from over"
+    );
+    this.subNav = page.getByText(
+      "Virtual Research AssistantBETAKeyword search"
+    );
+    this.searchTextBox = page.getByRole("textbox", {
+      name: "What research topic",
+    });
     this.searchSubmitBtn = page.getByRole("button", { name: "Send" });
-    this.suggestBtnRomanEmpire = page.getByRole("button", { name: "the Roman Empire" });
-    this.suggestBtnFeminism = page.getByRole("button", { name: "feminism in medieval times" });
-    this.suggestBtnMethodistChurch = page.getByRole("button", { name: "the Methodist Church" });
-    this.suggestBtnAmericanCivilWar = page.getByRole("button", { name: "American Civil War" });
-    this.learnMoreBtn = page.getByRole("button", { name: "Learn more ↓" })
-    this.featuresSectionHeading = page.getByRole(
-      "heading",
-      { name: "Get more out of your research journey with the power of AI" }
-    );
-    this.accessSectionHeading = page.getByRole(
-      "heading",
-      { name: "Access and engage with scholarly e-books in minutes" }
-    );
-    this.focusedResearchSectionHeading = page.getByRole(
-      "heading",
-      { name: "Do focused research with smart tools" }
-    );
-    this.faqSectionHeading = page.getByRole("heading", { name: "Frequently asked questions" });
-    this.helpSectionHeading = page.getByText(
-      "Have a question? Get help or learn more about this project"
-    );
+    this.suggestBtnAncientRome = page.getByRole("button", {
+      name: "Political figures of Ancient Rome",
+    });
+    this.suggestButtonMedievalWarfare = page.getByRole("button", {
+      name: "Medieval warfare in China",
+    });
+    this.suggestBtnOrnithology = page.getByRole("button", {
+      name: "Ornithology in the nineteenth century",
+    });
+    this.suggestBtnShipbuilding = page.getByRole("button", {
+      name: "The science of shipbuilding",
+    });
+    this.learnMoreBtns = page.getByRole("button", { name: "Learn more" });
+    this.featuresSectionHeading = page.getByRole("heading", {
+      name: "What can the Assistant help you do?",
+    });
+    this.accessSectionHeading = page.getByRole("heading", {
+      name: "How does the Assistant work?",
+    });
+    this.faqSectionHeading = page.getByRole("heading", {
+      name: "Frequently asked questions",
+    });
+    this.helpSectionHeading = page.getByText("Have more questions?");
   }
 
-  async navigateTo() { await this.page.goto("/research-assistant-landing"); }
+  async navigateTo() {
+    await this.page.goto("/research-assistant-landing");
+  }
 
   async search(query: string) {
     await this.searchTextBox.fill(query);

@@ -1,7 +1,7 @@
-import { test, expect, Page } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { ResearchAssistantLandingPage } from "./research-assistant-landing-page";
 
-test.describe("Research Assistant Landing Page UI", () => {
+test.describe("Research Assistant Landing Page UI", { tag: "@vra" }, () => {
   let page: Page;
   let researchAssistantLandingPage: ResearchAssistantLandingPage;
 
@@ -36,26 +36,37 @@ test.describe("Research Assistant Landing Page UI", () => {
   });
 
   test("Search suggestions are visible", async () => {
-    await expect(researchAssistantLandingPage.suggestBtnRomanEmpire).toBeVisible();
-    await expect(researchAssistantLandingPage.suggestBtnFeminism).toBeVisible();
-    await expect(researchAssistantLandingPage.suggestBtnMethodistChurch).toBeVisible();
-    await expect(researchAssistantLandingPage.suggestBtnAmericanCivilWar).toBeVisible();
+    await expect(
+      researchAssistantLandingPage.suggestBtnAncientRome
+    ).toBeVisible();
+    await expect(
+      researchAssistantLandingPage.suggestButtonMedievalWarfare
+    ).toBeVisible();
+    await expect(
+      researchAssistantLandingPage.suggestBtnOrnithology
+    ).toBeVisible();
+    await expect(
+      researchAssistantLandingPage.suggestBtnShipbuilding
+    ).toBeVisible();
   });
 
-  test("'Learn more' button is visible", async () => {
-    await expect(researchAssistantLandingPage.learnMoreBtn).toBeVisible();
+  test("'Learn more' buttons are visible", async () => {
+    await expect(researchAssistantLandingPage.learnMoreBtns).toHaveCount(3);
+    for (const btn of await researchAssistantLandingPage.learnMoreBtns.all()) {
+      await expect(btn).toBeVisible();
+    }
   });
 
   test("Features section heading is visible", async () => {
-    await expect(researchAssistantLandingPage.featuresSectionHeading).toBeVisible();
+    await expect(
+      researchAssistantLandingPage.featuresSectionHeading
+    ).toBeVisible();
   });
 
   test("Access section heading is visible", async () => {
-    await expect(researchAssistantLandingPage.accessSectionHeading).toBeVisible();
-  });
-
-  test("Focused Research section heading is visible", async () => {
-    await expect(researchAssistantLandingPage.focusedResearchSectionHeading).toBeVisible();
+    await expect(
+      researchAssistantLandingPage.accessSectionHeading
+    ).toBeVisible();
   });
 
   test("FAQ section heading is visible", async () => {
@@ -67,23 +78,29 @@ test.describe("Research Assistant Landing Page UI", () => {
   });
 });
 
-test.describe("Research Assistant Landing Page Functionality", () => {
-  let researchAssistantLandingPage: ResearchAssistantLandingPage;
+test.describe(
+  "Research Assistant Landing Page Functionality",
+  { tag: "@vra" },
+  () => {
+    let researchAssistantLandingPage: ResearchAssistantLandingPage;
 
-  test.beforeEach(async ({ page }) => {
-    researchAssistantLandingPage = new ResearchAssistantLandingPage(page);
-    await researchAssistantLandingPage.navigateTo();
-  });
+    test.beforeEach(async ({ page }) => {
+      researchAssistantLandingPage = new ResearchAssistantLandingPage(page);
+      await researchAssistantLandingPage.navigateTo();
+    });
 
-  test("Search text box is ready for input", async () => {
-    const testQuery = "renaissance";
-    await researchAssistantLandingPage.searchTextBox.fill(testQuery);
-    const inputValue = await researchAssistantLandingPage.searchTextBox.inputValue();
-    expect(inputValue).toBe(testQuery);
-  });
+    test("Search text box is ready for input", async () => {
+      const testQuery = "renaissance";
+      await researchAssistantLandingPage.searchTextBox.fill(testQuery);
+      const inputValue = await researchAssistantLandingPage.searchTextBox.inputValue();
+      expect(inputValue).toBe(testQuery);
+    });
 
-  test("Executing search routes to Research Assistant page", async ({ page }) => {
-    await researchAssistantLandingPage.search("renaissance");
-    await expect(page).toHaveURL(/.+\/research-assistant$/);
-  });
-});
+    test("Executing search routes to Research Assistant page", async ({
+      page,
+    }) => {
+      await researchAssistantLandingPage.search("renaissance");
+      await expect(page).toHaveURL(/.+\/research-assistant$/);
+    });
+  }
+);
