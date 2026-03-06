@@ -2,15 +2,23 @@
 
 Downloads books from S3 using parallel requests and integrates with
 DiskBookCache for local caching.
+
+Supports two S3 formats:
+1. Unpacked pages: Individual .txt files (e.g., grin/{barcode}/1_1.txt)
+2. Encrypted archives: .tar.gz.gpg files that need decryption (e.g., grin/{barcode}/{barcode}.tar.gz.gpg)
 """
 
 from __future__ import annotations
 
+import io
+import os
+import re
+import tarfile
+import tempfile
+import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import cached_property
 from typing import Optional, TYPE_CHECKING
-import logging
-import re
 
 import boto3
 
@@ -73,6 +81,7 @@ class S3BookLoader(BookLoader):
         max_workers: int = 10,
         s3_client: Optional[S3Client] = None,
         config: Optional[GlobalConfig] = None,
+        grin_access_key: Optional[str] = None,
     ):
         self._config = config or get_config()
         self._bucket = bucket or self._config.s3_bucket
@@ -80,6 +89,8 @@ class S3BookLoader(BookLoader):
         self._cache = cache
         self._max_workers = max_workers
         self._s3_client = s3_client
+        self._grin_access_key = grin_access_key or self._config.grin_access_key
+        self._gpg = None  # Lazily initialized
 
     @cached_property
     def s3(self) -> S3Client:
@@ -110,7 +121,7 @@ class S3BookLoader(BookLoader):
         return f"{barcode}/"
 
     def _list_page_keys(self, barcode: str) -> list[str]:
-        """List all page keys for a barcode. Raises BookNotFoundError if no pages found."""
+        """List all page .txt keys for a barcode. Returns empty list if no pages found."""
         prefix = self._build_s3_prefix(barcode)
         keys = []
         paginator = self.s3.get_paginator("list_objects_v2")
@@ -121,10 +132,119 @@ class S3BookLoader(BookLoader):
                 if key.endswith(".txt"):
                     keys.append(key)
 
-        if not keys:
-            raise BookNotFoundError(barcode, f"s3://{self._bucket}/{prefix}")
-
         return keys
+
+    def _find_archive_key(self, barcode: str) -> Optional[str]:
+        """Find encrypted archive key for a barcode. Returns None if not found."""
+        prefix = self._build_s3_prefix(barcode)
+        archive_key = f"{prefix}{barcode}.tar.gz.gpg"
+
+        try:
+            self.s3.head_object(Bucket=self._bucket, Key=archive_key)
+            return archive_key
+        except Exception:
+            return None
+
+    def _get_gpg(self):
+        """Lazily initialize GPG instance."""
+        if self._gpg is None:
+            try:
+                import gnupg
+
+                self._gpg = gnupg.GPG()
+            except ImportError:
+                raise BookLoadError(
+                    "gnupg",
+                    "gnupg package required for decrypting archives. Install with: pip install python-gnupg",
+                )
+        return self._gpg
+
+    def _load_from_archive(self, barcode: str, archive_key: str) -> Book:
+        """Download, decrypt, and extract pages from an encrypted archive.
+
+        Args:
+            barcode: Book barcode.
+            archive_key: S3 key for the .tar.gz.gpg file.
+
+        Returns:
+            Book object with extracted pages.
+
+        Raises:
+            BookLoadError: If decryption or extraction fails.
+        """
+        if not self._grin_access_key:
+            raise BookLoadError(
+                barcode,
+                "GRIN_ACCESS_KEY required to decrypt archives. Set the environment variable.",
+            )
+
+        logger.info(f"Loading {barcode} from encrypted archive: {archive_key}")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # Download encrypted archive
+            encrypted_path = os.path.join(tmp_dir, f"{barcode}.tar.gz.gpg")
+            decrypted_path = os.path.join(tmp_dir, f"{barcode}.tar.gz")
+
+            try:
+                logger.debug(f"Downloading archive for {barcode}")
+                self.s3.download_file(
+                    Bucket=self._bucket,
+                    Key=archive_key,
+                    Filename=encrypted_path,
+                )
+            except Exception as e:
+                raise BookLoadError(barcode, f"Failed to download archive: {e}")
+
+            # Decrypt
+            try:
+                logger.debug(f"Decrypting archive for {barcode}")
+                gpg = self._get_gpg()
+                with open(encrypted_path, "rb") as encrypted_file:
+                    result = gpg.decrypt_file(
+                        encrypted_file,
+                        passphrase=self._grin_access_key,
+                        output=decrypted_path,
+                    )
+                if not result.ok:
+                    raise BookLoadError(
+                        barcode, f"GPG decryption failed: {result.status}"
+                    )
+            except BookLoadError:
+                raise
+            except Exception as e:
+                raise BookLoadError(barcode, f"Failed to decrypt archive: {e}")
+
+            # Extract pages from tarball
+            try:
+                logger.debug(f"Extracting pages from archive for {barcode}")
+                pages_dict: dict[int, str] = {}
+
+                with tarfile.open(decrypted_path, mode="r|*") as tar:
+                    for member in tar:
+                        if member.isfile() and member.name.endswith(".txt"):
+                            file_obj = tar.extractfile(member)
+                            if file_obj:
+                                content = file_obj.read().decode("utf-8")
+                                try:
+                                    page_num = _extract_page_number(member.name)
+                                    pages_dict[page_num] = content
+                                except ValueError:
+                                    logger.warning(
+                                        f"Could not extract page number from: {member.name}"
+                                    )
+
+                if not pages_dict:
+                    raise BookLoadError(barcode, "No .txt pages found in archive")
+
+                pages = [pages_dict[k] for k in sorted(pages_dict.keys())]
+                logger.info(f"Extracted {len(pages)} pages from archive for {barcode}")
+
+                return Book(barcode=barcode, pages=pages)
+
+            except BookLoadError:
+                raise
+            except Exception as e:
+                raise BookLoadError(barcode, f"Failed to extract archive: {e}")
 
     def _download_page(self, key: str) -> tuple[int, str]:
         """Download a single page from S3. Returns a tuple of (page_number, page_content)."""
@@ -133,30 +253,19 @@ class S3BookLoader(BookLoader):
         page_num = _extract_page_number(key)
         return (page_num, content)
 
-    def load(self, barcode: str) -> Book:
-        """Load a book from S3, using cache if present. Raises BookNotFoundError if book not found in S3.
-        Raises BookLoadError if download fails.
+    def _load_from_pages(self, barcode: str, keys: list[str]) -> Book:
+        """Load book from individual page files.
+
+        Args:
+            barcode: Book barcode.
+            keys: List of S3 keys for .txt page files.
+
+        Returns:
+            Book object with downloaded pages.
         """
-        # Check cache first
-        if self._cache is not None:
-            cached_book = self._cache.get(barcode)
-            if cached_book is not None:
-                logger.debug(f"Cache hit for barcode {barcode}")
-                return cached_book
-
-        # List pages in S3 (i.e. download task list)
-        try:
-            keys = self._list_page_keys(barcode)
-        except BookNotFoundError:
-            raise
-        except Exception as e:
-            raise BookLoadError(barcode, f"Failed to list S3 pages: {e}")
-
-        # Download pages in parallel
         pages_dict: dict[int, str] = {}
         errors = []
 
-        # using ThreadPoolExecutor for I/O bound tasks
         with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
             futures = {executor.submit(self._download_page, key): key for key in keys}
 
@@ -171,17 +280,57 @@ class S3BookLoader(BookLoader):
         if errors:
             raise BookLoadError(barcode, f"Failed to download pages: {errors[:5]}")
 
-        pages = [pages_dict[k] for k in sorted(pages_dict.keys())]
-
-        if not pages:
+        if not pages_dict:
             raise BookLoadError(barcode, "No pages downloaded")
 
+        pages = [pages_dict[k] for k in sorted(pages_dict.keys())]
         logger.debug(f"Downloaded {len(pages)} pages for barcode {barcode} from S3")
 
-        book = Book(barcode=barcode, pages=pages)
+        return Book(barcode=barcode, pages=pages)
+
+    def load(self, barcode: str) -> Book:
+        """Load a book from S3, using cache if present.
+
+        Supports two S3 formats:
+        1. Unpacked pages: Individual .txt files (tries this first)
+        2. Encrypted archives: .tar.gz.gpg files (falls back to this)
+
+        Raises:
+            BookNotFoundError: If book not found in S3 (neither pages nor archive).
+            BookLoadError: If download/decryption/extraction fails.
+        """
+        # Check cache first
+        if self._cache is not None:
+            cached_book = self._cache.get(barcode)
+            if cached_book is not None:
+                logger.debug(f"Cache hit for barcode {barcode}")
+                return cached_book
+
+        # Try to find unpacked page files first
+        try:
+            keys = self._list_page_keys(barcode)
+        except Exception as e:
+            raise BookLoadError(barcode, f"Failed to list S3 pages: {e}")
+
+        book = None
+
+        if keys:
+            # Found unpacked pages - download them
+            book = self._load_from_pages(barcode, keys)
+        else:
+            # No pages found - check for encrypted archive
+            archive_key = self._find_archive_key(barcode)
+            if archive_key:
+                book = self._load_from_archive(barcode, archive_key)
+            else:
+                prefix = self._build_s3_prefix(barcode)
+                raise BookNotFoundError(
+                    barcode,
+                    f"No pages or archive found at s3://{self._bucket}/{prefix}",
+                )
 
         # Store in cache
-        if self._cache is not None:
+        if self._cache is not None and book is not None:
             self._cache.put(barcode, book)
             logger.debug(f"Cached book {barcode}")
 
@@ -221,6 +370,7 @@ class CachedS3BookLoader(S3BookLoader):
         max_workers: int = 10,
         s3_client: Optional[S3Client] = None,
         config: Optional[GlobalConfig] = None,
+        grin_access_key: Optional[str] = None,
     ):
         config = config or get_config()
 
@@ -236,6 +386,7 @@ class CachedS3BookLoader(S3BookLoader):
             max_workers=max_workers,
             s3_client=s3_client,
             config=config,
+            grin_access_key=grin_access_key,
         )
 
     @property
