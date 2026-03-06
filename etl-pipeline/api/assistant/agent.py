@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import traceback
 from typing import Dict, Any, Optional, Union, List
+from typing_extensions import TypedDict
 import uuid
 from textwrap import indent
 import sys
@@ -270,6 +271,12 @@ class ContentSearchExecutionContext:
     frbr_fields: Dict = field(default_factory=dict)
 
 
+@dataclass
+class SnippetsExecutionContext:
+    search_tool_call_id: str
+    search_result: Dict
+
+
 def map_editions_and_records(record_ids=None, edition_ids=None):
     if record_ids:
         ids = record_ids
@@ -414,7 +421,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         system_prompt = remove_markdown_comments(
             template.render(conversation_type="catalogSearch")
         )
-        tools = [search_catalog, select_relevant_snippets]
+        tools = [search_catalog]
 
     agent = Agent[type(exec_context)](
         name="Research Library Assistant",
@@ -436,7 +443,51 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         ),
     )
 
-    return run_result
+    # TODO: test that the main agent has only 1 tool (this is assumed in writing the relevant snippet prompt)
+    # Add relevant snippets if search was executed
+    search_results = run_result.context_wrapper.context.search_results
+    if len(search_results) >= 1:
+        # Select last search result
+        search_tool_call_id, search_result = list(search_results.items())[-1]
+
+        # NOTE: I probably don't need to add the whole search tool description,
+        # just a high level on what semantic search is
+        snippet_agent_prompt = f"""
+        You are given a conversation between a researcher and a research assistant LLM.
+        The research assistant LLM agent received the following instructions:
+        {system_prompt}
+
+        The research agent had the following search tool available:
+        Name: {run_result.last_agent.tools[0].name}
+        Description: {run_result.last_agent.tools[0].description}
+
+        Your job is to select relevant snippets that will be displayed to the research tool user to help them understand what content relevant to their research interest is available in the books returned by their search.
+
+        You will return relevant snippets for the last search tool call: search tool call id = {search_tool_call_id}.
+
+        Use the select_relevant_snippets tool record the relevant snippets you select to show to the user.
+        """
+
+        # Build Snippet Agent
+        snippet_agent = Agent[SnippetsExecutionContext](
+            name="Relevant Snippets Agent",
+            model=run_result.last_agent.model,
+            instructions=snippet_agent_prompt,
+            tools=[select_relevant_snippets],
+        )
+
+        # Run snippet Agent
+        # NOTE: the agent updates the main agent's context_wrapper.context.search_results in place
+        r = Runner.run_sync(
+            snippet_agent,
+            run_result.to_input_list(),
+            context=SnippetsExecutionContext(search_tool_call_id, search_result),
+            run_config=RunConfig(
+                tracing_disabled=True, model_settings=ModelSettings(temperature=0.0)
+            ),
+        )
+
+    return run_result, r
 
 
 def max_chunk_score(chunk_hits):
@@ -710,11 +761,22 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
     resubmission of invalid snippets.
     """
 
+    total_snippets_submitted = sum(len(v) for v in snippets.values())
+    logger.info(
+        f"validate_and_save_snippets called: {len(snippets)} edition(s), "
+        f"{total_snippets_submitted} total snippet(s) submitted."
+    )
+
     rejected: List[tuple] = []  # (edition_id_display, snippet_obj_or_None, reason)
 
     for edition_id, snippet_list in snippets.items():
-        # --- Validate edition: edition_id must be in the referenced search result ---
+        # --- Validate edition: edition_id must be in the search result ---
         if edition_id not in edition_entry_map:
+            # TODO: add each snippet explicitly
+            logger.debug(
+                f"Rejecting edition {edition_id}: not found in search results "
+                f"for tool call '{search_tool_call_id}'."
+            )
             rejected.append(
                 (
                     edition_id,
@@ -729,6 +791,10 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
 
         # --- Validate edition: 1-5 snippets per edition ---
         if not (1 <= len(snippet_list) <= 5):
+            logger.debug(
+                f"Rejecting edition {edition_id}: {len(snippet_list)} snippet(s) submitted; "
+                f"must be between 1 and 5 inclusive."
+            )
             rejected.append(
                 (
                     edition_id,
@@ -753,6 +819,11 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
                 trail = parts[1].lstrip()
 
                 if not lead or not trail:
+                    logger.debug(
+                        f"Rejecting snippet for edition {edition_id}: elided snippet "
+                        f"has empty {'lead' if not lead else 'trail'} around '//...//'.  "
+                        f"snippet={repr(snippet_text[:60])}"
+                    )
                     rejected.append(
                         (
                             edition_id,
@@ -787,6 +858,10 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
 
             if not all_chunk_matches:
                 if is_elided:
+                    logger.debug(
+                        f"Rejecting elided snippet for edition {edition_id}: lead/trail "
+                        f"not found in any chunk. lead={repr(lead[:50])}, trail={repr(trail[:50])}"
+                    )
                     rejected.append(
                         (
                             edition_id,
@@ -798,6 +873,10 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
                         )
                     )
                 else:
+                    logger.debug(
+                        f"Rejecting snippet for edition {edition_id}: text not found in any chunk. "
+                        f"snippet={repr(snippet_text[:60])}"
+                    )
                     rejected.append(
                         (
                             edition_id,
@@ -812,6 +891,11 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
             if first_single is None:
                 # Every chunk that matched had multiple matches within it
                 if is_elided:
+                    logger.debug(
+                        f"Rejecting elided snippet for edition {edition_id}: lead/trail "
+                        f"produce multiple matches in every matching chunk. "
+                        f"lead={repr(lead[:50])}, trail={repr(trail[:50])}"
+                    )
                     rejected.append(
                         (
                             edition_id,
@@ -823,6 +907,11 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
                         )
                     )
                 else:
+                    logger.debug(
+                        f"Rejecting snippet for edition {edition_id}: text produces "
+                        f"multiple matches in every matching chunk. "
+                        f"snippet={repr(snippet_text[:60])}"
+                    )
                     rejected.append(
                         (
                             edition_id,
@@ -840,6 +929,10 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
             # --- Step 2: Validate word count on the resolved snippet ---
             word_count = len(resolved_snippet.split())
             if word_count > 150:
+                logger.debug(
+                    f"Rejecting snippet for edition {edition_id}: resolved snippet "
+                    f"has {word_count} words, exceeding 150-word hard limit."
+                )
                 rejected.append(
                     (
                         edition_id,
@@ -854,6 +947,10 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
             # --- Step 3: Verify snippet item_id ---
             matched_item_id = matched_chunk.get("item_id")
             if matched_item_id is None or matched_item_id != item_id:
+                logger.debug(
+                    f"Rejecting snippet for edition {edition_id}: claimed item_id={item_id} "
+                    f"does not match chunk item_id={matched_item_id}."
+                )
                 rejected.append(
                     (
                         edition_id,
@@ -880,10 +977,12 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
                     or matched_chunk.get("meta", {}).get("score"),
                 }
             )
+            print(f"saved snippet {resolved_snippet[:50]}... to edition {edition_id}")
 
     # TODO: validate that every edition has snippets saved (2nd or later submissions of the function)
 
     # --- Build response message ---
+    logger.info(f"validate_and_save_snippets: {len(rejected)} snippet(s) rejected.")
     if not rejected:
         return "Snippets successfully saved!"
 
@@ -904,98 +1003,92 @@ def validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
     return "\n".join(lines)
 
 
-@function_tool
-def select_relevant_snippets(
-    ctx: ToolContext[CatalogSearchExecutionContext],
-    search_tool_call_id: str,
-    snippets: Dict[str, List[Dict[str, int | str]]],
-) -> str:
-    """Select and validate relevant text snippets from a prior catalog search result.
+class SnippetItem(TypedDict):
+    item_id: int
+    snippet: str
 
-    After calling search_catalog, use this tool to select 1-5 representative text
+
+class EditionSnippets(TypedDict):
+    edition_id: int
+    snippets: List[SnippetItem]
+
+
+@function_tool  # TODO: add @timer
+def select_relevant_snippets(
+    ctx: ToolContext[SnippetsExecutionContext],  # TODO: change type
+    snippets: List[EditionSnippets],
+) -> str:
+    """Select text excerpts relevant to the user's search interest.
+
+    Use this tool to select 1-5 representative text
     snippets per book. The snippets will be shown to the user alongside each book
     to provide context for why the book was returned.
 
-
-    Example::
-
-        select_relevant_snippets(
-            search_tool_call_id="call_abc123",
-            snippets={
-                "4872": [
-                    {
-                        "item_id": 9021,
-                        "snippet": "the mitochondria is the powerhouse of the cell",
-                    },
-                    {
-                        "item_id": 9021,
-                        "snippet": "Cellular respiration begins //...// and terminates with the synthesis of ATP.",
-                    },
-                ],
-                "5310": [
-                    {
-                        "item_id": 9834,
-                        "snippet": "Darwin observed that species adapted over generations",
-                    },
-                ],
-            },
-        )
-
-
     Args:
-        search_tool_call_id: The tool_call_id returned by the search_catalog call
-            whose results you are annotating. Must correspond to a result already
-            stored in the session.
-        snippets: Mapping from edition_id (as a string or integer key) to a list
-            of snippet objects for that edition. Each snippet object must contain:
-
-            - ``item_id`` (int): The item ID the snippet belongs to, exactly as
-              shown in the search result.
-            - ``snippet`` (str): The snippet text. The following rules apply:
-
-              * Select 1-5 snippets per edition/book.
-              * Each snippet must be no more than 100 words. A grace margin of
-                50 words is permitted before rejection (hard limit: 150 words).
-              * You may elide words from the middle using the **exact** token
-                ``//...//`` to save space and writing time. The text before
-                ``//...//`` is the *lead* and the text after is the *trail*;
-                each is matched as a literal substring across all chunk texts
-                for that edition. Both the lead and the trail must each match in
-                exactly one chunk (and in the same chunk); if either matches in
-                zero chunks or more than one chunk the snippet is rejected.
-              * When no elision is used the full snippet text must appear as a
-                literal substring in exactly one chunk.
-              * Only elide the middle when the lead and trail are individually
-                long enough to uniquely identify the snippet. If the text is
-                short enough to include in full, do so.
-
-    Returns:
-        A summary listing accepted snippets and any rejected snippets with the
-        reason for rejection. If any snippets were rejected the response asks
-        for a corrected resubmission.
+        snippets: List of edition snippet objects. Each object must contain:
+            - ``edition_id`` (int): edition ID that that snippets are taken from.
+            - ``snippets`` (list): 1-5 snippet objects from that edition. Each snippet object must contain:
+                - ``item_id`` (int): The item ID of the chunk that the snippet comes from.
+                - ``snippet`` (str): The snippet text. The following rules apply:
+                  * Each snippet must be no more than 100 words.
+                  * Snippets will be validated to make sure the snippet text appears as a
+                    literal substring in at least one chunk.
+                  * You may elide words from the middle using the **exact** token
+                    ``//...//`` to save space and writing time. Only elide the middle when the lead and trail are individually
+                    long enough to uniquely identify the snippet. If the text is
+                    short enough to include in full, do so.
+            Example:
+                [
+                    {
+                        "edition_id": 4872,
+                        "snippets": [
+                            {
+                                "item_id": 9021,
+                                "snippet": "the mitochondria is the powerhouse of the cell",
+                            },
+                            {
+                                "item_id": 9021,
+                                "snippet": "Cellular respiration begins //...// and terminates with the synthesis of ATP.",
+                            },
+                        ],
+                    },
+                    {
+                        "edition_id": 5310,
+                        "snippets": [
+                            {
+                                "item_id": 9834,
+                                "snippet": "Darwin observed that species adapted over generations",
+                            },
+                        ],
+                    },
+                ]
 
     """
-    logger.info(
-        f"{ctx.tool_name} tool called for search_tool_call_id='{search_tool_call_id}'"
-    )
-    # TODO: make a callback for any tool, and add a edition_id log message
+    # Returns:
+    #     A summary of rejected snippets with the
+    #     reason for rejection. If any snippets were rejected the response asks
+    #     for a corrected resubmission.
 
-    # --- Validation: search_tool_call_id must be in search_results ---
-    if search_tool_call_id not in ctx.context.search_results:
-        known = list(ctx.context.search_results.keys())
-        return (
-            f"ERROR: search_tool_call_id '{search_tool_call_id}' was not found in "
-            f"search results. Known IDs: {known}. "
-            f"Please resubmit with a valid search_tool_call_id."
+    try:
+        logger.info(f"{ctx.tool_name} tool called with arguments'{ctx.tool_arguments}'")
+        # TODO: make a name and args callback for any tool, and add a edition_id log message to search_book, add traceback log to this callback
+
+        # Build lookup: edition_id (int) -> edition_data entry
+        edition_entry_map = {
+            entry["orm_edition"].id: entry
+            for entry in ctx.context.search_result.get("edition_data", [])
+        }
+
+        # Convert list of EditionSnippets to the dict format expected by validate_and_save_snippets
+        snippets_dict = {entry["edition_id"]: entry["snippets"] for entry in snippets}
+
+        return validate_and_save_snippets(
+            edition_entry_map, snippets_dict, ctx.context.search_tool_call_id
         )
 
-    edition_data = ctx.context.search_results[search_tool_call_id].get(
-        "edition_data", []
-    )
-    # Build lookup: edition_id (int) -> edition_data entry
-    edition_entry_map = {entry["orm_edition"].id: entry for entry in edition_data}
-
-    return validate_and_save_snippets(edition_entry_map, snippets, search_tool_call_id)
+    except Exception as e:
+        logger.exception(f"Error during {ctx.tool_name} tool execution.")
+        raise e
 
 
 def format_frbr_fields(orm_work, orm_edition):
@@ -1077,7 +1170,7 @@ def display_book(lines, frbr_fields, chunk_hits, edition_id):
     )  # Does this need to be wrap()'ed to multi-line
     lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", base_indent))
     # lines.append(indent(f"MAX SCORE: {edition_hit['agg_score']:.4f}", base_indent))
-    lines.append(indent(f"FOUND {len(chunk_hits)} MATCHING SECTIONS:", base_indent))
+    lines.append(indent(f"FOUND {len(chunk_hits)} MATCHING CHUNKS:", base_indent))
     lines.append("")
 
     # Display chunk level information
