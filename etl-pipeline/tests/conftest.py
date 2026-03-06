@@ -226,6 +226,7 @@ def frbrized_record_data(
             f"1|example.com/1.pdf|{TEST_SOURCE}|text/html|{json.dumps(flags)}"
         ],
     }
+
     frbrized_record = create_or_update_record(
         record_data=test_frbrized_record_data, db_manager=db_manager
     )
