@@ -94,7 +94,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             margin="0"
             __css={{ svg: { marginInlineStart: "0 !important" } }}
           >
-            <ResearchAssistantIcon />
+            <ResearchAssistantIcon inCircle />
             <Text>Why am I seeing this result?</Text>
           </Box>
         ),
@@ -134,7 +134,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
           margin="0"
           __css={{ svg: { marginInlineStart: "0 !important" } }}
         >
-          <ResearchAssistantIcon />
+          <ResearchAssistantIcon inCircle />
           <Text>What is this book about?</Text>
         </Box>
       ),
@@ -222,6 +222,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
               },
               "button[aria-expanded='true'], button[aria-expanded='true']:hover": {
                 backgroundColor: "section.research.primary-05",
+              },
+              "button[aria-expanded='true'] div": {
+                backgroundColor: "transparent",
               },
             }}
           />
