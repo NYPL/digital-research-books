@@ -52,7 +52,6 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
 
   test.beforeEach(async ({ page }) => {
     researchAssistantPage = new ResearchAssistantPage(page);
-    await researchAssistantPage.navigateTo();
     await researchAssistantPage.logIn(process.env.VRA_USERNAME, process.env.VRA_PASSWORD);
     await researchAssistantPage.navigateTo(); // Return to the RA page after logging in (SCHOL-279)
   });

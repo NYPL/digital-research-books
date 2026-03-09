@@ -32,8 +32,17 @@ class ResearchAssistantPage {
   // Navigate to the Research Assistant page
   async navigateTo() { await this.page.goto("/research-assistant"); }
 
+  // Navigate to the RA page when current page is different
+  private async ensureOnResearchAssistantPage() {
+    if (!this.page.url().includes("/research-assistant")) {
+      await this.navigateTo();
+    }
+  }
+
   // Enter a query into the chat input and submit it
   async query(query: string) {
+    await this.ensureOnResearchAssistantPage();
+
     await this.chatInputTextBox.fill(query);
     await new Promise(resolve =>
       setTimeout(resolve, 500)
@@ -44,6 +53,8 @@ class ResearchAssistantPage {
   // Log in using the provided credentials (needed to interact with the assistant)
   // TODO: Relocate method to a base page class since the action can be carried out elsewhere
   async logIn(username: string, password: string) {
+    await this.ensureOnResearchAssistantPage();
+
     // Ensure username and password are set (loaded from envars at runtime)
     if (!username || !password) {
       throw new Error("Username and password must be defined");
