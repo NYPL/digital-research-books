@@ -1,5 +1,4 @@
-import React from "react";
-import Document, { Html, Head, Main, NextScript } from "next/document";
+import Document, { Head, Html, Main, NextScript } from "next/document";
 import Script from "next/script";
 
 type DocumentProps = {
@@ -25,6 +24,10 @@ class MyDocument extends Document<DocumentProps> {
             }}
           />
           {/* End Google Tag Manager */}
+          <link
+            href="https://fonts.googleapis.com/css?family=Domine"
+            rel="stylesheet"
+          ></link>
         </Head>
         <body
           style={{
@@ -51,10 +54,7 @@ class MyDocument extends Document<DocumentProps> {
             async
           ></Script>
           <Main />
-          <div
-            id="nypl-footer"
-            style={{ marginTop: "auto" }}
-          ></div>
+          <div id="nypl-footer" style={{ marginTop: "auto" }}></div>
           <Script
             src="https://ds-header.nypl.org/footer.min.js?containerId=nypl-footer"
             strategy="lazyOnload"

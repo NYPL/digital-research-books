@@ -240,6 +240,7 @@ export const ResearchAssistantProvider: React.FC<{
           editionId: prevState.editionId,
           showWebReader: prevState.showWebReader,
           linkResults: prevState.linkResults,
+          resultType: prevState.resultType,
         }));
         return stack.length > 1 ? stack.slice(0, -1) : stack;
       }

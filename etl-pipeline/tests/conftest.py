@@ -55,7 +55,7 @@ def pytest_addoption(parser):
 # occurrence of the error
 @pytest.fixture(scope="session", autouse=True)
 def setup_env(pytestconfig, request):
-    # Check if test session is all tests in the unit/ folder
+    # Check if session is all tests in the unit/ folder
     only_unit_tests = all("unit" in item.keywords for item in request.session.items)
     # NOTE: pytest item keywords are based on the path from the pytest rootdir, \
     # which is set by default to the highest dir containing conftest.py. So as long as \
@@ -209,6 +209,8 @@ def frbrized_record_data(
         }
 
     flags = {"catalog": False, "download": False, "reader": False, "embed": True}
+    worker_id = os.environ.get("PYTEST_XDIST_WORKER", "main")
+    source_id = f"4064148285|test|{worker_id}"
     test_frbrized_record_data = {
         "title": test_title,
         "uuid": uuid4(),
@@ -221,7 +223,7 @@ def frbrized_record_data(
         "dates": ["1907-|publication_date"],
         "publisher": ["Project Gutenberg Literary Archive Foundation||"],
         "identifiers": [],
-        "source_id": "4064148285|test",
+        "source_id": source_id,
         "contributors": [
             "Metropolitan Museum of Art (New York, N.Y.)|||contributor",
             "Metropolitan Museum of Art (New York, N.Y.)|||repository",
@@ -242,6 +244,8 @@ def frbrized_record_data(
     frbrized_record = create_or_update_record(
         record_data=test_frbrized_record_data, db_manager=db_manager
     )
+
+    print(f"DIAGNOSTIC: frbrized_record_data -> {worker_id=} {source_id=}")
 
     record_clusterer = RecordClusterer(
         db_manager=db_manager, redis_manager=redis_manager
