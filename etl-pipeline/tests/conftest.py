@@ -252,7 +252,12 @@ def frbrized_record_data(
     )
     record_clusterer.cluster_record(frbrized_record)
 
-    with Timer(None, lambda _, elapsed: print(f"read frbrized_model took {elapsed}")):
+    with Timer(
+        None,
+        on_exit=lambda _, elapsed: print(
+            f"Reading frbrized_model from DB took {elapsed:.2f}"
+        ),
+    ):
         # collect frbrized record by source_id (joining records slows this down slightly)
         frbrized_model = (
             db_manager.session.query(Item, Edition, Work)
