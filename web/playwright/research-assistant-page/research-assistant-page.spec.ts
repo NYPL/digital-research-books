@@ -1,7 +1,7 @@
 import { expect, Page, test } from "@playwright/test";
 import { ResearchAssistantPage } from "./research-assistant-page";
 
-test.describe("Research Assistant Page UI", { tag: "@vra" }, () => {
+test.describe("Research Assistant Page UI (initial state)", { tag: "@vra" }, () => {
   let page: Page;
   let researchAssistantPage: ResearchAssistantPage;
 
@@ -56,24 +56,29 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
     await researchAssistantPage.navigateTo(); // Return to the RA page after logging in (SCHOL-279)
   });
 
-  test("Chat input text box is ready for input", async () => {
-    await researchAssistantPage.chatInputTextBox.fill(testQuery);
-    const inputValue = await researchAssistantPage.chatInputTextBox.inputValue();
-    expect(inputValue).toBe(testQuery);
+  test.describe("Chat interface (right panel)", () => {
+    test("Chat input text box is ready for input", async () => {
+      await researchAssistantPage.chatInputTextBox.fill(testQuery);
+      const inputValue = await researchAssistantPage.chatInputTextBox.inputValue();
+      expect(inputValue).toBe(testQuery);
+    });
+
+    test("An assistant response is displayed after submitting text", async () => {
+      // Submit the test query
+      await researchAssistantPage.query(testQuery);
+
+      // Wait for the loading indicator to disappear and report the time it took
+      const start = Date.now();
+      await expect(researchAssistantPage.loadingIndicator).toBeHidden();
+      const end = Date.now();
+      const elapsedSeconds = ((end - start) / 1000).toFixed(2);
+      console.log(`Loading indicator disappeared after ${elapsedSeconds} seconds`);
+
+      // Verify a new message is displayed
+      await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible();
+    });
   });
 
-  test("An assistant response is displayed after submitting text", async () => {
-    // Submit the test query
-    await researchAssistantPage.query(testQuery);
-
-    // Wait for the loading indicator to disappear and report the time it took
-    const start = Date.now();
-    await expect(researchAssistantPage.loadingIndicator).toBeHidden();
-    const end = Date.now();
-    const elapsedSeconds = ((end - start) / 1000).toFixed(2);
-    console.log(`Loading indicator disappeared after ${elapsedSeconds} seconds`);
-
-    // Verify a new message is displayed
-    await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible();
+  test.describe("Results (left panel)", () => {
   });
 });
