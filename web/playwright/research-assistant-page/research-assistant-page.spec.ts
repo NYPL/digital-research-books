@@ -45,6 +45,8 @@ test.describe("Research Assistant Page UI", { tag: "@vra" }, () => {
 });
 
 test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
+  test.describe.configure({ timeout: 120_000 }); // Increase timeout in case chat is slow to respond
+
   let researchAssistantPage: ResearchAssistantPage;
   const testQuery = "I want to learn about Bryant Park.";
 
@@ -67,7 +69,7 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
 
     // Wait for the loading indicator to disappear and report the time it took
     const start = Date.now();
-    await expect(researchAssistantPage.loadingIndicator).toBeHidden({ timeout: 60000 });
+    await expect(researchAssistantPage.loadingIndicator).toBeHidden();
     const end = Date.now();
     const elapsedSeconds = ((end - start) / 1000).toFixed(2);
     console.log(`Loading indicator disappeared after ${elapsedSeconds} seconds`);
