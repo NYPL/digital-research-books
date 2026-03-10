@@ -52,11 +52,16 @@ def main():
             load_secrets(secrets_file, raise_if_no_file=True)
             
             # Mask each decrypted value
+            # Multi-line secrets must be split and each line masked individually,
+            # as ::add-mask:: only supports single-line values. see: https://github.com/actions/toolkit/blob/main/docs/commands.md#register-a-secret
             masked_count = 0
             for var_name in var_names:
                 value = os.environ.get(var_name)
                 if value:
-                    print(f"::add-mask::{value}")
+                    lines = value.splitlines()
+                    for line in lines:
+                        if line:
+                            print(f"::add-mask::{line}")
                     masked_count += 1
             
             print(f"  Masked {masked_count} secret(s) from {filename}")
