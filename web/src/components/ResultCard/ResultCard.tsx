@@ -13,6 +13,12 @@ import {
   RESEARCH_CATALOG_LINK,
   SCAN_AND_DELIVER_LINK,
 } from "~/src/constants/links";
+import {
+  RESULT_AUTHOR_TEST_ID,
+  RESULT_EDITION_TEST_ID,
+  RESULT_PUBLISHER_TEST_ID,
+  RESULT_TITLE_TEST_ID,
+} from "~/src/constants/testIds";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
 import { Agent, WorkEdition } from "~/src/types/DataModel";
 import { CatalogEdition } from "~/src/types/ResearchAssistant";
@@ -183,6 +189,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         <Box>
           <Heading size="heading7" marginBottom="xxs">
             <Link
+              data-testid={RESULT_TITLE_TEST_ID}
               to={{
                 pathname: `/${page === "vra" ? "item" : "work"}/${work.uuid}`,
                 ...(previewItem && {
@@ -195,16 +202,19 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             </Link>
           </Heading>
           {authors.length > 0 && (
-            <>
+            <span data-testid={RESULT_AUTHOR_TEST_ID}>
               By <AuthorsList authors={authors} />
-            </>
+            </span>
           )}
           <Flex marginTop="xs" flexWrap="wrap" alignItems="center">
             <ResultPublisherAndLocation
               pubPlace={edition.publication_place}
               publishers={edition.publishers}
+              data-testid={RESULT_PUBLISHER_TEST_ID}
             />
-            <Box whiteSpace="normal">{editionYearElem()}</Box>
+            <Box whiteSpace="normal" data-testid={RESULT_EDITION_TEST_ID}>
+              {editionYearElem()}
+            </Box>
           </Flex>
         </Box>
         {!isPhysicalEdition && (
