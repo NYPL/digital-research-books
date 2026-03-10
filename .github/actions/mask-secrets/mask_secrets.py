@@ -35,16 +35,16 @@ def main():
     
     print(f"Found {len(secrets_files)} secrets file(s) to process")
     
-    for secrets_file in secrets_files:
-        filename = Path(secrets_file).name
-        print(f"Processing {filename}...")
+    total = len(secrets_files)
+    for index, secrets_file in enumerate(secrets_files, start=1):
+        print(f"Processing secrets file {index} of {total}...")
         
         # Read env var names from the file (without fetching from AWS yet)
         env_vars = dotenv_values(secrets_file)
         var_names = [k for k, v in env_vars.items() if v]  # Non-empty values only
         
         if not var_names:
-            print(f"  No variables to mask in {filename}")
+            print(f"  No variables to mask in secrets file {index}")
             continue
         
         try:
@@ -64,10 +64,10 @@ def main():
                             print(f"::add-mask::{line}")
                     masked_count += 1
             
-            print(f"  Masked {masked_count} secret(s) from {filename}")
+            print(f"  Masked {masked_count} secret(s) from secrets file {index}")
             
         except Exception as e:
-            print(f"  Error processing {filename}: {e}")
+            print(f"  Error processing secrets file {index}: {e}")
             sys.exit(1)
     
     print("Secret masking complete")
