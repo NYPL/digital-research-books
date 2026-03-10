@@ -207,11 +207,12 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             </span>
           )}
           <Flex marginTop="xs" flexWrap="wrap" alignItems="center">
-            <ResultPublisherAndLocation
-              pubPlace={edition.publication_place}
-              publishers={edition.publishers}
-              data-testid={RESULT_PUBLISHER_TEST_ID}
-            />
+            <Box display="inline-flex" data-testid={RESULT_PUBLISHER_TEST_ID}>
+              <ResultPublisherAndLocation
+                pubPlace={edition.publication_place}
+                publishers={edition.publishers}
+              />
+            </Box>
             <Box whiteSpace="normal" data-testid={RESULT_EDITION_TEST_ID}>
               {editionYearElem()}
             </Box>
