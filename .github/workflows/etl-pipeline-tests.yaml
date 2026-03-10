@@ -50,10 +50,10 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 60
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 60
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version-file: 'etl-pipeline/.python-version'
           cache: "pip"
           cache-dependency-path: |
             etl-pipeline/requirements.txt
