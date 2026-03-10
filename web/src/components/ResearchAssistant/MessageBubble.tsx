@@ -1,6 +1,5 @@
 import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { MessageItem, MessageRole } from "~/src/types/ResearchAssistant";
 import {
   parseEditionLinks,
@@ -15,10 +14,11 @@ import LoadingEllipses from "./LoadingEllipses";
 interface MessageBubbleProps {
   message: MessageItem;
   index: number;
+  isLoading?: boolean;
 }
 
 const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
-  ({ message, index }, ref) => {
+  ({ message, index, isLoading }, ref) => {
     MessageBubble.displayName = "MessageBubble";
 
     const isUser = message.role === MessageRole.User;
@@ -30,8 +30,6 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
     const handleEditionClick = (editionId: string) => {
       scrollToEdition(editionId);
     };
-
-    const { isLoading } = useResearchAssistant();
 
     return (
       <Box

@@ -87,6 +87,7 @@ const ResearchAssistantWindow: React.FC = () => {
             ],
           }}
           ref={messagesEndRef}
+          isLoading={isLoading}
         />
       )}
 
