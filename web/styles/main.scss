@@ -30,3 +30,46 @@ body {
     min-height: 130px;
   }
 }
+
+@keyframes bounceAndColor {
+  0% {
+    transform: translateY(0);
+    background-color: #006166;
+  }
+  4.1% {
+    transform: translateY(-2px);
+    background-color: #3b7f6f;
+  }
+  8.2% {
+    transform: translateY(-4px);
+    background-color: #799f79;
+  }
+  12.3% {
+    transform: translateY(-6px);
+    background-color: #b8bf83;
+  }
+  16.5% {
+    transform: translateY(-8px);
+    background-color: #f9e08e;
+  }
+  20.6% {
+    transform: translateY(-6px);
+    background-color: #b8bf83;
+  }
+  24.7% {
+    transform: translateY(-4px);
+    background-color: #799f79;
+  }
+  28.8% {
+    transform: translateY(-2px);
+    background-color: #3b7f6f;
+  }
+  33% {
+    transform: translateY(0);
+    background-color: #006166;
+  }
+  100% {
+    transform: translateY(0);
+    background-color: #006166;
+  }
+}

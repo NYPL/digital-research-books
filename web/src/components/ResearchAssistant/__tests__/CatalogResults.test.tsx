@@ -9,7 +9,7 @@ import {
 } from "~/src/__tests__/fixtures/CatalogSearchFixture";
 import { renderWithResearchAssistant } from "~/src/__tests__/testUtils/render";
 import { searchResultsFetcher } from "~/src/lib/api/SearchApi";
-import CatalogResults from "../CatalogResults";
+import CatalogResults from "../CatalogResults/CatalogResults";
 
 jest.mock("~/src/lib/api/SearchApi");
 const mockedSearchResultsFetcher = jest.mocked(searchResultsFetcher);
