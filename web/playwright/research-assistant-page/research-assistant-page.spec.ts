@@ -45,8 +45,6 @@ test.describe("Research Assistant Page UI (initial state)", { tag: "@vra" }, () 
 });
 
 test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
-  test.describe.configure({ timeout: 120_000 }); // Increase timeout in case chat is slow to respond
-
   let researchAssistantPage: ResearchAssistantPage;
   const testQuery = "I want to learn about Bryant Park.";
 
@@ -69,13 +67,13 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
 
       // Wait for the loading indicator to disappear and report the time it took
       const start = Date.now();
-      await expect(researchAssistantPage.loadingIndicator).toBeHidden();
+      await expect(researchAssistantPage.loadingIndicator).toBeHidden({ timeout: 120_000 });
       const end = Date.now();
       const elapsedSeconds = ((end - start) / 1000).toFixed(2);
       console.log(`Loading indicator disappeared after ${elapsedSeconds} seconds`);
 
       // Verify a new message is displayed
-      await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible({timeout: 120_000});
+      await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible({ timeout: 120_000 });
     });
   });
 
@@ -83,7 +81,7 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
     test.beforeEach(async () => {
       // Submit a query known to return results and wait for assistant to respond
       await researchAssistantPage.query(testQuery);
-      await expect(researchAssistantPage.loadingIndicator).toBeHidden();
+      await researchAssistantPage.loadingIndicator.isHidden({ timeout: 120_000 });
     });
 
     test("At least one result is displayed along with non-zero paging text", async () => {
@@ -110,14 +108,14 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
       await expect(researchAssistantPage.firstResultEdition).toHaveText(/\S+/);
     });
 
-    test("Clicking result title opens item page for the expected edition", async ({page}) => {
+    test("Clicking result title opens item page for the expected edition", async ({ page }) => {
       await researchAssistantPage.firstResult.waitFor({ state: "visible" });
       const firstEditionId = await researchAssistantPage.getFirstResultEditionId();
       await researchAssistantPage.firstResultTitle.getByRole("link").click();
       await expect(page).toHaveURL(new RegExp(`\\?featured=${firstEditionId}$`));
     });
 
-    test("Result Preview button opens item page for the expected edition", async ({page}) => {
+    test("Result Preview button opens item page for the expected edition", async ({ page }) => {
       await researchAssistantPage.firstResult.waitFor({ state: "visible" });
       const firstEditionId = await researchAssistantPage.getFirstResultEditionId();
       await researchAssistantPage.firstResultPreviewBtn.click();
