@@ -300,6 +300,7 @@ class EditionResult:
     edition_id: int
     chunk_hits: list
     agg_score: float
+    snippets: list = field(default_factory=list)
 
 
 class LLMLoggingHooks(RunHooks):
@@ -925,7 +926,7 @@ def select_relevant_snippets(
 
         # Build lookup: edition_id (int) -> edition_data entry
         edition_entry_map = {
-            entry["orm_edition"].id: entry
+            entry.orm_edition.id: entry
             for entry in ctx.context.search_result.get("edition_data", [])
         }
         snippets_dict = {entry["edition_id"]: entry["snippets"] for entry in snippets}
@@ -943,7 +944,7 @@ def select_relevant_snippets(
         # ── Primary loop: edition_entry_map is authoritative ─────────────────────
         for edition_id, entry in edition_entry_map.items():
             # Case 1: already has saved snippets from a prior call — nothing to do.
-            if entry.get("snippets"):
+            if entry.snippets:
                 continue
 
             submitted = snippets_dict.get(edition_id)
@@ -959,7 +960,7 @@ def select_relevant_snippets(
                 continue
 
             # Case 3: snippets submitted — validate and save.
-            chunk_hits = entry["edition_hit"].get("chunk_hits", [])
+            chunk_hits = entry.chunk_hits
             snippet_list = submitted
 
             # --- Validate edition: 1-5 snippets per edition ---
@@ -1038,8 +1039,9 @@ def select_relevant_snippets(
                     )
                     continue
 
-                # All validations passed — save into the entry directly.
-                entry.setdefault("snippets", []).append(
+                # All validations passed
+                # Save into the entry directly (updates main agent search result in place)
+                entry.snippets.append(
                     {
                         "text": resolved_snippet,
                         "start_page": matched_chunk.get("start_page")
