@@ -907,7 +907,8 @@ class EditionSnippets(TypedDict):
     snippets: List[SnippetItem]
 
 
-@function_tool  # TODO: add @timer
+@function_tool
+@timer(logger)
 @dynamic_docstring(SELECT_RELEVANT_SNIPPETS_DOC)
 def select_relevant_snippets(
     ctx: ToolContext[SnippetsExecutionContext],  # TODO: change type
@@ -1074,6 +1075,7 @@ def select_relevant_snippets(
         raise e
 
 
+@timer(logger)
 def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
     """Run a snippet agent to select and store relevant text snippets for the last
     search result in run_result.
