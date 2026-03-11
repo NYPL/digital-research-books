@@ -1,4 +1,4 @@
-import { Box, Flex, Text } from "@nypl/design-system-react-components";
+import { Box, Flex, Heading, Text } from "@nypl/design-system-react-components";
 
 interface AccessCardProps {
   icon: React.ReactNode;
@@ -14,7 +14,9 @@ const AccessCard: React.FC<AccessCardProps> = ({
   return (
     <Flex flexDir="column" gap="l">
       <Box
-        background="#FCF1CB"
+        background="ui.white"
+        border="1px solid"
+        borderColor="section.research.secondary"
         borderRadius="16px"
         margin="0 auto"
         padding="m"
@@ -23,13 +25,9 @@ const AccessCard: React.FC<AccessCardProps> = ({
         {icon}
       </Box>
       <Flex flexDir="column" gap="s">
-        <Text
-          fontSize="desktop.heading.heading5"
-          color="ui.typography.heading"
-          fontWeight="semibold"
-        >
+        <Heading level="h3" size="heading5">
           {title}
-        </Text>
+        </Heading>
         <Text color="ui.gray.dark" fontSize="desktop.subtitle.subtitle1">
           {description}
         </Text>

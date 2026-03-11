@@ -1,4 +1,9 @@
-import { Flex, Heading, Text } from "@nypl/design-system-react-components";
+import {
+  Flex,
+  Heading,
+  Text,
+  TextInputRefType,
+} from "@nypl/design-system-react-components";
 import Link from "../../Link/Link";
 import ArrowIcon from "../../ResearchAssistant/icons/ArrowIcon";
 import LandingButtons from "../LandingButtons";
@@ -9,15 +14,21 @@ import MailIcon from "./MailIcon";
 
 interface HelpSectionProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
+  textInputRef: React.RefObject<TextInputRefType>;
 }
 
-const HelpSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
+const HelpSection: React.FC<HelpSectionProps> = ({
+  heroSectionRef,
+  textInputRef,
+}) => {
   return (
     <SectionContainer
       backgroundImage={`
-        radial-gradient(circle, var(--nypl-colors-section-research-primary-10) 2px, transparent 2px)`}
+        radial-gradient(circle, rgba(0, 131, 138, 0.025) 2px, transparent 2px)`}
       backgroundSize="16px 16px"
       backgroundPosition="center"
+      borderTop="1px solid"
+      borderColor="section.research.primary-10"
       color="ui.typography.body"
       display="flex"
       flexDir="column"
@@ -51,6 +62,8 @@ const HelpSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
               <Link
                 to="https://www.nypl.org/get-help/contact-us"
                 isUnderlined={false}
+                color="section.research.secondary"
+                fontWeight="bold"
                 display="flex"
                 alignItems="center"
                 gap="xxs"
@@ -78,6 +91,8 @@ const HelpSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
               <Link
                 to="#"
                 isUnderlined={false}
+                color="section.research.secondary"
+                fontWeight="bold"
                 display="flex"
                 alignItems="center"
                 gap="xxs"
@@ -89,7 +104,10 @@ const HelpSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
           }
         />
       </Flex>
-      <LandingButtons heroSectionRef={heroSectionRef} />
+      <LandingButtons
+        heroSectionRef={heroSectionRef}
+        textInputRef={textInputRef}
+      />
     </SectionContainer>
   );
 };

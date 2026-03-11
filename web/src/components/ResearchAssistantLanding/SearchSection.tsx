@@ -8,23 +8,19 @@ import {
   TextInputRefType,
 } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
-import ArrowIcon from "../ResearchAssistant/icons/ArrowIcon";
+import { useState } from "react";
 import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import ResearchAssistantSendIcon from "../ResearchAssistant/icons/ResearchAssistantSendIcon";
 
 interface SearchSectionProps {
-  featuresSectionRef: React.RefObject<HTMLDivElement>;
+  textInputRef: React.RefObject<TextInputRefType>;
 }
 
-const SearchSection: React.FC<SearchSectionProps> = ({
-  featuresSectionRef,
-}) => {
+const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
 
   const [isFocused, setIsFocused] = useState(false);
-  const inputRef = useRef<TextInputRefType>(null);
 
   const onSubmit = (query: string) => {
     sessionStorage.setItem("researchAssistantInitialMessage", query);
@@ -39,7 +35,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({
 
   const handleClearSearch = () => {
     setSearchInput("");
-    inputRef.current.value = "";
+    textInputRef.current.value = "";
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -74,7 +70,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({
           flexDir="row"
           gap="0"
           border="1px solid"
-          borderColor="section.research.primary-10"
+          borderColor="section.research.primary"
           borderRadius="8px"
           backgroundColor="ui.white"
           padding="0.5rem 1.5rem"
@@ -82,7 +78,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({
             isFocused
               ? {
                   boxShadow: "none",
-                  outline: "2px solid",
+                  outline: "3px solid",
                   outlineColor: "section.research.secondary",
                 }
               : {}
@@ -91,7 +87,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({
           <TextInput
             autoComplete="off"
             id="chat-input"
-            ref={inputRef}
+            ref={textInputRef}
             labelText={""}
             value={searchInput}
             onChange={(e) => {
@@ -102,10 +98,10 @@ const SearchSection: React.FC<SearchSectionProps> = ({
             onBlur={() => setIsFocused(false)}
             placeholder="What research topic can I help you explore today?"
             type="textarea"
+            color="ui.typography.body"
             flex="1"
             height="fit-content"
             minHeight="92px"
-            color="ui.typography.body"
             sx={{
               textarea: {
                 border: "none",
@@ -114,6 +110,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({
                 resize: "none",
                 paddingY: "s",
                 paddingX: "0",
+                fontSize: "desktop.body.body1",
               },
               "textarea:focus": {
                 outline: "none !important",
@@ -121,20 +118,19 @@ const SearchSection: React.FC<SearchSectionProps> = ({
               },
             }}
           />
-          <Flex flexDir="row" gap="xs" paddingY="s">
+          <Flex flexDir="row" paddingY="xs">
             {searchInput !== "" && (
               <Button
                 onClick={handleClearSearch}
                 id="research-landing-clear"
                 backgroundColor="transparent"
-                height="1.5rem"
                 minWidth="1.5rem"
                 borderRadius="8px"
                 _hover={{
                   backgroundColor: "section.research.primary-10",
                 }}
                 aria-label="Clear"
-                padding="0"
+                padding="xs"
               >
                 <Icon name="close" size="large" color="ui.black" />
               </Button>
@@ -143,14 +139,17 @@ const SearchSection: React.FC<SearchSectionProps> = ({
               onClick={handleLocalSearchSubmit}
               id="research-landing-submit"
               backgroundColor="transparent"
-              height="1.5rem"
               minWidth="1.5rem"
               borderRadius="8px"
+              aria-label="Send"
+              padding="xs"
+              isDisabled={searchInput === ""}
+              _disabled={{
+                backgroundColor: "transparent",
+              }}
               _hover={{
                 backgroundColor: "section.research.primary-10",
               }}
-              aria-label="Send"
-              padding="0"
             >
               <ResearchAssistantSendIcon isDisabled={searchInput === ""} />
             </Button>
@@ -194,31 +193,11 @@ const SearchSection: React.FC<SearchSectionProps> = ({
                 <ResearchAssistantIcon />
                 <span>{suggestion}</span>
               </Flex>
-              <Icon align="right" name="search" size="large" />
+              <Icon align="right" name="search" size="medium" />
             </Box>
           </Button>
         ))}
       </Box>
-      <Button
-        id="how-does-it-work"
-        marginTop="s"
-        variant="secondary"
-        color="section.research.secondary"
-        background="transparent"
-        fontSize="desktop.body.body1"
-        fontWeight="medium"
-        border="0"
-        borderRadius="8px"
-        margin="0 auto"
-        onClick={() =>
-          featuresSectionRef.current?.scrollIntoView({ behavior: "smooth" })
-        }
-        _hover={{
-          backgroundColor: "section.research.primary-05",
-        }}
-      >
-        How does it work? <ArrowIcon direction="down" color="#006166" />
-      </Button>
     </>
   );
 };
