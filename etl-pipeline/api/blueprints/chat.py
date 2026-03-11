@@ -26,11 +26,8 @@ chat_blueprint = Blueprint("chat", __name__, url_prefix="/chat")
 RESPONSE_TYPE = "chat"
 
 
-# TODO: Q: extract chunk hits here or in agent.py in search tool? any way to concurrently \
-# extract relevant snippets while LLM is finishing response?
-# TODO: handle ordering of relevant snippets!!!
-# TODO: extract snippets intelligently
-# MAYBE: limit the number of returned snippets
+# Q: any way to concurrently  extract relevant snippets while LLM is finishing response?
+# TODO: handle ordering of relevant snippets!!! inherit from chunk score?
 def get_relevant_snippets(chunk_hits):
     return [
         {
@@ -101,15 +98,7 @@ def format_search_results(search_results):
                         "publication_date": (lambda d: d.year if d else None)
                     },
                 )
-                # Q: should we be including the chunk_hits/snippet in editions or top level?
-                edition_dict.update(
-                    {
-                        **work_dict,
-                        "snippets": get_relevant_snippets(
-                            edition_datum["edition_hit"]["chunk_hits"]
-                        ),
-                    }
-                )
+                edition_dict.update(work_dict)
                 editions.append(edition_dict)
 
             result_type = "catalogSearch"  # MAYBE: send search tool name

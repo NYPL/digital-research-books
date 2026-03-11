@@ -1,0 +1,44 @@
+Select text excerpts relevant to the user's search interest.
+
+Use this tool to select 1-5 representative text snippets per book. The snippets
+will be shown to the user alongside each book to provide context for why the book
+was returned.
+
+Args:
+    snippets: List of edition snippet objects. Each object must contain:
+        - ``edition_id`` (int): The edition ID that the snippets are taken from.
+        - ``snippets`` (list): 1-5 snippet objects from that edition. Each snippet
+          object must contain:
+            - ``item_id`` (int): The item ID of the chunk that the snippet comes from.
+            - ``snippet`` (str): The snippet text. The following rules apply:
+              * Each snippet must be no more than 100 words.
+              * Each snippet must be an exact verbatim substring of a chunk — copy
+                the text directly from the chunk without any modification.
+              * Snippets will be validated to make sure the snippet text appears as a
+                literal substring in at least one chunk.
+
+        Example:
+            [
+                {
+                    "edition_id": 4872,
+                    "snippets": [
+                        {
+                            "item_id": 9021,
+                            "snippet": "the mitochondria is the powerhouse of the cell",
+                        },
+                        {
+                            "item_id": 9021,
+                            "snippet": "Cellular respiration begins in the cytoplasm and terminates with the synthesis of ATP.",
+                        },
+                    ],
+                },
+                {
+                    "edition_id": 5310,
+                    "snippets": [
+                        {
+                            "item_id": 9834,
+                            "snippet": "Darwin observed that species adapted over generations",
+                        },
+                    ],
+                },
+            ]
