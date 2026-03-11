@@ -3,10 +3,12 @@ from datetime import datetime
 from importlib.resources import read_text
 import json
 from pathlib import Path
+import re
 import traceback
 import asyncio
-from typing import Dict, Any, Optional, Union, List
+from typing import Callable, Dict, Any, Optional, Union, List
 from typing_extensions import TypedDict
+from enum import Enum
 import uuid
 from textwrap import indent
 import sys
@@ -686,346 +688,106 @@ def search_book(
         raise e
 
 
-def match_snippet(snippet_text: str, chunk_text: str) -> List[str]:
-    """Return all non-overlapping occurrences of snippet_text in chunk_text."""
-    matches = []
-    start = 0
-    while True:
-        pos = chunk_text.find(snippet_text, start)
-        if pos == -1:
-            break
-        matches.append(snippet_text)
-        start = pos + len(snippet_text)
-    return matches
+def find_snippet_in_chunk(snippet_text: str, chunk_text: str) -> Optional[str]:
+    """Return the first whitespace-normalized match of snippet_text in chunk_text,
+    or None if not found.
 
+    If snippet_text contains the elision token ``//...//``, it is split into lead
+    and trail. Both are whitespace-normalized into a regex pattern; a lazy ``.+?``
+    (requiring at least one character) bridges them so any intervening text is
+    captured. Non-empty lead and trail are required — if either is empty after
+    splitting, None is returned.
 
-def match_elided_snippet(lead: str, trail: str, chunk_text: str) -> List[str]:
-    """Return all resolved elided snippet matches in chunk_text, including
-    overlapping lazy and greedy matches.
-
-    For each occurrence of lead, searches for the first occurrence of trail that
-    starts after the lead ends. Enforces lead-before-trail ordering.
-
-    Returns:
-        List of resolved substrings (from start of lead to end of trail) for each
-        valid lead/trail pair found in chunk_text.
+    Plain snippets are also matched with whitespace normalization so that
+    differences in spacing or line breaks in the source do not prevent a match.
     """
-    matches = []
-    search_from = 0
-    while True:
-        lead_pos = chunk_text.find(lead, search_from)
-        if lead_pos == -1:
-            break
-        trail_pos = chunk_text.find(trail, lead_pos + len(lead))
-        if trail_pos != -1:
-            matches.append(chunk_text[lead_pos : trail_pos + len(trail)])
-        search_from = lead_pos + 1
-    return matches
-
-
-def collect_snippet_matches(
-    snippet_text: str, chunk_hits: list, allow_elision: bool = True
-) -> List[tuple]:
-    """Collect (chunk_index, [matched_spans]) pairs for snippet_text across chunk_hits.
-
-    When allow_elision=True, the ``//...//`` elision token is detected and dispatched
-    to match_elided_snippet (lead-before-trail span matching). When allow_elision=False,
-    match_snippet is always used — ``//...//`` is treated as a literal string that will
-    fail to match any real chunk text.
-
-    Callers are responsible for validating non-empty lead/trail before calling this
-    function when allow_elision=True.
-
-    Args:
-        snippet_text: Raw snippet string, possibly containing ``//...//``.
-        chunk_hits: List of chunk hit dicts with a ``text`` key.
-        allow_elision: Whether to interpret ``//...//`` as an elision token.
-
-    Returns:
-        List of (chunk_index, [matched_spans]) for every chunk with at least one match.
-    """
-    if allow_elision and "//...//" in snippet_text:
+    if "//...//" in snippet_text:
         parts = snippet_text.split("//...//", 1)
-        lead = parts[0].rstrip()
-        trail = parts[1].lstrip()
-        match_fn = lambda chunk_text: match_elided_snippet(lead, trail, chunk_text)
+        lead_tokens = parts[0].split()
+        trail_tokens = parts[1].split()
+        if not lead_tokens or not trail_tokens:
+            return None
+        lead_pat = r"\s+".join(re.escape(t) for t in lead_tokens)
+        trail_pat = r"\s+".join(re.escape(t) for t in trail_tokens)
+        pattern = lead_pat + r"\s+.+?\s+" + trail_pat
     else:
-        match_fn = lambda chunk_text: match_snippet(snippet_text, chunk_text)
+        tokens = snippet_text.split()
+        if not tokens:
+            return None
+        pattern = r"\s+".join(re.escape(t) for t in tokens)
 
-    return [
-        (chunk_idx, matches)
-        for chunk_idx, chunk_hit in enumerate(chunk_hits)
-        if (matches := match_fn(chunk_hit.get("text", "")))
-    ]
+    m = re.search(pattern, chunk_text, re.DOTALL)
+    return m.group(0) if m else None
 
 
-def validate_and_save_snippets(
-    edition_entry_map, snippets, search_tool_call_id, allow_elision: bool = True
-):
-    """
-    Validate snippets, save valid snippets, and produce a message requesting
-    resubmission of invalid snippets.
+class RejectionCode(str, Enum):
+    MISSING_EDITION = "MISSING_EDITION"
+    SNIPPET_COUNT = "SNIPPET_COUNT"
+    NO_MATCH = "NO_MATCH"
+    WORD_LIMIT = "WORD_LIMIT"
+    ITEM_ID_MISMATCH = "ITEM_ID_MISMATCH"
+    HALLUCINATED_EDITION = "HALLUCINATED_EDITION"
 
-    edition_entry_map is the authoritative source of which editions need snippets.
-    Iterating it as the outer loop ensures every edition is accounted for — already
-    saved (skip), missing from submission (reject), or submitted (validate and save).
-    A follow-up pass over the submitted dict catches hallucinated edition_ids that
-    are not in the search result at all.
-    """
 
-    total_snippets_submitted = sum(len(v) for v in snippets.values())
-    logger.info(
-        f"validate_and_save_snippets called: {len(snippets)} edition(s) submitted, "
-        f"{total_snippets_submitted} total snippet(s), "
-        f"{len(edition_entry_map)} edition(s) in search result."
-    )
+@dataclass
+class Rejection:
+    edition_id: int
+    snippet_obj: Optional[dict]
+    code: RejectionCode
+    data: dict = field(default_factory=dict)
 
-    rejected: List[tuple] = []  # (edition_id, snippet_obj_or_None, reason)
 
-    # ── Primary loop: edition_entry_map is authoritative ─────────────────────
-    for edition_id, entry in edition_entry_map.items():
-        # Case 1: already has saved snippets from a prior call — nothing to do.
-        if entry.get("snippets"):
-            continue
+def build_rejection_message(rejected: List[Rejection], search_tool_call_id: str) -> str:
+    """Build the full rejection response string from a list of Rejection objects."""
 
-        submitted = snippets.get(edition_id)
+    def _snippet_preview(r: Rejection) -> str:
+        if r.snippet_obj and r.snippet_obj.get("snippet"):
+            raw = r.snippet_obj["snippet"]
+            preview = raw[:60] + ("..." if len(raw) > 60 else "")
+            return f" | snippet: {repr(preview)}"
+        return ""
 
-        # Case 2: no snippets saved and none submitted — flag as missing.
-        if submitted is None:
-            logger.debug(
-                f"Edition {edition_id} has no saved snippets and was not submitted."
-            )
-            rejected.append(
-                (
-                    edition_id,
-                    None,
-                    f"Edition {edition_id} has no snippets saved and was not included "
-                    f"in this submission. Every edition in the search result requires "
-                    f"at least one valid snippet. Please include snippets for this edition.",
-                )
-            )
-            continue
-
-        # Case 3: snippets submitted — validate and save.
-        chunk_hits = entry["edition_hit"].get("chunk_hits", [])
-        snippet_list = submitted
-
-        # --- Validate edition: 1-5 snippets per edition ---
-        if not (1 <= len(snippet_list) <= 5):
-            logger.debug(
-                f"Rejecting edition {edition_id}: {len(snippet_list)} snippet(s) submitted; "
-                f"must be between 1 and 5 inclusive."
-            )
-            rejected.append(
-                (
-                    edition_id,
-                    None,
-                    f"Edition {edition_id} has {len(snippet_list)} snippet(s); "
-                    f"must be between 1 and 5 inclusive.",
-                )
-            )
-            continue
-
-        for snippet_obj in snippet_list:
-            item_id = snippet_obj.get("item_id")
-            snippet_text = snippet_obj.get("snippet", "")
-
-            # --- Step 1: Validate the snippet has an exact single match in at
-            # least one chunk
-            is_elided = allow_elision and "//...//" in snippet_text
-
-            if is_elided:
-                parts = snippet_text.split("//...//", 1)
-                lead = parts[0].rstrip()
-                trail = parts[1].lstrip()
-
-                if not lead or not trail:
-                    logger.debug(
-                        f"Rejecting snippet for edition {edition_id}: elided snippet "
-                        f"has empty {'lead' if not lead else 'trail'} around '//...//'.  "
-                        f"snippet={repr(snippet_text[:60])}"
-                    )
-                    rejected.append(
-                        (
-                            edition_id,
-                            snippet_obj,
-                            "Elided snippet must have non-empty text both before and "
-                            "after '//...//'. "
-                            "Provide sufficient lead and trail text.",
-                        )
-                    )
-                    continue
-
-            # Collect matches from every chunk: (chunk_index, [matched_spans])
-            all_chunk_matches = collect_snippet_matches(
-                snippet_text, chunk_hits, allow_elision=allow_elision
-            )
-
-            # Find the first chunk with a single match
-            first_single = next(
-                (
-                    (idx, matches[0])
-                    for idx, matches in all_chunk_matches
-                    if len(matches) == 1
-                ),
-                None,
-            )
-
-            if not all_chunk_matches:
-                if is_elided:
-                    logger.debug(
-                        f"Rejecting elided snippet for edition {edition_id}: lead/trail "
-                        f"not found in any chunk. lead={repr(lead[:50])}, trail={repr(trail[:50])}"
-                    )
-                    rejected.append(
-                        (
-                            edition_id,
-                            snippet_obj,
-                            f"Elided snippet lead ({repr(lead[:50])}{'...' if len(lead) > 50 else ''}) "
-                            f"and/or trail ({repr(trail[:50])}{'...' if len(trail) > 50 else ''}) "
-                            f"did not match any chunk for edition {edition_id}. "
-                            f"Ensure the lead and trail are copied verbatim from the chunk text.",
-                        )
-                    )
-                else:
-                    logger.debug(
-                        f"Rejecting snippet for edition {edition_id}: text not found in any chunk. "
-                        f"snippet={repr(snippet_text[:60])}..."
-                    )
-                    rejected.append(
-                        (
-                            edition_id,
-                            snippet_obj,
-                            f"Snippet text was not found in any chunk for edition "
-                            f"{edition_id}. Ensure the text is copied verbatim from "
-                            f"the chunk.",
-                        )
-                    )
-                continue
-
-            if first_single is None:
-                # Every chunk that matched had multiple matches within it
-                if is_elided:
-                    logger.debug(
-                        f"Rejecting elided snippet for edition {edition_id}: lead/trail "
-                        f"produce multiple matches in every matching chunk. "
-                        f"lead={repr(lead[:50])}, trail={repr(trail[:50])}"
-                    )
-                    rejected.append(
-                        (
-                            edition_id,
-                            snippet_obj,
-                            f"Elided snippet lead and trail produce multiple matches in "
-                            f"every chunk where they appear for edition {edition_id}. "
-                            f"Use longer or more specific lead and trail text to "
-                            f"produce a single match within each chunk.",
-                        )
-                    )
-                else:
-                    logger.debug(
-                        f"Rejecting snippet for edition {edition_id}: text produces "
-                        f"multiple matches in every matching chunk. "
-                        f"snippet={repr(snippet_text[:60])}"
-                    )
-                    rejected.append(
-                        (
-                            edition_id,
-                            snippet_obj,
-                            f"Snippet text produces multiple matches in every chunk "
-                            f"where it appears for edition {edition_id}. "
-                            f"Use a longer, more specific excerpt.",
-                        )
-                    )
-                continue
-
-            chunk_idx, resolved_snippet = first_single
-            matched_chunk = chunk_hits[chunk_idx]
-
-            # --- Step 2: Validate word count on the resolved snippet ---
-            word_count = len(resolved_snippet.split())
-            if word_count > 150:
-                logger.debug(
-                    f"Rejecting snippet for edition {edition_id}: resolved snippet "
-                    f"has {word_count} words, exceeding 150-word hard limit."
-                )
-                rejected.append(
-                    (
-                        edition_id,
-                        snippet_obj,
-                        f"Resolved snippet has {word_count} words, exceeding the "
-                        f"150-word hard limit (100-word target + 50-word grace margin). "
-                        f"Please shorten or use tighter elision.",
-                    )
-                )
-                continue
-
-            # --- Step 3: Verify snippet item_id ---
-            matched_item_id = matched_chunk.get("item_id")
-            if matched_item_id is None or matched_item_id != item_id:
-                logger.debug(
-                    f"Rejecting snippet for edition {edition_id}: claimed item_id={item_id} "
-                    f"does not match chunk item_id={matched_item_id}."
-                )
-                rejected.append(
-                    (
-                        edition_id,
-                        snippet_obj,
-                        f"Snippet matched a chunk with item_id {matched_item_id}, "
-                        f"not the claimed item_id {item_id}. "
-                        f"Use the item_id shown in the search result for this chunk.",
-                    )
-                )
-                continue
-
-            # All validations passed — save into the entry directly.
-            entry.setdefault("snippets", []).append(
-                {
-                    "text": resolved_snippet,
-                    "start_page": matched_chunk.get("start_page")
-                    or matched_chunk.get("chunk_start_page"),
-                    "end_page": matched_chunk.get("end_page")
-                    or matched_chunk.get("chunk_end_page"),
-                    "item_id": matched_chunk.get("item_id"),
-                    "chunk_score": matched_chunk.get("score")
-                    or matched_chunk.get("meta", {}).get("score"),
-                }
-            )
-            print(f"saved snippet {resolved_snippet[:50]}... to edition {edition_id}")
-
-    # ── Follow-up pass: catch submitted edition_ids not in the map at all ─────
-    for edition_id in snippets:
-        if edition_id not in edition_entry_map:
-            logger.debug(
-                f"Rejecting edition {edition_id}: not found in search results "
-                f"for tool call '{search_tool_call_id}'."
-            )
-            rejected.append(
-                (
-                    edition_id,
-                    None,
-                    f"edition_id {edition_id} was not found in the search results "
-                    f"for tool call '{search_tool_call_id}'. No snippets should have been submitted for this edition_id",
-                )
-            )
-
-    # --- Build response message ---
-    logger.info(f"validate_and_save_snippets: {len(rejected)} rejection(s).")
-    if not rejected:
-        return "Snippets successfully saved!"
+    _MESSAGES: dict[RejectionCode, Callable[[Rejection], str]] = {
+        RejectionCode.MISSING_EDITION: lambda r: (
+            f"Edition {r.edition_id} has no snippets saved and was not included "
+            f"in this submission. Every edition in the search result requires "
+            f"at least one valid snippet. Please include snippets for this edition."
+        ),
+        RejectionCode.SNIPPET_COUNT: lambda r: (
+            f"Edition {r.edition_id} has {r.data['count']} snippet(s); "
+            f"must be between 1 and 5 inclusive."
+        ),
+        RejectionCode.NO_MATCH: lambda r: (
+            f"Snippet text was not found in any chunk for edition {r.edition_id}. "
+            f"Ensure the text (and lead/trail, if using elision) is copied verbatim "
+            f"from the chunk, and that non-empty text appears on both sides of '//...//`."
+        ),
+        RejectionCode.WORD_LIMIT: lambda r: (
+            f"Resolved snippet has {r.data['word_count']} words, exceeding the "
+            f"150-word hard limit (100-word target + 50-word grace margin). "
+            f"Please shorten or use tighter elision."
+        ),
+        RejectionCode.ITEM_ID_MISMATCH: lambda r: (
+            f"Snippet matched a chunk with item_id {r.data['matched_item_id']}, "
+            f"not the claimed item_id {r.data['item_id']}. "
+            f"Use the item_id shown in the search result for this chunk."
+        ),
+        RejectionCode.HALLUCINATED_EDITION: lambda r: (
+            f"edition_id {r.edition_id} was not found in the search results "
+            f"for tool call '{search_tool_call_id}'. "
+            f"No snippets should have been submitted for this edition_id."
+        ),
+    }
 
     lines = [f"REJECTED: {len(rejected)} snippet(s) could not be stored."]
-    for eid, snippet_obj, reason in rejected:
-        snippet_preview = ""
-        if snippet_obj and snippet_obj.get("snippet"):
-            raw = snippet_obj["snippet"]
-            preview = raw[:60] + ("..." if len(raw) > 60 else "")
-            snippet_preview = f" | snippet: {repr(preview)}"
-        lines.append(f"  Edition {eid}{snippet_preview}: {reason}")
+    for r in rejected:
+        lines.append(
+            f"  Edition {r.edition_id}{_snippet_preview(r)}: {_MESSAGES[r.code](r)}"
+        )
     lines.append(
         "\nPlease resubmit select_relevant_snippets with corrected versions "
         "of the rejected snippets."
     )
-
     return "\n".join(lines)
 
 
@@ -1059,17 +821,150 @@ def select_relevant_snippets(
             entry["orm_edition"].id: entry
             for entry in ctx.context.search_result.get("edition_data", [])
         }
-
-        # Convert list of EditionSnippets to the dict format expected by validate_and_save_snippets
         snippets_dict = {entry["edition_id"]: entry["snippets"] for entry in snippets}
+        search_tool_call_id = ctx.context.search_tool_call_id
 
-        msg = validate_and_save_snippets(
-            edition_entry_map, snippets_dict, ctx.context.search_tool_call_id
+        total_snippets_submitted = sum(len(v) for v in snippets_dict.values())
+        logger.info(
+            f"select_relevant_snippets: {len(snippets_dict)} edition(s) submitted, "
+            f"{total_snippets_submitted} total snippet(s), "
+            f"{len(edition_entry_map)} edition(s) in search result."
         )
 
-        # ctx.context.edition_data = list(edition_entry_map.values())
+        rejected: List[Rejection] = []
 
-        return msg
+        # ── Primary loop: edition_entry_map is authoritative ─────────────────────
+        for edition_id, entry in edition_entry_map.items():
+            # Case 1: already has saved snippets from a prior call — nothing to do.
+            if entry.get("snippets"):
+                continue
+
+            submitted = snippets_dict.get(edition_id)
+
+            # Case 2: no snippets saved and none submitted — flag as missing.
+            if submitted is None:
+                logger.debug(
+                    f"Edition {edition_id} has no saved snippets and was not submitted."
+                )
+                rejected.append(
+                    Rejection(edition_id, None, RejectionCode.MISSING_EDITION)
+                )
+                continue
+
+            # Case 3: snippets submitted — validate and save.
+            chunk_hits = entry["edition_hit"].get("chunk_hits", [])
+            snippet_list = submitted
+
+            # --- Validate edition: 1-5 snippets per edition ---
+            if not (1 <= len(snippet_list) <= 5):
+                logger.debug(
+                    f"Rejecting edition {edition_id}: {len(snippet_list)} snippet(s) submitted; "
+                    f"must be between 1 and 5 inclusive."
+                )
+                rejected.append(
+                    Rejection(
+                        edition_id,
+                        None,
+                        RejectionCode.SNIPPET_COUNT,
+                        {"count": len(snippet_list)},
+                    )
+                )
+                continue
+
+            for snippet_obj in snippet_list:
+                item_id = snippet_obj.get("item_id")
+                snippet_text = snippet_obj.get("snippet", "")
+
+                # --- Step 1: Find the first matching chunk ---
+                matched_chunk = None
+                resolved_snippet = None
+                for chunk_hit in chunk_hits:
+                    result = find_snippet_in_chunk(
+                        snippet_text, chunk_hit.get("text", "")
+                    )
+                    if result is not None:
+                        matched_chunk = chunk_hit
+                        resolved_snippet = result
+                        break
+
+                if matched_chunk is None:
+                    logger.debug(
+                        f"Rejecting snippet for edition {edition_id}: not found in any chunk. "
+                        f"snippet={repr(snippet_text[:60])}"
+                    )
+                    rejected.append(
+                        Rejection(edition_id, snippet_obj, RejectionCode.NO_MATCH)
+                    )
+                    continue
+
+                # --- Step 2: Validate word count on the resolved snippet ---
+                word_count = len(resolved_snippet.split())
+                if word_count > 150:
+                    logger.debug(
+                        f"Rejecting snippet for edition {edition_id}: resolved snippet "
+                        f"has {word_count} words, exceeding 150-word hard limit."
+                    )
+                    rejected.append(
+                        Rejection(
+                            edition_id,
+                            snippet_obj,
+                            RejectionCode.WORD_LIMIT,
+                            {"word_count": word_count},
+                        )
+                    )
+                    continue
+
+                # --- Step 3: Verify snippet item_id ---
+                matched_item_id = matched_chunk.get("item_id")
+                if matched_item_id is None or matched_item_id != item_id:
+                    logger.debug(
+                        f"Rejecting snippet for edition {edition_id}: claimed item_id={item_id} "
+                        f"does not match chunk item_id={matched_item_id}."
+                    )
+                    rejected.append(
+                        Rejection(
+                            edition_id,
+                            snippet_obj,
+                            RejectionCode.ITEM_ID_MISMATCH,
+                            {"item_id": item_id, "matched_item_id": matched_item_id},
+                        )
+                    )
+                    continue
+
+                # All validations passed — save into the entry directly.
+                entry.setdefault("snippets", []).append(
+                    {
+                        "text": resolved_snippet,
+                        "start_page": matched_chunk.get("start_page")
+                        or matched_chunk.get("chunk_start_page"),
+                        "end_page": matched_chunk.get("end_page")
+                        or matched_chunk.get("chunk_end_page"),
+                        "item_id": matched_chunk.get("item_id"),
+                        "chunk_score": matched_chunk.get("score")
+                        or matched_chunk.get("meta", {}).get("score"),
+                    }
+                )
+                print(
+                    f"saved snippet {resolved_snippet[:50]}... to edition {edition_id}"
+                )
+
+        # ── Follow-up pass: catch submitted edition_ids not in the map at all ─────
+        for edition_id in snippets_dict:
+            if edition_id not in edition_entry_map:
+                logger.debug(
+                    f"Rejecting edition {edition_id}: not found in search results "
+                    f"for tool call '{search_tool_call_id}'."
+                )
+                rejected.append(
+                    Rejection(edition_id, None, RejectionCode.HALLUCINATED_EDITION)
+                )
+
+        # --- Build response message ---
+        logger.info(f"select_relevant_snippets: {len(rejected)} rejection(s).")
+        if not rejected:
+            return "Snippets successfully saved!"
+
+        return build_rejection_message(rejected, search_tool_call_id)
 
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
