@@ -63,6 +63,9 @@ def get_frbr_data_by_edition(edition_ids: List):
 
     Uses selectinload to avoid cartesian product explosion from chained outer joins.
     """
+    if edition_ids is None or len(edition_ids) == 0:
+        return []
+
     from collections import namedtuple
 
     Row = namedtuple("Row", ["Work", "Edition"])

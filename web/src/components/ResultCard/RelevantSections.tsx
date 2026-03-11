@@ -1,7 +1,8 @@
-import { Box, Flex, Icon, Text } from "@nypl/design-system-react-components";
+import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import React from "react";
 import { Snippet } from "~/src/types/ResearchAssistant";
 import Link from "../Link/Link";
+import ChevronIcon from "./ChevronIcon";
 
 interface RelevantSectionsProps {
   snippets: Snippet[];
@@ -36,6 +37,7 @@ const RelevantSections: React.FC<RelevantSectionsProps> = ({
                     snippet.item_id
                   }&previewPage=${String(snippet.start_page).padStart(8, "0")}`}
                   marginTop="xs"
+                  fontWeight="medium"
                 >
                   Page {snippet.start_page}
                 </Link>
@@ -50,6 +52,7 @@ const RelevantSections: React.FC<RelevantSectionsProps> = ({
         alignItems="center"
         color="section.research.secondary"
         onClick={() => setIsOpen(!isOpen)}
+        fontSize="desktop.body.body2"
         fontWeight="medium"
         marginTop={isOpen ? "m" : "s"}
         cursor="pointer"
@@ -58,17 +61,12 @@ const RelevantSections: React.FC<RelevantSectionsProps> = ({
         }}
       >
         <Text>
-          {isOpen ? "Hide relevant sections" : "View relevant sections"}
+          {isOpen
+            ? "Hide relevant sections"
+            : `View ${snippets.length} relevant sections`}
         </Text>
-        <Icon
-          name="arrow"
-          size="xsmall"
-          iconRotation={isOpen ? "rotate180" : "rotate0"}
-          color="section.research.secondary"
-          _hover={{
-            color: "section.research.primary",
-          }}
-          decorative
+        <ChevronIcon
+          iconRotation={isOpen ? "rotate(0deg)" : "rotate(180deg)"}
         />
       </Flex>
     </Box>

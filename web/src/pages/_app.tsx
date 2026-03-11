@@ -1,20 +1,22 @@
-import React, { useEffect } from "react";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 import "@nypl/design-system-react-components/dist/styles.css";
-import "~/styles/main.scss";
-import Head from "next/head";
-import appConfig from "~/config/appConfig";
-import { documentTitles } from "../constants/labels";
 import "@nypl/web-reader/dist/index.css";
-import { FeatureFlagProvider } from "../context/FeatureFlagContext";
-import NewRelicSnippet from "../lib/newrelic/NewRelic";
-import ErrorBoundary from "../components/ErrorBoundary";
-import { FeedbackProvider } from "../context/FeedbackContext";
-import { ParsedUrlQuery } from "querystring";
+import Head from "next/head";
 import Script from "next/script";
+import { ParsedUrlQuery } from "querystring";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+import appConfig from "~/config/appConfig";
+import "~/styles/main.scss";
+import ErrorBoundary from "../components/ErrorBoundary";
+import { documentTitles } from "../constants/labels";
+import { FeatureFlagProvider } from "../context/FeatureFlagContext";
+import { FeedbackProvider } from "../context/FeedbackContext";
 import { ResearchAssistantProvider } from "../context/ResearchAssistantContext";
+import NewRelicSnippet from "../lib/newrelic/NewRelic";
 
 if (process.env.APP_ENV === "testing") {
   const { initMocks } = await import("mocks");

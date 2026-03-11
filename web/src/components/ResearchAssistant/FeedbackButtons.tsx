@@ -13,7 +13,7 @@ const feedbackButtonStyles = {
   },
   "&[aria-pressed='true']": {
     svg: {
-      fill: "section.research.primary",
+      fill: "#9DDEE3",
     },
   },
 };

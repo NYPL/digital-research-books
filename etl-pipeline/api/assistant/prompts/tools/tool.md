@@ -219,14 +219,14 @@ Using nested And and Or filters:
 
 ```
 "filters": ["And", [
-        ["publication_date", "Gte", "1900-01-01"],
-        ["publication_date", "Lt", "2000-01-01"],
-        ["Not", ["text", "ContainsAnyToken", "redacted censored"]],
-        ["Or", [
-            ["subject", "ContainsAnyToken", "American literature English literature"],
-            ["author", "ContainsAnyToken", "Fitzgerald Hemingway Faulkner Steinbeck"],
-        ]],
-    ]]
+    ["publication_date", "Gte", "1900-01-01"],
+    ["publication_date", "Lt", "2000-01-01"],
+    ["Not", ["text", "ContainsAnyToken", "redacted censored"]],
+    ["Or", [
+        ["subject", "ContainsAnyToken", "American literature English literature"],
+        ["author", "ContainsAnyToken", "Fitzgerald Hemingway Faulkner Steinbeck"],
+    ]],
+]]
 ```
 
 ## Ranking

@@ -1,5 +1,6 @@
 from textwrap import indent
 from flask import Blueprint, current_app, request
+import newrelic.agent
 
 # shared code
 from logger import create_log
@@ -65,16 +66,16 @@ def format_search_results(search_results):
     if search_result:
         if search_result["tool_name"] == "search_catalog":
             editions = []
-            for edition_datum in search_result["edition_data"]:
+            for edition_result in search_result["edition_data"]:
                 # FRBR ORM to dict
                 work_dict = orm_to_dict(
-                    edition_datum["orm_work"],
+                    edition_result.orm_work,
                     exclude=[(Work, "date_created"), (Work, "date_modified")],
                 )
                 # prepend "work_" to work fields
                 work_dict = {f"work_{k}": v for k, v in work_dict.items()}
                 edition_dict = orm_to_dict(
-                    edition_datum["orm_edition"],
+                    edition_result.orm_edition,
                     exclude=[
                         (Edition, "date_created"),
                         (Edition, "date_modified"),
@@ -147,6 +148,12 @@ def chat(user=None):
     conversation_type = request.json.get("conversationType")
     conversation = request.json.get("messages")
     edition_id = request.json.get("editionId")
+
+    # Add custom attributes to transaction in New Relic
+    if conversation_type is not None:
+        newrelic.agent.add_custom_attribute("conversationType", conversation_type)
+    if edition_id is not None:
+        newrelic.agent.add_custom_attribute("editionId", edition_id)
 
     logger.info(
         f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, messages_count={len(conversation) if conversation else 0}"
