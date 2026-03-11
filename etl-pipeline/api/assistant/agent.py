@@ -701,6 +701,10 @@ def find_snippet_in_chunk(snippet_text: str, chunk_text: str) -> Optional[str]:
     Plain snippets are also matched with whitespace normalization so that
     differences in spacing or line breaks in the source do not prevent a match.
     """
+    # NOTE: Since snippet text is indented in search tool response to LLM, we \
+    # collapse all whitespace (including tabs) to single space.
+
+    # elided snippet
     if "//...//" in snippet_text:
         parts = snippet_text.split("//...//", 1)
         lead_tokens = parts[0].split()
@@ -710,6 +714,8 @@ def find_snippet_in_chunk(snippet_text: str, chunk_text: str) -> Optional[str]:
         lead_pat = r"\s+".join(re.escape(t) for t in lead_tokens)
         trail_pat = r"\s+".join(re.escape(t) for t in trail_tokens)
         pattern = lead_pat + r"\s+.+?\s+" + trail_pat
+
+    # plain snippet
     else:
         tokens = snippet_text.split()
         if not tokens:
@@ -948,15 +954,12 @@ def select_relevant_snippets(
                     f"saved snippet {resolved_snippet[:50]}... to edition {edition_id}"
                 )
 
-        # ── Follow-up pass: catch submitted edition_ids not in the map at all ─────
+        # NOTE: log and ignore if edition_id is submitted but isn't in search_result
         for edition_id in snippets_dict:
             if edition_id not in edition_entry_map:
                 logger.debug(
-                    f"Rejecting edition {edition_id}: not found in search results "
+                    f"NB: edition {edition_id} submitted but not found in search results "
                     f"for tool call '{search_tool_call_id}'."
-                )
-                rejected.append(
-                    Rejection(edition_id, None, RejectionCode.HALLUCINATED_EDITION)
                 )
 
         # --- Build response message ---
