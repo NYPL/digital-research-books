@@ -75,10 +75,53 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
       console.log(`Loading indicator disappeared after ${elapsedSeconds} seconds`);
 
       // Verify a new message is displayed
-      await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible();
+      await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible({timeout: 120_000});
     });
   });
 
   test.describe("Results (left panel)", () => {
+    test.beforeEach(async () => {
+      // Submit a query known to return results and wait for assistant to respond
+      await researchAssistantPage.query(testQuery);
+      await expect(researchAssistantPage.loadingIndicator).toBeHidden();
+    });
+
+    test("At least one result is displayed along with non-zero paging text", async () => {
+      await expect.poll(() => researchAssistantPage.results.count()).toBeGreaterThan(0);
+      await expect(researchAssistantPage.nonZeroResultsPagingText).toBeVisible();
+    });
+
+    test("First result card displays status, title, author, publisher, and edition", async () => {
+      await researchAssistantPage.firstResult.waitFor({ state: "visible" });
+
+      await expect(researchAssistantPage.firstResultStatusBadge).toBeVisible();
+      await expect(researchAssistantPage.firstResultStatusBadge).toHaveText(/\S+/);
+
+      await expect(researchAssistantPage.firstResultTitle).toBeVisible();
+      await expect(researchAssistantPage.firstResultTitle).toHaveText(/\S+/);
+
+      await expect(researchAssistantPage.firstResultAuthor).toBeVisible();
+      await expect(researchAssistantPage.firstResultAuthor).toHaveText(/\S+/);
+
+      await expect(researchAssistantPage.firstResultPublisher).toBeVisible();
+      await expect(researchAssistantPage.firstResultPublisher).toHaveText(/\S+/);
+
+      await expect(researchAssistantPage.firstResultEdition).toBeVisible();
+      await expect(researchAssistantPage.firstResultEdition).toHaveText(/\S+/);
+    });
+
+    test("Clicking result title opens item page for the expected edition", async ({page}) => {
+      await researchAssistantPage.firstResult.waitFor({ state: "visible" });
+      const firstEditionId = await researchAssistantPage.getFirstResultEditionId();
+      await researchAssistantPage.firstResultTitle.getByRole("link").click();
+      await expect(page).toHaveURL(new RegExp(`\\?featured=${firstEditionId}$`));
+    });
+
+    test("Result Preview button opens item page for the expected edition", async ({page}) => {
+      await researchAssistantPage.firstResult.waitFor({ state: "visible" });
+      const firstEditionId = await researchAssistantPage.getFirstResultEditionId();
+      await researchAssistantPage.firstResultPreviewBtn.click();
+      await expect(page).toHaveURL(new RegExp(`\\?featured=${firstEditionId}$`));
+    });
   });
 });

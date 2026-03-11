@@ -1,4 +1,11 @@
 import { Locator, Page } from "@playwright/test";
+import {
+  RESULT_AUTHOR_TEST_ID,
+  RESULT_EDITION_TEST_ID,
+  RESULT_PUBLISHER_TEST_ID,
+  RESULT_TEST_ID,
+  RESULT_TITLE_TEST_ID,
+} from "~/src/constants/testIds";
 
 class ResearchAssistantPage {
   readonly page: Page;
@@ -12,6 +19,16 @@ class ResearchAssistantPage {
   readonly startOverBtn: Locator;
   readonly hideChatBtn: Locator;
   readonly logInBtn: Locator;
+  readonly nonZeroResultsPagingText: Locator;
+  readonly results: Locator;
+  readonly firstResult: Locator;
+  readonly firstResultStatusBadge: Locator;
+  readonly firstResultTitle: Locator;
+  readonly firstResultTitleLink: Locator;
+  readonly firstResultAuthor: Locator;
+  readonly firstResultEdition: Locator;
+  readonly firstResultPublisher: Locator;
+  readonly firstResultPreviewBtn: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -27,6 +44,16 @@ class ResearchAssistantPage {
     this.startOverBtn = page.getByRole("button", { name: "Start over" });
     this.hideChatBtn = page.getByRole("button", { name: "Hide chat" });
     this.logInBtn = page.getByRole("link", { name: "Login" }); // update name for SCHOL-280
+    this.nonZeroResultsPagingText = page.getByText(/\d+ - \d+ of \d+ results matching/);
+    this.results = page.getByTestId(RESULT_TEST_ID);
+    this.firstResult = this.results.first();
+    this.firstResultStatusBadge = this.firstResult.getByTestId("ds-statusBadge");
+    this.firstResultTitle = this.firstResult.getByTestId(RESULT_TITLE_TEST_ID);
+    this.firstResultTitleLink = this.firstResultTitle.getByRole("link");
+    this.firstResultAuthor = this.firstResult.getByTestId(RESULT_AUTHOR_TEST_ID);
+    this.firstResultEdition = this.firstResult.getByTestId(RESULT_EDITION_TEST_ID);
+    this.firstResultPublisher = this.firstResult.getByTestId(RESULT_PUBLISHER_TEST_ID);
+    this.firstResultPreviewBtn = this.firstResult.getByRole("link", { name: "Preview" });
   }
 
   // Navigate to the Research Assistant page
@@ -83,6 +110,13 @@ class ResearchAssistantPage {
       loginPage.waitForLoadState("networkidle"),
       loginPage.getByRole("button", { name: "Login" }).click() // update name for SCHOL-280
     ]);
+  }
+
+  // Get edition ID of the first result
+  async getFirstResultEditionId(): Promise<string> {
+    await this.firstResult.waitFor({ state: "visible" });
+    const id = await this.firstResult.locator('[id^="edition-"]').first().getAttribute("id");
+    return id.match(/^edition-(\d+)$/)[1];
   }
 }
 
