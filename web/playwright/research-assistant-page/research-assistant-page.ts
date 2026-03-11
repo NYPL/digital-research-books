@@ -9,18 +9,26 @@ import {
 
 class ResearchAssistantPage {
   readonly page: Page;
+
+  // Authentication
+  readonly logInBtn: Locator;
+
+  // Chat interface (right panel)
   readonly researchAssistantPanelHeading: Locator;
   readonly messageBubbles: Locator;
   readonly chatInputTextBox: Locator;
   readonly submitQueryBtn: Locator;
   readonly loadingIndicator: Locator;
-  readonly resultsBanner: Locator;
-  readonly emptySearchPrompt: Locator;
   readonly startOverBtn: Locator;
   readonly hideChatBtn: Locator;
-  readonly logInBtn: Locator;
+
+  // Results (left panel)
+  readonly resultsBanner: Locator;
+  readonly emptySearchPrompt: Locator;
   readonly nonZeroResultsPagingText: Locator;
   readonly results: Locator;
+
+  // First result card
   readonly firstResult: Locator;
   readonly firstResultStatusBadge: Locator;
   readonly firstResultTitle: Locator;
@@ -32,6 +40,11 @@ class ResearchAssistantPage {
 
   constructor(page: Page) {
     this.page = page;
+
+    // Authentication
+    this.logInBtn = page.getByRole("link", { name: "Login" }); // update name for SCHOL-280
+
+    // Chat interface (right panel)
     this.researchAssistantPanelHeading = page.getByRole("heading", {
       name: "Virtual Research Assistant",
     });
@@ -39,13 +52,16 @@ class ResearchAssistantPage {
     this.chatInputTextBox = page.getByRole("textbox", { name: "Ask your question..." });
     this.submitQueryBtn = page.getByLabel("Send");
     this.loadingIndicator = page.getByText("Assistant thinking...");
-    this.resultsBanner = page.getByText("public domain scholarly e-books from our collections");
-    this.emptySearchPrompt = page.getByRole("heading", { name: "Start searching to see results" });
     this.startOverBtn = page.getByRole("button", { name: "Start over" });
     this.hideChatBtn = page.getByRole("button", { name: "Hide chat" });
-    this.logInBtn = page.getByRole("link", { name: "Login" }); // update name for SCHOL-280
+
+    // Results (left panel)
+    this.resultsBanner = page.getByText("public domain scholarly e-books from our collections");
+    this.emptySearchPrompt = page.getByRole("heading", { name: "Start searching to see results" });
     this.nonZeroResultsPagingText = page.getByText(/\d+ - \d+ of \d+ results matching/);
     this.results = page.getByTestId(RESULT_TEST_ID);
+
+    // First result card
     this.firstResult = this.results.first();
     this.firstResultStatusBadge = this.firstResult.getByTestId("ds-statusBadge");
     this.firstResultTitle = this.firstResult.getByTestId(RESULT_TITLE_TEST_ID);
