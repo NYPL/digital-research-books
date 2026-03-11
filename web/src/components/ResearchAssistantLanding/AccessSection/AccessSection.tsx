@@ -3,6 +3,7 @@ import {
   Grid,
   Heading,
   Text,
+  TextInputRefType,
 } from "@nypl/design-system-react-components";
 import {
   ItemType,
@@ -16,10 +17,10 @@ import LandingButtons from "../LandingButtons";
 import LandingCard from "../LandingCard";
 import SectionContainer from "../SectionContainer";
 import AccessCard from "./AccessCard";
+import AwardIcon from "./AwardIcon";
 import BuildingIcon from "./BuildingIcon";
 import CheckVerifiedIcon from "./CheckVerifiedIcon";
 import DataFlowIcon from "./DataFlowIcon";
-import FileCheckIcon from "./FileCheckIcon";
 import GraduationHatIcon from "./GraduationHatIcon";
 import LikeIcon from "./LikeIcon";
 import LockIcon from "./LockIcon";
@@ -29,6 +30,7 @@ import TargetIcon from "./TargetIcon";
 
 interface AccessSectionProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
+  textInputRef: React.RefObject<TextInputRefType>;
 }
 
 const accessCardData = [
@@ -45,7 +47,7 @@ const accessCardData = [
       "We collaborate with our staff and experts to build features and flows that meet the needs of real-world researchers.",
   },
   {
-    icon: <FileCheckIcon />,
+    icon: <AwardIcon />,
     title: "Backed by rigorous quality checks",
     description:
       "We regularly evaluate our technical frameworks and the tool’s outputs to ensure quality and accuracy.",
@@ -70,13 +72,16 @@ const accessCardData = [
   },
 ];
 
-const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
+const AccessSection: React.FC<AccessSectionProps> = ({
+  heroSectionRef,
+  textInputRef,
+}) => {
   return (
     <SectionContainer
       borderTop="1px solid"
       borderColor="section.research.primary-10"
       backgroundImage={`
-        radial-gradient(circle, var(--nypl-colors-section-research-primary-10) 2px, transparent 2px)`}
+        radial-gradient(circle, rgba(0, 131, 138, 0.025) 2px, transparent 2px)`}
       backgroundSize="16px 16px"
       backgroundPosition="center"
       color="ui.typography.body"
@@ -171,7 +176,7 @@ const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
                   {
                     type: "output_text",
                     text:
-                      "Yes, this book mentions Smith's birth and childhood (p3). It also describes his early schooling in Kansas. (p8).",
+                      "Yes, this book mentions Smith's birth and childhood (p3). It also describes his early schooling in Kansas (p8).",
                   },
                 ],
                 id: "assistant-message-2",
@@ -234,18 +239,19 @@ const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
           }
         />
       </Grid>
-      <Text
+      <Heading
         fontSize="desktop.heading.heading1"
         fontFamily="Domine"
-        marginY="128px"
+        level="h2"
         lineHeight="1"
+        marginY="128px"
       >
         <Text>Our mission is to use</Text>
         <Text>technology responsibly to</Text>
         <Text color="section.research.secondary">
           expand access to research
         </Text>
-      </Text>
+      </Heading>
       <Grid gridTemplateColumns="repeat(3, 1fr)" rowGap="xxl" columnGap="l">
         {accessCardData.map((card, index) => (
           <AccessCard
@@ -256,7 +262,10 @@ const AccessSection: React.FC<AccessSectionProps> = ({ heroSectionRef }) => {
           />
         ))}
       </Grid>
-      <LandingButtons heroSectionRef={heroSectionRef} />
+      <LandingButtons
+        heroSectionRef={heroSectionRef}
+        textInputRef={textInputRef}
+      />
     </SectionContainer>
   );
 };

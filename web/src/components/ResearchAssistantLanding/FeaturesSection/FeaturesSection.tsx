@@ -1,4 +1,9 @@
-import { Flex, Heading, Text } from "@nypl/design-system-react-components";
+import {
+  Flex,
+  Heading,
+  Text,
+  TextInputRefType,
+} from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
 import { FEATURES } from "~/src/constants/researchAssistant";
 import LandingButtons from "../LandingButtons";
@@ -7,18 +12,20 @@ import FeatureCard from "./FeatureCard";
 
 interface FeaturesSectionProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
+  textInputRef: React.RefObject<TextInputRefType>;
 }
 
 const FeaturesSection: React.ForwardRefExoticComponent<
   FeaturesSectionProps & React.RefAttributes<HTMLDivElement>
 > = forwardRef<HTMLDivElement, FeaturesSectionProps>(
-  ({ heroSectionRef }, ref) => {
+  ({ heroSectionRef, textInputRef }, ref) => {
     return (
       <SectionContainer
         backgroundColor="#FAFDFD"
         borderTop="1px solid"
         borderColor="section.research.primary-10"
         color="ui.typography.body"
+        tabIndex={-1}
         ref={ref}
       >
         <Heading
@@ -50,7 +57,10 @@ const FeaturesSection: React.ForwardRefExoticComponent<
             />
           ))}
         </Flex>
-        <LandingButtons heroSectionRef={heroSectionRef} />
+        <LandingButtons
+          heroSectionRef={heroSectionRef}
+          textInputRef={textInputRef}
+        />
       </SectionContainer>
     );
   }

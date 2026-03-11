@@ -1,4 +1,4 @@
-import { Box } from "@nypl/design-system-react-components";
+import { Box, TextInputRefType } from "@nypl/design-system-react-components";
 import React, { useRef } from "react";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
@@ -12,6 +12,7 @@ import HeroSection from "./HeroSection";
 const ResearchAssistantLanding: React.FC = () => {
   const heroSectionRef = useRef<HTMLDivElement>(null);
   const featuresSectionRef = useRef<HTMLDivElement>(null);
+  const textInputRef = useRef<TextInputRefType>(null);
 
   return (
     <>
@@ -27,14 +28,22 @@ const ResearchAssistantLanding: React.FC = () => {
         <HeroSection
           ref={heroSectionRef}
           featuresSectionRef={featuresSectionRef}
+          textInputRef={textInputRef}
         />
         <FeaturesSection
           ref={featuresSectionRef}
           heroSectionRef={heroSectionRef}
+          textInputRef={textInputRef}
         />
-        <AccessSection heroSectionRef={heroSectionRef} />
+        <AccessSection
+          heroSectionRef={heroSectionRef}
+          textInputRef={textInputRef}
+        />
         <FaqSection />
-        <HelpSection heroSectionRef={heroSectionRef} />
+        <HelpSection
+          heroSectionRef={heroSectionRef}
+          textInputRef={textInputRef}
+        />
       </Box>
     </>
   );
