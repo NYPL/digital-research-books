@@ -12,7 +12,6 @@ import {
   MessageItem,
   MessageRole,
 } from "~/src/types/ResearchAssistant";
-import styles from "../../../styles/components/ResearchAssistantWindow.module.scss";
 import MessageBubble from "./MessageBubble";
 
 const ResearchAssistantWindow: React.FC = () => {
@@ -75,18 +74,21 @@ const ResearchAssistantWindow: React.FC = () => {
       })}
 
       {isLoading && (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          paddingX="0"
-          paddingY="xs"
-        >
-          <Box className={styles.loadingSpinner}></Box>
-          <Text size="body2" color="ui.white" marginLeft="xs">
-            Assistant thinking...
-          </Text>
-        </Box>
+        <MessageBubble
+          index={messages.length + 1}
+          message={{
+            type: ItemType.Message,
+            role: MessageRole.Assistant,
+            content: [
+              {
+                text: "Thinking... This may take several seconds.",
+                type: "output_text",
+              },
+            ],
+          }}
+          ref={messagesEndRef}
+          isLoading={isLoading}
+        />
       )}
 
       {error && (
