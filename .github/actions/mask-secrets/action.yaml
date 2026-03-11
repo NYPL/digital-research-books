@@ -5,8 +5,8 @@ description: 'Mask all secrets from .env.*.secrets files to prevent exposure in 
 
 # Q: Why create a separate workflow? A: A separate custom 
 # action allows bundling the python dependency with the masking script. 
-# For workflows that use actions/setup-python to setup 
-# python, the installed python in this action will be pre-cached. 
+# For workflows that use actions/setup-python also in the main workflow, 
+# the installed python in this action will be pre-cached. 
 
 # Q: Why use this action in workflows that do not already setup python? 
 # A: Although .env.<env>.secrets files are intended to be read in python, 
