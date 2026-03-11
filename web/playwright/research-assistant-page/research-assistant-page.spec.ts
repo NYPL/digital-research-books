@@ -89,7 +89,7 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
       await expect(researchAssistantPage.nonZeroResultsPagingText).toBeVisible();
     });
 
-    test("First result card displays status, title, author, publisher, and edition", async () => {
+    test("First result card displays a status, title, author, publisher, and edition", async () => {
       await researchAssistantPage.firstResult.waitFor({ state: "visible" });
 
       await expect(researchAssistantPage.firstResultStatusBadge).toBeVisible();
