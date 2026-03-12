@@ -8,11 +8,8 @@ import {
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
-import {
-  CatalogSearchResults,
-  ChatResults,
-  ConversationType,
-} from "~/src/types/ResearchAssistant";
+import { ConversationType } from "~/src/types/ResearchAssistant";
+import { isCatalogResults } from "~/src/util/ResearchAssistantUtils";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
 import ReaderLayout from "../ReaderLayout/ReaderLayout";
@@ -164,11 +161,5 @@ const ResearchAssistant: React.FC = () => {
     </ResultPageProvider>
   );
 };
-
-function isCatalogResults(
-  results: ChatResults | null
-): results is CatalogSearchResults {
-  return !!results && (results as CatalogSearchResults).editions !== undefined;
-}
 
 export default ResearchAssistant;

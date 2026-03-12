@@ -1,9 +1,19 @@
 import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
-import { MessageItem, MessageRole } from "~/src/types/ResearchAssistant";
-import { parseEditionLinks, scrollToEdition } from "~/src/util/EditionLinkParser";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import {
+  ConversationType,
+  MessageItem,
+  MessageRole,
+} from "~/src/types/ResearchAssistant";
+import {
+  parseEditionLinks,
+  scrollToEdition,
+} from "~/src/util/EditionLinkParser";
+import { isContentSearchResults } from "~/src/util/ResearchAssistantUtils";
 import styles from "../../../styles/components/MessageBubble.module.scss";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
+import SnippetList from "../ResultCard/SnippetList";
 import FeedbackButtons from "./FeedbackButtons";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 
@@ -25,6 +35,8 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
     const handleEditionClick = (editionId: string) => {
       scrollToEdition(editionId);
     };
+
+    const { results, resultType } = useResearchAssistant();
 
     return (
       <Box
@@ -53,6 +65,11 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                       VRA:{" "}
                     </Text>
                     {parseEditionLinks(contentItem.text, handleEditionClick)}
+                    {resultType === ConversationType.Content &&
+                      isContentSearchResults(results) &&
+                      results.snippets && (
+                        <SnippetList snippets={results.snippets} />
+                      )}
                   </Box>
                   {index === 0 ? (
                     <AiGeneratedText isInitial />
