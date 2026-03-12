@@ -40,7 +40,7 @@ from sqlalchemy import text
 from jinja2 import Template
 
 
-# from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 
 # api code
 from ..utils import APIUtils, hit_to_dict, remove_markdown_comments
@@ -428,17 +428,25 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
 
 
 @timer(logger)
-async def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
+async def update_chat(
+    message: str, conversation_type: str, edition_id=None, session_id: str = None
+) -> RunResult:
     """
     Send a message to the conversation and get the agent's response.
+
+    Conversation history is managed server-side via SQLAlchemySession keyed on
+    session_id. The caller sends only the new user message; the SDK loads prior
+    turns from the database automatically.
 
     The raw search results will be available in self.context.search_data
     for any post-processing or enrichment needed.
 
     Args:
-        conversation: The list of openai Responses API items representing the conversation history.
+        message: The new user message text.
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
         edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
+        session_id: Client-supplied session ID. History is persisted to and loaded
+                    from the database using this key.
 
     Returns:
         The agent's RunResult obj.
@@ -512,11 +520,26 @@ async def update_chat(conversation, conversation_type, edition_id=None) -> RunRe
         tools=tools,
     )
 
+    # Session is created fresh each request but resolves history from the DB
+    # via session_id, so no event loop needs to be stored or passed around.
+    engine = create_async_engine(
+        "postgresql+asyncpg://{user}:{pswd}@{host}:{port}/{db}".format(
+            user=require_env("POSTGRES_USER"),
+            pswd=require_env("POSTGRES_PSWD"),
+            host=require_env("POSTGRES_HOST"),
+            port=require_env("POSTGRES_PORT"),
+            db=require_env("POSTGRES_NAME"),
+        )
+        # TODO: connection str can be sent directly to SQLAlchemySession
+    )
+    session = SQLAlchemySession(session_id, engine=engine, create_tables=True)
+
     run_result = await Runner.run(
         agent,
-        conversation,
+        message,
         context=exec_context,
         hooks=LLMLoggingHooks(),
+        session=session,
         run_config=RunConfig(
             tracing_disabled=True,
             model_settings=ModelSettings(

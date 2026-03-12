@@ -147,8 +147,9 @@ def format_search_results(search_results):
 @timer(logger)
 def chat(user=None):
     conversation_type = request.json.get("conversationType")
-    conversation = request.json.get("messages")
+    message = request.json.get("message")
     edition_id = request.json.get("editionId")
+    session_id = request.json.get("sessionId")
 
     # Add custom attributes to transaction in New Relic
     if conversation_type is not None:
@@ -157,10 +158,20 @@ def chat(user=None):
         newrelic.agent.add_custom_attribute("editionId", edition_id)
 
     logger.info(
-        f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, messages_count={len(conversation) if conversation else 0}"
+        f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, session_id={session_id}"
     )
 
     # Input parameter validation
+    if not session_id:
+        return APIUtils.formatResponseObject(
+            400, RESPONSE_TYPE, {"message": "sessionId is required"}
+        )
+
+    if not message:
+        return APIUtils.formatResponseObject(
+            400, RESPONSE_TYPE, {"message": "message is required"}
+        )
+
     if not conversation_type:
         return APIUtils.formatResponseObject(
             400, RESPONSE_TYPE, {"message": "conversationType is required"}
@@ -184,7 +195,9 @@ def chat(user=None):
 
     # get LLM response + search results
     run_result = asyncio.run(
-        update_chat(conversation, conversation_type, edition_id=edition_id)
+        update_chat(
+            message, conversation_type, edition_id=edition_id, session_id=session_id
+        )
     )
     # TODO: when a search tool errors it is handled the LLM responds (ussually saying sorry I had an error) and a 200 response is returned
 
