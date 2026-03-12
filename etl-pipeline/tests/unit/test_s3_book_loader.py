@@ -112,7 +112,14 @@ class TestBuildS3Prefix:
     """Tests for _build_s3_prefix."""
 
     def test_strips_trailing_slash(self, mock_s3_client):
-        with patch("vector_indexing.components.loaders.s3.gnupg.GPG"):
+        with (
+            patch("vector_indexing.components.loaders.s3.gnupg.GPG"),
+            patch("vector_indexing.components.loaders.s3.get_config") as mock_config,
+        ):
+            # Mock config to return prefix with trailing slash
+            mock_config.return_value.s3_bucket = "test"
+            mock_config.return_value.s3_prefix = "grin/"
+            mock_config.return_value.grin_access_key = None
             loader = S3BookLoader(
                 bucket="test", prefix="grin/", s3_client=mock_s3_client
             )
