@@ -36,6 +36,7 @@ from agents.tool_context import ToolContext
 from agents.extensions.memory import SQLAlchemySession
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
+from pydantic import BaseModel
 from sqlalchemy import text
 from jinja2 import Template
 
@@ -304,6 +305,8 @@ class EditionResult:
     snippets: list = field(default_factory=list)
 
 
+# TODO: make a name and args callback for any tool, and add a edition_id log message to search_book, add traceback log to this callback
+# also time tool call construction latency
 class LLMLoggingHooks(RunHooks):
     """Agent lifecycle hooks that log LLM call start/end with timing and response."""
 
@@ -962,11 +965,24 @@ class EditionSnippets(TypedDict):
     snippets: List[SnippetItem]
 
 
-@function_tool
-@dynamic_docstring(VALIDATE_RELEVANT_SNIPPETS_DOC)
+class _SnippetItemModel(BaseModel):
+    item_id: int
+    snippet: str
+
+
+class _EditionSnippetsModel(BaseModel):
+    edition_id: int
+    snippets: List[_SnippetItemModel]
+
+
+class _SnippetSelectionResponse(BaseModel):
+    snippets: List[_EditionSnippetsModel]
+
+
 def validate_relevant_snippets(
-    ctx: ToolContext[SnippetsExecutionContext],  # TODO: change type
     snippets: List[EditionSnippets],
+    search_result: Dict,
+    search_tool_call_id: str,
 ) -> str:
     # Validates and saves submitted snippets; requests re-submission of only the
     # rejected ones if any fail.
@@ -976,16 +992,12 @@ def validate_relevant_snippets(
     #     for a corrected resubmission of ONLY those rejected snippets.
 
     try:
-        logger.info(f"{ctx.tool_name} tool called with arguments'{ctx.tool_arguments}'")
-        # TODO: make a name and args callback for any tool, and add a edition_id log message to search_book, add traceback log to this callback
-
         # Build lookup: edition_id (int) -> edition_data entry
         edition_entry_map = {
             entry.orm_edition.id: entry
-            for entry in ctx.context.search_result.get("edition_data", [])
+            for entry in search_result.get("edition_data", [])
         }
         snippets_dict = {entry["edition_id"]: entry["snippets"] for entry in snippets}
-        search_tool_call_id = ctx.context.search_tool_call_id
 
         total_snippets_submitted = sum(len(v) for v in snippets_dict.values())
         logger.info(
@@ -1133,7 +1145,7 @@ def validate_relevant_snippets(
         return build_rejection_message(rejected)
 
     except Exception as e:
-        logger.exception(f"Error during {ctx.tool_name} tool execution.")
+        logger.exception("Error during validate_relevant_snippets execution.")
         raise e
 
 
@@ -1182,15 +1194,13 @@ def _extract_search_result_text(
 
 
 @timer(logger)
-async def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
+async def get_relevant_snippets(run_result: RunResult) -> Optional[bool]:
     """Run a snippet agent to select and store relevant text snippets for the last
     search result in run_result.
 
-    Returns None if no search has been executed (search_results is empty).
-    The agent updates run_result.context_wrapper.context.search_results in place.
+    Returns None if no search results, True on success, False if max turns exceeded.
+    Updates run_result.context_wrapper.context.search_results in place.
     """
-    # TODO: test that the main agent has only 1 tool (this is assumed in writing
-    # the relevant snippet prompt)
     search_results = run_result.context_wrapper.context.search_results
     if not search_results:
         print("XXXX AGENT has no search results")  # logged in format_search_results
@@ -1212,9 +1222,9 @@ async def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
         logger.error(
             "Failed to select snippets: final call_id from main agent search_results not found in main agent RunResult"
         )
-        return None
+        return False
 
-    template = Template((PROMPTS_DIR / "snippet_agent" / "v3.jinja.md").read_text())
+    template = Template((PROMPTS_DIR / "snippet_agent" / "v4.jinja.md").read_text())
     snippet_agent_prompt = template.render(
         system_prompt=run_result.last_agent.instructions,
         search_tool_name=run_result.last_agent.tools[0].name,
@@ -1226,26 +1236,62 @@ async def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
     # MAYBE: just add a description of the search tool output structure instead
     # of the whole search tool description. just add a summary of the agent goals
     # instead of the whole main agent description.
+    # TODO: test that the main agent has only 1 tool (this is assumed in writing
+    # the relevant snippet prompt)
 
-    snippet_agent = Agent[SnippetsExecutionContext](
-        name="Relevant Snippets Agent",
-        model=run_result.last_agent.model,
-        instructions=snippet_agent_prompt,
-        tools=[validate_relevant_snippets],
-    )
+    # Extract client and model name from the main agent's model
+    client: AsyncOpenAI = run_result.last_agent.model._client
+    model_name: str = run_result.last_agent.model.model
 
-    # NOTE: the agent updates the main agent's context_wrapper.context.search_results in place
-    return await Runner.run(
-        snippet_agent,
-        [{"role": "user", "content": "Begin snippet selection."}],
-        context=SnippetsExecutionContext(
-            search_tool_call_id=search_tool_call_id, search_result=search_result
-        ),
-        hooks=LLMLoggingHooks(),
-        run_config=RunConfig(
-            tracing_disabled=True, model_settings=ModelSettings(temperature=0.0)
-        ),
-    )
+    messages = [
+        {"role": "system", "content": snippet_agent_prompt},
+        {"role": "user", "content": "Begin snippet selection."},
+    ]
+
+    MAX_TURNS = 5
+    for turn in range(MAX_TURNS):
+        # TODO: use Timer()
+        t0 = time.perf_counter()
+        response = await client.beta.chat.completions.parse(
+            model=model_name,
+            messages=messages,
+            response_format=_SnippetSelectionResponse,
+            temperature=0.0,
+        )
+        elapsed = time.perf_counter() - t0
+        usage = response.usage
+        logger.info(
+            f"Snippet agent LLM call {turn + 1}/{MAX_TURNS} | elapsed: {elapsed:.3f}s"
+            + (
+                f" | tokens: input={usage.prompt_tokens} output={usage.completion_tokens}"
+                if usage
+                else ""
+            )
+        )
+
+        parsed = response.choices[0].message.parsed
+        snippets_input: List[EditionSnippets] = [
+            e.model_dump() for e in parsed.snippets
+        ]
+
+        result = validate_relevant_snippets(
+            snippets_input, search_result, search_tool_call_id
+        )
+
+        if result == "Snippets successfully saved!":
+            logger.info("Snippet agent: all snippets saved successfully.")
+            return True
+
+        # Feed rejection back and loop
+        # Q: do I need to send all passed snippet submissions?
+        assistant_content = response.choices[0].message.content or json.dumps(
+            parsed.model_dump()
+        )
+        messages.append({"role": "assistant", "content": assistant_content})
+        messages.append({"role": "user", "content": result})
+
+    logger.error(f"Snippet agent: did not converge after {MAX_TURNS} turns.")
+    return False
 
 
 def format_frbr_fields(orm_work, orm_edition):
