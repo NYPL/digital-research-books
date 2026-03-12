@@ -984,6 +984,8 @@ def validate_relevant_snippets(
     search_result: Dict,
     search_tool_call_id: str,
 ) -> str:
+    # TODO repurpose all of tool instructions into system prompt
+
     # Validates and saves submitted snippets; requests re-submission of only the
     # rejected ones if any fail.
     # Returns:
@@ -1256,7 +1258,9 @@ async def get_relevant_snippets(run_result: RunResult) -> Optional[bool]:
             model=model_name,
             messages=messages,
             response_format=_SnippetSelectionResponse,
+            # equivalent run_config.model_settings
             temperature=0.0,
+            reasoning_effort="none",
         )
         elapsed = time.perf_counter() - t0
         usage = response.usage
