@@ -16,7 +16,6 @@ import {
 import {
   RESULT_AUTHOR_TEST_ID,
   RESULT_EDITION_TEST_ID,
-  RESULT_PUBLISHER_TEST_ID,
   RESULT_TITLE_TEST_ID,
 } from "~/src/constants/testIds";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
@@ -206,12 +205,10 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             </span>
           )}
           <Flex marginTop="xs" flexWrap="wrap" alignItems="center">
-            <Box display="inline-flex" data-testid={RESULT_PUBLISHER_TEST_ID}>
-              <ResultPublisherAndLocation
-                pubPlace={edition.publication_place}
-                publishers={edition.publishers}
-              />
-            </Box>
+            <ResultPublisherAndLocation
+              pubPlace={edition.publication_place}
+              publishers={edition.publishers}
+            />
             <Box whiteSpace="normal" data-testid={RESULT_EDITION_TEST_ID}>
               {editionYearElem()}
             </Box>
