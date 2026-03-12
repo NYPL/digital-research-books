@@ -50,7 +50,9 @@ describe("ResearchAssistantWindow", () => {
 
     render(<ResearchAssistantWindow />);
 
-    expect(screen.getByText(/assistant thinking.../i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Thinking... This may take several seconds./i)
+    ).toBeInTheDocument();
   });
 
   test("displays loading indicator with existing messages", () => {
@@ -70,7 +72,9 @@ describe("ResearchAssistantWindow", () => {
     render(<ResearchAssistantWindow />);
 
     expect(screen.getByText("Question")).toBeInTheDocument();
-    expect(screen.getByText(/assistant thinking.../i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Thinking... This may take several seconds./i)
+    ).toBeInTheDocument();
   });
 
   test("renders messages in correct order", () => {

@@ -436,7 +436,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     # request workers/threads)
 
     backend = TurbopufferBackend(index_name=INDEX_NAME, config=get_config())
-    embedder = GoogleEmbedder()
+    embedder = GoogleEmbedder(task_type="RETRIEVAL_QUERY")
 
     # NOTE: litellm has a bug converting `list | None = None` in agents sdk @functol_tool
     # param type annotations into gemini API compatible format
