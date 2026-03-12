@@ -1,5 +1,6 @@
-import textwrap
 import os
+import tempfile
+import textwrap
 from types import NoneType
 
 
@@ -59,3 +60,14 @@ def wrap(s, max_width=80):
         width=max_width, tabsize=4, replace_whitespace=False, drop_whitespace=True
     )
     return "\n".join([wrapper.fill(l) for l in s.splitlines()])
+
+
+# Use shared memory for temp files when available
+_SHARED_MEMORY_DIR = "/dev/shm" if os.path.isdir("/dev/shm") else None
+
+
+def get_temp_dir(in_memory=False):
+    """Get a temporary directory context manager."""
+    if in_memory and _SHARED_MEMORY_DIR:
+        return tempfile.TemporaryDirectory(dir=_SHARED_MEMORY_DIR)
+    return tempfile.TemporaryDirectory()
