@@ -1,6 +1,5 @@
 import base64
 import os
-import tempfile
 from concurrent.futures import ThreadPoolExecutor
 
 from ocrmypdf.hocrtransform import HocrTransform
