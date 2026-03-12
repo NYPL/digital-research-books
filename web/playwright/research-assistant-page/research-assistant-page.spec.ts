@@ -62,24 +62,20 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
     });
 
     test("An assistant response is displayed after submitting text", async () => {
-      // Submit the test query
       await researchAssistantPage.query(testQuery);
 
-      // Wait for the loading indicator to disappear and report the time it took
       const start = Date.now();
       await expect(researchAssistantPage.loadingIndicator).toBeHidden({ timeout: 120_000 });
       const end = Date.now();
       const elapsedSeconds = ((end - start) / 1000).toFixed(2);
       console.log(`Loading indicator disappeared after ${elapsedSeconds} seconds`);
 
-      // Verify a new message is displayed
       await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible({ timeout: 120_000 });
     });
   });
 
   test.describe("Results (left panel)", () => {
     test.beforeEach(async () => {
-      // Submit a query known to return results and wait for assistant to respond
       await researchAssistantPage.query(testQuery);
       await researchAssistantPage.loadingIndicator.isHidden({ timeout: 120_000 });
     });
