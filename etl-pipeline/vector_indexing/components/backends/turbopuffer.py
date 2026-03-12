@@ -178,15 +178,6 @@ class TurbopufferBackend(IndexBackend):
             f"Turbopuffer namespace will be created on first write: {self._index_name}"
         )
 
-    def delete(self) -> None:
-        """Delete all vectors in the namespace."""
-        try:
-            self._ns.delete_all()
-            logger.info(f"Deleted namespace: {self._index_name}")
-        except Exception as e:
-            logger.error(f"Failed to delete namespace {self._index_name}: {e}")
-            raise
-
     # Document Operations
 
     def get_document(self, doc_id: str) -> Optional[ChunkDocument]:
@@ -540,3 +531,40 @@ class TurbopufferBuffer:
 
     def __exit__(self, *args) -> None:
         self.flush()
+
+
+def test_delete_namespace(
+    namespace_name: str, config: Optional[GlobalConfig] = None
+) -> None:
+    """Delete a turbopuffer namespace. FOR TESTING ONLY.
+
+    This function will only delete namespaces that contain 'test' in the name
+    to prevent accidental deletion of production data. If you need to delete a namespace,
+    use the tp-scan tool or the API directly.
+
+    Args:
+        namespace_name: The name of the namespace to delete. Must contain 'test'.
+        config: Optional config with turbopuffer API key.
+
+    Raises:
+        ValueError: If namespace_name does not contain 'test'.
+    """
+    if "test" not in namespace_name.lower():
+        raise ValueError(
+            f"Refusing to delete namespace '{namespace_name}': "
+            "namespace name must contain 'test' to be deleted with this function."
+        )
+
+    config = config or get_config()
+    if hasattr(config, "turbopuffer_api_key") and config.turbopuffer_api_key:
+        tpuf.api_key = config.turbopuffer_api_key
+
+    client = tpuf.Turbopuffer(timeout=60)
+    ns = client.namespace(namespace_name)
+
+    try:
+        ns.delete_all()
+        logger.info(f"Deleted test namespace: {namespace_name}")
+    except Exception as e:
+        logger.error(f"Failed to delete test namespace {namespace_name}: {e}")
+        raise
