@@ -186,7 +186,11 @@ export const ResultCard: React.FC<ResultCardProps> = ({
           {isLoginRequired && <CardRequiredBadge />}
         </Flex>
         <Box>
-          <Heading size="heading7" marginBottom="xxs" data-testid={RESULT_TITLE_TEST_ID}>
+          <Heading
+            size="heading7"
+            marginBottom="xxs"
+            data-testid={RESULT_TITLE_TEST_ID}
+          >
             <Link
               to={{
                 pathname: `/${page === "vra" ? "item" : "work"}/${work.uuid}`,
