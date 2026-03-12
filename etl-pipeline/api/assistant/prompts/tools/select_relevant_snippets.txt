@@ -1,5 +1,6 @@
 Validate, save, and record text excerpts relevant to the user's search interest.
 
+Use this tool to select 1-5 representative text snippets per edition.
 This tool validates the snippets you submit and saves valid ones to be displayed
 alongside each book. Your goal is to submit valid snippets for every outstanding
 edition ID. Do not stop until the tool responds with no resubmission requests (i.e.,
@@ -15,18 +16,16 @@ Args:
             - ``item_id`` (int): The item ID of the chunk that the snippet comes from.
             - ``snippet`` (str): The snippet text. The following rules apply:
               * Each snippet must be no more than 100 words.
-              * Snippets will be validated to make sure the snippet text appears as a
-                literal substring in at least one chunk.
-              * You may elide words from the middle using the **exact** token
+              * You may elide words from the middle of a snippet using the **exact** token
                 ``//...//`` to save space and writing time. Only elide the middle
                 when the lead and trail are individually long enough to uniquely
                 identify the snippet. If the text is short enough to include in
-                full, do so.
-              * Include any hyphen ``-`` characters inserted in words at a line break
-                exactly as they appear in the chunk text. For example, if the chunk
+                full, do so. 
+              * Snippets will be validated to make sure the snippet text (or lead + trail if an elision is present) appears as a
+                literal substring in at least one chunk. For example: include any hyphen ``-`` characters inserted in words at a line break
+                exactly as they appear in the chunk text. If the chunk
                 contains ``specula-\ntive``, your snippet must preserve the hyphen:
                 ``"specula-\ntive"``.
-
         Example:
             [
                 {

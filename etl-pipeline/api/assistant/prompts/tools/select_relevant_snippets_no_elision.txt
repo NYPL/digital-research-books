@@ -1,5 +1,6 @@
 Validate, save, and record text excerpts relevant to the user's search interest.
 
+Use this tool to select 1-5 representative text snippets per edition.
 This tool validates the snippets you submit and saves valid ones to be displayed
 alongside each book. Your goal is to submit valid snippets for every outstanding
 edition ID. Do not stop until the tool responds with no resubmission requests (i.e.,
@@ -18,12 +19,10 @@ Args:
               * Each snippet must be an exact verbatim substring of a chunk — copy
                 the text directly from the chunk without any modification.
               * Snippets will be validated to make sure the snippet text appears as a
-                literal substring in at least one chunk.
-              * Include any hyphen ``-`` characters inserted in words at a line break
-                exactly as they appear in the chunk text. For example, if the chunk
+                literal substring in at least one chunk. For example: include any hyphen ``-`` characters inserted in words at a line break
+                exactly as they appear in the chunk text. If the chunk
                 contains ``specula-\ntive``, your snippet must preserve the hyphen:
                 ``"specula-\ntive"``.
-
         Example:
             [
                 {

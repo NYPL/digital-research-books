@@ -31,7 +31,7 @@ from agents import (
     ModelSettings,
     RunResult,
 )
-from agents.items import ModelResponse
+from agents.items import ModelResponse, ToolCallOutputItem
 from agents.tool_context import ToolContext
 from agents.extensions.memory import SQLAlchemySession
 from openai import AsyncOpenAI
@@ -105,8 +105,8 @@ SEARCH_BOOK_DOC = f"""
 """
 
 VALIDATE_RELEVANT_SNIPPETS_DOC = (
-    # PROMPTS_DIR / "tools" / "select_relevant_snippets.txt"
-    PROMPTS_DIR / "tools" / "select_relevant_snippets_no_elision.txt"
+    PROMPTS_DIR / "tools" / "select_relevant_snippets.txt"
+    # PROMPTS_DIR / "tools" / "select_relevant_snippets_no_elision.txt"
 ).read_text()
 
 
@@ -874,34 +874,11 @@ def _format_no_match_diff(snippet_text: str, chunk_hits: list) -> str:
 
     diff_lines = list(difflib.ndiff(snippet_words, best_chunk_window_words))
 
-    # Show only changed lines (+/-/?) plus CONTEXT unchanged words around each change.
-    # Collapse long unchanged runs to "[...]" so unchanged words don't flood the log.
-    CONTEXT = 2
-    changed_indices = {i for i, l in enumerate(diff_lines) if l[0] != " "}
-    show = set()
-    for idx in changed_indices:
-        for c in range(max(0, idx - CONTEXT), min(len(diff_lines), idx + CONTEXT + 1)):
-            show.add(c)
-
-    output_lines: list[str] = []
-    prev_shown = -1
-    for i, diff_line in enumerate(diff_lines):
-        if i in show:
-            if prev_shown >= 0 and i > prev_shown + 1:
-                output_lines.append("    [...]")
-            output_lines.append(f"    {diff_line}")
-            prev_shown = i
-
-    if not output_lines:
-        output_lines.append(
-            "    (no word differences — possible whitespace/encoding mismatch)"
-        )
-
     lines = [
         f"  best chunk similarity: {best_ratio:.1%}",
         "  word diff  (- submitted by LLM, + actual text in chunk):",
     ]
-    lines.extend(output_lines)
+    lines.extend(f"    {line}" for line in diff_lines)
     return "\n".join(lines)
 
 
@@ -922,7 +899,7 @@ class Rejection:
     data: dict = field(default_factory=dict)
 
 
-def build_rejection_message(rejected: List[Rejection], search_tool_call_id: str) -> str:
+def build_rejection_message(rejected: List[Rejection]) -> str:
     """Build the full rejection response string from a list of Rejection objects."""
 
     def _snippet_preview(r: Rejection) -> str:
@@ -958,8 +935,7 @@ def build_rejection_message(rejected: List[Rejection], search_tool_call_id: str)
             f"Use the item_id shown in the search result for this chunk."
         ),
         RejectionCode.HALLUCINATED_EDITION: lambda r: (
-            f"edition_id {r.edition_id} was not found in the search results "
-            f"for tool call '{search_tool_call_id}'. "
+            f"edition_id {r.edition_id} is not in the search result. "
             f"No snippets should have been submitted for this edition_id."
         ),
     }
@@ -1154,30 +1130,16 @@ def validate_relevant_snippets(
         if not rejected:
             return "Snippets successfully saved!"
 
-        return build_rejection_message(rejected, search_tool_call_id)
+        return build_rejection_message(rejected)
 
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
         raise e
 
 
-@timer(logger)
-async def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
-    """Run a snippet agent to select and store relevant text snippets for the last
-    search result in run_result.
+def _build_conversation_text(run_result: RunResult) -> str:
+    """Extract user and assistant text messages from run_result as a formatted conversation string."""
 
-    Returns None if no search has been executed (search_results is empty).
-    The agent updates run_result.context_wrapper.context.search_results in place.
-    """
-    search_results = run_result.context_wrapper.context.search_results
-    if not search_results:
-        print("XXXX AGENT has no search results")  # logged in format_search_results
-        return None
-
-    # Select last search result
-    search_tool_call_id, search_result = list(search_results.items())[-1]
-
-    # Extract only user and assistant text messages (exclude tool calls/results)
     def _get_clean_text(message):
         content = message.get("content", "")
         if isinstance(content, list):
@@ -1188,7 +1150,7 @@ async def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
             )
         return str(content)
 
-    conversation_parts = []
+    parts = []
     for msg in run_result.to_input_list()[:-1]:
         role = msg.get("role", "")
         if role not in ("user", "assistant"):
@@ -1196,37 +1158,74 @@ async def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
         text = _get_clean_text(msg).strip()
         if text:
             label = "User" if role == "user" else "Assistant"
-            conversation_parts.append(f"{label}: {text}")
-    conversation_text = "\n\n".join(conversation_parts)
+            parts.append(f"{label}: {text}")
+    return "\n\n".join(parts)
 
-    # Get formatted search result text and list of edition IDs that must be covered
+
+def _extract_search_result_text(
+    run_result: RunResult, search_tool_call_id: str
+) -> Optional[str]:
+    """Find the string output of the search tool call in run_result.new_items.
+
+    Returns None if the matching ToolCallOutputItem is not found.
+    """
+    for item in run_result.new_items:
+        if not isinstance(item, ToolCallOutputItem):
+            continue
+        raw = item.raw_item
+        call_id = (
+            raw.get("call_id") if hasattr(raw, "get") else getattr(raw, "call_id", None)
+        )
+        if call_id == search_tool_call_id:
+            return str(item.output)
+    return None
+
+
+@timer(logger)
+async def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
+    """Run a snippet agent to select and store relevant text snippets for the last
+    search result in run_result.
+
+    Returns None if no search has been executed (search_results is empty).
+    The agent updates run_result.context_wrapper.context.search_results in place.
+    """
+    # TODO: test that the main agent has only 1 tool (this is assumed in writing
+    # the relevant snippet prompt)
+    search_results = run_result.context_wrapper.context.search_results
+    if not search_results:
+        print("XXXX AGENT has no search results")  # logged in format_search_results
+        return None
+
+    # Select last search result
+    search_tool_call_id, search_result = list(search_results.items())[-1]
+
+    conversation_text = _build_conversation_text(run_result)
+
     edition_data = search_result.get("edition_data", [])
+    # NOTE: this is not really idempotent should be only editions that do not
+    # have at least one snippet.
     edition_ids = [entry.orm_edition.id for entry in edition_data]
-    search_result_text = verbose_display_editions(
-        edition_data, search_tool_call_id=search_tool_call_id, as_str=True
+
+    # Extract the search tool output text directly from new_items
+    search_result_text = _extract_search_result_text(run_result, search_tool_call_id)
+    if search_result_text is None:
+        logger.error(
+            "Failed to select snippets: final call_id from main agent search_results not found in main agent RunResult"
+        )
+        return None
+
+    template = Template((PROMPTS_DIR / "snippet_agent" / "v3.jinja.md").read_text())
+    snippet_agent_prompt = template.render(
+        system_prompt=run_result.last_agent.instructions,
+        search_tool_name=run_result.last_agent.tools[0].name,
+        search_tool_description=run_result.last_agent.tools[0].description,
+        conversation_text=conversation_text,
+        search_result_text=search_result_text,
+        edition_ids=edition_ids,
     )
-
-    snippet_agent_prompt = f"""You are a snippet selection agent. Your task is to identify and submit relevant text snippets from a book search result to show to the user for each edition returned.
-
-## Conversation
-The following is the conversation between the researcher and the research assistant:
-
-{conversation_text}
-
-## Search Result (edition chunks)
-The following are the formatted book edition chunks for search tool call id = {search_tool_call_id}. Use this text to identify and select relevant snippets.
-
-{search_result_text}
-
-## Your Task
-You MUST submit valid snippets for ALL of the following edition IDs: {edition_ids}
-
-Use the `validate_relevant_snippets` tool to submit your selected snippets. The tool validates each snippet and saves valid ones.
-
-**Rules:**
-- Submit snippets for every edition ID in the list above.
-- Do not stop until the tool confirms all snippets are saved with no further resubmission requests (i.e., every edition ID in the search result has been covered).
-- When the tool requests resubmission, resubmit ONLY the editions/snippets explicitly listed in the resubmission message. Do NOT resubmit editions that have already been successfully saved."""
+    # MAYBE: just add a description of the search tool output structure instead
+    # of the whole search tool description. just add a summary of the agent goals
+    # instead of the whole main agent description.
 
     snippet_agent = Agent[SnippetsExecutionContext](
         name="Relevant Snippets Agent",
@@ -1242,6 +1241,7 @@ Use the `validate_relevant_snippets` tool to submit your selected snippets. The 
         context=SnippetsExecutionContext(
             search_tool_call_id=search_tool_call_id, search_result=search_result
         ),
+        hooks=LLMLoggingHooks(),
         run_config=RunConfig(
             tracing_disabled=True, model_settings=ModelSettings(temperature=0.0)
         ),
