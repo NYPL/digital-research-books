@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from importlib.resources import read_text
+import difflib
 import json
 from pathlib import Path
 import re
@@ -103,7 +104,7 @@ SEARCH_BOOK_DOC = f"""
 {remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
 """
 
-SELECT_RELEVANT_SNIPPETS_DOC = (
+VALIDATE_RELEVANT_SNIPPETS_DOC = (
     # PROMPTS_DIR / "tools" / "select_relevant_snippets.txt"
     PROMPTS_DIR / "tools" / "select_relevant_snippets_no_elision.txt"
 ).read_text()
@@ -427,7 +428,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
 
 
 @timer(logger)
-def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
+async def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     """
     Send a message to the conversation and get the agent's response.
 
@@ -511,7 +512,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         tools=tools,
     )
 
-    run_result = Runner.run_sync(
+    run_result = await Runner.run(
         agent,
         conversation,
         context=exec_context,
@@ -529,9 +530,9 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     # TODO: test that the main agent has only 1 tool (this is assumed in writing the relevant snippet prompt)
     # Add relevant snippets if search was executed
     # r = get_relevant_snippets(run_result, system_prompt)
-    r = None
+    # r = None
 
-    return run_result, r
+    return run_result
 
 
 def max_chunk_score(chunk_hits):
@@ -827,6 +828,83 @@ def find_snippet_in_chunk(snippet_text: str, chunk_text: str) -> Optional[str]:
     return m.group(0) if m else None
 
 
+def _format_no_match_diff(snippet_text: str, chunk_hits: list) -> str:
+    """Return a human-readable word-level diff between the submitted snippet
+    and the closest matching region found across all chunk hits.
+
+    Uses SequenceMatcher to locate the best-aligned window inside each chunk,
+    then formats a word-level ndiff so it's easy to spot where the LLM
+    misquoted the source text.
+    """
+    snippet_norm = " ".join(snippet_text.split())
+    snippet_words = snippet_norm.split()
+    if not snippet_words:
+        return "  (empty snippet)"
+
+    best_ratio = -1.0
+    best_chunk_window_words: list[str] = []
+
+    for chunk_hit in chunk_hits:
+        chunk_norm = " ".join(chunk_hit.get("text", "").split())
+        chunk_words = chunk_norm.split()
+        if not chunk_words:
+            continue
+
+        sm = difflib.SequenceMatcher(None, snippet_words, chunk_words, autojunk=False)
+        ratio = sm.ratio()
+
+        # Locate the region of the chunk best aligned with the snippet.
+        # Pad by a few words on each side so trailing/leading insertions are visible.
+        real_blocks = [b for b in sm.get_matching_blocks() if b.size > 0]
+        if not real_blocks:
+            continue
+        WINDOW_PAD = 5
+        chunk_start = max(0, real_blocks[0].b - WINDOW_PAD)
+        chunk_end = min(
+            len(chunk_words), real_blocks[-1].b + real_blocks[-1].size + WINDOW_PAD
+        )
+        window_words = chunk_words[chunk_start:chunk_end]
+
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_chunk_window_words = window_words
+
+    if not best_chunk_window_words:
+        return f"  snippet (normalized): {repr(snippet_norm[:300])}"
+
+    diff_lines = list(difflib.ndiff(snippet_words, best_chunk_window_words))
+
+    # Show only changed lines (+/-/?) plus CONTEXT unchanged words around each change.
+    # Collapse long unchanged runs to "[...]" so unchanged words don't flood the log.
+    CONTEXT = 2
+    changed_indices = {i for i, l in enumerate(diff_lines) if l[0] != " "}
+    show = set()
+    for idx in changed_indices:
+        for c in range(max(0, idx - CONTEXT), min(len(diff_lines), idx + CONTEXT + 1)):
+            show.add(c)
+
+    output_lines: list[str] = []
+    prev_shown = -1
+    for i, diff_line in enumerate(diff_lines):
+        if i in show:
+            if prev_shown >= 0 and i > prev_shown + 1:
+                output_lines.append("    [...]")
+            output_lines.append(f"    {diff_line}")
+            prev_shown = i
+
+    if not output_lines:
+        output_lines.append(
+            "    (no word differences — possible whitespace/encoding mismatch)"
+        )
+
+    lines = [
+        f"  best chunk similarity: {best_ratio:.1%}",
+        "  word diff  (- submitted by LLM, + actual text in chunk):",
+    ]
+    lines.extend(output_lines)
+    return "\n".join(lines)
+
+
 class RejectionCode(str, Enum):
     MISSING_EDITION = "MISSING_EDITION"
     SNIPPET_COUNT = "SNIPPET_COUNT"
@@ -892,8 +970,8 @@ def build_rejection_message(rejected: List[Rejection], search_tool_call_id: str)
             f"  Edition {r.edition_id}{_snippet_preview(r)}: {_MESSAGES[r.code](r)}"
         )
     lines.append(
-        "\nPlease resubmit select_relevant_snippets with corrected versions "
-        "of the rejected snippets."
+        "\nPlease resubmit validate_relevant_snippets with ONLY the rejected snippets "
+        "listed above. Do NOT resubmit editions that have already been successfully saved."
     )
     return "\n".join(lines)
 
@@ -909,16 +987,17 @@ class EditionSnippets(TypedDict):
 
 
 @function_tool
-@timer(logger)
-@dynamic_docstring(SELECT_RELEVANT_SNIPPETS_DOC)
-def select_relevant_snippets(
+@dynamic_docstring(VALIDATE_RELEVANT_SNIPPETS_DOC)
+def validate_relevant_snippets(
     ctx: ToolContext[SnippetsExecutionContext],  # TODO: change type
     snippets: List[EditionSnippets],
 ) -> str:
+    # Validates and saves submitted snippets; requests re-submission of only the
+    # rejected ones if any fail.
     # Returns:
     #     A summary of rejected snippets with the
     #     reason for rejection. If any snippets were rejected the response asks
-    #     for a corrected resubmission.
+    #     for a corrected resubmission of ONLY those rejected snippets.
 
     try:
         logger.info(f"{ctx.tool_name} tool called with arguments'{ctx.tool_arguments}'")
@@ -934,7 +1013,7 @@ def select_relevant_snippets(
 
         total_snippets_submitted = sum(len(v) for v in snippets_dict.values())
         logger.info(
-            f"select_relevant_snippets: {len(snippets_dict)} edition(s) submitted, "
+            f"validate_relevant_snippets: {len(snippets_dict)} edition(s) submitted, "
             f"{total_snippets_submitted} total snippet(s), "
             f"{len(edition_entry_map)} edition(s) in search result."
         )
@@ -945,6 +1024,9 @@ def select_relevant_snippets(
         for edition_id, entry in edition_entry_map.items():
             # Case 1: already has saved snippets from a prior call — nothing to do.
             if entry.snippets:
+                logger.debug(
+                    f"Edition {edition_id} already has {len(entry.snippets)} saved snippet(s); skipping."
+                )
                 continue
 
             submitted = snippets_dict.get(edition_id)
@@ -983,7 +1065,7 @@ def select_relevant_snippets(
                 item_id = snippet_obj.get("item_id")
                 snippet_text = snippet_obj.get("snippet", "")
 
-                # --- Step 1: Find the first matching chunk ---
+                # --- Step 1: Validate snippet matches edition chunk ---
                 matched_chunk = None
                 resolved_snippet = None
                 for chunk_hit in chunk_hits:
@@ -996,9 +1078,11 @@ def select_relevant_snippets(
                         break
 
                 if matched_chunk is None:
+                    diff_log = _format_no_match_diff(snippet_text, chunk_hits)
                     logger.debug(
-                        f"Rejecting snippet for edition {edition_id}: not found in any chunk. "
-                        f"snippet={repr(snippet_text[:60])}"
+                        f"Rejecting snippet for edition {edition_id}: not found in any chunk.\n"
+                        f"  submitted snippet: {repr(snippet_text[:80])}\n"
+                        f"{diff_log}"
                     )
                     rejected.append(
                         Rejection(edition_id, snippet_obj, RejectionCode.NO_MATCH)
@@ -1054,7 +1138,7 @@ def select_relevant_snippets(
                     }
                 )
                 print(
-                    f"saved snippet {resolved_snippet[:50]}... to edition {edition_id}"
+                    f"saved snippet {repr(resolved_snippet[:50])}... to edition {edition_id}"
                 )
 
         # NOTE: log and ignore if edition_id is submitted but isn't in search_result
@@ -1066,7 +1150,7 @@ def select_relevant_snippets(
                 )
 
         # --- Build response message ---
-        logger.info(f"select_relevant_snippets: {len(rejected)} rejection(s).")
+        logger.info(f"validate_relevant_snippets: {len(rejected)} rejection(s).")
         if not rejected:
             return "Snippets successfully saved!"
 
@@ -1078,19 +1162,13 @@ def select_relevant_snippets(
 
 
 @timer(logger)
-def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
+async def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
     """Run a snippet agent to select and store relevant text snippets for the last
     search result in run_result.
 
     Returns None if no search has been executed (search_results is empty).
     The agent updates run_result.context_wrapper.context.search_results in place.
     """
-    system_prompt = asyncio.run(
-        run_result.last_agent.get_system_prompt(run_result.context_wrapper.context)
-    )
-
-    # TODO: test that the main agent has only 1 tool (this is assumed in writing
-    # the relevant snippet prompt)
     search_results = run_result.context_wrapper.context.search_results
     if not search_results:
         print("XXXX AGENT has no search results")  # logged in format_search_results
@@ -1099,35 +1177,68 @@ def get_relevant_snippets(run_result: RunResult) -> Optional[RunResult]:
     # Select last search result
     search_tool_call_id, search_result = list(search_results.items())[-1]
 
-    # NOTE: I probably don't need to add the whole search tool description,
-    # just a high level on what semantic search is
-    snippet_agent_prompt = f"""
-        You are given a conversation between a researcher and a research assistant LLM.
-        The research assistant LLM agent received the following instructions:
-        {system_prompt}
+    # Extract only user and assistant text messages (exclude tool calls/results)
+    def _get_clean_text(message):
+        content = message.get("content", "")
+        if isinstance(content, list):
+            return "".join(
+                part.get("text", "")
+                for part in content
+                if part.get("type") == "output_text"
+            )
+        return str(content)
 
-        The research agent had the following search tool available:
-        Name: {run_result.last_agent.tools[0].name}
-        Description: {run_result.last_agent.tools[0].description}
+    conversation_parts = []
+    for msg in run_result.to_input_list()[:-1]:
+        role = msg.get("role", "")
+        if role not in ("user", "assistant"):
+            continue
+        text = _get_clean_text(msg).strip()
+        if text:
+            label = "User" if role == "user" else "Assistant"
+            conversation_parts.append(f"{label}: {text}")
+    conversation_text = "\n\n".join(conversation_parts)
 
-        Your job is to select relevant snippets that will be displayed to the research tool user to help them understand what content relevant to their research interest is available in the books returned by their search.
+    # Get formatted search result text and list of edition IDs that must be covered
+    edition_data = search_result.get("edition_data", [])
+    edition_ids = [entry.orm_edition.id for entry in edition_data]
+    search_result_text = verbose_display_editions(
+        edition_data, search_tool_call_id=search_tool_call_id, as_str=True
+    )
 
-        You will return relevant snippets for the last search tool call: search tool call id = {search_tool_call_id}.
+    snippet_agent_prompt = f"""You are a snippet selection agent. Your task is to identify and submit relevant text snippets from a book search result to show to the user for each edition returned.
 
-        Use the select_relevant_snippets tool record the relevant snippets you select to show to the user.
-        """
+## Conversation
+The following is the conversation between the researcher and the research assistant:
+
+{conversation_text}
+
+## Search Result (edition chunks)
+The following are the formatted book edition chunks for search tool call id = {search_tool_call_id}. Use this text to identify and select relevant snippets.
+
+{search_result_text}
+
+## Your Task
+You MUST submit valid snippets for ALL of the following edition IDs: {edition_ids}
+
+Use the `validate_relevant_snippets` tool to submit your selected snippets. The tool validates each snippet and saves valid ones.
+
+**Rules:**
+- Submit snippets for every edition ID in the list above.
+- Do not stop until the tool confirms all snippets are saved with no further resubmission requests (i.e., every edition ID in the search result has been covered).
+- When the tool requests resubmission, resubmit ONLY the editions/snippets explicitly listed in the resubmission message. Do NOT resubmit editions that have already been successfully saved."""
 
     snippet_agent = Agent[SnippetsExecutionContext](
         name="Relevant Snippets Agent",
         model=run_result.last_agent.model,
         instructions=snippet_agent_prompt,
-        tools=[select_relevant_snippets],
+        tools=[validate_relevant_snippets],
     )
 
     # NOTE: the agent updates the main agent's context_wrapper.context.search_results in place
-    return Runner.run_sync(
+    return await Runner.run(
         snippet_agent,
-        run_result.to_input_list(),
+        [{"role": "user", "content": "Begin snippet selection."}],
         context=SnippetsExecutionContext(
             search_tool_call_id=search_tool_call_id, search_result=search_result
         ),

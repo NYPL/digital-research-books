@@ -1,3 +1,4 @@
+import asyncio
 from textwrap import indent
 from flask import Blueprint, current_app, request
 import newrelic.agent
@@ -182,7 +183,9 @@ def chat(user=None):
         )
 
     # get LLM response + search results
-    run_result = update_chat(conversation, conversation_type, edition_id=edition_id)
+    run_result = asyncio.run(
+        update_chat(conversation, conversation_type, edition_id=edition_id)
+    )
     # TODO: when a search tool errors it is handled the LLM responds (ussually saying sorry I had an error) and a 200 response is returned
 
     ## Build API response

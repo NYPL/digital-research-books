@@ -1,8 +1,11 @@
-Select text excerpts relevant to the user's search interest.
+Validate, save, and record text excerpts relevant to the user's search interest.
 
-Use this tool to select 1-5 representative text snippets per book. The snippets
-will be shown to the user alongside each book to provide context for why the book
-was returned.
+This tool validates the snippets you submit and saves valid ones to be displayed
+alongside each book. Your goal is to submit valid snippets for every outstanding
+edition ID. Do not stop until the tool responds with no resubmission requests (i.e.,
+all editions are saved). When the tool requests resubmission, resubmit ONLY the
+editions/snippets listed in the resubmission message — do NOT resubmit editions that
+have already been successfully saved.
 
 Args:
     snippets: List of edition snippet objects. Each object must contain:
@@ -16,6 +19,10 @@ Args:
                 the text directly from the chunk without any modification.
               * Snippets will be validated to make sure the snippet text appears as a
                 literal substring in at least one chunk.
+              * Include any hyphen ``-`` characters inserted in words at a line break
+                exactly as they appear in the chunk text. For example, if the chunk
+                contains ``specula-\ntive``, your snippet must preserve the hyphen:
+                ``"specula-\ntive"``.
 
         Example:
             [
@@ -37,7 +44,7 @@ Args:
                     "snippets": [
                         {
                             "item_id": 9834,
-                            "snippet": "Darwin observed that species adapted over generations",
+                            "snippet": "Darwin observed that species adapted over genera-\ntions",
                         },
                     ],
                 },
