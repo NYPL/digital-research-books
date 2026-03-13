@@ -26,7 +26,7 @@ describe("ReadOnlineLink", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test("renders button if embed flag is true", () => {
+  test("renders link if embed flag is true", () => {
     render(
       <ReadOnlineLink
         {...baseProps}
@@ -37,14 +37,7 @@ describe("ReadOnlineLink", () => {
       />
     );
     expect(
-      screen.getByRole("button", { name: /Read online/ })
-    ).toBeInTheDocument();
-  });
-
-  test("renders button in VRA context", () => {
-    render(<ReadOnlineLink {...baseProps} />);
-    expect(
-      screen.getByRole("button", { name: /Read online/ })
+      screen.getByRole("link", { name: /Read online/i })
     ).toBeInTheDocument();
   });
 
