@@ -5,13 +5,34 @@ repos:
     hooks:
       - id: ruff-format
         files: ^etl-pipeline/.*py$
+
   # Detect secrets when committing to local in case we're leaking a secret
+  #
+  # USAGE:
+  #   - Bypass for false positives: 
+  #     Add `# pragma: allowlist secret` on the same line
+  #     or add `# pragma: allowlist nextline secret` on the line before.
+  #     See https://github.com/Yelp/detect-secrets#inline-allowlisting
+  #
+  #   - Update baseline after adding legitimate secrets/allowlisting:
+  #     detect-secrets scan --baseline .secrets.baseline \
+  #       --exclude-files 'package-lock\.json' \
+  #       --exclude-files 'etl-pipeline/tests/fixtures/.*'
+  #
+  #   - Interactively audit existing baseline:
+  #     detect-secrets audit .secrets.baseline
+  #
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline', '--base64-limit', '4']
-        exclude: package-lock.json # common false positive
+        # Exclude files that commonly contain false positives (test fixtures, lock files)
+        exclude: |
+          (?x)^(
+            package-lock\.json|
+            etl-pipeline/tests/fixtures/.*
+          )$
   # Precommit hooks that can be helpful 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
