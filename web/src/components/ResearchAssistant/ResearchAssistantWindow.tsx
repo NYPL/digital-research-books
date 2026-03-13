@@ -53,13 +53,15 @@ const ResearchAssistantWindow: React.FC = () => {
       paddingLeft={paddingX}
       paddingRight={`calc(${PADDING_COUNTER} * 2)`}
     >
-      <MessageBubble index={0} message={initialMessage} messageResults={null} />
+      <MessageBubble index={0} message={initialMessage} />
       {messages.map((message, index) => {
         if (message.type === "message")
           return (
-            <Box ref={index === messages.length - 1 ? messagesEndRef : null}>
+            <Box
+              key={`message-${index + 1}`}
+              ref={index === messages.length - 1 ? messagesEndRef : null}
+            >
               <MessageBubble
-                key={`message-${index + 1}`}
                 index={index + 1}
                 message={message}
                 messageResults={results?.[index + 1] ?? null}

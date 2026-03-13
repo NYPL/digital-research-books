@@ -19,7 +19,7 @@ import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 interface MessageBubbleProps {
   message: MessageItem;
   index: number;
-  messageResults: ChatResults | null;
+  messageResults?: ChatResults | null;
 }
 
 const MessageBubble = memo(
