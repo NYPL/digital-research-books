@@ -38,7 +38,7 @@ const Link = forwardRef<HTMLAnchorElement, LinkProps>(
         isUnderlined={isUnderlined}
         onClick={onClick}
         variant={variant}
-        ref={ref} // Forward the ref here
+        ref={ref}
         __css={{ width: "100%" }}
         {...rest}
       >
