@@ -178,6 +178,13 @@ class TurbopufferBackend(IndexBackend):
             f"Turbopuffer namespace will be created on first write: {self._index_name}"
         )
 
+    def delete(self) -> None:
+        """Not implemented - use test_delete_namespace() for test namespaces."""
+        raise NotImplementedError(
+            "Direct namespace deletion is disabled. "
+            "Use test_delete_namespace() for test namespaces."
+        )
+
     # Document Operations
 
     def get_document(self, doc_id: str) -> Optional[ChunkDocument]:
@@ -533,7 +540,7 @@ class TurbopufferBuffer:
         self.flush()
 
 
-def test_delete_namespace(
+def delete_test_namespace(
     namespace_name: str, config: Optional[GlobalConfig] = None
 ) -> None:
     """Delete a turbopuffer namespace. FOR TESTING ONLY.
