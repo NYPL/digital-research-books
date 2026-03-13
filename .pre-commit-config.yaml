@@ -16,6 +16,7 @@ repos:
   #
   #   - Update baseline after adding legitimate secrets/allowlisting:
   #     detect-secrets scan --baseline .secrets.baseline \
+  #       --base64-limit 4 \
   #       --exclude-files 'package-lock\.json' \
   #       --exclude-files 'etl-pipeline/tests/fixtures/.*'
   #
