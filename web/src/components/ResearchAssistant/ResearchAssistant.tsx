@@ -11,7 +11,8 @@ import { ConversationType } from "~/src/types/ResearchAssistant";
 import { isCatalogResults } from "~/src/util/ResearchAssistantUtils";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
-import CatalogResults from "./CatalogResults";
+import CatalogResults from "./CatalogResults/CatalogResults";
+import CatalogResultsSkeleton from "./CatalogResults/CatalogResultsSkeleton";
 import ResearchAssistantPanel from "./ResearchAssistantPanel";
 import ResultsBanner from "./ResultsBanner";
 
@@ -24,6 +25,7 @@ const ResearchAssistant: React.FC = () => {
     historyStack,
     goToPreviousState,
     showChat,
+    isLoading,
   } = useResearchAssistant();
 
   useEffect(() => {
@@ -88,7 +90,7 @@ const ResearchAssistant: React.FC = () => {
                   />
                 </Box>
               )}
-              {!results && (
+              {!results && !isLoading && (
                 <Box
                   padding="s"
                   borderBottom="1px solid"
@@ -99,7 +101,9 @@ const ResearchAssistant: React.FC = () => {
                 />
               )}
               <Box paddingLeft="s" paddingRight="l" paddingBottom="l" flex="1">
-                {results && Object.keys(results).length > 0 ? (
+                {isLoading ? (
+                  <CatalogResultsSkeleton />
+                ) : results && Object.keys(results).length > 0 ? (
                   <>
                     {resultType === ConversationType.Catalog &&
                       isCatalogResults(latestResults) && (

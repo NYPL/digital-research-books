@@ -76,6 +76,17 @@ export const CONTENT_INITIAL_MESSAGE: MessageItem = {
   ],
 };
 
+export const LOADING_MESSAGE: MessageItem = {
+  type: ItemType.Message,
+  role: MessageRole.Assistant,
+  content: [
+    {
+      text: "Thinking... This may take several seconds.",
+      type: "output_text",
+    },
+  ],
+};
+
 // ResearchAssistantPanel
 const CONTENT_PADDING_VALUE = "1rem";
 const OUTER_MARGIN_CALC = "calc((100vw - 1280px) / 2)";

@@ -7,8 +7,8 @@ import {
 } from "~/src/constants/researchAssistant";
 import { CatalogSearchResults } from "~/src/types/ResearchAssistant";
 import { SearchQueryDefaults } from "~/src/types/SearchQuery";
-import ResultsList from "../NewResultsList/ResultsList";
-import ResultsBanner from "./ResultsBanner";
+import ResultsList from "../../NewResultsList/ResultsList";
+import ResultsBanner from "../ResultsBanner";
 
 const CatalogResults: React.FC<{
   results: CatalogSearchResults;

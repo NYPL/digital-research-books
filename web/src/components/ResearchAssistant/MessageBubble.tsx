@@ -15,15 +15,17 @@ import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import SnippetList from "../ResultCard/SnippetList";
 import FeedbackButtons from "./FeedbackButtons";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
+import LoadingEllipses from "./LoadingEllipses";
 
 interface MessageBubbleProps {
   message: MessageItem;
   index: number;
+  isLoading?: boolean;
   messageResults?: ChatResults | null;
 }
 
 const MessageBubble = memo(
-  ({ message, index, messageResults }: MessageBubbleProps) => {
+  ({ message, index, isLoading, messageResults }: MessageBubbleProps) => {
     const isUser = message.role === MessageRole.User;
     const isAssistant = message.role === MessageRole.Assistant;
     const bubbleClasses = isUser
@@ -49,31 +51,42 @@ const MessageBubble = memo(
           ) : (
             isAssistant &&
             message.content.map((contentItem, idx) => (
-              <Flex key={idx} gap="xs" alignItems="flex-start">
-                <ResearchAssistantIcon inCircle />
+              <Flex
+                key={idx}
+                gap="xs"
+                alignItems={isLoading ? "center" : "flex-start"}
+              >
+                {isLoading ? (
+                  <LoadingEllipses />
+                ) : (
+                  <ResearchAssistantIcon inCircle />
+                )}
                 <Flex flexDir="column" gap="12px">
                   <Box>
-                    <Text
-                      color="section.research.secondary"
-                      isBold
-                      display="inline"
-                    >
-                      VRA:{" "}
-                    </Text>
+                    {!isLoading && (
+                      <Text
+                        color="section.research.secondary"
+                        isBold
+                        display="inline"
+                      >
+                        VRA:{" "}
+                      </Text>
+                    )}
                     {parseEditionLinks(contentItem.text, handleEditionClick)}
                     {isContentSearchResults(messageResults) &&
                       messageResults.snippets && (
                         <SnippetList snippets={messageResults.snippets} />
                       )}
                   </Box>
-                  {index === 0 ? (
-                    <AiGeneratedText isInitial />
-                  ) : (
-                    <Flex alignItems="center" justifyContent="space-between">
-                      <AiGeneratedText />
-                      <FeedbackButtons />
-                    </Flex>
-                  )}
+                  {!isLoading &&
+                    (index === 0 ? (
+                      <AiGeneratedText isInitial />
+                    ) : (
+                      <Flex alignItems="center" justifyContent="space-between">
+                        <AiGeneratedText />
+                        <FeedbackButtons />
+                      </Flex>
+                    ))}
                 </Flex>
               </Flex>
             ))

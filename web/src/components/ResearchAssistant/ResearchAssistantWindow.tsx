@@ -5,11 +5,11 @@ import {
   CATALOG_INITIAL_MESSAGE,
   CONTENT_INITIAL_MESSAGE,
   getPanelLayout,
+  LOADING_MESSAGE,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { ConversationType } from "~/src/types/ResearchAssistant";
-import styles from "../../../styles/components/ResearchAssistantWindow.module.scss";
 import MessageBubble from "./MessageBubble";
 
 const ResearchAssistantWindow: React.FC = () => {
@@ -59,7 +59,11 @@ const ResearchAssistantWindow: React.FC = () => {
           return (
             <Box
               key={`message-${index + 1}`}
-              ref={index === messages.length - 1 ? messagesEndRef : null}
+              ref={
+                index === messages.length - 1 && !isLoading
+                  ? messagesEndRef
+                  : null
+              }
             >
               <MessageBubble
                 index={index + 1}
@@ -71,17 +75,12 @@ const ResearchAssistantWindow: React.FC = () => {
       })}
 
       {isLoading && (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          paddingX="0"
-          paddingY="xs"
-        >
-          <Box className={styles.loadingSpinner}></Box>
-          <Text size="body2" color="ui.white" marginLeft="xs">
-            Assistant thinking...
-          </Text>
+        <Box ref={messagesEndRef}>
+          <MessageBubble
+            index={messages.length + 1}
+            message={LOADING_MESSAGE}
+            isLoading={isLoading}
+          />
         </Box>
       )}
 
