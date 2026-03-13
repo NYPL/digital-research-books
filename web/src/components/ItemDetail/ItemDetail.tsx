@@ -120,7 +120,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         itemId,
         pageId,
         editionId: previewEdition?.edition_id,
-        showWebReader: true,
         results: null,
         linkResults: null,
       }));

@@ -10,7 +10,7 @@ export const isCatalogResults = (
   return !!results && (results as CatalogSearchResults).editions !== undefined;
 };
 export const isContentSearchResults = (
-  results: ChatResults
+  results: ChatResults | null
 ): results is ContentSearchResults => {
-  return (results as ContentSearchResults).snippets !== undefined;
+  return !!results && (results as ContentSearchResults).snippets !== undefined;
 };

@@ -1,3 +1,5 @@
+import { ItemType, MessageItem, MessageRole } from "../types/ResearchAssistant";
+
 export const HEADER_HEIGHT = "58px";
 
 // ResearchAssistantLanding
@@ -48,6 +50,31 @@ export const FEATURES = [
       "PDF viewer showing a book cover. The AI assistant on the right suggests related content, including 'Life of Charles T. Walker, D.D.' by Silas Xavier Floyd and 'The first Colored Baptist church in North America' by James Simms.",
   },
 ];
+
+// ResearchAsistantWindow
+
+export const CATALOG_INITIAL_MESSAGE: MessageItem = {
+  type: ItemType.Message,
+  role: MessageRole.Assistant,
+  content: [
+    {
+      text: "What research topic can I help you explore today?",
+      type: "output_text",
+    },
+  ],
+};
+
+export const CONTENT_INITIAL_MESSAGE: MessageItem = {
+  type: ItemType.Message,
+  role: MessageRole.Assistant,
+  content: [
+    {
+      text:
+        "I can help you find relevant content in this book. Ask me a question, or try the suggestions below.",
+      type: "output_text",
+    },
+  ],
+};
 
 // ResearchAssistantPanel
 const CONTENT_PADDING_VALUE = "1rem";

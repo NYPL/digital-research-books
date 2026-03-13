@@ -1,8 +1,7 @@
 import { Box, Flex, Text } from "@nypl/design-system-react-components";
-import { forwardRef } from "react";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { memo } from "react";
 import {
-  ConversationType,
+  ChatResults,
   MessageItem,
   MessageRole,
 } from "~/src/types/ResearchAssistant";
@@ -20,12 +19,11 @@ import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 interface MessageBubbleProps {
   message: MessageItem;
   index: number;
+  messageResults: ChatResults | null;
 }
 
-const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
-  ({ message, index }, ref) => {
-    MessageBubble.displayName = "MessageBubble";
-
+const MessageBubble = memo(
+  ({ message, index, messageResults }: MessageBubbleProps) => {
     const isUser = message.role === MessageRole.User;
     const isAssistant = message.role === MessageRole.Assistant;
     const bubbleClasses = isUser
@@ -36,15 +34,13 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
       scrollToEdition(editionId);
     };
 
-    const { results, resultType } = useResearchAssistant();
-
     return (
       <Box
         className={`${styles.messageWrapper} ${
           isUser ? styles.userMessageWrapper : ""
         }`}
       >
-        <Box className={bubbleClasses} ref={ref}>
+        <Box className={bubbleClasses}>
           {isUser ? (
             <Text>
               <b>You: </b>
@@ -65,10 +61,9 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
                       VRA:{" "}
                     </Text>
                     {parseEditionLinks(contentItem.text, handleEditionClick)}
-                    {resultType === ConversationType.Content &&
-                      isContentSearchResults(results) &&
-                      results.snippets && (
-                        <SnippetList snippets={results.snippets} />
+                    {isContentSearchResults(messageResults) &&
+                      messageResults.snippets && (
+                        <SnippetList snippets={messageResults.snippets} />
                       )}
                   </Box>
                   {index === 0 ? (
@@ -88,5 +83,7 @@ const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
     );
   }
 );
+
+MessageBubble.displayName = "MessageBubble";
 
 export default MessageBubble;

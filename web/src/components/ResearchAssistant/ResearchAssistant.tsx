@@ -7,12 +7,10 @@ import {
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
-import { proxyUrlConstructor } from "~/src/lib/api/SearchApi";
 import { ConversationType } from "~/src/types/ResearchAssistant";
 import { isCatalogResults } from "~/src/util/ResearchAssistantUtils";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
-import ReaderLayout from "../ReaderLayout/ReaderLayout";
 import CatalogResults from "./CatalogResults";
 import ResearchAssistantPanel from "./ResearchAssistantPanel";
 import ResultsBanner from "./ResultsBanner";
@@ -25,9 +23,6 @@ const ResearchAssistant: React.FC = () => {
     resultType,
     historyStack,
     goToPreviousState,
-    showWebReader,
-    linkResults,
-    handleReadOnline,
     showChat,
   } = useResearchAssistant();
 
@@ -43,17 +38,18 @@ const ResearchAssistant: React.FC = () => {
     }
   }, [messages, sendMessage]);
 
-  const proxyUrl: string = proxyUrlConstructor();
-  const backUrl = "/research-assistant";
-
   const gridTemplateColumns = showChat
     ? "1fr 640px 640px 1fr"
     : "1fr 1152px 128px 1fr";
 
+  const latestResults =
+    messages && results && results[messages.length]
+      ? results[messages.length]
+      : null;
+
   return (
     <ResultPageProvider
       value={{
-        onReadOnline: handleReadOnline,
         page: "vra",
       }}
     >
@@ -102,36 +98,21 @@ const ResearchAssistant: React.FC = () => {
                   paddingLeft={PADDING_COUNTER}
                 />
               )}
-              {showWebReader ? (
-                <Box flex="1" marginTop="s" marginRight="s">
-                  <ReaderLayout
-                    linkResult={linkResults}
-                    proxyUrl={proxyUrl}
-                    backUrl={backUrl}
-                  />
-                </Box>
-              ) : (
-                <Box
-                  paddingLeft="s"
-                  paddingRight="l"
-                  paddingBottom="l"
-                  flex="1"
-                >
-                  {results && Object.keys(results).length > 0 ? (
-                    <>
-                      {resultType === ConversationType.Catalog &&
-                        isCatalogResults(results) && (
-                          <CatalogResults results={results} />
-                        )}
-                    </>
-                  ) : (
-                    <Box width="100%" marginTop="s">
-                      <ResultsBanner />
-                      <EmptySearchPrompt />
-                    </Box>
-                  )}
-                </Box>
-              )}
+              <Box paddingLeft="s" paddingRight="l" paddingBottom="l" flex="1">
+                {results && Object.keys(results).length > 0 ? (
+                  <>
+                    {resultType === ConversationType.Catalog &&
+                      isCatalogResults(latestResults) && (
+                        <CatalogResults results={latestResults} />
+                      )}
+                  </>
+                ) : (
+                  <Box width="100%" marginTop="s">
+                    <ResultsBanner />
+                    <EmptySearchPrompt />
+                  </Box>
+                )}
+              </Box>
             </Flex>
           </Flex>
         </Flex>

@@ -40,6 +40,7 @@ const SnippetList: React.FC<SnippetListProps> = ({ snippets, workId }) => {
             }&previewPage=${String(snippet.start_page).padStart(8, "0")}`}
             marginTop="xs"
             fontWeight="medium"
+            width="fit-content"
             ref={index === 0 ? firstSnippetRef : null}
           >
             Page {snippet.start_page}
