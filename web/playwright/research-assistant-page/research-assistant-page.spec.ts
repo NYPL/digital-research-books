@@ -1,4 +1,4 @@
-import { expect, Page, test } from "@playwright/test";
+import { BrowserContext, expect, Page, test } from "@playwright/test";
 import { ResearchAssistantPage } from "./research-assistant-page";
 
 test.describe("Research Assistant Page UI (initial state)", { tag: "@vra" }, () => {
@@ -45,14 +45,24 @@ test.describe("Research Assistant Page UI (initial state)", { tag: "@vra" }, () 
 });
 
 test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
+  test.describe.configure({ mode: "serial" });
+
+  let context: BrowserContext;
+  let page: Page;
   let researchAssistantPage: ResearchAssistantPage;
   const testQuery = "I want to learn about Bryant Park.";
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeAll(async ({ browser }) => {
+    context = await browser.newContext();
+    page = await context.newPage();
     researchAssistantPage = new ResearchAssistantPage(page);
     await researchAssistantPage.navigateTo();
     await researchAssistantPage.logIn(process.env.VRA_USERNAME, process.env.VRA_PASSWORD);
     await researchAssistantPage.navigateTo(); // Return to the RA page after logging in (SCHOL-279)
+  });
+
+  test.afterAll(async () => {
+    await context.close();
   });
 
   test.describe("Chat interface (right panel)", () => {
@@ -76,9 +86,12 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
   });
 
   test.describe("Results (left panel)", () => {
-    test.beforeEach(async () => {
-      await researchAssistantPage.query(testQuery);
-      await researchAssistantPage.loadingIndicator.isHidden({ timeout: 120_000 });
+    test.beforeAll(async () => {
+      // Execute test query if not already done in previous tests in case of isolated test run
+      if ((await researchAssistantPage.messageBubbles.count()) < 2) {
+        await researchAssistantPage.query(testQuery);
+        await researchAssistantPage.loadingIndicator.waitFor({ state: "hidden", timeout: 120_000 });
+      }
     });
 
     test("At least one result is displayed along with non-zero paging text", async () => {
@@ -105,18 +118,30 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
       await expect(researchAssistantPage.firstResultEdition).toHaveText(/\S+/);
     });
 
-    test("Clicking result title opens item page for the expected edition", async ({ page }) => {
+    test("Result title and Preview button direct to item page for the expected edition", async () => {
       await researchAssistantPage.firstResult.waitFor({ state: "visible" });
-      const firstEditionId = await researchAssistantPage.getFirstResultEditionId();
-      await researchAssistantPage.firstResultTitle.getByRole("link").click();
-      await expect(page).toHaveURL(new RegExp(`\\?featured=${firstEditionId}$`));
-    });
 
-    test("Result Preview button opens item page for the expected edition", async ({ page }) => {
-      await researchAssistantPage.firstResult.waitFor({ state: "visible" });
       const firstEditionId = await researchAssistantPage.getFirstResultEditionId();
-      await researchAssistantPage.firstResultPreviewBtn.click();
-      await expect(page).toHaveURL(new RegExp(`\\?featured=${firstEditionId}$`));
+      const uuidPattern = new RegExp(
+        `[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}`
+      );
+      const itemPageUrlPattern = new RegExp(
+        `(?:^|/)item/${uuidPattern.source}\\?featured=${firstEditionId}$`
+
+      );
+      await expect(researchAssistantPage.firstResultTitleLink).toHaveAttribute("href", itemPageUrlPattern);
+      await expect(researchAssistantPage.firstResultTitleLink).toBeVisible();
+      await expect(researchAssistantPage.firstResultTitleLink).toBeEnabled();
+      await expect(async () => {
+        await researchAssistantPage.firstResultTitleLink.click({ trial: true });
+      }).toPass();
+
+      await expect(researchAssistantPage.firstResultPreviewBtn).toHaveAttribute("href", itemPageUrlPattern);
+      await expect(researchAssistantPage.firstResultPreviewBtn).toBeVisible();
+      await expect(researchAssistantPage.firstResultPreviewBtn).toBeEnabled();
+      await expect(async () => {
+        await researchAssistantPage.firstResultPreviewBtn.click({ trial: true });
+      }).toPass();
     });
   });
 });
