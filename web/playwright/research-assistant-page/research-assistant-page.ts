@@ -87,11 +87,20 @@ class ResearchAssistantPage {
     await this.page.goto("/research-assistant");
   }
 
+  // Track the number of queries executed
+  private static queryExecutionCount = 0;
+
+  // Get the query execution count for logging purposes
+  static getQueryExecutionCount() {
+    return ResearchAssistantPage.queryExecutionCount;
+  }
+
   // Enter a query into the chat input and submit it
   async query(query: string) {
     await this.chatInputTextBox.fill(query);
     await new Promise((resolve) => setTimeout(resolve, 500)); // sleep for 0.5s to simulate user pause between typing and submitting
     await this.submitQueryBtn.click();
+    ResearchAssistantPage.queryExecutionCount += 1;
   }
 
   // Log in using the provided credentials (needed to interact with the assistant)

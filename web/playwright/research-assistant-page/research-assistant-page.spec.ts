@@ -62,6 +62,7 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
   });
 
   test.afterAll(async () => {
+    console.log(`Total queries executed: ${ResearchAssistantPage.getQueryExecutionCount()}`);
     await context.close();
   });
 
