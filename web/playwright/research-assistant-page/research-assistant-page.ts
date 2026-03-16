@@ -82,20 +82,16 @@ class ResearchAssistantPage {
     this.firstResultPreviewBtn = this.firstResult.getByRole("link", { name: "Preview" });
   }
 
-  // Navigate to the Research Assistant page
   async navigateTo() {
     await this.page.goto("/research-assistant");
   }
 
-  // Track the number of queries executed
   private static queryExecutionCount = 0;
 
-  // Get the query execution count for logging purposes
   static getQueryExecutionCount() {
     return ResearchAssistantPage.queryExecutionCount;
   }
 
-  // Enter a query into the chat input and submit it
   async query(query: string) {
     await this.chatInputTextBox.fill(query);
     await new Promise((resolve) => setTimeout(resolve, 500)); // sleep for 0.5s to simulate user pause between typing and submitting
@@ -103,7 +99,6 @@ class ResearchAssistantPage {
     ResearchAssistantPage.queryExecutionCount += 1;
   }
 
-  // Log in using the provided credentials (needed to interact with the assistant)
   // TODO: Relocate method to a base page class since the action can be carried out elsewhere
   async logIn(username: string, password: string) {
     // Ensure username and password are set (loaded from envars at runtime)
@@ -142,7 +137,6 @@ class ResearchAssistantPage {
     ]);
   }
 
-  // Get edition ID of the first result
   async getFirstResultEditionId(): Promise<string> {
     await this.firstResult.waitFor({ state: "visible" });
     const id = await this.firstResult.locator('[id^="edition-"]').first().getAttribute("id");
