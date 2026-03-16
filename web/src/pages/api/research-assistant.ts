@@ -26,19 +26,20 @@ export default async function handler(
       return res.status(500).json({ error: "Server configuration error." });
     }
 
-    const { messages, conversationType, editionId } = req.body;
+    const { message, conversationType, editionId, sessionId } = req.body;
 
-    if (!messages || !Array.isArray(messages)) {
+    if (!message || typeof message !== "object") {
       return res.status(400).json({
-        error: 'Request body must contain a "messages" array.',
+        error: 'Request body must contain a "message" object.',
       });
     }
 
     const authorization = req.headers.authorization || undefined;
 
     const payload: any = {
-      messages,
+      message,
       conversationType,
+      sessionId,
     };
 
     if (editionId !== undefined) payload.editionId = editionId;
