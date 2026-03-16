@@ -38,12 +38,13 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({
       <Button
         id="learn-more-button"
         variant="secondary"
+        aria-label="Learn more about the project"
         backgroundColor="ui.white"
         borderColor="section.research.secondary"
-        color="section.research.secondary"
-        margin="0 auto"
         borderRadius="8px"
+        color="section.research.secondary"
         fontWeight="medium"
+        margin="0 auto"
         _hover={{
           backgroundColor: "section.research.primary-05",
         }}

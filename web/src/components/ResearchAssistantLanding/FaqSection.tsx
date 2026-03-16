@@ -105,9 +105,8 @@ const FaqSection: React.FC = () => {
           </Box>
           <Text>
             <Link to="#" color="section.research.secondary">
-              Learn more
-            </Link>{" "}
-            about the project.
+              Learn more about the project.
+            </Link>
           </Text>
         </Box>
       ),
@@ -156,9 +155,8 @@ const FaqSection: React.FC = () => {
           </Text>
           <Text>
             <Link to="#" color="section.research.secondary">
-              Learn more
-            </Link>{" "}
-            about the project.
+              Learn more about the project.
+            </Link>
           </Text>
         </Box>
       ),

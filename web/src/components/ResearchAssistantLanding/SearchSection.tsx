@@ -70,7 +70,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
           flexDir="row"
           gap="0"
           border="1px solid"
-          borderColor="section.research.primary"
+          borderColor="ui.border.default"
           borderRadius="8px"
           backgroundColor="ui.white"
           padding="0.5rem 1.5rem"

@@ -90,6 +90,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
               </Text>
               <Link
                 to="#"
+                aria-label="Learn more about the project"
                 isUnderlined={false}
                 color="section.research.secondary"
                 fontWeight="bold"
