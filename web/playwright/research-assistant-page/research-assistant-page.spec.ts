@@ -78,10 +78,10 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
       await researchAssistantPage.query(testQuery);
 
       await test.step("Wait for loading indicator to disappear", async () => {
-        await expect(researchAssistantPage.loadingIndicator).toBeHidden({ timeout: 120_000 });
+        await expect(researchAssistantPage.loadingIndicator).toBeHidden({ timeout: 90_000 });
       });
 
-      await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible({ timeout: 120_000 });
+      await expect(researchAssistantPage.messageBubbles.nth(1)).toBeVisible({ timeout: 10_000 }); // Assistant response should shortly follow loading indicator disappearing
     });
   });
 
@@ -90,7 +90,7 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
       // Execute test query if not already done in previous tests or isolated run
       if (ResearchAssistantPage.getQueryExecutionCount() === 0) {
         await researchAssistantPage.query(testQuery);
-        await researchAssistantPage.loadingIndicator.waitFor({ state: "hidden", timeout: 120_000 });
+        await researchAssistantPage.loadingIndicator.waitFor({ state: "hidden", timeout: 90_000 });
       }
     });
 
