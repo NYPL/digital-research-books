@@ -46,6 +46,7 @@ test.describe("Research Assistant Page UI (initial state)", { tag: "@vra" }, () 
 
 test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
   test.describe.configure({ mode: "serial" });
+  test.setTimeout(120_000); // Override global timeout in case API is slow to respond
 
   let context: BrowserContext;
   let page: Page;
