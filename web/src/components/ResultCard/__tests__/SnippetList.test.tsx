@@ -63,6 +63,6 @@ describe("SnippetList", () => {
     const firstSnippet = screen.getByText("Page 7");
     expect(firstSnippet).toBeInTheDocument();
     const firstSnippetLink = firstSnippet.closest("a");
-    expect(document.activeElement).toBe(firstSnippetLink);
+    expect(firstSnippetLink).toHaveFocus();
   });
 });
