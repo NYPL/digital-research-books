@@ -1,9 +1,10 @@
-import { Text } from "@nypl/design-system-react-components";
+import { Flex, Text } from "@nypl/design-system-react-components";
 import React from "react";
 import {
   MAX_PLACE_LENGTH,
   MAX_PUBLISHER_NAME_LENGTH,
 } from "~/src/constants/editioncard";
+import { RESULT_PUBLISHER_TEST_ID } from "~/src/constants/testIds";
 import { Agent } from "~/src/types/DataModel";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import EllipseSpacer from "./EllipseSpacer";
@@ -36,7 +37,7 @@ const ResultPublisherAndLocation: React.FC<{
   if (!displayName && !displayLocation) return <></>;
 
   return (
-    <>
+    <Flex flexDir="row" alignItems="center" data-testid={RESULT_PUBLISHER_TEST_ID}>
       {displayName && (
         <Text as="span" whiteSpace="normal">
           {displayName}
@@ -49,7 +50,7 @@ const ResultPublisherAndLocation: React.FC<{
         </Text>
       )}
       {(displayName || displayLocation) && <EllipseSpacer />}
-    </>
+    </Flex>
   );
 };
 

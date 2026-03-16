@@ -23,8 +23,8 @@ const config: PlaywrightTestConfig = {
   // Retry on CI only.
   retries: process.env.CI ? 2 : 0,
 
-  // Reporter to use
-  reporter: "line",
+  // Reporter to use (list + printSteps surfaces test.step timing in terminal output).
+  reporter: [["list", { printSteps: true }]],
 
   use: {
     headless: true,
