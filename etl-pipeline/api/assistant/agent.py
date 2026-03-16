@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import traceback
 import asyncio
-from typing import Dict, Any, Literal, Optional, Union, List, Iterator, Callable
+from typing import Dict, Any, Literal, Optional, Union, List, Iterator, Callable, Tuple
 from typing_extensions import TypedDict
 from enum import Enum
 import uuid
@@ -44,7 +44,7 @@ from jinja2 import Template
 # from sqlalchemy.ext.asyncio import create_async_engine
 
 # api code
-from ..utils import APIUtils, hit_to_dict, remove_markdown_comments
+from ..utils import APIUtils, hit_to_dict, remove_markdown_comments, shorten
 from ..db import get_frbr_data_by_edition, get_session
 
 # shared code
@@ -294,15 +294,50 @@ class SnippetsExecutionContext:
 
 
 @dataclass
-class EditionResult:
-    """Value object representing a single edition search result."""
+class Snippet:
+    """Relevant snippet data as needed by frontend"""
+
+    text: str
+    item_id: Optional[
+        int
+    ]  # item id is because it links to a physical copy of a digital book
+    chunk_score: Optional[float]
+    start_page: Optional[int] = None
+    end_page: Optional[int] = None
+
+
+@dataclass(kw_only=True)
+class BaseEditionResult:
+    """Common base for all edition search result value objects."""
+
+    edition_id: int
+    chunk_hits: list
+    snippets: List[Snippet] = field(default_factory=list)
+
+
+@dataclass(kw_only=True)
+class ContentSearchResult(BaseEditionResult):
+    """In-book (single-edition) content search result."""
+
+
+@dataclass(kw_only=True)
+class CatalogSearchResult(BaseEditionResult):
+    """Catalog (multi-edition) search result value object."""
 
     orm_work: Any
     orm_edition: Any
-    edition_id: int
-    chunk_hits: list
     agg_score: float
-    snippets: list = field(default_factory=list)
+
+
+@dataclass
+class LLMLoopResult:
+    """Result object returned by _run_edition_snippet_loop."""
+
+    messages: list
+    model_name: str
+    model_config: dict
+    max_turns_exceeded: bool
+    n_turns: int
 
 
 # TODO: make a name and args callback for any tool, and add a edition_id log message to search_book, add traceback log to this callback
@@ -530,10 +565,9 @@ async def update_chat(conversation, conversation_type, edition_id=None) -> RunRe
         ),
     )
 
-    # TODO: test that the main agent has only 1 tool (this is assumed in writing the relevant snippet prompt)
-    # Add relevant snippets if search was executed
-    # r = get_relevant_snippets(run_result, system_prompt)
-    # r = None
+    # Add relevant snippets, if search was executed
+    # snippets updated in run_result in place
+    await get_relevant_snippets(run_result)
 
     return run_result
 
@@ -692,7 +726,7 @@ def search_catalog(
                 missing_data.append(edition_hit["edition_id"])
             else:
                 edition_data.append(
-                    EditionResult(
+                    CatalogSearchResult(
                         orm_work=row.Work,
                         orm_edition=row.Edition,
                         edition_id=edition_hit["edition_id"],
@@ -724,7 +758,17 @@ def search_catalog(
         # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
         # than saving JSON/API response separately but edition data json may \
         # include irrelevant metadata)
-        return verbose_display_editions(edition_data, as_str=True)
+        return format_edition_chunks(
+            [
+                {
+                    "frbr_fields": format_frbr_fields(e.orm_work, e.orm_edition),
+                    "chunk_hits": e.chunk_hits,
+                    "edition_id": e.edition_id,
+                }
+                for e in edition_data
+            ],
+            as_str=True,
+        )
 
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
@@ -779,13 +823,25 @@ def search_book(
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
             "tool_name": ctx.tool_name,
-            "chunk_hits": chunk_hits,
+            "edition_data": [
+                ContentSearchResult(
+                    edition_id=ctx.context.edition_id,
+                    chunk_hits=chunk_hits,
+                )
+            ],
             "search_params": json.loads(ctx.tool_arguments),
         }
 
         # Format results for LLM
-        return verbose_display_chunks(
-            chunk_hits, as_str=True, frbr_fields=ctx.context.frbr_fields
+        return format_edition_chunks(
+            [
+                {
+                    "frbr_fields": ctx.context.frbr_fields,
+                    "chunk_hits": chunk_hits,
+                    "edition_id": ctx.context.edition_id,
+                }
+            ],
+            as_str=True,
         )
 
     except Exception as e:
@@ -853,6 +909,7 @@ def _format_no_match_diff(snippet_text: str, chunk_hits: list) -> str:
         if not chunk_words:
             continue
 
+        # work token diff
         sm = difflib.SequenceMatcher(None, snippet_words, chunk_words, autojunk=False)
         ratio = sm.ratio()
 
@@ -872,6 +929,7 @@ def _format_no_match_diff(snippet_text: str, chunk_hits: list) -> str:
             best_ratio = ratio
             best_chunk_window_words = window_words
 
+    # No matching token blocks in any chunk
     if not best_chunk_window_words:
         return f"  snippet (normalized): {repr(snippet_norm[:300])}"
 
@@ -879,25 +937,22 @@ def _format_no_match_diff(snippet_text: str, chunk_hits: list) -> str:
 
     lines = [
         f"  best chunk similarity: {best_ratio:.1%}",
-        "  word diff  (- submitted by LLM, + actual text in chunk):",
+        "  word diff - each line is a word token  (- submitted by LLM, + actual text in chunk):",
     ]
     lines.extend(f"    {line}" for line in diff_lines)
     return "\n".join(lines)
 
 
 class RejectionCode(str, Enum):
-    MISSING_EDITION = "MISSING_EDITION"
     SNIPPET_COUNT = "SNIPPET_COUNT"
     NO_MATCH = "NO_MATCH"
     WORD_LIMIT = "WORD_LIMIT"
-    ITEM_ID_MISMATCH = "ITEM_ID_MISMATCH"
-    HALLUCINATED_EDITION = "HALLUCINATED_EDITION"
 
 
 @dataclass
 class Rejection:
     edition_id: int
-    snippet_obj: Optional[dict]
+    snippet: Optional[str]
     code: RejectionCode
     data: dict = field(default_factory=dict)
 
@@ -906,255 +961,152 @@ def build_rejection_message(rejected: List[Rejection]) -> str:
     """Build the full rejection response string from a list of Rejection objects."""
 
     def _snippet_preview(r: Rejection) -> str:
-        if r.snippet_obj and r.snippet_obj.get("snippet"):
-            raw = r.snippet_obj["snippet"]
-            preview = raw[:60] + ("..." if len(raw) > 60 else "")
-            return f" | snippet: {repr(preview)}"
-        return ""
+        if not r.snippet:
+            return ""
+        s = r.snippet[:60] + ("..." if len(r.snippet) > 60 else "")
+        return f"snippet {repr(s)}: "
 
     _MESSAGES: dict[RejectionCode, Callable[[Rejection], str]] = {
-        RejectionCode.MISSING_EDITION: lambda r: (
-            f"Edition {r.edition_id} has no snippets saved and was not included "
-            f"in this submission. Every edition in the search result requires "
-            f"at least one valid snippet. Please include snippets for this edition."
-        ),
         RejectionCode.SNIPPET_COUNT: lambda r: (
-            f"Edition {r.edition_id} has {r.data['count']} snippet(s); "
-            f"must be between 1 and 5 inclusive."
+            "0 snippets submitted; please submit at least one snippet."
         ),
         RejectionCode.NO_MATCH: lambda r: (
-            f"Snippet text was not found in any chunk for edition {r.edition_id}. "
-            f"Ensure the text (and lead/trail, if using elision) is copied verbatim "
-            f"from the chunk, and that non-empty text appears on both sides of '//...//`."
+            """Submitted snippet text was not able to be matched to any chunk. 
+Ensure the text is copied character by character from the chunk"""
+            + (
+                f"""Here is a word-level diff between your submitted snippet and the closest matching chunk. Use this diff to identify how you need to correct your snippet.
+{r.data["diff"]}"""
+                if r.data.get("diff")
+                else ""
+            )
+            # ", if using elision, lead/trail are copied verbatim and that non-empty text appears on both sides of '//...//`'.
         ),
         RejectionCode.WORD_LIMIT: lambda r: (
             f"Resolved snippet has {r.data['word_count']} words, exceeding the "
             f"150-word hard limit (100-word target + 50-word grace margin). "
             f"Please shorten or use tighter elision."
         ),
-        RejectionCode.ITEM_ID_MISMATCH: lambda r: (
-            f"Snippet matched a chunk with item_id {r.data['matched_item_id']}, "
-            f"not the claimed item_id {r.data['item_id']}. "
-            f"Use the item_id shown in the search result for this chunk."
-        ),
-        RejectionCode.HALLUCINATED_EDITION: lambda r: (
-            f"edition_id {r.edition_id} is not in the search result. "
-            f"No snippets should have been submitted for this edition_id."
-        ),
     }
 
-    lines = [f"REJECTED: {len(rejected)} snippet(s) could not be stored."]
+    blocks = [
+        f"""{len(rejected)} snippet(s) did not pass validation.
+Follow the instructions below for guidance on what to resubmit and how to correct your submission."""
+    ]
     for r in rejected:
-        lines.append(
-            f"  Edition {r.edition_id}{_snippet_preview(r)}: {_MESSAGES[r.code](r)}"
+        blocks.append(
+            f"  REJECTED SNIPPET:{_snippet_preview(r)}\n{indent(_MESSAGES[r.code](r), '  ')}"
         )
-    lines.append(
-        "\nPlease resubmit validate_relevant_snippets with ONLY the rejected snippets "
-        "listed above. Do NOT resubmit editions that have already been successfully saved."
+    blocks.append(
+        "In your next response, include ONLY the corrected snippets listed above."
     )
-    return "\n".join(lines)
-
-
-class SnippetItem(TypedDict):
-    item_id: int
-    snippet: str
-
-
-class EditionSnippets(TypedDict):
-    edition_id: int
-    snippets: List[SnippetItem]
-
-
-class _SnippetItemModel(BaseModel):
-    item_id: int
-    snippet: str
-
-
-class _EditionSnippetsModel(BaseModel):
-    edition_id: int
-    snippets: List[_SnippetItemModel]
+    return "\n\n".join(blocks)
 
 
 class _SnippetSelectionResponse(BaseModel):
-    snippets: List[_EditionSnippetsModel]
+    snippets: List[str]
 
 
-def validate_relevant_snippets(
-    snippets: List[EditionSnippets],
-    search_result: Dict,
-    search_tool_call_id: str,
-) -> str:
-    # TODO repurpose all of tool instructions into system prompt
+def validate_edition_snippets(
+    edition_id: int,
+    snippet_list: List[str],
+    chunk_hits: list,
+) -> Tuple[List[Rejection], List[dict]]:
+    """Validate a list of submitted snippets against the chunk hits for one edition.
 
-    # Validates and saves submitted snippets; requests re-submission of only the
-    # rejected ones if any fail.
-    # Returns:
-    #     A summary of rejected snippets with the
-    #     reason for rejection. If any snippets were rejected the response asks
-    #     for a corrected resubmission of ONLY those rejected snippets.
+    Pure function — no side effects. Returns (rejections, validated_snippets) where
+    validated_snippets are fully-formed dicts ready to append to an entry's .snippets.
+    This is the natural unit for future parallel-edition processing.
 
-    try:
-        # Build lookup: edition_id (int) -> edition_data entry
-        edition_entry_map = {
-            entry.orm_edition.id: entry
-            for entry in search_result.get("edition_data", [])
-        }
-        snippets_dict = {entry["edition_id"]: entry["snippets"] for entry in snippets}
+    Args:
+        edition_id: The edition being validated (used only for rejection messages).
+        snippet_list: Submitted snippet strings.
+        chunk_hits: The chunk hits stored for this edition.
 
-        total_snippets_submitted = sum(len(v) for v in snippets_dict.values())
-        logger.info(
-            f"validate_relevant_snippets: {len(snippets_dict)} edition(s) submitted, "
-            f"{total_snippets_submitted} total snippet(s), "
-            f"{len(edition_entry_map)} edition(s) in search result."
+    Returns:
+        Tuple of (list of Rejection objects, list of valid snippet dicts).
+    """
+    rejections: List[Rejection] = []
+    validated: List[dict] = []
+
+    # --- Guard: reject if LLM submitted zero snippets ---
+    # NOTE: if we want to make this a substantive minimum snippets per edition \
+    # validation, we need to either pull the check into the caller or pass the \
+    # entry.snippets state into the function to insure it is a cumulative minimum \
+    # per edition over multiple runs.
+    if not snippet_list:
+        logger.debug(f"Rejecting edition {edition_id}: 0 snippets submitted.")
+        return (
+            [Rejection(edition_id, None, RejectionCode.SNIPPET_COUNT, {"count": 0})],
+            [],
         )
 
-        rejected: List[Rejection] = []
+    for snippet_text in snippet_list:
+        # --- Step 1: Validate snippet matches edition chunk ---
+        matched_chunk = None
+        resolved_snippet = None
+        for chunk_hit in chunk_hits:
+            result = find_snippet_in_chunk(snippet_text, chunk_hit.get("text", ""))
+            if result is not None:
+                matched_chunk = chunk_hit
+                resolved_snippet = result
+                break
 
-        # ── Primary loop: edition_entry_map is authoritative ─────────────────────
-        for edition_id, entry in edition_entry_map.items():
-            # Case 1: already has saved snippets from a prior call — nothing to do.
-            if entry.snippets:
-                logger.debug(
-                    f"Edition {edition_id} already has {len(entry.snippets)} saved snippet(s); skipping."
+        if matched_chunk is None:
+            diff_log = _format_no_match_diff(snippet_text, chunk_hits)
+            logger.debug(
+                f"Rejecting snippet for edition {edition_id}: not found in any chunk.\n"
+                f"  submitted snippet: {repr(snippet_text[:80])}\n"
+                f"{diff_log}"
+            )
+            rejections.append(
+                Rejection(
+                    edition_id, snippet_text, RejectionCode.NO_MATCH, {"diff": diff_log}
                 )
-                continue
+            )
+            continue
 
-            submitted = snippets_dict.get(edition_id)
-
-            # Case 2: no snippets saved and none submitted — flag as missing.
-            if submitted is None:
-                logger.debug(
-                    f"Edition {edition_id} has no saved snippets and was not submitted."
+        # --- Step 2: Validate word count on the resolved snippet ---
+        word_count = len(resolved_snippet.split())
+        if word_count > 150:
+            logger.debug(
+                f"Rejecting snippet for edition {edition_id}: resolved snippet "
+                f"has {word_count} words, exceeding 150-word hard limit."
+            )
+            rejections.append(
+                Rejection(
+                    edition_id,
+                    snippet_text,
+                    RejectionCode.WORD_LIMIT,
+                    {"word_count": word_count},
                 )
-                rejected.append(
-                    Rejection(edition_id, None, RejectionCode.MISSING_EDITION)
-                )
-                continue
+            )
+            continue
 
-            # Case 3: snippets submitted — validate and save.
-            chunk_hits = entry.chunk_hits
-            snippet_list = submitted
+        # All validations passed — build the storable snippet
+        validated.append(
+            Snippet(
+                text=resolved_snippet,
+                start_page=matched_chunk.get("start_page")
+                or matched_chunk.get("chunk_start_page"),
+                end_page=matched_chunk.get("end_page")
+                or matched_chunk.get("chunk_end_page"),
+                item_id=matched_chunk.get("item_id"),
+                chunk_score=matched_chunk.get("score")
+                or matched_chunk.get("meta", {}).get("score"),
+            )
+        )
 
-            # --- Validate edition: 1-5 snippets per edition ---
-            if not (1 <= len(snippet_list) <= 5):
-                logger.debug(
-                    f"Rejecting edition {edition_id}: {len(snippet_list)} snippet(s) submitted; "
-                    f"must be between 1 and 5 inclusive."
-                )
-                rejected.append(
-                    Rejection(
-                        edition_id,
-                        None,
-                        RejectionCode.SNIPPET_COUNT,
-                        {"count": len(snippet_list)},
-                    )
-                )
-                continue
-
-            for snippet_obj in snippet_list:
-                item_id = snippet_obj.get("item_id")
-                snippet_text = snippet_obj.get("snippet", "")
-
-                # --- Step 1: Validate snippet matches edition chunk ---
-                matched_chunk = None
-                resolved_snippet = None
-                for chunk_hit in chunk_hits:
-                    result = find_snippet_in_chunk(
-                        snippet_text, chunk_hit.get("text", "")
-                    )
-                    if result is not None:
-                        matched_chunk = chunk_hit
-                        resolved_snippet = result
-                        break
-
-                if matched_chunk is None:
-                    diff_log = _format_no_match_diff(snippet_text, chunk_hits)
-                    logger.debug(
-                        f"Rejecting snippet for edition {edition_id}: not found in any chunk.\n"
-                        f"  submitted snippet: {repr(snippet_text[:80])}\n"
-                        f"{diff_log}"
-                    )
-                    rejected.append(
-                        Rejection(edition_id, snippet_obj, RejectionCode.NO_MATCH)
-                    )
-                    continue
-
-                # --- Step 2: Validate word count on the resolved snippet ---
-                word_count = len(resolved_snippet.split())
-                if word_count > 150:
-                    logger.debug(
-                        f"Rejecting snippet for edition {edition_id}: resolved snippet "
-                        f"has {word_count} words, exceeding 150-word hard limit."
-                    )
-                    rejected.append(
-                        Rejection(
-                            edition_id,
-                            snippet_obj,
-                            RejectionCode.WORD_LIMIT,
-                            {"word_count": word_count},
-                        )
-                    )
-                    continue
-
-                # --- Step 3: Verify snippet item_id ---
-                matched_item_id = matched_chunk.get("item_id")
-                if matched_item_id is None or matched_item_id != item_id:
-                    logger.debug(
-                        f"Rejecting snippet for edition {edition_id}: claimed item_id={item_id} "
-                        f"does not match chunk item_id={matched_item_id}."
-                    )
-                    rejected.append(
-                        Rejection(
-                            edition_id,
-                            snippet_obj,
-                            RejectionCode.ITEM_ID_MISMATCH,
-                            {"item_id": item_id, "matched_item_id": matched_item_id},
-                        )
-                    )
-                    continue
-
-                # All validations passed
-                # Save into the entry directly (updates main agent search result in place)
-                entry.snippets.append(
-                    {
-                        "text": resolved_snippet,
-                        "start_page": matched_chunk.get("start_page")
-                        or matched_chunk.get("chunk_start_page"),
-                        "end_page": matched_chunk.get("end_page")
-                        or matched_chunk.get("chunk_end_page"),
-                        "item_id": matched_chunk.get("item_id"),
-                        "chunk_score": matched_chunk.get("score")
-                        or matched_chunk.get("meta", {}).get("score"),
-                    }
-                )
-                print(
-                    f"saved snippet {repr(resolved_snippet[:50])}... to edition {edition_id}"
-                )
-
-        # NOTE: log and ignore if edition_id is submitted but isn't in search_result
-        for edition_id in snippets_dict:
-            if edition_id not in edition_entry_map:
-                logger.debug(
-                    f"NB: edition {edition_id} submitted but not found in search results "
-                    f"for tool call '{search_tool_call_id}'."
-                )
-
-        # --- Build response message ---
-        logger.info(f"validate_relevant_snippets: {len(rejected)} rejection(s).")
-        if not rejected:
-            return "Snippets successfully saved!"
-
-        return build_rejection_message(rejected)
-
-    except Exception as e:
-        logger.exception("Error during validate_relevant_snippets execution.")
-        raise e
+    return rejections, validated
 
 
+# TODO: insert search result extracted here where appropriate
 def _build_conversation_text(run_result: RunResult) -> str:
     """Extract user and assistant text messages from run_result as a formatted conversation string."""
 
     def _get_clean_text(message):
+        """Standardize text extraction from dict serialization of type=message
+        OpenAI Responses API items
+        """
         content = message.get("content", "")
         if isinstance(content, list):
             return "".join(
@@ -1165,7 +1117,7 @@ def _build_conversation_text(run_result: RunResult) -> str:
         return str(content)
 
     parts = []
-    for msg in run_result.to_input_list()[:-1]:
+    for msg in run_result.to_input_list():
         role = msg.get("role", "")
         if role not in ("user", "assistant"):
             continue
@@ -1195,77 +1147,87 @@ def _extract_search_result_text(
     return None
 
 
-@timer(logger)
-async def get_relevant_snippets(run_result: RunResult) -> Optional[bool]:
-    """Run a snippet agent to select and store relevant text snippets for the last
-    search result in run_result.
+def _apply_naive_snippets(entry: "BaseEditionResult") -> None:
+    """Append a naive truncated snippet for every chunk_hit in entry.
 
-    Returns None if no search results, True on success, False if max turns exceeded.
-    Updates run_result.context_wrapper.context.search_results in place.
+    Does not skip entries that already have snippets.
+    """
+    for chunk_hit in entry.chunk_hits:
+        entry.snippets.append(
+            Snippet(
+                text=shorten(chunk_hit["text"]),
+                start_page=chunk_hit.get("start_page")
+                or chunk_hit.get("chunk_start_page"),
+                end_page=chunk_hit.get("end_page") or chunk_hit.get("chunk_end_page"),
+                item_id=chunk_hit.get("item_id"),
+                chunk_score=chunk_hit.get("score")
+                or chunk_hit.get("meta", {}).get("score"),
+            )
+        )
+
+
+def get_relevant_snippets_naive(run_result: RunResult) -> Optional[bool]:
+    """Naively populate snippets for all editions in the last search result using
+    simple text truncation — no AI selection.
+
+    Same input/output/side-effect shape as get_relevant_snippets: returns None if
+    no search results, True on success, and updates search_results in place.
+    Available as a lightweight fallback or for offline use.
     """
     search_results = run_result.context_wrapper.context.search_results
     if not search_results:
-        print("XXXX AGENT has no search results")  # logged in format_search_results
         return None
 
-    # Select last search result
-    search_tool_call_id, search_result = list(search_results.items())[-1]
-
-    conversation_text = _build_conversation_text(run_result)
-
+    _, search_result = list(search_results.items())[-1]
     edition_data = search_result.get("edition_data", [])
-    # NOTE: this is not really idempotent should be only editions that do not
-    # have at least one snippet.
-    edition_ids = [entry.orm_edition.id for entry in edition_data]
 
-    # Extract the search tool output text directly from new_items
-    search_result_text = _extract_search_result_text(run_result, search_tool_call_id)
-    if search_result_text is None:
-        logger.error(
-            "Failed to select snippets: final call_id from main agent search_results not found in main agent RunResult"
-        )
-        return False
+    for entry in edition_data:
+        if entry.snippets:
+            continue
+        _apply_naive_snippets(entry)
 
-    template = Template((PROMPTS_DIR / "snippet_agent" / "v4.jinja.md").read_text())
-    snippet_agent_prompt = template.render(
-        system_prompt=run_result.last_agent.instructions,
-        search_tool_name=run_result.last_agent.tools[0].name,
-        search_tool_description=run_result.last_agent.tools[0].description,
-        conversation_text=conversation_text,
-        search_result_text=search_result_text,
-        edition_ids=edition_ids,
-    )
-    # MAYBE: just add a description of the search tool output structure instead
-    # of the whole search tool description. just add a summary of the agent goals
-    # instead of the whole main agent description.
-    # TODO: test that the main agent has only 1 tool (this is assumed in writing
-    # the relevant snippet prompt)
+    return True
 
-    # Extract client and model name from the main agent's model
-    client: AsyncOpenAI = run_result.last_agent.model._client
-    model_name: str = run_result.last_agent.model.model
 
-    messages = [
-        {"role": "system", "content": snippet_agent_prompt},
-        {"role": "user", "content": "Begin snippet selection."},
-    ]
+_SNIPPET_AGENT_MAX_TURNS = 5
+_SNIPPET_AGENT_MAX_CONCURRENT = 20
 
-    MAX_TURNS = 5
-    for turn in range(MAX_TURNS):
-        # TODO: use Timer()
-        t0 = time.perf_counter()
-        response = await client.beta.chat.completions.parse(
+
+async def _run_edition_snippet_loop(
+    client: AsyncOpenAI,
+    model_name: str,
+    messages: list,
+    entry: BaseEditionResult,
+) -> LLMLoopResult:
+    """Run the self-validating LLM snippet selection loop for a single edition.
+
+    Agent instruction are passed in the form of messages = (system + initial user turn).
+    Modifies entry.snippets in place on success.
+    Returns an LLMLoopResult; check max_turns_exceeded to distinguish success from
+    exhausting all turns without a fully valid submission.
+    """
+    model_config = {"temperature": 0.0, "reasoning_effort": "none"}
+
+    for turn in range(_SNIPPET_AGENT_MAX_TURNS):
+        # Get LLM response
+        t0 = time.perf_counter()  # TODO: use Timer()
+        # TODO: save response to Loop item, make run loop an object to preserve \
+        # the LoopResult even if error occurs. Add edition_id or entry as Loop context
+        response = await client.chat.completions.parse(
             model=model_name,
             messages=messages,
             response_format=_SnippetSelectionResponse,
-            # equivalent run_config.model_settings
-            temperature=0.0,
-            reasoning_effort="none",
+            # equivalent to run_config.model_settings
+            **model_config,
         )
         elapsed = time.perf_counter() - t0
         usage = response.usage
         logger.info(
-            f"Snippet agent LLM call {turn + 1}/{MAX_TURNS} | elapsed: {elapsed:.3f}s"
+            f"Snippet agent edition {entry.edition_id}"
+            f" | turn {turn + 1}/{_SNIPPET_AGENT_MAX_TURNS}"
+            f" | elapsed: {elapsed:.3f}s"
+            f" | finish_reason: {response.choices[0].finish_reason}"
+            f" | refusal: {response.choices[0].message.refusal}"
             + (
                 f" | tokens: input={usage.prompt_tokens} output={usage.completion_tokens}"
                 if usage
@@ -1273,29 +1235,221 @@ async def get_relevant_snippets(run_result: RunResult) -> Optional[bool]:
             )
         )
 
-        parsed = response.choices[0].message.parsed
-        snippets_input: List[EditionSnippets] = [
-            e.model_dump() for e in parsed.snippets
-        ]
+        # Guard: non-stop finish reasons (e.g. RECITATION content filter) are unrecoverable
+        choice = response.choices[0]
+        if choice.finish_reason != "stop":
+            raise RuntimeError(
+                f"Snippet agent edition {entry.edition_id}: non-stop finish_reason"
+                f" '{choice.finish_reason}' (refusal: {choice.message.refusal})"
+            )
 
-        result = validate_relevant_snippets(
-            snippets_input, search_result, search_tool_call_id
+        # Extract structured output
+        parsed = choice.message.parsed
+        if parsed is None:
+            logger.debug(
+                f"Snippet agent edition {entry.edition_id}: structured output is `None` on turn {turn + 1}; treating as []."
+            )
+            snippet_list = []
+        else:
+            snippet_list = parsed.snippets
+
+        logger.info(
+            f"Snippet agent edition {entry.edition_id}: {len(snippet_list)} snippet(s) submitted for validation,"
+            f" {len(entry.chunk_hits)} chunk(s) available."
         )
 
-        if result == "Snippets successfully saved!":
-            logger.info("Snippet agent: all snippets saved successfully.")
-            return True
+        # Validate selected snippets
+        rejections, validated = validate_edition_snippets(
+            entry.edition_id, snippet_list, entry.chunk_hits
+        )
+        # Save valid snippets
+        # MAYBE: consider not setting result in place
+        entry.snippets.extend(validated)
+        if validated:
+            for s in validated:
+                snippet_lead = repr(s.text[:50]).strip("'\"")
+                logger.debug(
+                    f"Snippet agent edition {entry.edition_id}: saved snippet '{snippet_lead}...'"
+                )
+            logger.info(
+                f"Snippet agent edition {entry.edition_id}: {len(validated)} snippet(s) saved (turn {turn + 1})."
+            )
 
-        # Feed rejection back and loop
-        # Q: do I need to send all passed snippet submissions?
-        assistant_content = response.choices[0].message.content or json.dumps(
-            parsed.model_dump()
+        if not rejections:
+            return LLMLoopResult(
+                messages=messages,
+                model_name=model_name,
+                model_config=model_config,
+                max_turns_exceeded=False,
+                n_turns=turn + 1,
+            )
+
+        logger.info(
+            f"Snippet agent edition {entry.edition_id}: {len(rejections)} rejection(s) on turn {turn + 1}."
+        )
+
+        # Request corrections
+        # MAYBE: update system-prompt/first-message rather than extending convo
+        rejection_message = build_rejection_message(rejections)
+        assistant_content = choice.message.content or (
+            json.dumps(parsed.model_dump()) if parsed is not None else ""
         )
         messages.append({"role": "assistant", "content": assistant_content})
-        messages.append({"role": "user", "content": result})
+        messages.append({"role": "user", "content": rejection_message})
 
-    logger.error(f"Snippet agent: did not converge after {MAX_TURNS} turns.")
-    return False
+    logger.error(
+        f"Snippet agent edition {entry.edition_id} failed to correctly submit all originally submitted snippets after {_SNIPPET_AGENT_MAX_TURNS} turns."
+    )
+    return LLMLoopResult(
+        messages=messages,
+        model_name=model_name,
+        model_config=model_config,
+        max_turns_exceeded=True,
+        n_turns=_SNIPPET_AGENT_MAX_TURNS,
+    )
+
+
+# TODO: fall back to naive snippets if edition has less than 1 (2?) snippets (even when an error occurs in get_relevant_snippets)
+@timer(logger)
+async def get_relevant_snippets(
+    run_result: RunResult,
+) -> Optional[List[Union[LLMLoopResult, Exception]]]:
+    """Run a snippet agent to select and store relevant text snippets for the last
+    search result in run_result.
+
+    Runs all editions concurrently, with one self-validating LLM snippet
+    selection loop per edition.
+    Returns None if no search results, [] if all editions already had snippets,
+    or a list of LLMLoopResult (one per edition processed).
+    Updates run_result.context_wrapper.context.search_results in place.
+    """
+    search_results = run_result.context_wrapper.context.search_results
+    if not search_results:
+        logger.warning(
+            "get_relevant_snippets: no search results found in agent run_result."
+        )  # TODO: deduplicate, also  logged in format_search_results
+        return None
+
+    # Select last search result
+    _, search_result = list(search_results.items())[-1]
+
+    # Skip editions that already have snippets
+    # TODO: figure out how to add preexisting snippet editions to logging and aggregation at end, maybe no early return
+    edition_data = []
+    for e in search_result.get("edition_data", []):
+        if e.snippets:
+            logger.info(
+                f"get_relevant_snippets: edition {e.edition_id} already has {len(e.snippets)} snippet(s); skipping."
+            )
+        else:
+            edition_data.append(e)
+    if not edition_data:
+        logger.info("get_relevant_snippets: all editions already have snippets.")
+        return []
+
+    # Extract common variables for all editions
+    conversation_text = _build_conversation_text(run_result)
+    client: AsyncOpenAI = run_result.last_agent.model._client
+    model_name: str = run_result.last_agent.model.model
+    # model_name = "gemini-3.1-flash-lite-preview"
+    prompt_template = Template(
+        (PROMPTS_DIR / "snippet_agent" / "v6.jinja.md").read_text()
+    )
+
+    # Make selection task for each edition
+    tasks = []
+    for entry in edition_data:
+        # Format search result chunk text
+        frbr_fields = (
+            format_frbr_fields(entry.orm_work, entry.orm_edition)
+            if isinstance(entry, CatalogSearchResult)
+            else run_result.context_wrapper.context.frbr_fields
+        )
+        edition_chunk_text = format_edition_chunks(
+            [
+                {
+                    "frbr_fields": frbr_fields,
+                    "chunk_hits": entry.chunk_hits,
+                    "edition_id": entry.edition_id,
+                }
+            ],
+            as_str=True,
+        )
+
+        snippet_agent_prompt = prompt_template.render(
+            system_prompt=run_result.last_agent.instructions,
+            search_tool_name=run_result.last_agent.tools[0].name,
+            search_tool_description=run_result.last_agent.tools[0].description,
+            conversation_text=conversation_text,
+            search_result_text=edition_chunk_text,
+        )
+        # MAYBE: just add a description of the search tool output structure instead
+        # of the whole search tool description. just add a summary of the agent goals
+        # instead of the whole main agent description.
+        # TODO: test that the main agent has only 1 tool (this is assumed in writing
+        # the relevant snippet prompt)
+        # TODO repurpose all of tool instructions into system prompt
+        messages = [
+            {"role": "system", "content": snippet_agent_prompt},
+            {"role": "user", "content": "Begin snippet selection."},
+        ]
+        tasks.append(_run_edition_snippet_loop(client, model_name, messages, entry))
+
+    semaphore = asyncio.Semaphore(_SNIPPET_AGENT_MAX_CONCURRENT)
+
+    async def _gated(coro):
+        """max concurrency wrapper"""
+        async with semaphore:
+            return await coro
+
+    logger.info(
+        f"get_relevant_snippets: running snippet agent for {len(tasks)} edition(s) concurrently"
+        f" (max {_SNIPPET_AGENT_MAX_CONCURRENT} at a time)."
+    )
+    # MAYBE: handle tokens per minute rate limit errors explicitly with exponential backoff?
+    results = await asyncio.gather(*(_gated(t) for t in tasks), return_exceptions=True)
+
+    # Log results + Apply fallback snippets
+    n_errored = 0  # raised an exception
+    n_incomplete = 0  # hit max turns with at least one invalid submission
+    n_no_snippets = 0  # zero AI-selected snippets (fell back to naive)
+    total_snippets = 0
+    loop_results: List[Union[LLMLoopResult, Exception]] = []
+    for entry, result in zip(edition_data, results):
+        loop_results.append(result)
+        if isinstance(result, Exception):
+            logger.exception(
+                f"Snippet agent edition {entry.edition_id}: raised an exception.",
+                exc_info=result,
+            )
+            n_errored += 1
+        elif result.max_turns_exceeded:
+            n_incomplete += 1
+
+        # Fallback to naive snippets if selection failed
+        selected_count = len(entry.snippets)
+        if not entry.snippets:
+            n_no_snippets += 1
+            logger.warning(
+                f"Snippet agent edition {entry.edition_id}: no snippets saved; "
+                f"falling back to naive snippets."
+            )
+            _apply_naive_snippets(entry)
+        else:
+            logger.info(
+                f"Snippet agent edition {entry.edition_id}: {selected_count} AI-selected snippet(s) saved."
+            )
+        total_snippets += selected_count
+
+    logger.info(
+        f"get_relevant_snippets: Edition summary: {len(edition_data)} processed"
+        f" | {n_no_snippets} with no snippets saved"
+        f" | {n_incomplete} invalid snippets after max turns"
+        f" | {n_errored} errored"
+    )
+    logger.info(f"get_relevant_snippets: {total_snippets} total AI-selected snippet(s)")
+
+    return loop_results
 
 
 def format_frbr_fields(orm_work, orm_edition):
@@ -1411,19 +1565,20 @@ def display_book(lines, frbr_fields, chunk_hits, edition_id):
     return lines
 
 
-# TODO: rely on sort order from edition (and nested chunks) as passed (add to doc str)
-# TODO: move to agent.py
-def verbose_display_editions(
+# TODO: When we insert messages in context specifying book for content search \
+# context, remove book level info from search response to save tokens.
+def format_edition_chunks(
     edition_data, search_tool_call_id=None, query=None, as_str=False
 ):
     """
-    Print or return a formatted str containing an ordered list book search
-    results and their associated text excerpts. For each book, metadata is
-    displayed including title, subjects, publication date. For each text excerpt,
-    page number and search score is displayed. Books are ordered by the input list.
+    Print or return a formatted str containing an ordered list of editions and their
+    associated text excerpts. For each edition, metadata (title, authors, subjects,
+    publication date) and chunk text excerpts with page numbers are displayed.
+    Editions are ordered by the input list.
 
     Args:
-        edition_data: List of EditionResult containing 'orm_work', 'orm_edition', 'edition_hit'
+        edition_data: List of dicts with keys 'frbr_fields', 'chunk_hits', 'edition_id'
+        search_tool_call_id: Optional tool call ID to include in output header
         query: The search query string
         as_str: If True, return as string; otherwise print
     """
@@ -1439,60 +1594,13 @@ def verbose_display_editions(
         lines.append(f'SEARCH TOOL CALL ID: "{search_tool_call_id}"')
         lines.append("\n")
 
-    for i, edition_entry in enumerate(edition_data, 1):
-        orm_work = edition_entry.orm_work
-        orm_edition = edition_entry.orm_edition
-        # Format work and edition metadata
-        frbr_fields = format_frbr_fields(orm_work, orm_edition)
-
-        chunk_hits = edition_entry.chunk_hits
-
-        lines = display_book(lines, frbr_fields, chunk_hits, orm_edition.id)
-
-        lines.append("-" * 80)
-
-    msg = "\n".join(lines)
-    if as_str:
-        return msg
-    else:
-        print(msg)
-
-
-# TODO: When we insert messages in context specifying book for content search \
-# context, remove book level info from search response to save tokens.
-def verbose_display_chunks(
-    chunk_hits,
-    edition_id,
-    search_tool_call_id=None,
-    query=None,
-    as_str=False,
-    frbr_fields=None,
-):
-    """
-    Print or return a formatted str containing an ordered list book excerpts.
-    Book metadata  including title, subjects, publication date is optionally
-    displayed. For each text excerpt, page number and search score is displayed.
-    Excerpts are ordered by the input list.
-
-    Args:
-        chunk_hits: List of chunk hit dictionaries
-        query: The search query string
-        as_str: If True, return as string; otherwise print
-        frbr_fields: Optional dict of formatted FRBR fields for book context
-    """
-    if not chunk_hits:
-        return "There are no results for your query."
-
-    lines = []
-    if query is not None:
-        lines.append(f'QUERY: "{wrap(query)}"')
-        lines.append("\n")
-
-    if search_tool_call_id is not None:
-        lines.append(f'SEARCH TOOL CALL ID: "{search_tool_call_id}"')
-        lines.append("\n")
-
-    lines = display_book(lines, frbr_fields, chunk_hits, edition_id)
+    multi = len(edition_data) > 1
+    for entry in edition_data:
+        lines = display_book(
+            lines, entry["frbr_fields"], entry["chunk_hits"], entry["edition_id"]
+        )
+        if multi:
+            lines.append("-" * 80)
 
     msg = "\n".join(lines)
     if as_str:

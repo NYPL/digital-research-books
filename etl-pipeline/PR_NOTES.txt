@@ -1,0 +1,5 @@
+* agent.py is getting too long, I am thinking of splitting out a tools folder with sub files for various tools. What do folks think of this dir structure? I don;t want to do that in this PR to make the merge easier, I would make a new PR immediately after this is merged just to do the file structure change
+
+* handle token per minute limits with exponential backoff?
+
+* jackie: # Q: do we need to handle ordering of relevant snippets in search_result? inherit order from chunk score?

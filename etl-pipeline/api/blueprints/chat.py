@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import asdict
 from textwrap import indent
 from flask import Blueprint, current_app, request
 import newrelic.agent
@@ -13,7 +14,7 @@ from model.postgres.work import Work
 from utils.timer import timer
 
 # API code
-from ..utils import APIUtils, orm_to_dict, shorten
+from ..utils import APIUtils, orm_to_dict
 from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
@@ -26,23 +27,6 @@ logger = create_log(__name__)
 chat_blueprint = Blueprint("chat", __name__, url_prefix="/chat")
 
 RESPONSE_TYPE = "chat"
-
-
-# Q: any way to concurrently  extract relevant snippets while LLM is finishing response?
-# TODO: handle ordering of relevant snippets!!! inherit from chunk score?
-def get_relevant_snippets(chunk_hits):
-    return [
-        {
-            "text": shorten(h["text"]),
-            "start_page": h.get("start_page") or h.get("chunk_start_page"),
-            "end_page": h.get("end_page") or h.get("chunk_end_page"),
-            "item_id": h.get(
-                "item_id"
-            ),  # item id is needed in case multiple items per edition the correct item link can be used to link to the pdf
-            "chunk_score": h.get("score") or h.get("meta", {}).get("score"),
-        }
-        for h in chunk_hits
-    ]
 
 
 def format_search_results(search_results):
@@ -120,12 +104,13 @@ def format_search_results(search_results):
 
         elif search_result["tool_name"] == "search_book":
             result_type = "contentSearch"  # MAYBE: send search tool name
+            snippets = [asdict(s) for s in search_result["edition_data"][0].snippets]
             formatted_search_result = {
-                "snippets": get_relevant_snippets(search_result["chunk_hits"]),
+                "snippets": snippets,
                 "search_params": search_result["search_params"],
             }
             logger.info(
-                f"Returning {len(search_result['chunk_hits'])} snippets in content search response"
+                f"Returning {len(snippets)} snippets in content search response"
             )
         else:
             raise ValueError(
@@ -186,7 +171,9 @@ def chat(user=None):
     run_result = asyncio.run(
         update_chat(conversation, conversation_type, edition_id=edition_id)
     )
-    # TODO: when a search tool errors it is handled the LLM responds (ussually saying sorry I had an error) and a 200 response is returned
+    # TODO: inside update_chat make sure than any errors are handled by a polite \
+    # llm generated response (except no connectivity to LLM) (just handle the \
+    # high level openai agents sdk errors)
 
     ## Build API response
 
