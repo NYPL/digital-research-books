@@ -127,8 +127,8 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
       );
       const itemPageUrlPattern = new RegExp(
         `(?:^|/)item/${uuidPattern.source}\\?featured=${firstEditionId}$`
-
       );
+
       await expect(researchAssistantPage.firstResultTitleLink).toHaveAttribute("href", itemPageUrlPattern);
       await expect(researchAssistantPage.firstResultTitleLink).toBeVisible();
       await expect(researchAssistantPage.firstResultTitleLink).toBeEnabled();
