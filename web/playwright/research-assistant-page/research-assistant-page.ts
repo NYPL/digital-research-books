@@ -66,20 +66,36 @@ class ResearchAssistantPage {
     this.hideChatBtn = page.getByRole("button", { name: "Hide chat" });
 
     // Results (left panel)
-    this.resultsBanner = page.getByText("public domain scholarly e-books from our collections");
-    this.emptySearchPrompt = page.getByRole("heading", { name: "Start searching to see results" });
-    this.nonZeroResultsPagingText = page.getByText(/\d+ - \d+ of \d+ results matching/);
+    this.resultsBanner = page.getByText(
+      "public domain scholarly e-books from our collections"
+    );
+    this.emptySearchPrompt = page.getByRole("heading", {
+      name: "Start searching to see results",
+    });
+    this.nonZeroResultsPagingText = page.getByText(
+      /\d+ - \d+ of \d+ results matching/
+    );
     this.results = page.getByTestId(RESULT_TEST_ID);
 
     // First result card
     this.firstResult = this.results.first();
-    this.firstResultStatusBadge = this.firstResult.getByTestId("ds-statusBadge");
+    this.firstResultStatusBadge = this.firstResult.getByTestId(
+      "ds-statusBadge"
+    );
     this.firstResultTitle = this.firstResult.getByTestId(RESULT_TITLE_TEST_ID);
     this.firstResultTitleLink = this.firstResultTitle.getByRole("link");
-    this.firstResultAuthor = this.firstResult.getByTestId(RESULT_AUTHOR_TEST_ID);
-    this.firstResultEdition = this.firstResult.getByTestId(RESULT_EDITION_TEST_ID);
-    this.firstResultPublisher = this.firstResult.getByTestId(RESULT_PUBLISHER_TEST_ID);
-    this.firstResultPreviewBtn = this.firstResult.getByRole("link", { name: "Preview" });
+    this.firstResultAuthor = this.firstResult.getByTestId(
+      RESULT_AUTHOR_TEST_ID
+    );
+    this.firstResultEdition = this.firstResult.getByTestId(
+      RESULT_EDITION_TEST_ID
+    );
+    this.firstResultPublisher = this.firstResult.getByTestId(
+      RESULT_PUBLISHER_TEST_ID
+    );
+    this.firstResultPreviewBtn = this.firstResult.getByRole("link", {
+      name: "Preview",
+    });
   }
 
   async navigateTo() {
@@ -139,7 +155,10 @@ class ResearchAssistantPage {
 
   async getFirstResultEditionId(): Promise<string> {
     await this.firstResult.waitFor({ state: "visible" });
-    const id = await this.firstResult.locator('[id^="edition-"]').first().getAttribute("id");
+    const id = await this.firstResult
+      .locator('[id^="edition-"]')
+      .first()
+      .getAttribute("id");
     return id.match(/^edition-(\d+)$/)[1];
   }
 }
