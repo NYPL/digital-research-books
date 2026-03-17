@@ -1353,7 +1353,7 @@ async def get_relevant_snippets(
     model_name: str = run_result.last_agent.model.model
     # model_name = "gemini-3.1-flash-lite-preview"
     prompt_template = Template(
-        (PROMPTS_DIR / "snippet_agent" / "v6.jinja.md").read_text()
+        (PROMPTS_DIR / "snippet_agent" / "v7.jinja.md").read_text()
     )
 
     # Make selection task for each edition
@@ -1388,7 +1388,6 @@ async def get_relevant_snippets(
         # instead of the whole main agent description.
         # TODO: test that the main agent has only 1 tool (this is assumed in writing
         # the relevant snippet prompt)
-        # TODO repurpose all of tool instructions into system prompt
         messages = [
             {"role": "system", "content": snippet_agent_prompt},
             {"role": "user", "content": "Begin snippet selection."},
