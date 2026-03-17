@@ -1,18 +1,16 @@
 import {
-  Flex,
   Grid,
   Heading,
+  Image,
   Text,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
 import {
-  ItemType,
-  MessageRole,
-  MessageStatus,
-} from "~/src/types/ResearchAssistant";
-import KeywordSearchIcon from "../../ResearchAssistant/icons/KeywordSearchIcon";
-import ResearchAssistantIcon from "../../ResearchAssistant/icons/ResearchAssistantIcon";
-import MessageBubble from "../../ResearchAssistant/MessageBubble";
+  CONTROL_SUBNAV_IMAGE,
+  FEEDBACK_MESSAGE_IMAGE,
+  NATURAL_LANGUAGE_MESSAGE_IMAGE,
+  SOURCE_MESSAGE_IMAGE,
+} from "~/src/constants/researchAssistant";
 import LandingButtons from "../LandingButtons";
 import LandingCard from "../LandingCard";
 import SectionContainer from "../SectionContainer";
@@ -50,7 +48,7 @@ const accessCardData = [
     icon: <AwardIcon />,
     title: "Backed by rigorous quality checks",
     description:
-      "We regularly evaluate our technical frameworks and the tool’s outputs to ensure quality and accuracy.",
+      "We regularly evaluate our technical frameworks and the tool's outputs to ensure quality and accuracy.",
   },
   {
     icon: <TargetIcon />,
@@ -116,16 +114,12 @@ const AccessSection: React.FC<AccessSectionProps> = ({
             </Heading>
           }
           body={
-            <MessageBubble
-              message={{
-                type: ItemType.Message,
-                role: MessageRole.User,
-                content:
-                  "Does this book make any mention of the Smith's early life and childhood? Which parts of the book can I find this info in?",
-                id: "user-message-1",
-                status: MessageStatus.Sending,
-              }}
-              index={0}
+            <Image
+              src={NATURAL_LANGUAGE_MESSAGE_IMAGE}
+              alt="A chat message from a patron asking: 'Does this book make any mention of the Smith's early life and childhood? Which parts of the book can I find this info in?'"
+              maxWidth="512px"
+              background="transparent"
+              flexShrink="0"
             />
           }
         />
@@ -140,20 +134,12 @@ const AccessSection: React.FC<AccessSectionProps> = ({
             </Heading>
           }
           body={
-            <MessageBubble
-              message={{
-                type: ItemType.Message,
-                role: MessageRole.Assistant,
-                content: [
-                  {
-                    type: "output_text",
-                    text: "Here are some results that match your criteria.",
-                  },
-                ],
-                id: "assistant-message-1",
-                status: MessageStatus.Sending,
-              }}
-              index={1}
+            <Image
+              src={FEEDBACK_MESSAGE_IMAGE}
+              alt="A chat message from the VRA stating: 'Here are some results that match your criteria. Verify results. Your data is not used to train our models.' The message includes interactive thumbs-up and thumbs-down icons for feedback."
+              maxWidth="512px"
+              background="transparent"
+              flexShrink="0"
             />
           }
         />
@@ -168,21 +154,12 @@ const AccessSection: React.FC<AccessSectionProps> = ({
             </Heading>
           }
           body={
-            <MessageBubble
-              message={{
-                type: ItemType.Message,
-                role: MessageRole.Assistant,
-                content: [
-                  {
-                    type: "output_text",
-                    text:
-                      "Yes, this book mentions Smith's birth and childhood (p3). It also describes his early schooling in Kansas (p8).",
-                  },
-                ],
-                id: "assistant-message-2",
-                status: MessageStatus.Sending,
-              }}
-              index={1}
+            <Image
+              src={SOURCE_MESSAGE_IMAGE}
+              alt="A chat message from the VRA stating: 'Yes, this book mentions Smith's birth and childhood (p3). It also describes his early schooling in Kansas (p8).' The page numbers are styled as clickable links."
+              maxWidth="512px"
+              background="transparent"
+              flexShrink="0"
             />
           }
         />
@@ -197,45 +174,13 @@ const AccessSection: React.FC<AccessSectionProps> = ({
             </Heading>
           }
           body={
-            <Flex
-              gap="xs"
-              backgroundColor="ui.white"
-              alignItems="center"
-              border="1px solid"
-              borderColor="ui.border.default"
-              borderRadius="8px"
-              paddingX="s"
-              paddingY="m"
-            >
-              <Flex
-                alignItems="center"
-                gap="xxs"
-                backgroundColor="ui.white"
-                color="ui.typography.body"
-                paddingX="s"
-                paddingY="xxs"
-                _hover={{
-                  backgroundColor: "transparent",
-                }}
-              >
-                <ResearchAssistantIcon />
-                <Text>Virtual Research Assistant</Text>
-              </Flex>
-              <Flex
-                gap="xxs"
-                backgroundColor="section.research.primary-05"
-                border="1px solid"
-                borderColor="section.research.primary"
-                borderRadius="6px"
-                color="section.research.secondary"
-                fontWeight="semibold"
-                paddingX="s"
-                paddingY="xxs"
-              >
-                <KeywordSearchIcon color="transparent" />
-                Keyword search
-              </Flex>
-            </Flex>
+            <Image
+              src={CONTROL_SUBNAV_IMAGE}
+              alt="A subnavigation bar with two options: 'Virtual Research Assistant' and 'Keyword search.' This illustrates how patrons can maintain control by opting out of the AI tool and switching back to traditional search at any time."
+              maxWidth="512px"
+              background="transparent"
+              flexShrink="0"
+            />
           }
         />
       </Grid>
