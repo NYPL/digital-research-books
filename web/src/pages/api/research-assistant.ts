@@ -28,9 +28,9 @@ export default async function handler(
 
     const { message, conversationType, editionId, sessionId } = req.body;
 
-    if (!message || typeof message !== "object") {
+    if (!message || typeof message !== "string") {
       return res.status(400).json({
-        error: 'Request body must contain a "message" object.',
+        error: 'Request body must contain a "message" string.',
       });
     }
 

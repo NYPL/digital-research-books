@@ -1,8 +1,8 @@
 export function getOrCreateSessionId(): string {
-  let sessionId = sessionStorage.getItem("vra_session_id");
+  let sessionId = sessionStorage.getItem("vraSessionId");
   if (!sessionId) {
     sessionId = crypto.randomUUID();
-    sessionStorage.setItem("vra_session_id", sessionId);
+    sessionStorage.setItem("vraSessionId", sessionId);
   }
   return sessionId;
 }

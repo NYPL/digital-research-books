@@ -120,7 +120,7 @@ export const ResearchAssistantProvider: React.FC<{
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: newUserMessage,
+          message: text,
           conversationType,
           editionId: viewState.editionId,
           sessionId,
