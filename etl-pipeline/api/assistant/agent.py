@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
-from importlib.resources import read_text
 import difflib
 import json
 from pathlib import Path
@@ -16,9 +15,9 @@ import sys
 import os
 import asyncio
 import time
+
 import numpy as np
 import pandas as pd
-
 from agents import (
     Agent,
     RunHooks,
@@ -39,6 +38,8 @@ from openai.types.shared import Reasoning
 from pydantic import BaseModel
 from sqlalchemy import text
 from jinja2 import Template
+from rapidfuzz import fuzz
+import rapidfuzz
 
 
 # from sqlalchemy.ext.asyncio import create_async_engine
@@ -187,7 +188,7 @@ def transform_incomplete(filter_array: Any) -> List:
     ]
 
 
-def recurse_filters(filters: Any, processing_func: callable) -> Any:
+def recurse_filters(filters: Any, processing_func: Callable) -> Any:
     """
     Generic recursive post-processor for TurboPuffer style filters that applies
     a processing function to every simple (leaf) filter.
@@ -327,17 +328,6 @@ class CatalogSearchResult(BaseEditionResult):
     orm_work: Any
     orm_edition: Any
     agg_score: float
-
-
-@dataclass
-class LLMLoopResult:
-    """Result object returned by _run_edition_snippet_loop."""
-
-    messages: list
-    model_name: str
-    model_config: dict
-    max_turns_exceeded: bool
-    n_turns: int
 
 
 # TODO: make a name and args callback for any tool, and add a edition_id log message to search_book, add traceback log to this callback
@@ -849,29 +839,31 @@ def search_book(
         raise e
 
 
-def find_snippet_in_chunk(snippet_text: str, chunk_text: str) -> Optional[str]:
-    """Return the first whitespace-normalized match of snippet_text in chunk_text,
-    or None if not found.
+def exact_match(
+    snippet_text: str, chunk_text: str
+) -> tuple[Optional[str], Optional[float]]:
+    """Match the generated snippet to chunk text.
+
+    Returns (resolved_snippet, 1.0) if match is found, else (None, None).
+
+    Matching Algo: the resolved snippet is the first whitespace-normalized exact
+    string match of snippet_text in chunk_text.
 
     If snippet_text contains the elision token ``//...//``, it is split into lead
-    and trail. Both are whitespace-normalized into a regex pattern; a lazy ``.+?``
-    (requiring at least one character) bridges them so any intervening text is
-    captured. Non-empty lead and trail are required — if either is empty after
-    splitting, None is returned.
-
-    Plain snippets are also matched with whitespace normalization so that
-    differences in spacing or line breaks in the source do not prevent a match.
+    and trail, which are matched against the chunk with a pattern requiring at
+    least one character bridging them. Lead and trail must not be empty to match.
     """
     # NOTE: Since snippet text is indented in search tool response to LLM, we \
     # collapse all whitespace (including tabs) to single space.
 
     # elided snippet
+    # TODO: guard against or handle multiple elisions
     if "//...//" in snippet_text:
         parts = snippet_text.split("//...//", 1)
         lead_tokens = parts[0].split()
         trail_tokens = parts[1].split()
         if not lead_tokens or not trail_tokens:
-            return None
+            return None, None
         lead_pat = r"\s+".join(re.escape(t) for t in lead_tokens)
         trail_pat = r"\s+".join(re.escape(t) for t in trail_tokens)
         pattern = lead_pat + r"\s+.+?\s+" + trail_pat
@@ -880,11 +872,111 @@ def find_snippet_in_chunk(snippet_text: str, chunk_text: str) -> Optional[str]:
     else:
         tokens = snippet_text.split()
         if not tokens:
-            return None
+            return None, None
         pattern = r"\s+".join(re.escape(t) for t in tokens)
 
     m = re.search(pattern, chunk_text, re.DOTALL)
-    return m.group(0) if m else None
+    return (m.group(0), 1.0) if m else (None, None)
+
+
+# MAYBE: add a binary match/no-match version that doesn't expect a score
+def find_snippet_in_chunks(
+    snippet_text: str,
+    chunk_hits: list,
+    find_snippet_in_chunk: Callable[
+        [str, str], tuple[Optional[str], Optional[float]]
+    ] = exact_match,
+) -> tuple[Optional[dict], Optional[str]]:
+    """Search chunk_hits for the highest-scoring chunk matching snippet_text.
+
+    Iterates all chunks, scores each via find_snippet_in_chunk, and returns the
+    chunk with the highest score. In the case of ties the first chunk wins (strict >).
+
+    Args:
+        snippet_text: The snippet string to locate.
+        chunk_hits: List of chunk hit dicts, each expected to have a "text" key.
+        find_snippet_in_chunk: Callable(snippet_text, chunk_text) -> (resolved_snippet, score)
+            where score is a float on match or None on no match. Defaults to exact_match
+            which returns score=1.0 on match.
+
+    Returns:
+        (matched_chunk_hit, resolved_snippet) or (None, None) if no chunk matched.
+    """
+    best_chunk_hit = None
+    best_resolved_snippet = None
+    best_score = -1.0
+    for chunk_hit in chunk_hits:
+        resolved_snippet, score = find_snippet_in_chunk(
+            snippet_text, chunk_hit.get("text", "")
+        )
+        if score is not None and score > best_score:
+            best_score = score
+            best_chunk_hit = chunk_hit
+            best_resolved_snippet = resolved_snippet
+    if best_chunk_hit is not None:
+        logger.debug(
+            f"find_snippet_in_chunks best score: {best_score:.2f} for snippet '{snippet_text[:60]}'"
+        )
+    return best_chunk_hit, best_resolved_snippet
+
+
+def text_processor(s):
+    # TODO: add custom processor that collapses "-\n"->""
+    # MAYBE: ascii folding
+    # set all non word, digit, whitespace to empty str
+    s = re.sub(r"[^\w\d\s]", "", s)
+    # collapse one or more whitespace char to single space
+    s = re.sub(r"\s+", " ", s)
+    s = s.lower()
+    return s
+
+
+def fuzzy_match(snippet, chunk):
+    """
+    Edit distance of best match substring
+
+    Start and end in return value are in post-processed text strings
+    """
+
+    r = fuzz.partial_ratio_alignment(snippet, chunk, processor=text_processor)
+    return {"score": r.score, "start": r.dest_start, "end": r.dest_end}
+
+
+def fuzzy_match_elipsis(snippet_text, chunk_text, threshold=88):
+    """Match the generated snippet to chunk text.
+
+    Splits snippet by `...` and match each part in sequence.
+
+    Returns (snippet_text, min_part_score) if match is found, else (snippet_text, None).
+
+    Part Match Algo: remove alpha num chars, collapse+trim whitespace, lowercase
+    then check if best chunk substring edit distance is above threshold.
+    """
+    # MAYBE: text_process all at start
+    parts = [p for p in snippet_text.strip("...").split("...") if text_processor(p)]
+    if len(parts) == 0:
+        return snippet_text, None
+    results = [fuzzy_match(part, chunk_text) for part in parts]
+    scores = [r["score"] for r in results]
+    all_match = all(s >= threshold for s in scores)
+    # NOTE: if there are multiple matches some sequential and some not, it is
+    # possible fuzz would return a match that is not sequential even if there is
+    # a sequential match.
+    # NOTE: partial_ratio dest_end may extend beyond final matching block (bc
+    # of matching block selection algo)
+    all_sequential = (
+        all(
+            results[i]["end"] <= results[i + 1]["start"]
+            for i in range(len(results) - 1)
+        )
+        if all_match
+        else False
+    )
+
+    if all_match and all_sequential:
+        return snippet_text, min(scores)
+    else:
+        return snippet_text, None
 
 
 def _format_no_match_diff(snippet_text: str, chunk_hits: list) -> str:
@@ -1010,20 +1102,25 @@ def validate_edition_snippets(
     edition_id: int,
     snippet_list: List[str],
     chunk_hits: list,
-) -> Tuple[List[Rejection], List[dict]]:
+    find_snippet_in_chunk: Callable[
+        [str, str], tuple[Optional[str], Optional[float]]
+    ] = exact_match,
+) -> Tuple[List[Rejection], List[Snippet]]:
     """Validate a list of submitted snippets against the chunk hits for one edition.
 
     Pure function — no side effects. Returns (rejections, validated_snippets) where
-    validated_snippets are fully-formed dicts ready to append to an entry's .snippets.
+    validated_snippets are fully-formed Snippet objects ready to extend an entry's .snippets.
     This is the natural unit for future parallel-edition processing.
 
     Args:
         edition_id: The edition being validated (used only for rejection messages).
         snippet_list: Submitted snippet strings.
         chunk_hits: The chunk hits stored for this edition.
+        find_snippet_in_chunk: Callable(snippet_text, chunk_text) -> (resolved_snippet, score)
+            passed directly to find_snippet_in_chunks. Defaults to exact_match.
 
     Returns:
-        Tuple of (list of Rejection objects, list of valid snippet dicts).
+        Tuple of (list of Rejection objects, list of valid Snippet objects).
     """
     rejections: List[Rejection] = []
     validated: List[dict] = []
@@ -1042,14 +1139,9 @@ def validate_edition_snippets(
 
     for snippet_text in snippet_list:
         # --- Step 1: Validate snippet matches edition chunk ---
-        matched_chunk = None
-        resolved_snippet = None
-        for chunk_hit in chunk_hits:
-            result = find_snippet_in_chunk(snippet_text, chunk_hit.get("text", ""))
-            if result is not None:
-                matched_chunk = chunk_hit
-                resolved_snippet = result
-                break
+        matched_chunk, resolved_snippet = find_snippet_in_chunks(
+            snippet_text, chunk_hits, find_snippet_in_chunk
+        )
 
         if matched_chunk is None:
             diff_log = _format_no_match_diff(snippet_text, chunk_hits)
@@ -1189,139 +1281,155 @@ def get_relevant_snippets_naive(run_result: RunResult) -> Optional[bool]:
     return True
 
 
-_SNIPPET_AGENT_MAX_TURNS = 5
+_SNIPPET_AGENT_MAX_TURNS = 1
 _SNIPPET_AGENT_MAX_CONCURRENT = 20
 
 
-async def _run_edition_snippet_loop(
-    client: AsyncOpenAI,
-    model_name: str,
-    messages: list,
-    entry: BaseEditionResult,
-) -> LLMLoopResult:
-    """Run the self-validating LLM snippet selection loop for a single edition.
+class EditionSnippetLoop:
+    """Self-validating LLM snippet selection loop for a single edition.
 
+    Instantiate with the loop configuration, then call run() to execute.
     Agent instruction are passed in the form of messages = (system + initial user turn).
-    Modifies entry.snippets in place on success.
-    Returns an LLMLoopResult; check max_turns_exceeded to distinguish success from
-    exhausting all turns without a fully valid submission.
+
     """
-    model_config = {"temperature": 0.0, "reasoning_effort": "none"}
 
-    for turn in range(_SNIPPET_AGENT_MAX_TURNS):
-        # Get LLM response
-        t0 = time.perf_counter()  # TODO: use Timer()
-        # TODO: save response to Loop item, make run loop an object to preserve \
-        # the LoopResult even if error occurs. Add edition_id or entry as Loop context
-        response = await client.chat.completions.parse(
-            model=model_name,
-            messages=messages,
-            response_format=_SnippetSelectionResponse,
-            # equivalent to run_config.model_settings
-            **model_config,
-        )
-        elapsed = time.perf_counter() - t0
-        usage = response.usage
-        logger.info(
-            f"Snippet agent edition {entry.edition_id}"
-            f" | turn {turn + 1}/{_SNIPPET_AGENT_MAX_TURNS}"
-            f" | elapsed: {elapsed:.3f}s"
-            f" | finish_reason: {response.choices[0].finish_reason}"
-            f" | refusal: {response.choices[0].message.refusal}"
-            + (
-                f" | tokens: input={usage.prompt_tokens} output={usage.completion_tokens}"
-                if usage
-                else ""
+    def __init__(
+        self,
+        client: AsyncOpenAI,
+        model_name: str,
+        messages: list,
+        entry: BaseEditionResult,
+    ) -> None:
+        self.client = client
+        self.model_name = model_name
+        self.messages = messages
+        self.entry = entry
+        self.model_config: dict = {"temperature": 0.0, "reasoning_effort": "none"}
+        self.last_response = None
+        self.n_turns: int = 0
+        self.max_turns_exceeded: bool = False
+
+    async def run(self) -> None:
+        """Run the snippet selection loop.
+
+        Modifies entry.snippets in place on success.
+        Sets max_turns_exceeded=True if all turns are exhausted without a fully
+        valid submission. last_response and n_turns are updated incrementally
+        and can be inspected if this method raises.
+        """
+        for turn in range(_SNIPPET_AGENT_MAX_TURNS):
+            # Get LLM response
+            t0 = time.perf_counter()  # TODO: use Timer()
+            # MAYBE: Add edition_id or entry as Loop context
+            response = await self.client.chat.completions.parse(
+                model=self.model_name,
+                messages=self.messages,
+                response_format=_SnippetSelectionResponse,
+                # equivalent to run_config.model_settings
+                **self.model_config,
             )
-        )
-
-        # Guard: non-stop finish reasons (e.g. RECITATION content filter) are unrecoverable
-        choice = response.choices[0]
-        if choice.finish_reason != "stop":
-            raise RuntimeError(
-                f"Snippet agent edition {entry.edition_id}: non-stop finish_reason"
-                f" '{choice.finish_reason}' (refusal: {choice.message.refusal})"
-            )
-
-        # Extract structured output
-        parsed = choice.message.parsed
-        if parsed is None:
-            logger.debug(
-                f"Snippet agent edition {entry.edition_id}: structured output is `None` on turn {turn + 1}; treating as []."
-            )
-            snippet_list = []
-        else:
-            snippet_list = parsed.snippets
-
-        logger.info(
-            f"Snippet agent edition {entry.edition_id}: {len(snippet_list)} snippet(s) submitted for validation,"
-            f" {len(entry.chunk_hits)} chunk(s) available."
-        )
-
-        # Validate selected snippets
-        rejections, validated = validate_edition_snippets(
-            entry.edition_id, snippet_list, entry.chunk_hits
-        )
-        # Save valid snippets
-        # MAYBE: consider not setting result in place
-        entry.snippets.extend(validated)
-        if validated:
-            for s in validated:
-                snippet_lead = repr(s.text[:50]).strip("'\"")
-                logger.debug(
-                    f"Snippet agent edition {entry.edition_id}: saved snippet '{snippet_lead}...'"
-                )
+            self.last_response = response
+            self.n_turns = turn + 1
+            elapsed = time.perf_counter() - t0
+            usage = response.usage
             logger.info(
-                f"Snippet agent edition {entry.edition_id}: {len(validated)} snippet(s) saved (turn {turn + 1})."
+                f"Snippet agent edition {self.entry.edition_id}"
+                f" | turn {self.n_turns}/{_SNIPPET_AGENT_MAX_TURNS}"
+                f" | elapsed: {elapsed:.3f}s"
+                f" | finish_reason: {response.choices[0].finish_reason}"
+                f" | refusal: {response.choices[0].message.refusal}"
+                + (
+                    f" | tokens: input={usage.prompt_tokens} output={usage.completion_tokens}"
+                    if usage
+                    else ""
+                )
             )
 
-        if not rejections:
-            return LLMLoopResult(
-                messages=messages,
-                model_name=model_name,
-                model_config=model_config,
-                max_turns_exceeded=False,
-                n_turns=turn + 1,
+            # Guard: non-stop finish reasons (e.g. RECITATION content filter) are unrecoverable
+            choice = response.choices[0]
+            if choice.finish_reason != "stop":
+                raise RuntimeError(
+                    f"Snippet agent edition {self.entry.edition_id}: non-stop finish_reason"
+                    f" '{choice.finish_reason}' (refusal: {choice.message.refusal})"
+                )
+
+            # Extract structured output
+            parsed = choice.message.parsed
+            if parsed is None:
+                logger.debug(
+                    f"Snippet agent edition {self.entry.edition_id}: structured output is `None` on turn {self.n_turns}; treating as []."
+                )
+                snippet_list = []
+            else:
+                snippet_list = parsed.snippets
+
+            logger.info(
+                f"Snippet agent edition {self.entry.edition_id}: {len(snippet_list)} snippet(s) submitted for validation,"
+                f" {len(self.entry.chunk_hits)} chunk(s) available."
             )
 
-        logger.info(
-            f"Snippet agent edition {entry.edition_id}: {len(rejections)} rejection(s) on turn {turn + 1}."
-        )
+            # Validate selected snippets
+            rejections, validated = validate_edition_snippets(
+                self.entry.edition_id,
+                snippet_list,
+                self.entry.chunk_hits,
+                find_snippet_in_chunk=fuzzy_match_elipsis,
+            )
+            # Save valid snippets
+            # MAYBE: consider not setting result in place
+            self.entry.snippets.extend(validated)
+            if validated:
+                for s in validated:
+                    snippet_lead = repr(s.text[:50]).strip("'\"")
+                    logger.debug(
+                        f"Snippet agent edition {self.entry.edition_id}: saved snippet '{snippet_lead}...'"
+                    )
+                logger.info(
+                    f"Snippet agent edition {self.entry.edition_id}: {len(validated)} snippet(s) saved (turn {self.n_turns})."
+                )
 
-        # Request corrections
-        # MAYBE: update system-prompt/first-message rather than extending convo
-        rejection_message = build_rejection_message(rejections)
-        assistant_content = choice.message.content or (
-            json.dumps(parsed.model_dump()) if parsed is not None else ""
-        )
-        messages.append({"role": "assistant", "content": assistant_content})
-        messages.append({"role": "user", "content": rejection_message})
+            if not rejections:
+                return
 
-    logger.error(
-        f"Snippet agent edition {entry.edition_id} failed to correctly submit all originally submitted snippets after {_SNIPPET_AGENT_MAX_TURNS} turns."
-    )
-    return LLMLoopResult(
-        messages=messages,
-        model_name=model_name,
-        model_config=model_config,
-        max_turns_exceeded=True,
-        n_turns=_SNIPPET_AGENT_MAX_TURNS,
-    )
+            logger.info(
+                f"Snippet agent edition {self.entry.edition_id}: {len(rejections)} rejection(s) on turn {self.n_turns}."
+            )
+
+            # Request corrections
+            # MAYBE: update system-prompt/first-message rather than extending convo
+            rejection_message = build_rejection_message(rejections)
+            assistant_content = choice.message.content or (
+                json.dumps(parsed.model_dump()) if parsed is not None else ""
+            )
+            self.messages.append({"role": "assistant", "content": assistant_content})
+            self.messages.append({"role": "user", "content": rejection_message})
+
+        logger.error(
+            f"Snippet agent edition {self.entry.edition_id} failed to correctly submit all originally submitted snippets after {_SNIPPET_AGENT_MAX_TURNS} turns."
+        )
+        self.max_turns_exceeded = True
 
 
 # TODO: fall back to naive snippets if edition has less than 1 (2?) snippets (even when an error occurs in get_relevant_snippets)
 @timer(logger)
 async def get_relevant_snippets(
     run_result: RunResult,
-) -> Optional[List[Union[LLMLoopResult, Exception]]]:
+    fallback_naive: bool = True,
+) -> Optional[List[EditionSnippetLoop]]:
     """Run a snippet agent to select and store relevant text snippets for the last
     search result in run_result.
 
     Runs all editions concurrently, with one self-validating LLM snippet
     selection loop per edition.
     Returns None if no search results, [] if all editions already had snippets,
-    or a list of LLMLoopResult (one per edition processed).
+    or a list of EditionSnippetLoop (one per edition processed); inspect loop
+    attributes for per-edition state after the call.
     Updates run_result.context_wrapper.context.search_results in place.
+
+    Args:
+        fallback_naive: If True (default), editions with no AI-selected snippets
+            fall back to naive truncated snippets. Set False to disable the
+            fallback.
     """
     search_results = run_result.context_wrapper.context.search_results
     if not search_results:
@@ -1352,11 +1460,13 @@ async def get_relevant_snippets(
     client: AsyncOpenAI = run_result.last_agent.model._client
     model_name: str = run_result.last_agent.model.model
     # model_name = "gemini-3.1-flash-lite-preview"
+    # model_name = 'gemini-2.5-flash-lite'
     prompt_template = Template(
         (PROMPTS_DIR / "snippet_agent" / "v7.jinja.md").read_text()
     )
 
     # Make selection task for each edition
+    loops: List[EditionSnippetLoop] = []
     tasks = []
     for entry in edition_data:
         # Format search result chunk text
@@ -1376,23 +1486,24 @@ async def get_relevant_snippets(
             as_str=True,
         )
 
-        snippet_agent_prompt = prompt_template.render(
-            system_prompt=run_result.last_agent.instructions,
-            search_tool_name=run_result.last_agent.tools[0].name,
-            search_tool_description=run_result.last_agent.tools[0].description,
-            conversation_text=conversation_text,
-            search_result_text=edition_chunk_text,
+        snippet_agent_prompt = remove_markdown_comments(
+            prompt_template.render(
+                system_prompt=run_result.last_agent.instructions,
+                search_tool_name=run_result.last_agent.tools[0].name,
+                search_tool_description=run_result.last_agent.tools[0].description,
+                conversation_text=conversation_text,
+                search_result_text=edition_chunk_text,
+            )
         )
-        # MAYBE: just add a description of the search tool output structure instead
-        # of the whole search tool description. just add a summary of the agent goals
-        # instead of the whole main agent description.
         # TODO: test that the main agent has only 1 tool (this is assumed in writing
         # the relevant snippet prompt)
         messages = [
             {"role": "system", "content": snippet_agent_prompt},
             {"role": "user", "content": "Begin snippet selection."},
         ]
-        tasks.append(_run_edition_snippet_loop(client, model_name, messages, entry))
+        loop = EditionSnippetLoop(client, model_name, messages, entry)
+        loops.append(loop)
+        tasks.append(loop.run())
 
     semaphore = asyncio.Semaphore(_SNIPPET_AGENT_MAX_CONCURRENT)
 
@@ -1413,30 +1524,36 @@ async def get_relevant_snippets(
     n_incomplete = 0  # hit max turns with at least one invalid submission
     n_no_snippets = 0  # zero AI-selected snippets (fell back to naive)
     total_snippets = 0
-    loop_results: List[Union[LLMLoopResult, Exception]] = []
-    for entry, result in zip(edition_data, results):
-        loop_results.append(result)
+    for loop, entry, result in zip(loops, edition_data, results):
         if isinstance(result, Exception):
             logger.exception(
-                f"Snippet agent edition {entry.edition_id}: raised an exception.",
+                f"Snippet agent edition {entry.edition_id}: raised an exception"
+                f" after {loop.n_turns} turn(s).",
                 exc_info=result,
             )
             n_errored += 1
-        elif result.max_turns_exceeded:
+        elif loop.max_turns_exceeded:
             n_incomplete += 1
 
         # Fallback to naive snippets if selection failed
         selected_count = len(entry.snippets)
         if not entry.snippets:
             n_no_snippets += 1
-            logger.warning(
-                f"Snippet agent edition {entry.edition_id}: no snippets saved; "
-                f"falling back to naive snippets."
-            )
-            _apply_naive_snippets(entry)
+            if fallback_naive:
+                logger.warning(
+                    f"Snippet agent edition {entry.edition_id}: no snippets saved; "
+                    f"falling back to naive snippets."
+                )
+                _apply_naive_snippets(entry)
+            else:
+                logger.warning(
+                    f"Snippet agent edition {entry.edition_id}: no snippets saved "
+                    f"(naive fallback disabled)."
+                )
         else:
             logger.info(
-                f"Snippet agent edition {entry.edition_id}: {selected_count} AI-selected snippet(s) saved."
+                f"Snippet agent edition {entry.edition_id}: {selected_count} AI-selected snippet(s) saved"
+                f" in {loop.n_turns} turn(s)."
             )
         total_snippets += selected_count
 
@@ -1448,7 +1565,7 @@ async def get_relevant_snippets(
     )
     logger.info(f"get_relevant_snippets: {total_snippets} total AI-selected snippet(s)")
 
-    return loop_results
+    return loops
 
 
 def format_frbr_fields(orm_work, orm_edition):

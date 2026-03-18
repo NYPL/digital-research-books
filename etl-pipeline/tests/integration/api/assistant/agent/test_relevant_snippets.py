@@ -31,7 +31,7 @@ from openai import AsyncOpenAI
 from api.assistant.agent import (
     ContentSearchResult,
     CatalogSearchResult,
-    LLMLoopResult,
+    EditionSnippetLoop,
     Snippet,
     get_relevant_snippets,
 )
@@ -43,6 +43,7 @@ from utils.common import require_env
 # ---------------------------------------------------------------------------
 
 
+# ALT: just use format_search_results() to serialize, more replicable...
 def serialize_run_result_state(run_result) -> dict:
     """Capture the run_result state needed to replay get_relevant_snippets."""
     context = run_result.context_wrapper.context
@@ -58,6 +59,7 @@ def serialize_run_result_state(run_result) -> dict:
                 "snippets": [asdict(s) for s in entry.snippets],
             }
             if isinstance(entry, CatalogSearchResult):
+                entry_data["agg_score"] = entry.agg_score
                 entry_data["orm_work"] = {
                     "title": entry.orm_work.title,
                     "authors": entry.orm_work.authors,
@@ -136,6 +138,7 @@ def load_mock_run_result(
                     edition_id=e["edition_id"],
                     chunk_hits=e["chunk_hits"],
                     snippets=snippets,
+                    agg_score=e["agg_score"],
                     orm_work=SimpleNamespace(**e["orm_work"]),
                     orm_edition=SimpleNamespace(**e["orm_edition"]),
                 )
@@ -193,21 +196,16 @@ async def test_get_relevant_snippets_from_fixture():
         base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
     )
 
-    result = await get_relevant_snippets(run_result)
+    result = await get_relevant_snippets(run_result, fallback_naive=False)
 
     assert isinstance(result, list), f"get_relevant_snippets returned {result!r}"
-    assert not any(isinstance(r, Exception) for r in result), (
-        f"Some editions raised exceptions: {[(i, r) for i, r in enumerate(result) if isinstance(r, Exception)]}"
-    )
-    assert all(
-        not r.max_turns_exceeded for r in result if isinstance(r, LLMLoopResult)
-    ), (
-        f"Some editions hit max turns: {[i for i, r in enumerate(result) if isinstance(r, LLMLoopResult) and r.max_turns_exceeded]}"
+    assert all(isinstance(loop, EditionSnippetLoop) for loop in result), (
+        f"Unexpected items in result: {[r for r in result if not isinstance(r, EditionSnippetLoop)]}"
     )
 
     search_results = run_result.context_wrapper.context.search_results
     _, search_result = list(search_results.items())[-1]
     for entry in search_result["edition_data"]:
         assert entry.snippets, (
-            f"Edition {entry.edition_id} has no snippets after agent run"
+            f"Edition {entry.edition_id} has no AI-selected snippets after agent run"
         )
