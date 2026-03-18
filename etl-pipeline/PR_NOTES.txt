@@ -1,0 +1,1 @@
+* around testing, I wasn't sure whether it was really useful for a strict unit test of _on_max_turns becasue what I really care about is the functional integration that send the max turns response to run_result.final_output... so I created a unit and an integretion test that test the same kind of flow with and without mocking. 
