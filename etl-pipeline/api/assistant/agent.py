@@ -25,10 +25,13 @@ from agents import (
     SQLiteSession,
     ModelSettings,
     RunResult,
+    RunErrorHandlerInput,
+    RunErrorHandlerResult,
 )
 from agents.items import ModelResponse
 from agents.tool_context import ToolContext
 from agents.extensions.memory import SQLAlchemySession
+from agents.models.chatcmpl_converter import Converter
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 from sqlalchemy import text
@@ -410,6 +413,52 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
     return df.set_index(source_col).to_dict(orient="index")
 
 
+_MAX_TURNS_GRACEFUL_SYSTEM_PROMPT = """\
+You are a research library assistant. You have reached the maximum number of \
+allowed agent turns in the agent loop. 
+
+Here is the original system prompt:
+```
+{agent_system_prompt}
+```
+
+Given the conversation context, deliver a polite response according to your \
+system prompt with the partially available information if possible or an \
+appropriate apology otherwise — it is fine to acknowledge that the search was not fully complete. \
+"""
+
+
+async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
+    """Handles assistant response if max agent turns are exceeded."""
+    client: AsyncOpenAI = data.run_data.last_agent.model._client
+    model_name: str = data.run_data.last_agent.model.model
+    agent_system_prompt = data.run_data.last_agent.get_system_prompt(data.context)
+
+    messages = [
+        {
+            "role": "system",
+            "content": _MAX_TURNS_GRACEFUL_SYSTEM_PROMPT.format(
+                agent_system_prompt=agent_system_prompt
+            ),
+        },
+        *Converter.items_to_messages(data.run_data.history),
+    ]
+
+    response = await client.chat.completions.create(
+        model=model_name,
+        messages=messages,
+        temperature=0.0,
+        reasoning_effort=None,
+    )
+
+    logger.warning("update_chat: MaxTurnsExceeded — graceful final response generated.")
+
+    return RunErrorHandlerResult(
+        final_output=response.choices[0].message.content,
+        include_in_history=True,
+    )
+
+
 @timer(logger)
 def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
     """
@@ -500,6 +549,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         conversation,
         context=exec_context,
         hooks=LLMLoggingHooks(),
+        error_handlers={"max_turns": _on_max_turns},
         run_config=RunConfig(
             tracing_disabled=True,
             model_settings=ModelSettings(
