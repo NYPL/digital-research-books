@@ -1,4 +1,7 @@
+import asyncio
 import os
+from unittest.mock import AsyncMock, MagicMock
+
 from api.assistant.agent import update_chat
 
 
@@ -14,19 +17,19 @@ class TestAgent:
         # Mock the agent and its runner to simulate execution
         mocker.patch("api.assistant.agent.Agent")
         mock_runner = mocker.patch("api.assistant.agent.Runner")
-        mock_run_result = mocker.MagicMock()
-        mock_runner.run_sync.return_value = mock_run_result
+        mock_run_result = MagicMock()
+        mock_runner.run = AsyncMock(return_value=mock_run_result)
 
         # Mock prompt template rendering
         mock_template = mocker.patch("api.assistant.agent.Template")
-        mock_template_instance = mocker.MagicMock()
+        mock_template_instance = MagicMock()
         mock_template.return_value = mock_template_instance
         mock_template_instance.render.return_value = "system prompt"
 
         # Execute a catalog search using a simple user prompt
         conversation = [{"role": "user", "content": "Some query"}]
-        result = update_chat(conversation, "catalogSearch")
+        result = asyncio.run(update_chat(conversation, "catalogSearch"))
 
         # Verify result and that the runner was called just once
         assert result == mock_run_result
-        mock_runner.run_sync.assert_called_once()
+        mock_runner.run.assert_called_once()
