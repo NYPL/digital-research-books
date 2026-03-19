@@ -106,7 +106,7 @@ def item_read(item_id, page_id):
 def _create_pdf_from_paths(ocr_path, image_path, page_id):
     with get_temp_dir(in_memory=True) as tmpdir:
         pdf_path = os.path.join(tmpdir, f"{page_id}.pdf")
-        hocr_transform = HocrTransform(hocr_filename=ocr_path, dpi=150)
+        hocr_transform = HocrTransform(hocr_filename=ocr_path, dpi=300)
         hocr_transform.to_pdf(out_filename=pdf_path, image_filename=image_path)
         with open(pdf_path, "rb") as f:
             return f.read()
