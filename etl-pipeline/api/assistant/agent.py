@@ -748,7 +748,7 @@ def search_catalog(
         # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
         # than saving JSON/API response separately but edition data json may \
         # include irrelevant metadata)
-        return format_edition_chunks(
+        return format_search_results(
             [
                 {
                     "frbr_fields": format_frbr_fields(e.orm_work, e.orm_edition),
@@ -823,7 +823,7 @@ def search_book(
         }
 
         # Format results for LLM
-        return format_edition_chunks(
+        return format_search_results(
             [
                 {
                     "frbr_fields": ctx.context.frbr_fields,
@@ -1475,7 +1475,7 @@ async def get_relevant_snippets(
             if isinstance(entry, CatalogSearchResult)
             else run_result.context_wrapper.context.frbr_fields
         )
-        edition_chunk_text = format_edition_chunks(
+        edition_chunk_text = format_search_results(
             [
                 {
                     "frbr_fields": frbr_fields,
@@ -1628,34 +1628,29 @@ def format_frbr_fields(orm_work, orm_edition):
 
 def display_book(lines, frbr_fields, chunk_hits, edition_id):
     """
-    Create lines of str for a text display of book and chunk search results.
+    Create lines of str for an XML display of book and chunk search results.
     Chunk display order controlled by input data order.
     """
+    lines.append("\n<edition>")
+    # Display book level metadata
 
-    # Display book level data
-    base_indent = "  "
-    # lines.append("BOOK INFORMATION:")
-    # lines.append(f"EDITION {i}:")
-    lines.append(indent(f"EDITION ID: {edition_id}", base_indent))
-    # lines.append(indent(f"WORK ID: {orm_work.id}", base_indent))
-    lines.append(indent(f"TITLE: {frbr_fields['title']}", base_indent))
-    lines.append(indent(f"AUTHORS: {frbr_fields['author_names']}", base_indent))
-    lines.append(indent(f"PUBLISHER: {frbr_fields['publisher_names']}", base_indent))
-    lines.append(indent(f"DATE: {frbr_fields['pub_date']}", base_indent))
-    lines.append(
-        indent(f"SUBJECTS: {frbr_fields['subject_list']}", base_indent)
-    )  # Does this need to be wrap()'ed to multi-line
-    lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", base_indent))
-    # lines.append(indent(f"MAX SCORE: {edition_hit['agg_score']:.4f}", base_indent))
-    lines.append(indent(f"FOUND {len(chunk_hits)} MATCHING CHUNKS:", base_indent))
-    lines.append("")
+    # MAYBE: edition index not id?
+    lines.append(f"<edition_id>{edition_id}</edition_id>")
+    lines.append(f"<title>{frbr_fields['title']}</title>")
+    lines.append(f"<authors>{frbr_fields['author_names']}</authors>")
+    lines.append(f"<publisher>{frbr_fields['publisher_names']}</publisher>")
+    lines.append(f"<date>{frbr_fields['pub_date']}</date>")
+    lines.append(f"<subjects>{frbr_fields['subject_list']}</subjects>")
+    lines.append(f"<language>{frbr_fields['language_list']}</language>")
+    # MAYBE: add agg_score
+    # MAYBE: print the number of chunks per edition somehow
 
     # Display chunk level information
-    # MAYBE: sort chunks by score (bigger is better, missing last) and limit display
-    for j, chunk_hit in enumerate(chunk_hits, 1):
+    lines.append("<chunks>")
+
+    # MAYBE: sort chunks by score (bigger is better, missing scores last) and limit display
+    for chunk_hit in chunk_hits:
         text = chunk_hit.get("text", "(No Text)")
-        score = chunk_hit.get("score", 0)
-        chunk_id = chunk_hit.get("doc_id", "unknown")
         # Extract page range from chunk metadata (supports both formats)
         start_page = chunk_hit.get("start_page") or chunk_hit.get("chunk_start_page")
         end_page = chunk_hit.get("end_page") or chunk_hit.get("chunk_end_page")
@@ -1667,23 +1662,24 @@ def display_book(lines, frbr_fields, chunk_hits, edition_id):
         else:
             page_display = "?"
 
-        # lines.append(indent("CHUNK INFORMATION:", base_indent * 2))
-        lines.append(indent(f"CHUNK {j}:", base_indent * 2))
-        # lines.append(indent(f"ID: {chunk_id}", base_indent * 3))
+        lines.append("\n<chunk>")
+        # MAYBE: add chunk index? to tag?
+        # MAYBE: chunk score?
         lines.append(
-            indent(f"ITEM ID: {chunk_hit['item_id']}", base_indent * 3)
-        )  # currently an edition might include chunks from multiple items
-        lines.append(indent(f"PAGE: {page_display}", base_indent * 3))
-        # lines.append(indent(f"SCORE: {score:.4f}", base_indent * 3))
-        lines.append(indent(f"TEXT:\n{wrap(text)}", base_indent * 3))
-        lines.append("")
+            f"<item_id>{chunk_hit['item_id']}</item_id>"
+        )  # an edition might include chunks from multiple items
+        lines.append(f"<page>{page_display}</page>")
+        lines.append(f"<text>\n{text}\n</text>")
+        lines.append("</chunk>")
+
+    lines.append("\n</chunks>")
+    lines.append("</edition>")
 
     return lines
 
 
-# TODO: When we insert messages in context specifying book for content search \
-# context, remove book level info from search response to save tokens.
-def format_edition_chunks(
+# MAYBE: remove book level info from search response  for contentSearch to save tokens.
+def format_search_results(
     edition_data, search_tool_call_id=None, query=None, as_str=False
 ):
     """
@@ -1702,21 +1698,22 @@ def format_edition_chunks(
         return "There are no results for your query."
 
     lines = []
+    lines.append("<search_results>")
+
     if query is not None:
-        lines.append(f'QUERY: "{wrap(query)}"')
-        lines.append("\n")
+        lines.append(f"<query>{wrap(query)}</query>")
 
     if search_tool_call_id is not None:
-        lines.append(f'SEARCH TOOL CALL ID: "{search_tool_call_id}"')
-        lines.append("\n")
+        lines.append(
+            f"<search_tool_call_id>{search_tool_call_id}</search_tool_call_id>"
+        )
 
-    multi = len(edition_data) > 1
     for entry in edition_data:
         lines = display_book(
             lines, entry["frbr_fields"], entry["chunk_hits"], entry["edition_id"]
         )
-        if multi:
-            lines.append("-" * 80)
+
+    lines.append("\n</search_results>")
 
     msg = "\n".join(lines)
     if as_str:
