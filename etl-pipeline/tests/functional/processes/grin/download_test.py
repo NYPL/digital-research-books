@@ -1,12 +1,12 @@
-from datetime import datetime
 import os
-import pytest
-from sqlalchemy import delete
+from datetime import datetime
 from uuid import uuid4
 
 import file_conversion.pdfs.mets_parser as mets_parser
+import pytest
+from model import FRBRStatus, GRINState, GRINStatus, Record, RecordState, Source
 from processes.grin.download import GRINDownloadService
-from model import Record, FRBRStatus, RecordState, Source, GRINStatus, GRINState
+from sqlalchemy import delete
 
 
 @pytest.fixture
@@ -46,6 +46,7 @@ def grin_status(db_manager, downloadable_barcode):
     db_manager.commit_changes()
 
 
+@pytest.mark.skip(reason="TEMPORARY - needs fix: fixture book unavailable from GRIN")
 def test_grin_download(s3_manager, grin_status):
     bucket = os.environ["PRIVATE_FILE_BUCKET"]
     grin_download_service = GRINDownloadService(bucket=bucket)
