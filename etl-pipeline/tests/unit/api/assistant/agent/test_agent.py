@@ -7,7 +7,6 @@ import pytest
 from api.assistant.agent import update_chat
 
 
-@pytest.mark.skip
 class TestAgent:
     def test_update_chat_catalog_search(self, mocker):
         """Test update_chat in catalogSearch mode returns the expected result."""
