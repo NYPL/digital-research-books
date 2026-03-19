@@ -28,6 +28,7 @@ from agents import (
     RunErrorHandlerInput,
     RunErrorHandlerResult,
 )
+from agents.run_config import DEFAULT_MAX_TURNS
 from agents.items import ModelResponse
 from agents.tool_context import ToolContext
 from agents.extensions.memory import SQLAlchemySession
@@ -432,7 +433,7 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
     """Handles assistant response if max agent turns are exceeded."""
     client: AsyncOpenAI = data.run_data.last_agent.model._client
     model_name: str = data.run_data.last_agent.model.model
-    agent_system_prompt = data.run_data.last_agent.get_system_prompt(data.context)
+    agent_system_prompt = await data.run_data.last_agent.get_system_prompt(data.context)
 
     messages = [
         {
@@ -460,7 +461,9 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
 
 
 @timer(logger)
-def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
+def update_chat(
+    conversation, conversation_type, edition_id=None, max_turns: int = DEFAULT_MAX_TURNS
+) -> RunResult:
     """
     Send a message to the conversation and get the agent's response.
 
@@ -549,6 +552,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         conversation,
         context=exec_context,
         hooks=LLMLoggingHooks(),
+        max_turns=max_turns,
         error_handlers={"max_turns": _on_max_turns},
         run_config=RunConfig(
             tracing_disabled=True,
