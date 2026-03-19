@@ -179,10 +179,10 @@ class TurbopufferBackend(IndexBackend):
         )
 
     def delete(self) -> None:
-        """Not implemented - use test_delete_namespace() for test namespaces."""
+        """Not implemented - use delete_test_namespace() for test namespaces."""
         raise NotImplementedError(
             "Direct namespace deletion is disabled. "
-            "Use test_delete_namespace() for test namespaces."
+            "Use delete_test_namespace() for test namespaces."
         )
 
     # Document Operations
