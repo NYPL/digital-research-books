@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import glob
-import os
 import sys
 from pathlib import Path
 
@@ -18,7 +17,7 @@ etl_pipeline_dir = workspace_root / "etl-pipeline"
 sys.path.insert(0, str(etl_pipeline_dir))
 
 from dotenv import dotenv_values
-from utils.load_env import load_secrets
+from utils.load_env import parameter_values
 
 
 def main():
@@ -39,30 +38,28 @@ def main():
     for index, secrets_file in enumerate(secrets_files, start=1):
         print(f"Processing secrets file {index} of {total}...")
         
-        # Read env var names from the file (without fetching from AWS yet)
+        # Load SSM arns
         env_vars = dotenv_values(secrets_file)
-        var_names = [k for k, v in env_vars.items() if v]  # Non-empty values only
+        arns = [v for v in env_vars.values() if v]  # Non-empty values only
         
-        if not var_names:
+        if not arns:
             print(f"  No variables to mask in secrets file {index}")
             continue
         
         try:
-            # Use load_secrets() to fetch from SSM and populate os.environ
-            load_secrets(secrets_file, raise_if_no_file=True)
+            # Fetch secret values from SSM
+            arn_to_value = parameter_values(arns)
             
-            # Mask each decrypted value
+            # Mask each decrypted value.
             # Multi-line secrets must be split and each line masked individually,
             # as ::add-mask:: only supports single-line values. see: https://github.com/actions/toolkit/blob/main/docs/commands.md#register-a-secret
             masked_count = 0
-            for var_name in var_names:
-                value = os.environ.get(var_name)
-                if value:
-                    lines = value.splitlines()
-                    for line in lines:
-                        if line:
-                            print(f"::add-mask::{line}")
-                    masked_count += 1
+            for value in arn_to_value.values():
+                lines = value.splitlines()
+                for line in lines:
+                    if line:
+                        print(f"::add-mask::{line}")
+                masked_count += 1
             
             print(f"  Masked {masked_count} secret(s) from secrets file {index}")
             
