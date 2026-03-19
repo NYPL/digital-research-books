@@ -57,7 +57,15 @@ class API:
         self.app = Flask(__name__)
 
         CORS(self.app)
-        Swagger(self.app, template=json.load(open("swagger.v4.json", "r")))
+
+        Swagger(
+            self.app,
+            template=json.load(open("swagger.v4.json", "r")),
+            config={
+                **Swagger.DEFAULT_CONFIG,
+                "jquery_js": "https://code.jquery.com/jquery-3.7.1.min.js",
+            },
+        )
 
         # TODO: rename "SQL_ENGINE"
         self.app.config["DB_CLIENT"] = db_engine
