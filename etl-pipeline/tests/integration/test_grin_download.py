@@ -11,6 +11,7 @@ from datetime import datetime
 logger = create_log(__name__)
 
 
+# TODO: duplicate of fixture with same name in root conftest.py
 @pytest.fixture
 def db_manager():
     with DBManager() as manager:
@@ -80,6 +81,7 @@ def _has_bucket_write_access(s3_manager, bucket_name):
         return False
 
 
+@pytest.mark.skip(reason="TEMPORARY - needs fix: fixture book unavailable from GRIN")
 def test_download_process(db_manager, test_bucket, s3_manager, downloadable_barcode):
     barcode = downloadable_barcode
     grin_download_service = GRINDownloadService(test_bucket)
