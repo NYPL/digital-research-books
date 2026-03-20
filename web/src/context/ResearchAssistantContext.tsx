@@ -138,20 +138,20 @@ export const ResearchAssistantProvider: React.FC<{
         return updatedMessages;
       });
 
-      const newMessageIndex = newMessagesLength;
+      const newResults = {
+        ...viewState.results,
+        [newMessagesLength]: data.results,
+      };
       setViewState((prev) => ({
         ...prev,
-        results: {
-          ...prev.results,
-          [newMessageIndex]: data.results,
-        },
+        results: newResults,
         resultType: data.resultType,
       }));
 
       if (data.resultType === ConversationType.Catalog) {
         setHistoryStack([]);
         pushNewState({
-          results: data.results,
+          results: newResults,
           itemId: "",
           resultType: data.resultType,
         });
@@ -160,7 +160,7 @@ export const ResearchAssistantProvider: React.FC<{
         viewState.itemId
       ) {
         pushNewState({
-          results: data.results,
+          results: newResults,
           itemId: viewState.itemId,
           resultType: data.resultType,
         });
@@ -202,6 +202,7 @@ export const ResearchAssistantProvider: React.FC<{
   const goToPreviousState = (restoredStack?: HistoryItem[]) => {
     setHistoryStack((prevStack) => {
       const stack = restoredStack ?? prevStack;
+      console.log(stack);
       if (stack.length > 0) {
         const prevState = stack.length > 1 ? stack[stack.length - 2] : stack[0];
         setViewState((prev) => ({

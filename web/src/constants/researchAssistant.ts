@@ -156,3 +156,6 @@ export const getGridRows = (backUrl?: string) => {
 export const getHeaderPaddingRight = (vraEnabled: boolean) => {
   return vraEnabled ? GRID_PADDING_X : ITEM_OUTER_MARGIN_CALC;
 };
+
+// SnippetList
+export const SNIPPETS_PER_PAGE = 6;

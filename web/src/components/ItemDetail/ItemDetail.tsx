@@ -11,7 +11,7 @@ import {
   VStack,
 } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useCookies } from "react-cookie";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
 import { ACCORDION_EXPANDED_BG } from "~/src/constants/colors";
@@ -66,7 +66,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   const { page } = useResultPageContext();
 
   const router = useRouter();
-  const { previewItemId, previewPage } = router.query;
+  const { previewItemId, previewPage, internal } = router.query;
 
   const work: ApiWork = workResult.data;
 
@@ -106,8 +106,40 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     }
   }, [previewLink, handlePreview, hasPreviewLoaded]);
 
+  const effectPayloadRef = useRef({
+    historyStack,
+    messages,
+    clearHistory,
+    setMessages,
+    setViewState,
+    page,
+    previewEditionId: previewEdition?.edition_id,
+  });
+
+  effectPayloadRef.current = {
+    historyStack,
+    messages,
+    clearHistory,
+    setMessages,
+    setViewState,
+    page,
+    previewEditionId: previewEdition?.edition_id,
+  };
+
   useEffect(() => {
+    if (internal) return;
+
     if (previewLink?.url && router.pathname.startsWith("/item")) {
+      const {
+        historyStack,
+        messages,
+        clearHistory,
+        setMessages,
+        setViewState,
+        page,
+        previewEditionId,
+      } = effectPayloadRef.current;
+
       const urlParts = previewLink.url.split("/");
       const [itemId, pageId] = [urlParts.at(-3), urlParts.at(-1)];
 
@@ -119,14 +151,14 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         ...prev,
         itemId,
         pageId,
-        editionId: previewEdition?.edition_id,
+        editionId: previewEditionId,
         results: null,
         linkResults: null,
       }));
 
       setMessages([]);
     }
-  }, [previewLink?.url, router.pathname]);
+  }, [internal, previewLink.url, router.pathname]);
 
   const handleBackToResults = () => {
     const storedHistory = sessionStorage.getItem("vraHistoryStack");

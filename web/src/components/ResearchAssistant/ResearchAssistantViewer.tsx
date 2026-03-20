@@ -46,6 +46,7 @@ const ResearchAssistantViewer: React.FC<{
     <Box>
       {manifestApiUrl && (
         <WebReader
+          key={manifestApiUrl}
           webpubManifestUrl={manifestApiUrl}
           pdfWorkerSrc="/pdf-worker/pdf.worker.min.mjs"
           injectablesFixed={injectables}
