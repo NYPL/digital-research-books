@@ -1,6 +1,6 @@
 import base64
 import os
-import tempfile
+from concurrent.futures import ThreadPoolExecutor
 
 from ocrmypdf.hocrtransform import HocrTransform
 
@@ -13,6 +13,7 @@ import file_conversion.pdfs.mets_parser as mets_parser
 from managers import DBManager, S3Manager
 from model import Item, Record
 from processes.grin.unpack import GRINUnpackService
+from utils.common import get_temp_dir
 # TODO: since the unpack functions are used in multiple places they should be \
 # moved to a shared code location.
 
@@ -50,7 +51,7 @@ def item_read(item_id, page_id):
 
     ocr_key, image_key = _find_files_from_list_objects(files, page_id)
 
-    with tempfile.TemporaryDirectory() as tmpdir:
+    with get_temp_dir(in_memory=True) as tmpdir:
         if not ocr_key or not image_key:
             unpack_service = GRINUnpackService(bucket)
             unpacked_files = unpack_service.unpack_barcode_package(barcode)
@@ -71,8 +72,21 @@ def item_read(item_id, page_id):
         else:
             ocr_path = os.path.join(tmpdir, os.path.basename(ocr_key))
             image_path = os.path.join(tmpdir, os.path.basename(image_key))
-            storage_manager.client.download_file(bucket, ocr_key, ocr_path)
-            storage_manager.client.download_file(bucket, image_key, image_path)
+
+            # Download OCR and image files in parallel
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                ocr_future = executor.submit(
+                    lambda: storage_manager.client.download_file(
+                        bucket, ocr_key, ocr_path
+                    )
+                )
+                image_future = executor.submit(
+                    lambda: storage_manager.client.download_file(
+                        bucket, image_key, image_path
+                    )
+                )
+                ocr_future.result()
+                image_future.result()
 
         pdf_data = _create_pdf_from_paths(ocr_path, image_path, page_id)
 
@@ -90,7 +104,7 @@ def item_read(item_id, page_id):
 
 
 def _create_pdf_from_paths(ocr_path, image_path, page_id):
-    with tempfile.TemporaryDirectory() as tmpdir:
+    with get_temp_dir(in_memory=True) as tmpdir:
         pdf_path = os.path.join(tmpdir, f"{page_id}.pdf")
         hocr_transform = HocrTransform(hocr_filename=ocr_path, dpi=300)
         hocr_transform.to_pdf(out_filename=pdf_path, image_filename=image_path)
