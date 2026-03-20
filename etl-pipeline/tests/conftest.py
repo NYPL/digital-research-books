@@ -563,13 +563,26 @@ def downloadable_barcode(grin_client):
     range_start = three_days.strftime("%Y-%m-%d")
     range_end = today.strftime("%Y-%m-%d")
 
-    converted_book = grin_client.get(
-        "_converted?result_count=1&last_conversion_date_start=%s&last_conversion_date_end=%s&book_state=PREVIOUSLY_DOWNLOADED&format=text"
+    converted_books = grin_client.get(
+        "_converted?last_conversion_date_start=%s&last_conversion_date_end=%s&book_state=PREVIOUSLY_DOWNLOADED&format=text"
         % (range_start, range_end)
     )
-    barcode = converted_book.decode("utf8").strip().split(".")[0]
+    filenames = converted_books.decode("utf8").strip().split("\n")
 
-    return barcode
+    for filename in filenames:
+        filename = filename.strip()
+        if not filename:
+            continue
+        barcode = filename.split(".")[0]
+        try:
+            # Set stream=True to avoid downloading the full file
+            response = grin_client.get(filename, stream=True)
+            response.close()
+            return barcode
+        except IOError:
+            continue
+
+    return None
 
 
 @pytest.fixture()
