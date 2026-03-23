@@ -91,6 +91,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./localstack/init-localstack-resources.sh:/etc/localstack/init/ready.d/init-localstack-resources.sh
+    networks:
+      default:
+        aliases:
+          - drb-local-aws
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4566/_localstack/health || exit 1"]
       interval: 10s
