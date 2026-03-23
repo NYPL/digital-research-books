@@ -1,4 +1,5 @@
 import os
+import sys
 import newrelic.agent
 
 import inspect
@@ -49,7 +50,7 @@ def main(args):
         )
     except Exception:
         logger.exception(f"Failed to initialize process {process} in {environment}")
-        return
+        sys.exit(1)
 
     if process in ("APIProcess", "DevelopmentSetupProcess", "MigrationProcess"):
         process_instance.run()

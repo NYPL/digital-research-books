@@ -35,6 +35,7 @@ class LocalDevelopmentSetupProcess:
             logger.info("Completed local development setup")
         except Exception:
             logger.exception("Failed to run development setup process")
+            raise
 
     def initialize_db(self):
         admin_db_manager = DBManager(

@@ -42,6 +42,7 @@ class RecordIngestor:
                     self.sqs_manager.send_message_to_queue(message)
         except Exception:
             logger.exception(f"Failed to ingest {self.source} records")
+            raise
 
         logger.info(f"Ingested {self.record_buffer.ingest_count} {self.source} records")
         monitor.track_records_ingested(
