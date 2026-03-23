@@ -36,4 +36,4 @@ stop:
 
 seed:
 	docker compose -f docker-compose.setup.yml up --build --abort-on-container-exit --exit-code-from devsetup
-	echo "\n✅ Local environment setup complete." # will not display if previous line does not exit 0
+	@printf "\n✅ Local environment setup complete.\n" # will not display if previous line does not exit 0
