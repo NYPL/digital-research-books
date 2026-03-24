@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
+import { renderWithResearchAssistant } from "~/src/__tests__/testUtils/render";
 import SnippetList from "../SnippetList";
 
 const mockSnippets = [
@@ -28,7 +29,9 @@ const manySnippets = Array.from({ length: 7 }, (_, i) => ({
 
 describe("SnippetList", () => {
   test("renders snippet links and text", () => {
-    render(<SnippetList snippets={mockSnippets} workId="123" />);
+    renderWithResearchAssistant(
+      <SnippetList snippets={mockSnippets} workId="123" />
+    );
     expect(screen.getByText("Page 5")).toBeInTheDocument();
     expect(screen.getByText("Page 10")).toBeInTheDocument();
     expect(
@@ -38,7 +41,9 @@ describe("SnippetList", () => {
   });
 
   test("generates correct links for snippets", () => {
-    render(<SnippetList snippets={mockSnippets} workId="123" />);
+    renderWithResearchAssistant(
+      <SnippetList snippets={mockSnippets} workId="123" />
+    );
     const links = screen.getAllByRole("link");
     expect(links).toHaveLength(2);
     expect(links[0]).toHaveAttribute(
@@ -52,12 +57,16 @@ describe("SnippetList", () => {
   });
 
   test("renders pagination if more than 6 snippets", () => {
-    render(<SnippetList snippets={manySnippets} workId="123" />);
+    renderWithResearchAssistant(
+      <SnippetList snippets={manySnippets} workId="123" />
+    );
     expect(screen.getByRole("navigation")).toBeInTheDocument();
   });
 
   test("focuses first snippet link on page change", () => {
-    render(<SnippetList snippets={manySnippets} workId="123" />);
+    renderWithResearchAssistant(
+      <SnippetList snippets={manySnippets} workId="123" />
+    );
     const pagination = screen.getByRole("navigation");
     fireEvent.click(within(pagination).getByRole("link", { name: "Page 2" }));
     const firstSnippet = screen.getByText("Page 7");

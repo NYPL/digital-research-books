@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithResearchAssistant } from "~/src/__tests__/testUtils/render";
 import RelevantSections from "../RelevantSections";
 
 describe("RelevantSections", () => {
@@ -19,7 +20,9 @@ describe("RelevantSections", () => {
     },
   ];
   beforeEach(() => {
-    render(<RelevantSections snippets={mockSnippets} workId="123" />);
+    renderWithResearchAssistant(
+      <RelevantSections snippets={mockSnippets} workId="123" />
+    );
   });
 
   test("should not render if there are no snippets", () => {
