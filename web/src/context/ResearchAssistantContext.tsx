@@ -187,7 +187,6 @@ export const ResearchAssistantProvider: React.FC<{
 
     setViewState((prev) => ({
       ...prev,
-      results: viewState.results,
       itemId: itemId,
       pageId: pageId,
     }));
