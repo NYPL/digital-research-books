@@ -11,6 +11,7 @@ import sys
 import os
 import asyncio
 import time
+from pathlib import Path
 
 from agents import (
     RunResult,
@@ -24,13 +25,17 @@ import rapidfuzz
 
 # api code
 from ..utils import APIUtils, remove_markdown_comments, shorten
-from .types import Snippet, BaseEditionResult
+from .types import Snippet, BaseEditionResult, CatalogSearchResult
+from .agent import format_frbr_fields, format_search_results
 
 # shared code
 from utils.timer import timer
 from logger import create_log
 
 logger = create_log(__name__)
+
+
+PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 
 def exact_match(
@@ -604,21 +609,22 @@ class EditionSnippetLoop:
         self.max_turns_exceeded = True
 
 
-# TODO: fall back to naive snippets if edition has less than 1 (2?) snippets (even when an error occurs in get_relevant_snippets)
 @timer(logger)
-async def get_relevant_snippets(
+async def get_relevant_snippets_llm(
     run_result: RunResult,
     fallback_naive: bool = True,
 ) -> Optional[List[EditionSnippetLoop]]:
-    """Run a snippet agent to select and store relevant text snippets for the last
+    """Use LLM to select relevant snippets from the last
     search result in run_result.
+    LLM generates full text of snippet. Uses iterative self-validating loop to
+    ensure accuracy of generated snippet.
 
-    Runs all editions concurrently, with one self-validating LLM snippet
-    selection loop per edition.
-    Returns None if no search results, [] if all editions already had snippets,
-    or a list of EditionSnippetLoop (one per edition processed); inspect loop
-    attributes for per-edition state after the call.
     Updates run_result.context_wrapper.context.search_results in place.
+
+    Runs snippet selection on each edition in search result in parallel.
+
+    Returns None if no search results, [] if all editions already had snippets,
+    or a list of EditionSnippetLoop (one per edition processed)
 
     Args:
         fallback_naive: If True (default), editions with no AI-selected snippets
@@ -649,19 +655,20 @@ async def get_relevant_snippets(
         logger.info("get_relevant_snippets: all editions already have snippets.")
         return []
 
-    # Extract common variables for all editions
-    conversation_text = _build_conversation_text(run_result)
+    # Shared model config
     client: AsyncOpenAI = run_result.last_agent.model._client
     model_name: str = run_result.last_agent.model.model
     # model_name = "gemini-3.1-flash-lite-preview"
     # model_name = 'gemini-2.5-flash-lite'
+
+    # Shared system prompt variables
+    conversation_text = _build_conversation_text(run_result)
     prompt_template = Template(
         (PROMPTS_DIR / "snippet_agent" / "v7.jinja.md").read_text()
     )
 
-    # Make selection task for each edition
+    # Build edition specific instructions
     loops: List[EditionSnippetLoop] = []
-    tasks = []
     for entry in edition_data:
         # Format search result chunk text
         frbr_fields = (
@@ -695,9 +702,11 @@ async def get_relevant_snippets(
             {"role": "system", "content": snippet_agent_prompt},
             {"role": "user", "content": "Begin snippet selection."},
         ]
+
         loop = EditionSnippetLoop(client, model_name, messages, entry)
         loops.append(loop)
-        tasks.append(loop.run())
+
+    # Run edition snippet selection in parallel
 
     semaphore = asyncio.Semaphore(_SNIPPET_AGENT_MAX_CONCURRENT)
 
@@ -707,11 +716,13 @@ async def get_relevant_snippets(
             return await coro
 
     logger.info(
-        f"get_relevant_snippets: running snippet agent for {len(tasks)} edition(s) concurrently"
+        f"get_relevant_snippets: running snippet agent for {len(loops)} edition(s) concurrently"
         f" (max {_SNIPPET_AGENT_MAX_CONCURRENT} at a time)."
     )
     # MAYBE: handle tokens per minute rate limit errors explicitly with exponential backoff?
-    results = await asyncio.gather(*(_gated(t) for t in tasks), return_exceptions=True)
+    results = await asyncio.gather(
+        *(_gated(l.run()) for l in loops), return_exceptions=True
+    )
 
     # Log results + Apply fallback snippets
     n_errored = 0  # raised an exception
@@ -760,3 +771,13 @@ async def get_relevant_snippets(
     logger.info(f"get_relevant_snippets: {total_snippets} total AI-selected snippet(s)")
 
     return loops
+
+
+async def get_relevant_snippets(
+    run_result: RunResult,
+    approach: Literal["llm", "naive"] = "naive",
+    **kwargs,
+):
+    if approach == "llm":
+        return await get_relevant_snippets_llm(run_result, **kwargs)
+    return get_relevant_snippets_naive(run_result)

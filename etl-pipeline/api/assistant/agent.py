@@ -497,10 +497,6 @@ async def update_chat(conversation, conversation_type, edition_id=None) -> RunRe
         ),
     )
 
-    # Add relevant snippets, if search was executed
-    # snippets updated in run_result in place
-    await get_relevant_snippets(run_result)
-
     return run_result
 
 

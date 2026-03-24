@@ -20,6 +20,7 @@ from ..db import DBClient
 from ..auth import require_api_key
 from ..decorators import require_basic_authentication
 from ..assistant.agent import update_chat, PAGE_SIZE
+from ..assistant.snippets import get_relevant_snippets
 
 
 logger = create_log(__name__)
@@ -174,6 +175,10 @@ def chat(user=None):
     # TODO: inside update_chat make sure than any errors are handled by a polite \
     # llm generated response (except no connectivity to LLM) (just handle the \
     # high level openai agents sdk errors)
+
+    # Add relevant snippets to search result, if search was executed in this agent turn
+    # snippets updated in run_result in place
+    asyncio.run(get_relevant_snippets(run_result, approach="naive"))
 
     ## Build API response
 
