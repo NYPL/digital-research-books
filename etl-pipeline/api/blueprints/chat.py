@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import asdict
 from textwrap import indent
+from typing import Any, Dict, Tuple
 from flask import Blueprint, current_app, request
 import newrelic.agent
 
@@ -30,11 +31,13 @@ chat_blueprint = Blueprint("chat", __name__, url_prefix="/chat")
 RESPONSE_TYPE = "chat"
 
 
-def format_search_results(search_results):
+def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, None]:
     """
-    Convert dict of tool_call_id->results into an output formatted for
-    frontend consumption.
-    Expects len(search_results)==1
+    Extract final search result, prepare structure for expected chat/ response,
+    and convert to serializable types.
+
+    Returns (result_type, formatted_search_result) where formatted_search_result
+    is the search results serialized for http response via flask.jsonify
     """
 
     # Extract (single) search tool result
@@ -47,6 +50,9 @@ def format_search_results(search_results):
     else:
         # TODO: handle no search result (i.e. the agent didn't update the search results (also no pagination))
         search_result = None
+        logger.info(
+            "No search results to return (agent did record search tool call result)"
+        )
 
     # Format search result for API response
     if search_result:
@@ -120,9 +126,6 @@ def format_search_results(search_results):
     else:
         result_type = None
         formatted_search_result = None
-        logger.info(
-            "No search results to return (agent did record search tool call result)"
-        )
 
     return result_type, formatted_search_result
 
@@ -187,7 +190,7 @@ def chat(user=None):
     logger.info(f"Agent generated {len(run_result.new_items)} new message items")
 
     # Format search results
-    result_type, formatted_search_result = format_search_results(
+    result_type, formatted_search_result = prepare_search_response(
         run_result.context_wrapper.context.search_results
     )
 
