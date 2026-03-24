@@ -81,8 +81,7 @@ def parse_filter(filter_str: str | None) -> list | None:
             raise ValueError("Filter must be a JSON array")
         return parsed
     except json.JSONDecodeError as e:
-        logger.error(f"Invalid JSON filter: {e}")
-        sys.exit(1)
+        raise ValueError(f"Invalid JSON filter: {e}")
 
 
 def copy_namespace(
