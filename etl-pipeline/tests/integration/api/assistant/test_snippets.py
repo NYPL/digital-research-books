@@ -4,18 +4,6 @@ Integration tests and fixtures for get_relevant_snippets.
 Provides two utilities for capturing and replaying RunResult state:
   - save_run_result_state(run_result, path)   — capture from a live run
   - load_mock_run_result(state)               — reconstruct a mock for replay
-
-Usage (capturing):
-    run_result = await update_chat(conversation, "catalogSearch")
-    save_run_result_state(run_result, "tests/integration/api/assistant/agent/fixtures/run_result_state.json")
-
-Usage (replaying):
-    run_result = load_mock_run_result("tests/integration/api/assistant/agent/fixtures/run_result_state.json")
-    run_result.last_agent.model._client = AsyncOpenAI(
-        api_key=require_env("GOOGLE_API_KEY"),
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-    )
-    result = await get_relevant_snippets(run_result)
 """
 
 import json
@@ -25,15 +13,17 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from agents.items import ToolCallOutputItem
 from openai import AsyncOpenAI
 
-from api.assistant.agent import (
+from api.assistant.snippets import (
+    get_relevant_snippets_llm,
+    get_relevant_snippets_naive,
+    EditionSnippetLoop,
+)
+from api.assistant.types import (
     ContentSearchResult,
     CatalogSearchResult,
-    EditionSnippetLoop,
     Snippet,
-    get_relevant_snippets,
 )
 from utils.common import require_env
 
@@ -43,9 +33,9 @@ from utils.common import require_env
 # ---------------------------------------------------------------------------
 
 
-# ALT: just use format_search_results() to serialize, more replicable...
+# ALT: just use prepare_search_response() to serialize, more replicable...
 def serialize_run_result_state(run_result) -> dict:
-    """Capture the run_result state needed to replay get_relevant_snippets."""
+    """Capture the run_result state needed execute get_relevant_snippets_llm."""
     context = run_result.context_wrapper.context
     search_results = context.search_results
 
@@ -77,23 +67,9 @@ def serialize_run_result_state(run_result) -> dict:
             "edition_data": edition_data_out,
         }
 
-    tool_outputs = {}
-    for item in run_result.new_items:
-        if isinstance(item, ToolCallOutputItem):
-            raw = item.raw_item
-            call_id = (
-                raw.get("call_id")
-                if hasattr(raw, "get")
-                else getattr(raw, "call_id", None)
-            )
-            if call_id is not None:
-                tool_outputs[call_id] = str(item.output)
-
     return {
         "search_results": serialized_search_results,
-        # _build_conversation_text does its own [:-1] slice
         "conversation": run_result.to_input_list(),
-        "tool_outputs": tool_outputs,
         "agent": {
             "model_name": run_result.last_agent.model.model,
             "instructions": run_result.last_agent.instructions,
@@ -106,7 +82,12 @@ def serialize_run_result_state(run_result) -> dict:
 
 
 def save_run_result_state(run_result, path: str | Path) -> None:
-    """Serialize run_result state to a JSON fixture file."""
+    """Serialize run_result state to a JSON fixture file.
+
+    Usage (capturing):
+    run_result = await update_chat(conversation, "catalogSearch")
+    save_run_result_state(run_result, "tests/integration/api/assistant/agent/fixtures/run_result_state.json")
+    """
     state = serialize_run_result_state(run_result)
     Path(path).write_text(json.dumps(state, indent=2, default=str))
 
@@ -116,8 +97,9 @@ def load_mock_run_result(
 ) -> MagicMock:
     """Reconstruct a mock run_result for get_relevant_snippets from serialized state.
 
-    Caller must set:
-        run_result.last_agent.model._client = AsyncOpenAI(...)
+    Usage (replaying):
+        run_result = load_mock_run_result("tests/integration/api/assistant/agent/fixtures/run_result_state.json")
+        result = await get_relevant_snippets_llm(run_result)
     """
     if isinstance(state, (str, Path)):
         state = json.loads(Path(state).read_text())
@@ -128,6 +110,7 @@ def load_mock_run_result(
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
         )
 
+    # build search result
     search_results = {}
     for call_id, sr in state["search_results"].items():
         edition_data = []
@@ -155,17 +138,10 @@ def load_mock_run_result(
             "edition_data": edition_data,
         }
 
-    new_items = []
-    for call_id, output_text in state["tool_outputs"].items():
-        item = MagicMock(spec=ToolCallOutputItem)
-        item.raw_item = {"call_id": call_id}
-        item.output = output_text
-        new_items.append(item)
-
+    # Assemble RunResult mock
     run_result = MagicMock()
     run_result.context_wrapper.context.search_results = search_results
     run_result.context_wrapper.context.frbr_fields = state.get("frbr_fields")
-    run_result.new_items = new_items
     run_result.to_input_list.return_value = state["conversation"]
     run_result.last_agent.model.model = state["agent"]["model_name"]
     run_result.last_agent.instructions = state["agent"]["instructions"]
@@ -180,31 +156,66 @@ def load_mock_run_result(
 # Tests
 # ---------------------------------------------------------------------------
 
-FIXTURE_PATH = Path(__file__).parent / "fixtures" / "run_result_state.json"
+FIXTURE_PATH = Path(__file__).parents[3] / "fixtures" / "run_result_state.json"
+
+
+def test_get_relevant_snippets_naive():
+    if not FIXTURE_PATH.exists():
+        raise FileNotFoundError(
+            f"Fixture not found at {FIXTURE_PATH}. Capture one with save_run_result_state()."
+        )
+    """Check that naive snippets are successfully populated for each edition."""
+
+    run_result = load_mock_run_result(FIXTURE_PATH, client=MagicMock())
+
+    # Assert fixture starts with no snippets
+    search_results = run_result.context_wrapper.context.search_results
+    _, search_result = list(search_results.items())[-1]
+    for entry in search_result["edition_data"]:
+        assert entry.snippets == [], (
+            f"Edition {entry.edition_id} already has snippets before agent run"
+        )
+
+    result = get_relevant_snippets_naive(run_result)
+
+    # assert return value
+    assert result is True, f"get_relevant_snippets_naive returned {result!r}"
+
+    # Assert at least 1 naive snippet was saved for each edition
+    # TODO: assert num snippets == num chunks per edition entry
+    for entry in search_result["edition_data"]:
+        assert entry.snippets, (
+            f"Edition {entry.edition_id} has no naive snippets after run"
+        )
 
 
 @pytest.mark.asyncio
-@pytest.mark.skipif(
-    not FIXTURE_PATH.exists(),
-    reason=f"Fixture not found at {FIXTURE_PATH}. Capture one with save_run_result_state().",
-)
-async def test_get_relevant_snippets_from_fixture():
-    """Replay get_relevant_snippets against a captured run_result fixture."""
+async def test_get_relevant_snippets_llm():
+    if not FIXTURE_PATH.exists():
+        raise FileNotFoundError(
+            f"Fixture not found at {FIXTURE_PATH}. Capture one with save_run_result_state()."
+        )
+    """Check that snippets are successfully selected."""
+
     run_result = load_mock_run_result(FIXTURE_PATH)
-    run_result.last_agent.model._client = AsyncOpenAI(
-        api_key=require_env("GOOGLE_API_KEY"),
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-    )
 
-    result = await get_relevant_snippets(run_result, fallback_naive=False)
+    # Assert fixture starts with no snippets
+    search_results = run_result.context_wrapper.context.search_results
+    _, search_result = list(search_results.items())[-1]
+    for entry in search_result["edition_data"]:
+        assert entry.snippets == [], (
+            f"Edition {entry.edition_id} already has snippets before agent run"
+        )
 
+    result = await get_relevant_snippets_llm(run_result, fallback_naive=False)
+
+    # assert return type
     assert isinstance(result, list), f"get_relevant_snippets returned {result!r}"
     assert all(isinstance(loop, EditionSnippetLoop) for loop in result), (
         f"Unexpected items in result: {[r for r in result if not isinstance(r, EditionSnippetLoop)]}"
     )
 
-    search_results = run_result.context_wrapper.context.search_results
-    _, search_result = list(search_results.items())[-1]
+    # Assert at least 1 LLM selected snippet was saved for each edition
     for entry in search_result["edition_data"]:
         assert entry.snippets, (
             f"Edition {entry.edition_id} has no AI-selected snippets after agent run"

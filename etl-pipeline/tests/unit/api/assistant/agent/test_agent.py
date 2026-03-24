@@ -7,7 +7,7 @@ from api.assistant.agent import update_chat
 
 class TestAgent:
     def test_update_chat_catalog_search(self, mocker):
-        """Test update_chat in catalogSearch mode returns the expected result."""
+        """Test update_chat in catalogSearch mode returns run_result."""
 
         # Mock search dependencies
         mocker.patch("api.assistant.agent.TurbopufferBackend")

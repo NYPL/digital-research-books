@@ -390,10 +390,12 @@ def validate_edition_snippets(
     return rejections, validated
 
 
-# TODO: insert search result extracted here where appropriate
+# TODO: insert "search executed here" where appropriate in convo history
 def _build_conversation_text(run_result: RunResult) -> str:
-    """Extract user and assistant text messages from run_result as a formatted conversation string."""
+    """Extract user and assistant text messages from run_result, and format as
+    a conversation chain."""
 
+    # TODO: use this instead: https://openai.github.io/openai-agents-python/ref/items/#agents.items.ItemHelpers.extract_text
     def _get_clean_text(message):
         """Standardize text extraction from dict serialization of type=message
         OpenAI Responses API items
@@ -413,16 +415,17 @@ def _build_conversation_text(run_result: RunResult) -> str:
         if role not in ("user", "assistant"):
             continue
         text = _get_clean_text(msg).strip()
+        # TODO: distinguish btw no message text output in message (message may \
+        # include only reasoning, image, tool call, etc) and message text is all \
+        # whitespace/empty str
         if text:
             label = "User" if role == "user" else "Assistant"
             parts.append(f"{label}: {text}")
     return "\n\n".join(parts)
 
 
-def _extract_search_result_text(
-    run_result: RunResult, search_tool_call_id: str
-) -> Optional[str]:
-    """Find the string output of the search tool call in run_result.new_items.
+def _extract_tool_output(run_result: RunResult, tool_call_id: str) -> Optional[str]:
+    """Find the string output of a tool call in run_result.new_items by tool call id.
 
     Returns None if the matching ToolCallOutputItem is not found.
     """
@@ -433,7 +436,7 @@ def _extract_search_result_text(
         call_id = (
             raw.get("call_id") if hasattr(raw, "get") else getattr(raw, "call_id", None)
         )
-        if call_id == search_tool_call_id:
+        if call_id == tool_call_id:
             return str(item.output)
     return None
 
@@ -457,6 +460,7 @@ def _apply_naive_snippets(entry: "BaseEditionResult") -> None:
         )
 
 
+@timer(logger)
 def get_relevant_snippets_naive(run_result: RunResult) -> Optional[bool]:
     """Naively populate snippets for all editions in the last search result using
     simple text truncation — no AI selection.
@@ -671,6 +675,7 @@ async def get_relevant_snippets_llm(
     loops: List[EditionSnippetLoop] = []
     for entry in edition_data:
         # Format search result chunk text
+        # NOTE: slowish. in some cases constructing a 54,813 token str from 100 chunks.
         frbr_fields = (
             format_frbr_fields(entry.orm_work, entry.orm_edition)
             if isinstance(entry, CatalogSearchResult)

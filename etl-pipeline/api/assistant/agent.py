@@ -624,11 +624,12 @@ def search_catalog(
         )
 
         # Limit results to the 10 top scoring editions
-        logger.info(
-            f"Limiting results to first {PAGE_SIZE} editions sorted by '{CHUNK_SCORE_TYPE}'"
-        )
-        edition_hits = edition_hits[:PAGE_SIZE]
-        # TODO: handle paginating or providing more edition hits
+        if len(edition_hits) > PAGE_SIZE:
+            logger.info(
+                f"Limiting results to first {PAGE_SIZE} editions sorted by '{CHUNK_SCORE_TYPE}'"
+            )
+            edition_hits = edition_hits[:PAGE_SIZE]
+            # TODO: handle paginating or providing more edition hits
 
         # Fetch FRBR data (from DB)
         edition_ids = [h["edition_id"] for h in edition_hits]
@@ -644,6 +645,8 @@ def search_catalog(
             frbr_data = get_frbr_data_by_edition(edition_ids)
 
         # Merge ES hit data and FRBR metadata (maintaining edition sort order)
+        # ALT: if frbr_data was pre-sorted by edition_ids in the SQL call, we \
+        # could zip frbr data and edition hits bc order would be the same
         frbr_data = {row.Edition.id: row for row in frbr_data}
         edition_data = []  # list of EditionResult
         missing_data = []
@@ -662,11 +665,12 @@ def search_catalog(
                         agg_score=edition_hit["agg_score"],
                     )
                 )
-        # ALT: if frbr_data was pre-sorted by edition_ids in the SQL call, we \
-        # could zip frbr data and edition hits bc order would be the same
         if missing_data:
             logger.error(
-                f"Vector search hits for the following edition_ids have no matching data in DB: {missing_data}"
+                f"Missing Data: {len(missing_data)} edition_ids from vector search results have no matching data in DB: {missing_data}"
+            )
+            logger.info(
+                f"Limiting results to the {len(edition_data)} editions that have metadata in the DB."
             )
 
         # NOTE: the biggest difference btw VRA (current state) search and DRB \
