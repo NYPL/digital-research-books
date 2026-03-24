@@ -20,11 +20,6 @@ class TestAgent:
         mock_run_result = MagicMock()
         mock_runner.run = AsyncMock(return_value=mock_run_result)
 
-        # Mock get_relevant_snippets (awaited after Runner.run)
-        mocker.patch(
-            "api.assistant.agent.get_relevant_snippets", new_callable=AsyncMock
-        )
-
         # Mock prompt template rendering
         mock_template = mocker.patch("api.assistant.agent.Template")
         mock_template_instance = MagicMock()
