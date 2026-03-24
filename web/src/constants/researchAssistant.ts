@@ -20,7 +20,7 @@ export const FEATURES = [
       "The Assistant searches over 1 million digitized research books from our corpus, connecting you with trusted materials relevant to your research.",
     imageSrc: FIND_FEATURE_IMAGE,
     imageAlt:
-      'Split-screen interface with search results on the left and the Virtual Research Assistant chat on the right. A user asks about US copyright law history. The AI confirms matching items found and prompts the user to ask follow up questions or choose from suggested options including "Digital Copyright Act," "Intellectual property law," and "Fair use doctrine."',
+      'Split-screen interface with search results on the left and the Virtual Research Assistant chat on the right. A patron asks about US copyright law history. The AI confirms matching items found and prompts the patron to ask follow up questions or choose from suggested options including "Digital Copyright Act," "Intellectual property law," and "Fair use doctrine."',
   },
   {
     featureName: "EVALUATE",
@@ -38,7 +38,7 @@ export const FEATURES = [
       "The Assistant helps you locate specific sections in a book and cites its answers, so that you can research with efficiency and confidence.",
     imageSrc: ACCESS_FEATURE_IMAGE,
     imageAlt:
-      "PDF viewer showing a biography of Charles Thomas Walker. In the AI assistant on the right the user asked if the book mentions Walker's early life and childhood and the assistant replies with confirmation and cites page 2. The document text details his 1858 birth in Hephzibah, Georgia, as the youngest of 11 children.",
+      "PDF viewer showing a biography of Charles Thomas Walker. In the AI assistant on the right the patron asked if the book mentions Walker's early life and childhood and the assistant replies with confirmation and cites page 2. The document text details his 1858 birth in Hephzibah, Georgia, as the youngest of 11 children.",
   },
   {
     featureName: "EXPLORE",
@@ -52,7 +52,6 @@ export const FEATURES = [
 ];
 
 // ResearchAsistantWindow
-
 export const CATALOG_INITIAL_MESSAGE: MessageItem = {
   type: ItemType.Message,
   role: MessageRole.Assistant,
@@ -63,7 +62,6 @@ export const CATALOG_INITIAL_MESSAGE: MessageItem = {
     },
   ],
 };
-
 export const CONTENT_INITIAL_MESSAGE: MessageItem = {
   type: ItemType.Message,
   role: MessageRole.Assistant,
@@ -75,7 +73,6 @@ export const CONTENT_INITIAL_MESSAGE: MessageItem = {
     },
   ],
 };
-
 export const LOADING_MESSAGE: MessageItem = {
   type: ItemType.Message,
   role: MessageRole.Assistant,
@@ -86,6 +83,15 @@ export const LOADING_MESSAGE: MessageItem = {
     },
   ],
 };
+
+export const NATURAL_LANGUAGE_MESSAGE_IMAGE =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/naturalLanguageMessage.png";
+export const FEEDBACK_MESSAGE_IMAGE =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/feedbackMessage.png";
+export const SOURCE_MESSAGE_IMAGE =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/sourceMessage.png";
+export const CONTROL_SUBNAV_IMAGE =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/controlSubnav.png";
 
 // ResearchAssistantPanel
 const CONTENT_PADDING_VALUE = "1rem";

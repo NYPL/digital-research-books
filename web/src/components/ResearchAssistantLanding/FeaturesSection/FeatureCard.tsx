@@ -24,7 +24,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
 }) => {
   return (
     <Box
-      height="602px"
+      minHeight="602px"
       width="100%"
       backgroundColor="ui.white"
       borderRadius="32px"
@@ -34,27 +34,25 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
     >
       <Flex gap="l">
         <Box flex="1">
-          <Flex
-            gap="xs"
-            alignItems="center"
-            background="ui.highlighter.yellow"
-            borderRadius="8px"
-            marginBottom="l"
-            paddingX="12px"
-            paddingY="xxs"
-            width="fit-content"
-          >
-            <ResearchAssistantIcon />
-            <Text fontWeight="bold">{featureName}</Text>
-          </Flex>
           <Flex flexDir="column" gap="s" textAlign="left">
-            <Heading
-              level="h3"
-              fontFamily="Domine"
-              size="heading3"
-              color="ui.typography.heading"
-            >
-              {title}
+            <Heading level="h3" size="heading3" color="ui.typography.heading">
+              <Flex
+                gap="xs"
+                alignItems="center"
+                background="ui.highlighter.yellow"
+                borderRadius="8px"
+                color="ui.typography.body"
+                fontSize="desktop.body.body1"
+                marginTop="l"
+                marginBottom="l"
+                paddingX="12px"
+                paddingY="xxs"
+                width="fit-content"
+              >
+                <ResearchAssistantIcon />
+                <Text fontWeight="bold">{featureName}</Text>
+              </Flex>
+              <Text fontFamily="Domine">{title}</Text>
             </Heading>
             <Text color="ui.gray.dark" fontSize="desktop.subtitle.subtitle1">
               {description}
@@ -66,7 +64,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
           alt={imageAlt}
           width="820px"
           height="540px"
-          borderRadius="32px"
+          borderRadius="24px"
           border="1px solid"
           borderColor="ui.gray.light-cool"
           flexShrink="0"

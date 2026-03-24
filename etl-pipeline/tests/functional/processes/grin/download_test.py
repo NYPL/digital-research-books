@@ -1,12 +1,12 @@
-from datetime import datetime
 import os
-import pytest
-from sqlalchemy import delete
+from datetime import datetime
 from uuid import uuid4
 
 import file_conversion.pdfs.mets_parser as mets_parser
+import pytest
+from model import FRBRStatus, GRINState, GRINStatus, Record, RecordState, Source
 from processes.grin.download import GRINDownloadService
-from model import Record, FRBRStatus, RecordState, Source, GRINStatus, GRINState
+from sqlalchemy import delete
 
 
 @pytest.fixture

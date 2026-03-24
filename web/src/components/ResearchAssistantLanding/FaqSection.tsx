@@ -2,6 +2,7 @@ import {
   Accordion,
   Box,
   Heading,
+  List,
   Text,
 } from "@nypl/design-system-react-components";
 import { RESEARCH_CATALOG_LINK } from "~/src/constants/links";
@@ -9,6 +10,23 @@ import Link from "../Link/Link";
 import SectionContainer from "./SectionContainer";
 
 const FaqSection: React.FC = () => {
+  const generateResponseListItems = [
+    <>
+      <Text as="span" isBold>
+        Continuously collect and review feedback
+      </Text>{" "}
+      both from within the tool and externally from our users, librarians, and
+      subject matter experts.
+    </>,
+    <>
+      <Text as="span" isBold>
+        Evaluate our training models regularly
+      </Text>{" "}
+      to check performance and incorporate new improvements as they become
+      available.
+    </>,
+  ];
+
   const accordionData = [
     {
       label: "What corpus does the Virtual Research Assistant search over?",
@@ -29,11 +47,23 @@ const FaqSection: React.FC = () => {
           <Text>
             At this time, the Virtual Research Assistant does not provide access
             to other parts of the NYPL Research Collections, such as materials
-            from the <Link to={RESEARCH_CATALOG_LINK}>Research Catalog</Link>,{" "}
-            <Link to="#">Digital Collections</Link>,{" "}
-            <Link to="#">Online Databases</Link>, or the{" "}
-            <Link to="#">Archives Portal</Link>. It also does not search the
-            greater web.
+            from the{" "}
+            <Link to={RESEARCH_CATALOG_LINK} color="section.research.secondary">
+              Research Catalog
+            </Link>
+            ,{" "}
+            <Link to="#" color="section.research.secondary">
+              Digital Collections
+            </Link>
+            ,{" "}
+            <Link to="#" color="section.research.secondary">
+              Online Databases
+            </Link>
+            , or the{" "}
+            <Link to="#" color="section.research.secondary">
+              Archives Portal
+            </Link>
+            . It also does not search the greater web.
           </Text>
         </Box>
       ),
@@ -61,25 +91,22 @@ const FaqSection: React.FC = () => {
             mistakes. To maintain quality and improve accuracy we also:
           </Text>
           <Box marginLeft="s" marginBottom="s">
-            <Text>
-              +{" "}
-              <Text as="span" isBold>
-                Continuously collect and review feedback
-              </Text>{" "}
-              both from within the tool and externally from our users,
-              librarians, and subject matter experts.
-            </Text>
-            <Text>
-              +{" "}
-              <Text as="span" isBold>
-                Evaluate our training models regularly
-              </Text>{" "}
-              to check performance and incorporate new improvements as they
-              become available.
-            </Text>
+            <List
+              listItems={generateResponseListItems}
+              variant="ul"
+              sx={{
+                "li::before": {
+                  content: '"+"',
+                  fontWeight: "medium",
+                  color: "ui.black",
+                },
+              }}
+            />
           </Box>
           <Text>
-            <Link to="#">Learn more</Link> about the project.
+            <Link to="#" color="section.research.secondary">
+              Learn more about the project.
+            </Link>
           </Text>
         </Box>
       ),
@@ -96,14 +123,18 @@ const FaqSection: React.FC = () => {
             activity or unusual traffic spikes.
           </Text>
           <Text>
-            View our <Link to="#">privacy policy</Link>.
+            View our{" "}
+            <Link to="#" color="section.research.secondary">
+              privacy policy
+            </Link>
+            .
           </Text>
         </Box>
       ),
     },
     {
       label:
-        "Hows does the Virtual Research Assistant manage the environmental impacts of AI?",
+        "How does the Virtual Research Assistant manage the environmental impacts of AI?",
       panel: (
         <Box>
           <Text marginBottom="s">
@@ -114,7 +145,7 @@ const FaqSection: React.FC = () => {
             efficient research tool that uses AI only on an &apos;as
             needed&apos; basis to reduce resource consumption.
           </Text>
-          <Text>
+          <Text marginBottom="s">
             Energy use is an important factor in our model selection. Our
             current models have been chosen after careful consideration of their
             environmental impact alongside other factors such as task
@@ -123,7 +154,9 @@ const FaqSection: React.FC = () => {
             models regularly.
           </Text>
           <Text>
-            <Link to="#">Learn more</Link> about the project.
+            <Link to="#" color="section.research.secondary">
+              Learn more about the project.
+            </Link>
           </Text>
         </Box>
       ),
@@ -143,7 +176,11 @@ const FaqSection: React.FC = () => {
   ];
 
   return (
-    <SectionContainer backgroundColor="#FAFDFD">
+    <SectionContainer
+      backgroundColor="#FAFDFD"
+      borderTop="1px solid"
+      borderColor="section.research.primary-10"
+    >
       <Heading
         level="h2"
         size="heading2"

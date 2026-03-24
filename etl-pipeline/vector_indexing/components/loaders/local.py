@@ -6,8 +6,8 @@ containing page files (*.txt).
 
 from pathlib import Path
 from typing import Optional
-import logging
 
+from logger import create_log
 from vector_indexing.core.types import Book
 from vector_indexing.core.config import get_config, GlobalConfig
 from vector_indexing.components.loaders.base import (
@@ -17,7 +17,7 @@ from vector_indexing.components.loaders.base import (
     BookLoadError,
 )
 
-logger = logging.getLogger(__name__)
+logger = create_log(__name__)
 
 
 class LocalBookLoader(BookLoader):

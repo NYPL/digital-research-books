@@ -11,6 +11,7 @@ from datetime import datetime
 logger = create_log(__name__)
 
 
+# TODO: duplicate of fixture with same name in root conftest.py
 @pytest.fixture
 def db_manager():
     with DBManager() as manager:

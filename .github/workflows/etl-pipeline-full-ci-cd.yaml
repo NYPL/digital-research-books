@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   deploy_to_qa:
-    if: false
     uses: ./.github/workflows/etl-pipeline-deploy-qa.yaml
     secrets: inherit
 
