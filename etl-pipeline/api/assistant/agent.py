@@ -576,7 +576,7 @@ def mean_chunk_score(chunk_hits):
 
 def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
     """
-    Yield chunk_hit's from search results. Adding item_id to each
+    Yield chunk_hit's from search index search results, adding item_id to each
     chunk_hit by mapping chunk record_id to item_id in DB.
 
     Args:
