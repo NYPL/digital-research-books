@@ -9,7 +9,7 @@ from . import model
 from . import path
 from . import page_label
 from . import pdf_page
-from utils import chunk
+from utils.chunker import chunk
 from digital_assets import get_stored_file_url
 from managers import S3Manager
 from services.monitor import track_time

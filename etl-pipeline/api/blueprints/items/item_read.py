@@ -113,6 +113,7 @@ def _create_pdf_from_paths(ocr_path, image_path, page_id):
 
 
 def _find_files_from_list_objects(file_list, page_id):
+    """Extract first .html and image file from a S3 list_objects_v2 reponse file list"""
     ocr_key = next((f for f in file_list if f.endswith("html") and page_id in f), None)
     image_key = next(
         (
