@@ -15,9 +15,6 @@ google-api-python-client==2.154.0
 google-auth-httplib2==0.2.0
 google-auth==2.36.0
 google-genai==1.45.0
-langchain-google-genai==3.0.0
-langchain==1.0.0
-langgraph==1.0.0
 llama-index-core==0.14.6
 lxml==4.9.2
 newrelic==10.9.0
