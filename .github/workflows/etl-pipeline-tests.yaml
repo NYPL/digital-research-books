@@ -103,7 +103,7 @@ jobs:
         run: |
           make integration-drb
 
-      - name: Seed local Postgres DB with FRBR data needed for /chat requests
+      - name: Seed local Postgres DB to support /chat API tests
         working-directory: ./etl-pipeline
         run: |
           docker compose run --rm --entrypoint python devsetup main.py -e docker-compose -p LocalDevelopmentSetupProcess
