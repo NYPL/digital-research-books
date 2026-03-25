@@ -55,7 +55,9 @@ def _assert_safe_db_target() -> None:
         raise SystemExit("Non-local database host targeted for seeding")
 
 
-def _normalize_row_for_table(row: dict, column_names: set[str]) -> tuple[dict, set[str]]:
+def _normalize_row_for_table(
+    row: dict, column_names: set[str]
+) -> tuple[dict, set[str]]:
     """Map seed_data keys to real table columns and collect unknown keys."""
     normalized: dict = {}
     dropped: set[str] = set()
@@ -122,7 +124,9 @@ def seed(seed_data: dict, db_manager) -> dict[str, int]:
     edition_rows = seed_data.get("editions", [])
     edition_ids = {e["id"] for e in edition_rows}
     work_ids = {e["work_id"] for e in edition_rows}
-    item_rows = [i for i in seed_data.get("items", []) if i.get("edition_id") in edition_ids]
+    item_rows = [
+        i for i in seed_data.get("items", []) if i.get("edition_id") in edition_ids
+    ]
     item_ids = {i["id"] for i in item_rows}
 
     # Upsert core FRBR entities first to satisfy FK dependencies
@@ -131,7 +135,9 @@ def seed(seed_data: dict, db_manager) -> dict[str, int]:
     counts["editions"] = _upsert(session, Edition.__table__, edition_rows, ["id"])
 
     # Upsert records and items tied to the selected editions
-    record_ids_needed = {i["record_id"] for i in item_rows if i.get("record_id") is not None}
+    record_ids_needed = {
+        i["record_id"] for i in item_rows if i.get("record_id") is not None
+    }
     record_rows = [
         r for r in seed_data.get("records", []) if r.get("id") in record_ids_needed
     ]
@@ -140,13 +146,17 @@ def seed(seed_data: dict, db_manager) -> dict[str, int]:
 
     # Upsert links referenced by the selected items
     link_ids_needed = {
-        il["link_id"] for il in seed_data.get("item_links", []) if il["item_id"] in item_ids
+        il["link_id"]
+        for il in seed_data.get("item_links", [])
+        if il["item_id"] in item_ids
     }
     link_rows = [l for l in seed_data.get("links", []) if l["id"] in link_ids_needed]
     counts["links"] = _upsert(session, Link.__table__, link_rows, ["id"])
 
     # Insert item-link join rows (ignore duplicates)
-    item_link_rows = [il for il in seed_data.get("item_links", []) if il["item_id"] in item_ids]
+    item_link_rows = [
+        il for il in seed_data.get("item_links", []) if il["item_id"] in item_ids
+    ]
     if item_link_rows:
         stmt = pg_insert(ITEM_LINKS).values(item_link_rows)
         stmt = stmt.on_conflict_do_nothing()
@@ -219,9 +229,7 @@ def main() -> int:
     for edition_id in edition_ids:
         edition_items = [i for i in item_rows if i["edition_id"] == edition_id]
         edition_record_ids = {
-            i["record_id"]
-            for i in edition_items
-            if i.get("record_id") is not None
+            i["record_id"] for i in edition_items if i.get("record_id") is not None
         }
         print(
             f"Edition {edition_id} seeded: items={len(edition_items)} "
