@@ -1,11 +1,11 @@
-# Digital Research Books 
+# Digital Research Books
 
 <!-- ![ETL_Pipeline_Tests](https://github.com/NYPL/drb-etl-pipeline/workflows/ETL_Pipeline_Tests/badge.svg) -->
 
 This directory contains the ETL pipeline, API server, and other deployable processes related to the DRB project (including GRIN books ingestion).
 
 
-## ETL Pipeline 
+## ETL Pipeline
 
 A containerized python application for importing data from multiple source projects and transforming this data into a unified format that can be accessed via an API (which powers [Digital Research Books Beta](http://digital-research-books-beta.nypl.org/)).
 
@@ -37,7 +37,7 @@ Both endpoints provide Swagger documentation at `/apidocs/`.
 
 ## Quickstart Guide
 
-This guide provides step-by-step instructions to set up local development and start the DRB API server running locally in a docker container. 
+This guide provides step-by-step instructions to set up local development and start the DRB API server running locally in a docker container.
 
 ### Prerequisites
 
@@ -49,7 +49,7 @@ This guide provides step-by-step instructions to set up local development and st
    - Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
    - Sign into AWS console at http://awsconsole.nypl.org/.
    - Choose account:`nypl-digital-dev`
-   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . 
+   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure .
       - When asked, set profile name to "default". This allows AWS SDKs and CLI to authenticate to this profile without any extra arguments.
       - This authorization is temporary, to re-authenticate with SSO, run `aws sso login`.
 
@@ -65,11 +65,21 @@ This guide provides step-by-step instructions to set up local development and st
 
 
 
-2. Seed data in the local dockerized DB instance (one-time only):
+2. Seed data in the local dockerized DB instance from HathiTrust (one-time only):
 
    ```bash
    # Run the database seeding process
    docker compose -f docker-compose.setup.yml up --abort-on-container-exit
+   ```
+
+   Or to instead seed using a local fixture file:
+
+   ```
+   # Run dockerized local development setup
+   docker compose run --rm --entrypoint python devsetup main.py -e docker-compose -p LocalDevelopmentSetupProcess
+
+   # Run seeding script against dockerized DB
+   docker compose run --rm --entrypoint python api -m tests.integration.api.assistant.support.seed_frbr_data
    ```
 
    Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
@@ -87,7 +97,7 @@ This guide provides step-by-step instructions to set up local development and st
    - Redis
    - LocalStack (S3 and SQS)
    - API service
-  
+
    Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
 
 4. Verify the setup:
@@ -101,19 +111,19 @@ This guide provides step-by-step instructions to set up local development and st
      Username: postgres
      Password: localpsql
      ```
- 
+
 5. Set up local python env:
 
 **Create a virtual environment**
 
-*Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).* 
+*Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).*
 
 ```sh
 python -m venv venv
 ```
 
 **Activate the virtual environment.**
-The following steps assume the virtual environment is active. 
+The following steps assume the virtual environment is active.
 You will need to do this for every terminal session.
 
 ```sh
@@ -190,7 +200,7 @@ See `python main.py --help` for all available options.
 
 
 ## Formatting
-We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files. 
+We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files.
 
 
 
