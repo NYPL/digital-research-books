@@ -103,10 +103,15 @@ jobs:
         run: |
           make integration-drb
 
+      - name: Seed local Postgres DB with FRBR data needed for /chat requests
+        working-directory: ./etl-pipeline
+        run: |
+          docker compose run --rm --entrypoint python devsetup main.py -e docker-compose -p LocalDevelopmentSetupProcess
+          docker compose run --rm --entrypoint python api -m tests.integration.api.assistant.support.seed_frbr_data
+
       - name: Run integration tests (VRA)
         env:
-          ENVIRONMENT: qa  # VRA depends on services not yet available locally
-          DRB_API_URL: http://127.0.0.1:5050  # Override to a local instance
+          ENVIRONMENT: local
         working-directory: ./etl-pipeline
         run: |
           make integration-vra
