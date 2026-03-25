@@ -786,34 +786,34 @@ def format_frbr_fields(orm_work, orm_edition):
     Format ORM work and edition attributes for printing.
     """
     # Format work metadata
-    title = orm_work.title or "(No Title)"
+    title = orm_work.title or "(Title Unavailable)"
 
     authors = orm_work.authors or []
     author_names = (
         ", ".join([a.get("name", "") for a in authors if isinstance(a, dict)])
         if authors
-        else "(No Authors)"
+        else "(Authors Unavailable)"
     )
 
     subjects = orm_work.subjects or []
     subject_list = (
         ", ".join([s.get("heading", "") for s in subjects if isinstance(s, dict)])
         if subjects
-        else "(None)"
+        else "(Subjects Unavailable)"
     )
 
     # Format edition metadata
     pub_date = (
         str(orm_edition.publication_date)
         if orm_edition.publication_date
-        else "(No Date)"
+        else "(Publication Date Unavailable)"
     )
 
     publishers = orm_edition.publishers or []
     publisher_names = (
         ", ".join([p.get("name", "") for p in publishers if isinstance(p, dict)])
         if publishers
-        else "(No Publisher)"
+        else "(Publishers Unavailable)"
     )
 
     # Format language metadata
@@ -826,7 +826,7 @@ def format_frbr_fields(orm_work, orm_edition):
             ]
         )
         if languages
-        else "(No Language)"
+        else "(Languages Unavailable)"
     )
 
     return {
