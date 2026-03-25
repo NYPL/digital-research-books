@@ -59,7 +59,7 @@ def require_basic_authentication(func):
         user = db_client.fetchUser(username)
         if user is None:
             logger.debug(
-                f"User {username} not found in {os.environ.get('ENVIRONMENT')} database"
+                f"Username '{username}' not found in {os.environ.get('ENVIRONMENT')} env database"
             )
 
         if (

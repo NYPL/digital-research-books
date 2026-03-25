@@ -288,11 +288,16 @@ if __name__ == "__main__":
     # ]
 
     # vra ES standardize naming convention
+    # path_mapping = {
+    #     "/drb/vra-elasticsearch/host": "/drb/production/vra-elasticsearch/host",
+    #     "/drb/vra-elasticsearch/port": "/drb/production/vra-elasticsearch/port",
+    #     "/drb/vra/elasticsearch/user": "/drb/production/vra-elasticsearch/user",
+    #     "/drb/vra/elasticsearch/pswd": "/drb/production/vra-elasticsearch/pswd",
+    # }
+
+    # local -> qa -- vra test user
     path_mapping = {
-        "/drb/vra-elasticsearch/host": "/drb/production/vra-elasticsearch/host",
-        "/drb/vra-elasticsearch/port": "/drb/production/vra-elasticsearch/port",
-        "/drb/vra/elasticsearch/user": "/drb/production/vra-elasticsearch/user",
-        "/drb/vra/elasticsearch/pswd": "/drb/production/vra-elasticsearch/pswd",
+        "/drb/local/vra/test_user_password": "/drb/qa/vra/test_user_password",
     }
 
     # result = copy_ssm_parameters_between_envs(
