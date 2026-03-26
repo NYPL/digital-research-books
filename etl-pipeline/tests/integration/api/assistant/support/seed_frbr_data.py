@@ -13,8 +13,8 @@ Dockerized DB usage:
     From etl-pipeline/:
         # Run dockerized local development setup
         docker compose run --rm --entrypoint python devsetup main.py \
-            -e docker-compose \
-            -p LocalDevelopmentSetupProcess
+            -p LocalDevelopmentSetupProcess \
+            -e docker-compose
 
         # Run seeding script
         docker compose run --rm --entrypoint python devsetup \
