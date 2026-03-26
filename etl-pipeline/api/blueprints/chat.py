@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import asdict
 from textwrap import indent
 from typing import Any, Dict, Tuple
+from api.assistant.types import CatalogSearchResult
 from flask import Blueprint, current_app, request
 import newrelic.agent
 
@@ -20,7 +21,7 @@ from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
 from ..decorators import require_basic_authentication
-from ..assistant.agent import update_chat, PAGE_SIZE
+from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
 from ..assistant.snippets import get_relevant_snippets
 
 
@@ -55,18 +56,42 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
         )
 
     # Format search result for API response
+
+    result_type = None
+    formatted_search_result = None
     if search_result:
-        if search_result["tool_name"] == "search_catalog":
-            editions = []
-            for edition_result in search_result["edition_data"]:
-                # FRBR ORM to dict
-                work_dict = orm_to_dict(
-                    edition_result.orm_work,
-                    exclude=[(Work, "date_created"), (Work, "date_modified")],
+        result_type = (
+            "catalogSearch"
+            if search_result["tool_name"] == "search_catalog"
+            else "contentSearch"
+            if search_result["tool_name"] == "search_book"
+            else None
+        )
+        if result_type is None:
+            raise ValueError(
+                f"Unsupported search tool type: {search_result['tool_name']}"
+            )
+
+        search_params = search_result["search_params"]
+
+        editions = []
+        for edition_result in search_result["edition_data"]:
+            edition = {}
+
+            # Sort editions + convert to json serializable form
+            edition["snippets"] = [
+                asdict(s)
+                for s in sorted(
+                    edition_result.snippets,
+                    key=lambda s: s.chunk_score,
+                    **SCORE_SORT_DIRECTION,
                 )
-                # prepend "work_" to work fields
-                work_dict = {f"work_{k}": v for k, v in work_dict.items()}
-                edition_dict = orm_to_dict(
+            ]
+
+            if result_type == "catalogSearch":
+                # FRBR ORM to dict
+
+                edition_metadata = orm_to_dict(
                     edition_result.orm_edition,
                     exclude=[
                         (Edition, "date_created"),
@@ -91,13 +116,21 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
                         "publication_date": (lambda d: d.year if d else None)
                     },
                 )
-                edition_dict.update(work_dict)
-                editions.append(edition_dict)
+                work_metadata = orm_to_dict(
+                    edition_result.orm_work,
+                    exclude=[(Work, "date_created"), (Work, "date_modified")],
+                )
+                # prepend "work_" to work fields
+                work_metadata = {f"work_{k}": v for k, v in work_metadata.items()}
 
-            result_type = "catalogSearch"  # MAYBE: send search tool name
+                edition.update({**edition_metadata, **work_metadata})
+
+            editions.append(edition)
+
+        if result_type == "catalogSearch":
             formatted_search_result = {
                 "editions": editions,
-                "search_params": search_result["search_params"],
+                "search_params": search_params,
                 # NOTE: paginated search not yet implemented, only 1 fixed result set size
                 "paging": APIUtils.formatPagingOptions(
                     page=1,
@@ -109,23 +142,15 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
                 f"Returning {len(editions)} editions in catalog search response"
             )  # Q: redundant to tool call logging
 
-        elif search_result["tool_name"] == "search_book":
-            result_type = "contentSearch"  # MAYBE: send search tool name
-            snippets = [asdict(s) for s in search_result["edition_data"][0].snippets]
+        else:  # result_type == "contentSearch"
+            snippets = editions[0]["snippets"]
             formatted_search_result = {
                 "snippets": snippets,
-                "search_params": search_result["search_params"],
+                "search_params": search_params,
             }
             logger.info(
                 f"Returning {len(snippets)} snippets in content search response"
             )
-        else:
-            raise ValueError(
-                f"Unsupported search tool type: {search_result['tool_name']}"
-            )
-    else:
-        result_type = None
-        formatted_search_result = None
 
     return result_type, formatted_search_result
 

@@ -549,16 +549,17 @@ def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
             )
 
 
+# TODO: make score type metadata of the chunk index search method
 CHUNK_SCORE_TYPE: Literal["higher-is-better", "lower-is-better"] = "higher-is-better"
 
 if CHUNK_SCORE_TYPE == "higher-is-better":
-    score_aggregator = max_chunk_score
-    sort_direction = {"reverse": True}
-    score_label = "MAX SCORE"
+    SCORE_AGGREGATOR = max_chunk_score
+    SCORE_SORT_DIRECTION = {"reverse": True}
+    SCORE_LABEL = "MAX SCORE"
 else:
-    score_aggregator = min_chunk_score
-    sort_direction = {"reverse": False}
-    score_label = "MIN SCORE"
+    SCORE_AGGREGATOR = min_chunk_score
+    SCORE_SORT_DIRECTION = {"reverse": False}
+    SCORE_LABEL = "MIN SCORE"
 
 
 @function_tool
@@ -607,7 +608,7 @@ def search_catalog(
 
         # Calculate aggregate edition score
         edition_hits = [
-            {**eh, "agg_score": score_aggregator(eh["chunk_hits"])}
+            {**eh, "agg_score": SCORE_AGGREGATOR(eh["chunk_hits"])}
             for eh in edition_hits.values()
         ]
         logger.info(
@@ -620,7 +621,7 @@ def search_catalog(
         # This sort order change (reverse=True) was intentional and also fixes a pre-existing
         # inconsistency between ES9 and Turbopuffer score semantics.
         edition_hits = sorted(
-            edition_hits, key=lambda eh: eh["agg_score"], **sort_direction
+            edition_hits, key=lambda eh: eh["agg_score"], **SCORE_SORT_DIRECTION
         )
 
         # Limit results to the 10 top scoring editions
