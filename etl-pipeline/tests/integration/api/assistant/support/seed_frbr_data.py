@@ -60,14 +60,14 @@ def _assert_safe_db_target() -> None:
 def _normalize_row_for_table(
     row: dict, column_names: set[str]
 ) -> tuple[dict, set[str]]:
-    """Map seed_data keys to real table columns and collect unknown keys."""
+    """Map keys to real table columns and collect unknown keys."""
     normalized: dict = {}
     dropped: set[str] = set()
 
     for key, value in row.items():
         target_key = key
 
-        # Support seed_data keys that mirror ORM private attrs (e.g. _has_version)
+        # Support keys that mirror ORM private attrs (e.g. _has_version)
         if target_key not in column_names and target_key.startswith("_"):
             alias = target_key[1:]
             if alias in column_names:
@@ -118,11 +118,11 @@ def _upsert(session, table, rows: list[dict], conflict_cols: list[str]) -> int:
 
 
 def seed(seed_data: dict, db_manager) -> dict[str, int]:
-    """Upsert all seed_data rows into the DB."""
+    """Upsert seed data into the DB."""
     counts: dict[str, int] = {}
     session = db_manager.session
 
-    # Derive IDs and scoped rows from the seed_data
+    # Derive IDs and scoped rows from the seed data
     edition_rows = seed_data.get("editions", [])
     edition_ids = {e["id"] for e in edition_rows}
     work_ids = {e["work_id"] for e in edition_rows}
