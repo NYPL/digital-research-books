@@ -84,7 +84,6 @@ def generate_seed_data(edition_ids: list[int]) -> dict:
     item_rights: set[tuple[int, int]] = set()
     record_ids: set[int] = set()
 
-    # Preserve requested edition ordering in output.
     for edition_id in edition_ids:
         row = row_by_edition_id[edition_id]
         work = row.Work
