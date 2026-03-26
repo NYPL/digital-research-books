@@ -158,6 +158,9 @@ def load_mock_run_result(
 
 FIXTURE_PATH = Path(__file__).parents[3] / "fixtures" / "run_result_state.json"
 
+# TODO: parameterize these by selection function variant, same validation should \
+# be applied to all/both selection function variants
+
 
 def test_get_relevant_snippets_naive():
     if not FIXTURE_PATH.exists():

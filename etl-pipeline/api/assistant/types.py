@@ -29,7 +29,7 @@ class BaseEditionResult:
 class ContentSearchResult(BaseEditionResult):
     """In-book (single-edition) content search result."""
 
-    frbr_fields: Dict = field(default_factory=dict)
+    frbr_fields: Dict
 
 
 @dataclass(kw_only=True)
