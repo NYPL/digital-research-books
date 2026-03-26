@@ -1,7 +1,6 @@
 """Elasticsearch backend implementation."""
 
 from typing import Iterator, Optional
-import logging
 
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk, scan as es_scan
@@ -9,9 +8,10 @@ from elasticsearch.helpers import bulk, scan as es_scan
 from vector_indexing.core.types import BookMetadata, ChunkDocument, InsertResult
 from vector_indexing.core.config import get_config, GlobalConfig
 from vector_indexing.core.utils import format_bytes
+from logger import create_log
 from vector_indexing.components.backends.base import IndexBackend
 
-logger = logging.getLogger(__name__)
+logger = create_log(__name__)
 
 
 def build_index_mapping(
