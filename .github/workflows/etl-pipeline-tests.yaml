@@ -89,13 +89,6 @@ jobs:
         run: |
           ./docker-compose-healthcheck.sh
 
-      - name: Run functional tests
-        env:
-          ENVIRONMENT: local
-        working-directory: ./etl-pipeline
-        run: |
-          make functional
-
       - name: Run integration tests (DRB)
         env:
           ENVIRONMENT: local
@@ -115,6 +108,13 @@ jobs:
         working-directory: ./etl-pipeline
         run: |
           make integration-vra
+
+      - name: Run functional tests
+        env:
+          ENVIRONMENT: local
+        working-directory: ./etl-pipeline
+        run: |
+          make functional
 
       - name: Dump service logs
         if: always() && steps.build-images.outcome == 'success'
