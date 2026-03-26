@@ -25,8 +25,8 @@ import rapidfuzz
 
 # api code
 from ..utils import APIUtils, remove_markdown_comments, shorten
-from .types import Snippet, BaseEditionResult, CatalogSearchResult
-from .agent import format_frbr_fields, format_search_results
+from .types import Snippet, BaseEditionResult
+from .agent import format_search_results
 
 # shared code
 from utils.timer import timer
@@ -676,21 +676,7 @@ async def get_relevant_snippets_llm(
     for entry in edition_data:
         # Format search result chunk text
         # NOTE: slowish. in some cases constructing a 54,813 token str from 100 chunks.
-        frbr_fields = (
-            format_frbr_fields(entry.orm_work, entry.orm_edition)
-            if isinstance(entry, CatalogSearchResult)
-            else run_result.context_wrapper.context.frbr_fields
-        )
-        edition_chunk_text = format_search_results(
-            [
-                {
-                    "frbr_fields": frbr_fields,
-                    "chunk_hits": entry.chunk_hits,
-                    "edition_id": entry.edition_id,
-                }
-            ],
-            as_str=True,
-        )
+        edition_chunk_text = format_search_results([entry], as_str=True)
 
         snippet_agent_prompt = remove_markdown_comments(
             prompt_template.render(

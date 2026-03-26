@@ -60,6 +60,8 @@ def serialize_run_result_state(run_result) -> dict:
                     "publishers": entry.orm_edition.publishers,
                     "languages": entry.orm_edition.languages,
                 }
+            else:
+                entry_data["frbr_fields"] = entry.frbr_fields
             edition_data_out.append(entry_data)
         serialized_search_results[call_id] = {
             "tool_name": sr.get("tool_name"),
@@ -76,8 +78,6 @@ def serialize_run_result_state(run_result) -> dict:
             "tool_name": run_result.last_agent.tools[0].name,
             "tool_description": run_result.last_agent.tools[0].description,
         },
-        # frbr_fields present for contentSearch (ContentSearchExecutionContext)
-        "frbr_fields": getattr(context, "frbr_fields", None),
     }
 
 
@@ -130,6 +130,7 @@ def load_mock_run_result(
                     edition_id=e["edition_id"],
                     chunk_hits=e["chunk_hits"],
                     snippets=snippets,
+                    frbr_fields=e.get("frbr_fields", {}),
                 )
             edition_data.append(entry)
         search_results[call_id] = {
@@ -141,7 +142,6 @@ def load_mock_run_result(
     # Assemble RunResult mock
     run_result = MagicMock()
     run_result.context_wrapper.context.search_results = search_results
-    run_result.context_wrapper.context.frbr_fields = state.get("frbr_fields")
     run_result.to_input_list.return_value = state["conversation"]
     run_result.last_agent.model.model = state["agent"]["model_name"]
     run_result.last_agent.instructions = state["agent"]["instructions"]

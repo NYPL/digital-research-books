@@ -691,17 +691,7 @@ def search_catalog(
         # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
         # than saving JSON/API response separately but edition data json may \
         # include irrelevant metadata)
-        return format_search_results(
-            [
-                {
-                    "frbr_fields": format_frbr_fields(e.orm_work, e.orm_edition),
-                    "chunk_hits": e.chunk_hits,
-                    "edition_id": e.edition_id,
-                }
-                for e in edition_data
-            ],
-            as_str=True,
-        )
+        return format_search_results(edition_data, as_str=True)
 
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
@@ -760,6 +750,7 @@ def search_book(
                 ContentSearchResult(
                     edition_id=ctx.context.edition_id,
                     chunk_hits=chunk_hits,
+                    frbr_fields=ctx.context.frbr_fields,
                 )
             ],
             "search_params": json.loads(ctx.tool_arguments),
@@ -767,13 +758,7 @@ def search_book(
 
         # Format results for LLM
         return format_search_results(
-            [
-                {
-                    "frbr_fields": ctx.context.frbr_fields,
-                    "chunk_hits": chunk_hits,
-                    "edition_id": ctx.context.edition_id,
-                }
-            ],
+            ctx.context.search_results[ctx.tool_call_id]["edition_data"],
             as_str=True,
         )
 
@@ -903,7 +888,7 @@ def format_search_results(
     Editions are ordered by the input list.
 
     Args:
-        edition_data: List of dicts with keys 'frbr_fields', 'chunk_hits', 'edition_id'
+        edition_data: List of BaseEditionResult (CatalogSearchResult or ContentSearchResult)
         search_tool_call_id: Optional tool call ID to include in output header
         query: The search query string
         as_str: If True, return as string; otherwise print
@@ -923,9 +908,12 @@ def format_search_results(
         )
 
     for entry in edition_data:
-        lines = display_book(
-            lines, entry["frbr_fields"], entry["chunk_hits"], entry["edition_id"]
+        frbr_fields = (
+            format_frbr_fields(entry.orm_work, entry.orm_edition)
+            if isinstance(entry, CatalogSearchResult)
+            else entry.frbr_fields
         )
+        lines = display_book(lines, frbr_fields, entry.chunk_hits, entry.edition_id)
 
     lines.append("\n</search_results>")
 

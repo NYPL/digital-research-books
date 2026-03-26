@@ -45,15 +45,14 @@ def _page_range(s) -> str:
     return f"{start}–{end}"
 
 
-def _entry_info(entry, run_result) -> tuple:
+def _entry_info(entry) -> tuple:
     """Return (edition_id, title) for CatalogSearchResult or ContentSearchResult."""
     if isinstance(entry, CatalogSearchResult):
         return entry.orm_edition.id, getattr(
             entry.orm_work, "title", None
         ) or "(no title)"
-    # ContentSearchResult — book info lives on the execution context
-    frbr_fields = run_result.context_wrapper.context.frbr_fields
-    return entry.edition_id, frbr_fields.get("title", "(no title)")
+    # ContentSearchResult — book info lives on the entry
+    return entry.edition_id, entry.frbr_fields.get("title", "(no title)")
 
 
 def display_snippet_comparison(run_result: RunResult) -> None:
@@ -89,7 +88,7 @@ def display_snippet_comparison(run_result: RunResult) -> None:
         print("(no edition data)")
     else:
         for entry in edition_data:
-            edition_id, title = _entry_info(entry, run_result)
+            edition_id, title = _entry_info(entry)
             print(f"\nEDITION {edition_id}  —  {title}")
             print(_SECTION_DIV)
 
@@ -119,7 +118,7 @@ def display_snippet_comparison(run_result: RunResult) -> None:
         print("(no edition data)")
     else:
         for entry in edition_data:
-            edition_id, title = _entry_info(entry, run_result)
+            edition_id, title = _entry_info(entry)
             print(f"\nEDITION {edition_id}  —  {title}")
             print(_SECTION_DIV)
 
