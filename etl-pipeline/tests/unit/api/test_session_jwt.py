@@ -7,17 +7,21 @@ from uuid import uuid4
 from api.session_jwt import sign_session, verify_session
 
 
-def _generate_rsa_pem_pair(key_size: int = 1024):
+def _generate_rsa_pem_pair(key_size: int = 2048):
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=key_size)
     private_pem = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.TraditionalOpenSSL,
         encryption_algorithm=serialization.NoEncryption(),
     ).decode()
-    public_pem = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    ).decode()
+    public_pem = (
+        private_key.public_key()
+        .public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        .decode()
+    )
     return private_pem, public_pem
 
 
@@ -45,7 +49,7 @@ class TestSessionJWT:
         payload = pyjwt.decode(
             token, public_pem, algorithms=["RS256"], audience="vra_session"
         )
-        
+
         assert payload["sub"] == session_id
         assert "iat" in payload
         assert payload["aud"] == "vra_session"
@@ -63,7 +67,9 @@ class TestSessionJWT:
     def test_raises_when_private_key_missing(self, monkeypatch):
         monkeypatch.delenv("SESSION_JWT_PRIVATE_KEY", raising=False)
 
-        with pytest.raises(RuntimeError, match="SESSION_JWT_PRIVATE_KEY not configured"):
+        with pytest.raises(
+            RuntimeError, match="SESSION_JWT_PRIVATE_KEY not configured"
+        ):
             sign_session(str(uuid4()))
 
     def test_raises_when_public_key_missing(self, monkeypatch):
@@ -83,9 +89,7 @@ class TestSessionJWT:
         with pytest.raises(pyjwt.PyJWTError):
             verify_session(tampered)
 
-    def test_raises_on_wrong_key(
-        self, monkeypatch, rsa_key_pair, other_rsa_key_pair
-    ):
+    def test_raises_on_wrong_key(self, monkeypatch, rsa_key_pair, other_rsa_key_pair):
         private_pem, _ = rsa_key_pair
         _, wrong_public_pem = other_rsa_key_pair
         monkeypatch.setenv("SESSION_JWT_PRIVATE_KEY", private_pem)
