@@ -1,5 +1,6 @@
 import { Box, VStack } from "@nypl/design-system-react-components";
 import React from "react";
+import { RESULT_TEST_ID } from "~/src/constants/testIds";
 import { Agent } from "~/src/types/DataModel";
 import { CatalogEdition } from "~/src/types/ResearchAssistant";
 import { ApiWork } from "~/src/types/WorkQuery";
@@ -49,7 +50,11 @@ const ResultsList: React.FC<{ works: ApiWork[] | CatalogEdition[] }> = ({
           const previewEdition = work.editions && work.editions[0];
 
           return (
-            <Box key={`search-result-${work.uuid}`} className="search-result">
+            <Box
+              key={`search-result-${work.uuid}`}
+              className="search-result"
+              data-testid={RESULT_TEST_ID}
+            >
               <ResultCard
                 authors={work.authors}
                 edition={previewEdition}
@@ -75,7 +80,11 @@ const ResultsList: React.FC<{ works: ApiWork[] | CatalogEdition[] }> = ({
         const previewEdition = work.editions && work.editions[0];
 
         return (
-          <Box key={`search-result-${work.uuid}`} className="search-result">
+          <Box
+            key={`search-result-${work.uuid}`}
+            className="search-result"
+            data-testid={RESULT_TEST_ID}
+          >
             <ResultCard
               authors={work.authors}
               edition={previewEdition}
