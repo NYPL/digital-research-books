@@ -77,25 +77,6 @@ def dynamic_docstring(docstring):
     return decorator
 
 
-# Module-level docstring variables
-SEARCH_CATALOG_DOC = f"""
-{(PROMPTS_DIR / "tools" / "search_catalog.txt").read_text()}
-
-{remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
-"""
-
-SEARCH_BOOK_DOC = f"""
-{(PROMPTS_DIR / "tools" / "search_book.txt").read_text()}
-
-{remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
-"""
-
-VALIDATE_RELEVANT_SNIPPETS_DOC = (
-    PROMPTS_DIR / "tools" / "select_relevant_snippets.txt"
-    # PROMPTS_DIR / "tools" / "select_relevant_snippets_no_elision.txt"
-).read_text()
-
-
 def transform_datetime(filter_array: Any) -> List:
     """
     Processing function to convert datetime string values to datetime objects.
@@ -562,6 +543,14 @@ else:
     SCORE_LABEL = "MIN SCORE"
 
 
+# Module-level docstring variables
+SEARCH_CATALOG_DOC = f"""
+{(PROMPTS_DIR / "tools" / "search_catalog.txt").read_text()}
+
+{remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
+"""
+
+
 @function_tool
 @dynamic_docstring(SEARCH_CATALOG_DOC)
 def search_catalog(
@@ -696,6 +685,13 @@ def search_catalog(
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
         raise e
+
+
+SEARCH_BOOK_DOC = f"""
+{(PROMPTS_DIR / "tools" / "search_book.txt").read_text()}
+
+{remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
+"""
 
 
 @function_tool
