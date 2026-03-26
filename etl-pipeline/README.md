@@ -74,12 +74,15 @@ This guide provides step-by-step instructions to set up local development and st
 
    Or to instead seed using a local fixture file:
 
-   ```
+   ```bash
    # Run dockerized local development setup
-   docker compose run --rm --entrypoint python devsetup main.py -e docker-compose -p LocalDevelopmentSetupProcess
+   docker compose run --rm --entrypoint python devsetup main.py \
+      -p LocalDevelopmentSetupProcess \
+      -e docker-compose
 
-   # Run seeding script against dockerized DB
-   docker compose run --rm --entrypoint python api -m tests.integration.api.assistant.support.seed_frbr_data
+   # Run seeding script
+   docker compose run --rm --entrypoint python devsetup \
+      -m tests.integration.api.assistant.support.seed_frbr_data
    ```
 
    Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.

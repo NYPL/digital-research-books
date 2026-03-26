@@ -99,8 +99,11 @@ jobs:
       - name: Seed local Postgres DB to support /chat API tests
         working-directory: ./etl-pipeline
         run: |
-          docker compose run --rm --entrypoint python devsetup main.py -e docker-compose -p LocalDevelopmentSetupProcess
-          docker compose run --rm --entrypoint python api -m tests.integration.api.assistant.support.seed_frbr_data
+          docker compose run --rm --entrypoint python devsetup main.py \
+            -p LocalDevelopmentSetupProcess \
+            -e docker-compose && \
+          docker compose run --rm --entrypoint python devsetup \
+            -m tests.integration.api.assistant.support.seed_frbr_data
 
       - name: Run integration tests (VRA)
         env:
