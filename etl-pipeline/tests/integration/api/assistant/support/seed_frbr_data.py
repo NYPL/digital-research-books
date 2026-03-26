@@ -1,11 +1,10 @@
-"""Seed a local Postgres DB with minimum FRBR graph derived from JSON file.
-
-Data is loaded from a seed data JSON (default: ../seed_data/frbr_seed.json).
+"""Seed a local Postgres DB with FRBR graph data (../seed_data/frbr_seed.json).
 
 Upsert order (respects FK dependencies):
     works -> editions -> records -> items -> links -> item_links -> rights -> item_rights
 
-Defaults to dockerized DB but can be pointed at a locally-hosted DB.
+Defaults to docker-compose env config but can be used for any local DB with the
+appropriate .env config file. See usage instructions below.
 
 Depended on for running VRA integration tests against a local DRB API instance,
 which require specific FRBR data to be present for /chat requests to succeed.
@@ -13,10 +12,13 @@ which require specific FRBR data to be present for /chat requests to succeed.
 Dockerized DB usage:
     From etl-pipeline/:
         # Run dockerized local development setup
-        docker compose run --rm --entrypoint python devsetup main.py -e docker-compose -p LocalDevelopmentSetupProcess
+        docker compose run --rm --entrypoint python devsetup main.py \
+            -e docker-compose \
+            -p LocalDevelopmentSetupProcess
 
-        # Run seeding script against dockerized DB
-        docker compose run --rm --entrypoint python api -m tests.integration.api.assistant.support.seed_frbr_data
+        # Run seeding script
+        docker compose run --rm --entrypoint python devsetup \
+            -m tests.integration.api.assistant.support.seed_frbr_data
 
 Local DB usage:
     From etl-pipeline/ after running local development setup:
