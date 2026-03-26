@@ -3,7 +3,18 @@ import difflib
 import json
 import re
 import asyncio
-from typing import Dict, Any, Literal, Optional, Union, List, Iterator, Callable, Tuple
+from typing import (
+    Dict,
+    Any,
+    Literal,
+    Optional,
+    Union,
+    List,
+    Iterator,
+    Callable,
+    Tuple,
+    TypeAlias,
+)
 from typing_extensions import TypedDict
 from enum import Enum
 from textwrap import indent
@@ -37,8 +48,11 @@ logger = create_log(__name__)
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
+SnippetMatcher: TypeAlias = Callable[[str, str], tuple[Optional[str], Optional[float]]]
 
-def exact_match(
+
+# UNUSED
+def tight_match_ellipsis(
     snippet_text: str, chunk_text: str
 ) -> tuple[Optional[str], Optional[float]]:
     """Match the generated snippet to chunk text.
@@ -78,47 +92,6 @@ def exact_match(
     return (m.group(0), 1.0) if m else (None, None)
 
 
-# MAYBE: add a binary match/no-match version that doesn't expect a score
-def find_snippet_in_chunks(
-    snippet_text: str,
-    chunk_hits: list,
-    find_snippet_in_chunk: Callable[
-        [str, str], tuple[Optional[str], Optional[float]]
-    ] = exact_match,
-) -> tuple[Optional[dict], Optional[str]]:
-    """Search chunk_hits for the highest-scoring chunk matching snippet_text.
-
-    Iterates all chunks, scores each via find_snippet_in_chunk, and returns the
-    chunk with the highest score. In the case of ties the first chunk wins (strict >).
-
-    Args:
-        snippet_text: The snippet string to locate.
-        chunk_hits: List of chunk hit dicts, each expected to have a "text" key.
-        find_snippet_in_chunk: Callable(snippet_text, chunk_text) -> (resolved_snippet, score)
-            where score is a float on match or None on no match. Defaults to exact_match
-            which returns score=1.0 on match.
-
-    Returns:
-        (matched_chunk_hit, resolved_snippet) or (None, None) if no chunk matched.
-    """
-    best_chunk_hit = None
-    best_resolved_snippet = None
-    best_score = -1.0
-    for chunk_hit in chunk_hits:
-        resolved_snippet, score = find_snippet_in_chunk(
-            snippet_text, chunk_hit.get("text", "")
-        )
-        if score is not None and score > best_score:
-            best_score = score
-            best_chunk_hit = chunk_hit
-            best_resolved_snippet = resolved_snippet
-    if best_chunk_hit is not None:
-        logger.debug(
-            f"find_snippet_in_chunks best score: {best_score:.2f} for snippet '{snippet_text[:60]}'"
-        )
-    return best_chunk_hit, best_resolved_snippet
-
-
 def text_processor(s):
     # TODO: add custom processor that collapses "-\n"->""
     # MAYBE: ascii folding
@@ -141,7 +114,7 @@ def fuzzy_match(snippet, chunk):
     return {"score": r.score, "start": r.dest_start, "end": r.dest_end}
 
 
-def fuzzy_match_elipsis(snippet_text, chunk_text, threshold=88):
+def fuzzy_match_ellipsis(snippet_text, chunk_text, threshold=88):
     """Match the generated snippet to chunk text.
 
     Splits snippet by `...` and match each part in sequence.
@@ -301,11 +274,9 @@ def validate_edition_snippets(
     edition_id: int,
     snippet_list: List[str],
     chunk_hits: list,
-    find_snippet_in_chunk: Callable[
-        [str, str], tuple[Optional[str], Optional[float]]
-    ] = exact_match,
+    find_snippet_in_chunk: SnippetMatcher = tight_match_ellipsis,
 ) -> Tuple[List[Rejection], List[Snippet]]:
-    """Validate a list of submitted snippets against the chunk hits for one edition.
+    """Validate a list of submitted snippets against the chunk hits of one edition.
 
     Pure function — no side effects. Returns (rejections, validated_snippets) where
     validated_snippets are fully-formed Snippet objects ready to extend an entry's .snippets.
@@ -316,7 +287,7 @@ def validate_edition_snippets(
         snippet_list: Submitted snippet strings.
         chunk_hits: The chunk hits stored for this edition.
         find_snippet_in_chunk: Callable(snippet_text, chunk_text) -> (resolved_snippet, score)
-            passed directly to find_snippet_in_chunks. Defaults to exact_match.
+            where score is a float on match or None on no match.
 
     Returns:
         Tuple of (list of Rejection objects, list of valid Snippet objects).
@@ -337,10 +308,24 @@ def validate_edition_snippets(
         )
 
     for snippet_text in snippet_list:
-        # --- Step 1: Validate snippet matches edition chunk ---
-        matched_chunk, resolved_snippet = find_snippet_in_chunks(
-            snippet_text, chunk_hits, find_snippet_in_chunk
-        )
+        # --- Step 1: Validate snippet matches text of a chunk ---
+        # Match snippet to chunk with highest match score (as calculated by find_snippet_in_chunk). In the case of ties the first chunk wins (strict >).
+        best_chunk_hit = None
+        best_resolved_snippet = None
+        best_score = -1.0
+        for chunk_hit in chunk_hits:
+            _resolved, _score = find_snippet_in_chunk(
+                snippet_text, chunk_hit.get("text", "")
+            )
+            if _score is not None and _score > best_score:
+                best_score = _score
+                best_chunk_hit = chunk_hit
+                best_resolved_snippet = _resolved
+        if best_chunk_hit is not None:
+            logger.debug(
+                f"Best chunk match score {best_score:.2f} for snippet '{snippet_text[:60]}'"
+            )
+        matched_chunk, resolved_snippet = best_chunk_hit, best_resolved_snippet
 
         if matched_chunk is None:
             diff_log = _format_no_match_diff(snippet_text, chunk_hits)
@@ -576,7 +561,7 @@ class EditionSnippetLoop:
                 self.entry.edition_id,
                 snippet_list,
                 self.entry.chunk_hits,
-                find_snippet_in_chunk=fuzzy_match_elipsis,
+                find_snippet_in_chunk=fuzzy_match_ellipsis,
             )
             # Save valid snippets
             # MAYBE: consider not setting result in place
