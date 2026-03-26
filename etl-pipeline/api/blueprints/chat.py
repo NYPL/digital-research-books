@@ -17,7 +17,7 @@ from ..utils import APIUtils, orm_to_dict, shorten
 from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
-from ..decorators import require_basic_authentication
+from ..decorators import require_basic_authentication, require_session_jwt
 from ..assistant.agent import update_chat, PAGE_SIZE
 
 
@@ -151,12 +151,12 @@ def format_search_results(search_results):
 @chat_blueprint.route("", methods=["POST"])
 @require_api_key
 @require_basic_authentication
+@require_session_jwt
 @timer(logger)
-def chat(user=None):
+def chat(user=None, session_id=None):
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
-    session_id = request.json.get("sessionId")
 
     # Add custom attributes to transaction in New Relic
     if conversation_type is not None:
@@ -167,12 +167,6 @@ def chat(user=None):
     logger.info(
         f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, session_id={session_id}"
     )
-
-    # Input parameter validation
-    if not session_id:
-        return APIUtils.formatResponseObject(
-            400, RESPONSE_TYPE, {"message": "sessionId is required"}
-        )
 
     if not message:
         return APIUtils.formatResponseObject(

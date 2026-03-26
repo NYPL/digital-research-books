@@ -26,7 +26,7 @@ export default async function handler(
       return res.status(500).json({ error: "Server configuration error." });
     }
 
-    const { message, conversationType, editionId, sessionId } = req.body;
+    const { message, conversationType, editionId } = req.body;
 
     if (!message || typeof message !== "string") {
       return res.status(400).json({
@@ -35,11 +35,11 @@ export default async function handler(
     }
 
     const authorization = req.headers.authorization || undefined;
+    const cookieHeader = req.headers.cookie || undefined;
 
     const payload: any = {
       message,
       conversationType,
-      sessionId,
     };
 
     if (editionId !== undefined) payload.editionId = editionId;
@@ -49,12 +49,18 @@ export default async function handler(
       "X-API-KEY": apiKey,
     };
     if (authorization) headers.Authorization = authorization;
+    if (cookieHeader) headers["cookie"] = cookieHeader;
 
     const chatResponse = await fetch(chatUrl, {
       method: "POST",
       headers,
       body: JSON.stringify(payload),
     });
+
+    const setCookie = chatResponse.headers.get("set-cookie");
+    if (setCookie) {
+      res.setHeader("Set-Cookie", setCookie);
+    }
 
     if (!chatResponse.ok && chatResponse.status !== 201) {
       const errorData = await chatResponse.json();

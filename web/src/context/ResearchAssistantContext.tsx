@@ -11,7 +11,6 @@ import {
   MessageRole,
   PageType,
 } from "~/src/types/ResearchAssistant";
-import { getOrCreateSessionId } from "../util/SessionUtils";
 
 interface ResearchAssistantViewState {
   showWebReader: boolean;
@@ -112,7 +111,6 @@ export const ResearchAssistantProvider: React.FC<{
 
     try {
       const token = localStorage.getItem("authToken");
-      const sessionId = getOrCreateSessionId();
       const response = await fetch("/api/research-assistant", {
         method: "POST",
         headers: {
@@ -123,7 +121,6 @@ export const ResearchAssistantProvider: React.FC<{
           message: text,
           conversationType,
           editionId: viewState.editionId,
-          sessionId,
         }),
       });
 
