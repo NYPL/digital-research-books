@@ -6,3 +6,7 @@ export const RESEARCH_CATALOG_LINK =
   "https://www.nypl.org/research/research-catalog";
 export const ARTICLE_PLUS_LINK =
   "https://www.nypl.org/research/collections/online-resources-databases";
+export const DIGITAL_COLLECTIONS_LINK = "https://digitalcollections.nypl.org/";
+export const ONLINE_DATABASES_LINK =
+  "https://www.nypl.org/research/collections/online-resources-databases";
+export const ARCHIVES_PORTAL_LINK = "https://archives.nypl.org/";

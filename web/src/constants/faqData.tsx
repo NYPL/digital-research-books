@@ -1,6 +1,11 @@
 import { Box, List, Text } from "@nypl/design-system-react-components";
 import Link from "~/src/components/Link/Link";
-import { RESEARCH_CATALOG_LINK } from "~/src/constants/links";
+import {
+  ARCHIVES_PORTAL_LINK,
+  DIGITAL_COLLECTIONS_LINK,
+  ONLINE_DATABASES_LINK,
+  RESEARCH_CATALOG_LINK,
+} from "~/src/constants/links";
 
 const generateResponseListItems = [
   <>
@@ -28,7 +33,7 @@ const GENERAL_ACCORDION_DATA = [
         <Text marginBottom="s">
           The Virtual Research Assistant currently provides access to over 1
           million public domain books from two sources - books from NYPL
-          digitized through the Google Books project, and books from the
+          digitized through the Google Books project, and books from the{" "}
           <Link to="#" hasVisitedState={false}>
             Harvard Institutional Data Initiative
           </Link>
@@ -38,38 +43,26 @@ const GENERAL_ACCORDION_DATA = [
           At this time, the Virtual Research Assistant does not provide access
           to other parts of the NYPL Research Collections, such as materials
           from the{" "}
-          <Link
-            to={RESEARCH_CATALOG_LINK}
-            color="section.research.secondary"
-            hasVisitedState={false}
-          >
+          <Link to={RESEARCH_CATALOG_LINK} hasVisitedState={false}>
             Research Catalog
           </Link>
           ,{" "}
-          <Link
-            to="#"
-            color="section.research.secondary"
-            hasVisitedState={false}
-          >
+          <Link to={DIGITAL_COLLECTIONS_LINK} hasVisitedState={false}>
             Digital Collections
           </Link>
           ,{" "}
-          <Link
-            to="#"
-            color="section.research.secondary"
-            hasVisitedState={false}
-          >
+          <Link to={ONLINE_DATABASES_LINK} hasVisitedState={false}>
             Online Databases
           </Link>
           , or the{" "}
-          <Link
-            to="#"
-            color="section.research.secondary"
-            hasVisitedState={false}
-          >
+          <Link to={ARCHIVES_PORTAL_LINK} hasVisitedState={false}>
             Archives Portal
           </Link>
-          . It also does not search the greater web.
+          . It also does not search the NYPL{" "}
+          <Link to="#" hasVisitedState={false}>
+            Circulating Catalog
+          </Link>{" "}
+          or the greater web.
         </Text>
       </Box>
     ),
