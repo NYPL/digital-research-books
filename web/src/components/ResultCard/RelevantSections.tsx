@@ -1,8 +1,8 @@
 import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import React from "react";
 import { Snippet } from "~/src/types/ResearchAssistant";
-import Link from "../Link/Link";
 import ChevronIcon from "./ChevronIcon";
+import SnippetList from "./SnippetList";
 
 interface RelevantSectionsProps {
   snippets: Snippet[];
@@ -20,31 +20,10 @@ const RelevantSections: React.FC<RelevantSectionsProps> = ({
     <Box fontSize="desktop.caption">
       {isOpen && (
         <>
-          <Text fontWeight="medium" marginBottom="xs" marginTop="m">
+          <Text fontWeight="medium" marginTop="m">
             Relevant sections
           </Text>
-          <Flex flexDir="column" gap="s">
-            {snippets.map((snippet, index) => (
-              <Flex
-                key={index}
-                flexDir="column"
-                gap="xs"
-                borderTop="1px dotted"
-                borderColor="ui.border.default"
-              >
-                <Link
-                  to={`/item/${workId}?previewItemId=${
-                    snippet.item_id
-                  }&previewPage=${String(snippet.start_page).padStart(8, "0")}`}
-                  marginTop="xs"
-                  fontWeight="medium"
-                >
-                  Page {snippet.start_page}
-                </Link>
-                <Text isItalic>&quot;{snippet.text}&quot;</Text>
-              </Flex>
-            ))}
-          </Flex>
+          <SnippetList snippets={snippets} workId={workId} />
         </>
       )}
       <Flex

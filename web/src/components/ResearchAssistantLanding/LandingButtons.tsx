@@ -1,11 +1,24 @@
-import { Button, Flex } from "@nypl/design-system-react-components";
+import {
+  Button,
+  Flex,
+  TextInputRefType,
+} from "@nypl/design-system-react-components";
 import ArrowIcon from "../ResearchAssistant/icons/ArrowIcon";
 
 interface LandingButtonsProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
+  textInputRef: React.RefObject<TextInputRefType>;
 }
 
-const LandingButtons: React.FC<LandingButtonsProps> = ({ heroSectionRef }) => {
+const LandingButtons: React.FC<LandingButtonsProps> = ({
+  heroSectionRef,
+  textInputRef,
+}) => {
+  const handleTryItClick = () => {
+    heroSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+    textInputRef.current?.focus();
+  };
+
   return (
     <Flex marginTop="xxl" width="fit-content" gap="s" marginX="auto">
       <Button
@@ -15,9 +28,7 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({ heroSectionRef }) => {
         margin="0 auto"
         borderRadius="8px"
         fontWeight="medium"
-        onClick={() =>
-          heroSectionRef.current?.scrollIntoView({ behavior: "smooth" })
-        }
+        onClick={handleTryItClick}
         _hover={{
           backgroundColor: "section.research.primary",
         }}
@@ -27,12 +38,13 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({ heroSectionRef }) => {
       <Button
         id="learn-more-button"
         variant="secondary"
+        aria-label="Learn more about the project"
         backgroundColor="ui.white"
         borderColor="section.research.secondary"
-        color="section.research.secondary"
-        margin="0 auto"
         borderRadius="8px"
+        color="section.research.secondary"
         fontWeight="medium"
+        margin="0 auto"
         _hover={{
           backgroundColor: "section.research.primary-05",
         }}

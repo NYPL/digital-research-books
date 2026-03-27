@@ -9,11 +9,11 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import cached_property
 from typing import Optional, TYPE_CHECKING
-import logging
 import re
 
 import boto3
 
+from logger import create_log
 from vector_indexing.core.types import Book
 from vector_indexing.core.config import get_config, GlobalConfig
 from vector_indexing.components.loaders.base import (
@@ -27,7 +27,7 @@ from vector_indexing.components.loaders.local import DiskBookCache
 if TYPE_CHECKING:
     from mypy_boto3_s3 import S3Client
 
-logger = logging.getLogger(__name__)
+logger = create_log(__name__)
 
 # Regex to extract page number from S3 key
 # Matches patterns like: path/to/barcode/1_1.txt, path/00042.txt, etc.

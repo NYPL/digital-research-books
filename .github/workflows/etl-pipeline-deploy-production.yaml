@@ -21,6 +21,9 @@ jobs:
           role-to-assume: arn:aws:iam::946183545209:role/GithubActionsDeployerRole
           aws-region: us-east-1
 
+      - name: Mask secrets
+        uses: ./.github/actions/mask-secrets
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1

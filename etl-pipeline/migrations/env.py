@@ -12,7 +12,7 @@ import model.postgres.base
 xargs = context.get_x_argument(as_dictionary=True)
 environment = xargs.get("env")
 if environment is None:
-    raise ValueError("`-x env=<target_env>` missing from alembic call")
+    raise ValueError("Env not specified: use `alembic -x env=<target_env> <cmd>`")
 env_file = Path(__file__).parent.parent / "config" / f".env.{environment}"
 load_env(env_file)
 
