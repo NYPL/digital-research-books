@@ -140,7 +140,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
 
       setMessages([]);
     }
-  }, [previewLink.url, router.pathname]);
+  }, [previewLink?.url, router.pathname]);
 
   const handleBackToResults = () => {
     const storedHistory = sessionStorage.getItem("vraHistoryStack");

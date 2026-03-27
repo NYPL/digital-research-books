@@ -24,7 +24,7 @@ const SnippetList: React.FC<SnippetListProps> = ({ snippets, workId }) => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    firstSnippetRef.current.focus();
+    firstSnippetRef.current?.focus();
   };
 
   const handlePageLinkClick = (
