@@ -6,7 +6,6 @@ const FaqSection: React.FC = () => {
     <SectionContainer
       backgroundColor="#FAFDFD"
       borderTop="1px solid"
-      borderBottom="1px solid"
       borderColor="section.research.primary-10"
     >
       <Flex flexDir="column" gap="l" marginY="128px" backgroundColor="#FAFDFD">

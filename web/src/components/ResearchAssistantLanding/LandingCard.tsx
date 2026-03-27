@@ -24,6 +24,7 @@ const LandingCard: React.FC<LandingCardProps> = ({
       gap={gap}
       padding="l"
       textAlign="left"
+      flex="1"
     >
       <Flex flexDir="column" gap="s">
         {icon}

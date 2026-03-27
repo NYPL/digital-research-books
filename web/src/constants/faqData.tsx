@@ -19,7 +19,7 @@ const generateResponseListItems = [
   </>,
 ];
 
-const generalAccordionData = [
+const GENERAL_ACCORDION_DATA = [
   {
     label:
       "What content does the Virtual Research Assistant provide access to?",
@@ -29,26 +29,44 @@ const generalAccordionData = [
           The Virtual Research Assistant currently provides access to over 1
           million public domain books from two sources - books from NYPL
           digitized through the Google Books project, and books from the
-          <Link to="#">Harvard Institutional Data Initiative</Link>. More books
-          are added to the repository on a regular basis.
+          <Link to="#" hasVisitedState={false}>
+            Harvard Institutional Data Initiative
+          </Link>
+          . More books are added to the repository on a regular basis.
         </Text>
         <Text>
           At this time, the Virtual Research Assistant does not provide access
           to other parts of the NYPL Research Collections, such as materials
           from the{" "}
-          <Link to={RESEARCH_CATALOG_LINK} color="section.research.secondary">
+          <Link
+            to={RESEARCH_CATALOG_LINK}
+            color="section.research.secondary"
+            hasVisitedState={false}
+          >
             Research Catalog
           </Link>
           ,{" "}
-          <Link to="#" color="section.research.secondary">
+          <Link
+            to="#"
+            color="section.research.secondary"
+            hasVisitedState={false}
+          >
             Digital Collections
           </Link>
           ,{" "}
-          <Link to="#" color="section.research.secondary">
+          <Link
+            to="#"
+            color="section.research.secondary"
+            hasVisitedState={false}
+          >
             Online Databases
           </Link>
           , or the{" "}
-          <Link to="#" color="section.research.secondary">
+          <Link
+            to="#"
+            color="section.research.secondary"
+            hasVisitedState={false}
+          >
             Archives Portal
           </Link>
           . It also does not search the greater web.
@@ -153,7 +171,7 @@ const securityAccordionData = [
   },
 ];
 
-const technologyAccordionData = [
+const TECHNOLOGY_ACCORDION_DATA = [
   {
     label: "Why did NYPL develop the Virtual Research Assistant?",
     panel: (
@@ -192,7 +210,11 @@ const technologyAccordionData = [
           />
         </Box>
         <Text>
-          <Link to="#" color="section.research.secondary">
+          <Link
+            to="#"
+            color="section.research.secondary"
+            hasVisitedState={false}
+          >
             Learn more about the project.
           </Link>
         </Text>
@@ -262,7 +284,7 @@ const technologyAccordionData = [
   },
 ];
 
-const costAccordionData = [
+const COST_ACCORDION_DATA = [
   {
     label: "Who pays for the Virtual Research Assistant?",
     panel: (
@@ -296,7 +318,11 @@ const costAccordionData = [
           Assistant&apos;s energy usage and re-evaluate our models regularly.
         </Text>
         <Text>
-          <Link to="#" color="section.research.secondary">
+          <Link
+            to="#"
+            color="section.research.secondary"
+            hasVisitedState={false}
+          >
             Learn more about the project.
           </Link>
         </Text>
@@ -305,7 +331,7 @@ const costAccordionData = [
   },
 ];
 
-const helpAccordionData = [
+const HELP_ACCORDION_DATA = [
   {
     label: "How do I provide feedback about the Virtual Research Assistant?",
     panel: (
@@ -333,9 +359,9 @@ const helpAccordionData = [
 ];
 
 export const ACCORDION_SECTIONS = [
-  { title: "General", data: generalAccordionData },
+  { title: "General", data: GENERAL_ACCORDION_DATA },
   { title: "Security and privacy", data: securityAccordionData },
-  { title: "Technology and capabilities", data: technologyAccordionData },
-  { title: "Cost and impact", data: costAccordionData },
-  { title: "Help and feedback", data: helpAccordionData },
+  { title: "Technology and capabilities", data: TECHNOLOGY_ACCORDION_DATA },
+  { title: "Cost and impact", data: COST_ACCORDION_DATA },
+  { title: "Help and feedback", data: HELP_ACCORDION_DATA },
 ];

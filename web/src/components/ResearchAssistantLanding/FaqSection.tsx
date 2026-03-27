@@ -21,12 +21,19 @@ const FaqSection: React.FC = () => {
       <Flex flexDir="column" gap="l">
         {ACCORDION_SECTIONS.map((section, index) => (
           <Flex key={index} gap="l">
-            <Heading level="h3" size="heading3" fontFamily="Domine" width="25%">
+            <Heading
+              level="h3"
+              size="heading3"
+              fontFamily="Domine"
+              width="20%"
+              textAlign="left"
+            >
               {section.title}
             </Heading>
             <Accordion
               backgroundColor="ui.white"
               color="ui.black"
+              flex="1"
               textAlign="left"
               id={`faq-accordion-${index}`}
               accordionData={section.data}
