@@ -23,6 +23,7 @@ from agents import (
 )
 from agents.items import ModelResponse
 from agents.tool_context import ToolContext
+from agents.extensions.memory import SQLAlchemySession
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 from sqlalchemy import text
