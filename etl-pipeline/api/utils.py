@@ -27,10 +27,6 @@ def json_dump_uuid(obj):
     return JSONEncoder().default(obj)
 
 
-def hit_to_dict(hit):
-    return {**hit.to_dict(), **{"meta": hit.meta.to_dict()}}
-
-
 def shorten(s):
     return s[:200] + "..."
     # TODO: cut out center not end
