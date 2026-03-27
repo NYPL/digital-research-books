@@ -30,10 +30,10 @@ from jinja2 import Template
 
 
 # api code
-from ..utils import APIUtils, hit_to_dict, remove_markdown_comments
+from ..utils import remove_markdown_comments
 from ..db import get_frbr_data_by_edition, get_session, get_async_engine
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
-from .types import Snippet, CatalogSearchResult, ContentSearchResult
+from .types import CatalogSearchResult, ContentSearchResult
 
 # shared code
 from vector_indexing.components.embedders.google import GoogleEmbedder
