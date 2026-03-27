@@ -12,6 +12,7 @@ Usage:
 import argparse
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -25,6 +26,7 @@ if __name__ == "__main__":
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
+import turbopuffer as tpuf
 from vector_indexing.core.config import get_config
 from vector_indexing.core.utils import format_bytes
 from vector_indexing.components.backends.turbopuffer import (
@@ -63,6 +65,12 @@ def parse_args():
         help="TurboPuffer filter as JSON string",
     )
     parser.add_argument(
+        "--region",
+        type=str,
+        default=os.environ.get("TURBOPUFFER_REGION", "aws-us-east-1"),
+        help="TurboPuffer region (default: aws-us-east-1)",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Show what would be copied without actually copying",
@@ -88,6 +96,7 @@ def copy_namespace(
     src_name: str,
     dest_name: str,
     filters: list | None = None,
+    region: str | None = None,
     dry_run: bool = False,
 ) -> dict:
     """Copy data from source namespace to destination namespace.
@@ -96,6 +105,7 @@ def copy_namespace(
         src_name: Source namespace name
         dest_name: Destination namespace name
         filters: Optional TurboPuffer filter to apply
+        region: TurboPuffer region (e.g. aws-us-east-1)
         dry_run: If True, only count matching documents
 
     Returns:
@@ -103,11 +113,16 @@ def copy_namespace(
     """
     config = get_config()
 
+    # Set default region if not set by environment
+    if region and not os.environ.get("TURBOPUFFER_REGION"):
+        os.environ["TURBOPUFFER_REGION"] = region
+
     src_backend = TurbopufferBackend(src_name, config=config)
     dest_backend = TurbopufferBackend(dest_name, config=config)
 
     logger.info(f"Source namespace: {src_name}")
     logger.info(f"Destination namespace: {dest_name}")
+    logger.info(f"Region: {os.environ.get('TURBOPUFFER_REGION')}")
     if filters:
         logger.info(f"Filter: {json.dumps(filters)}")
 
@@ -172,6 +187,7 @@ def main():
             src_name=args.src,
             dest_name=args.dest,
             filters=filters,
+            region=args.region,
             dry_run=args.dry_run,
         )
         logger.info(f"Stats: {json.dumps(stats, indent=2)}")
