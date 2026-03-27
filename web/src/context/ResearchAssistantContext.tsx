@@ -201,7 +201,7 @@ export const ResearchAssistantProvider: React.FC<{
   const goToPreviousState = (restoredStack?: HistoryItem[]) => {
     setHistoryStack((prevStack) => {
       const stack = restoredStack ?? prevStack;
-      console.log(stack);
+
       if (stack.length > 0) {
         const prevState = stack.length > 1 ? stack[stack.length - 2] : stack[0];
         setViewState((prev) => ({
