@@ -13,6 +13,7 @@ import {
 } from "~/src/constants/researchAssistant";
 import LandingButtons from "../LandingButtons";
 import LandingCard from "../LandingCard";
+import QuoteSection from "../QuoteSection";
 import SectionContainer from "../SectionContainer";
 import AccessCard from "./AccessCard";
 import AwardIcon from "./AwardIcon";
@@ -102,7 +103,7 @@ const AccessSection: React.FC<AccessSectionProps> = ({
         The power of technology backed by the stewardship of the New York Public
         Library
       </Text>
-      <Grid gridTemplateColumns="repeat(2, 1fr)" gap="l">
+      <Grid gridTemplateColumns="repeat(2, 1fr)" gap="l" marginBottom="xxl">
         <LandingCard
           icon={<MessageIcon />}
           heading={
@@ -184,20 +185,13 @@ const AccessSection: React.FC<AccessSectionProps> = ({
           }
         />
       </Grid>
-      <Heading
-        fontSize="desktop.heading.heading1"
-        fontFamily="Domine"
-        level="h2"
-        lineHeight="1"
-        marginY="128px"
+      <QuoteSection />
+      <Grid
+        gridTemplateColumns="repeat(3, 1fr)"
+        rowGap="xxl"
+        columnGap="l"
+        marginTop="xxl"
       >
-        <Text>Our mission is to use</Text>
-        <Text>technology responsibly to</Text>
-        <Text color="section.research.secondary">
-          expand access to research
-        </Text>
-      </Heading>
-      <Grid gridTemplateColumns="repeat(3, 1fr)" rowGap="xxl" columnGap="l">
         {accessCardData.map((card, index) => (
           <AccessCard
             key={index}
