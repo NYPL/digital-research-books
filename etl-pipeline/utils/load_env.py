@@ -1,4 +1,5 @@
 import os
+from collections.abc import Iterable
 from pathlib import Path
 
 import boto3
@@ -12,6 +13,44 @@ from .common import batched
 # NOTE: aws region must be explicitly set when authorizing from the deployed \
 # ECS environment's credentials.
 AWS_REGION = "us-east-1"
+
+
+def parameter_values(
+    arns: Iterable[str],
+    region: str = AWS_REGION,
+) -> dict[str, str]:
+    """
+    Fetch decrypted values from SSM Parameter Store.
+
+    Args:
+        arns: Parameter ARNs or names (starting with '/') to fetch.
+        region: AWS region for the SSM client. Defaults to AWS_REGION.
+
+    Returns:
+        A dict mapping each parameter's canonical ARN to its decrypted value.
+
+    Raises:
+        ValueError: If any parameters cannot be fetched.
+    """
+    # NOTE: does not deduplicate if the same param is specified by both arn and parameter name
+    unique = set(arns)
+    if not unique:
+        return {}
+
+    ssm = boto3.client("ssm", region_name=region)
+    result: dict[str, str] = {}
+
+    # get-parameters API method only handles 10 params at a time (and does not support pagination)
+    for batch in batched(unique, 10):
+        response = ssm.get_parameters(Names=list(batch), WithDecryption=True)
+        invalid = response.get("InvalidParameters", [])
+        if invalid:
+            raise ValueError(
+                f"The following names could not be retrieved from SSM Parameter Store: {invalid}"
+            )
+        result.update({p["ARN"]: p["Value"] for p in response["Parameters"]})
+
+    return result
 
 
 def load_secrets(path, raise_if_no_file=False, override=False, region=AWS_REGION):
@@ -59,27 +98,10 @@ def load_secrets(path, raise_if_no_file=False, override=False, region=AWS_REGION
     if not arn_to_key_pairs:
         return
 
-    ssm = boto3.client("ssm", region_name=region)
-    arn_to_value = {}
+    unique_arns = {arn for arn, _ in arn_to_key_pairs}
+    arn_to_value = parameter_values(unique_arns, region=region)
 
-    unique_arns = set(arn for arn, _ in arn_to_key_pairs)
-    # get-parameters API method only handles 10 params at a time (and does not support pagination)
-    for batch in batched(unique_arns, 10):
-        # Retrieve param values
-        response = ssm.get_parameters(Names=batch, WithDecryption=True)
-
-        # Error for unfetched params
-        invalid_params = response.get("InvalidParameters", [])
-        if invalid_params:
-            raise ValueError(
-                f"The following names could not be retrieved from SSM Parameter Store: {invalid_params}"
-            )
-
-        # Map param values back to environment variable names (via ARN)
-        arn_to_value.update(
-            {param["ARN"]: param["Value"] for param in response.get("Parameters", [])}
-        )
-
+    # Map param values back to environment variable names (via ARN)
     secrets = {name: arn_to_value[arn] for arn, name in arn_to_key_pairs}
     # ALT: if we switch to not erroring for invalid params in future, check if ARN is in `arn_to_value`
 
@@ -134,3 +156,40 @@ def load_env(
         raise_if_no_file=raise_if_no_file,
         region=region,
     )
+
+
+def find_duplicate_parameter_values(
+    prefix: str,
+    region: str = AWS_REGION,
+) -> list[list[str]]:
+    """
+    Identify SSM Parameter Store parameters that share the same value under a path prefix.
+    Useful for cleaning up parameters.
+
+    Fetches all parameters recursively under `prefix` from Parameter Store and groups
+    them by value.
+
+    Args:
+        prefix: A path hierarchy prefix (e.g. '/myapp/prod/'). Must be a valid SSM
+                parameter path hierarchy — it must start with '/' and use '/' as a
+                delimiter between levels. Arbitrary string prefixes (e.g. '/myapp/prod-')
+                are NOT supported; only path-boundary prefixes work with this API.
+        region: AWS region for the SSM client. Defaults to AWS_REGION.
+
+    Returns:
+        A list of ARN groups, where each group is a list of parameter ARNs that share
+        the same value. Only groups with 2 or more ARNs are included.
+    """
+    ssm = boto3.client("ssm", region_name=region)
+    paginator = ssm.get_paginator("get_parameters_by_path")
+
+    arn_to_value: dict[str, str] = {}
+    for page in paginator.paginate(Path=prefix, Recursive=True, WithDecryption=True):
+        for param in page["Parameters"]:
+            arn_to_value[param["ARN"]] = param["Value"]
+
+    value_to_arns: dict[str, list[str]] = {}
+    for arn, value in arn_to_value.items():
+        value_to_arns.setdefault(value, []).append(arn)
+
+    return [arns for arns in value_to_arns.values() if len(arns) > 1]

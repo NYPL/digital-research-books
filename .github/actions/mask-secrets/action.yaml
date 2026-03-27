@@ -1,0 +1,32 @@
+name: 'Mask Secrets'
+description: 'Mask all secrets from .env.*.secrets files to prevent exposure in GitHub Actions logs'
+
+# Must be invoked after AWS authentication in calling workflow
+
+# Q: Why create a separate workflow? A: A separate custom 
+# action allows bundling the python dependency with the masking script. 
+# For workflows that use actions/setup-python also in the main workflow, 
+# the installed python in this action will be pre-cached. 
+
+# Q: Why use this action in workflows that do not already setup python? 
+# A: Although .env.<env>.secrets files are intended to be read in python, 
+# the secrets can be accessed via bash or other means or the secrets can 
+# be passed as outputs from a workflow that uses python to one that does not.
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version-file: 'etl-pipeline/.python-version'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r .github/actions/mask-secrets/requirements.txt
+      shell: bash
+
+    - name: Mask secrets from AWS Parameter Store
+      run: python .github/actions/mask-secrets/mask_secrets.py
+      shell: bash

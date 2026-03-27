@@ -27,7 +27,6 @@ class GRINConversion:
     If process_type='daily', check the status of barcodes which started
     conversion/digitization in the last 24 hrs and barcodes which are currently
     listed by GRIN as failed.
-
     Otherwise, keep polling the GRIN API for current status until no rows in
     the grin_statuses table are "PENDING_CONVERSION" or "CONVERTING" status
     (i.e. all have succeeded or failed).
