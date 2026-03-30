@@ -24,7 +24,12 @@ def _load_public_keys() -> list[str]:
 def sign_session(session_uuid: str) -> str:
     private_key = _load_private_key()
     now = int(datetime.now(timezone.utc).timestamp())
-    payload = {"sub": session_uuid, "iat": now, "aud": "vra_session"}
+    payload = {
+        "sub": session_uuid,
+        "iat": now,
+        "aud": "vra_session",
+        "exp": now + 60 * 60 * 24 * 30,  # 30 days
+    }
     token = jwt.encode(payload, private_key, algorithm="RS256")
 
     return token
