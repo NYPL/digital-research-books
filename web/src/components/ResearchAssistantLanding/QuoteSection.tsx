@@ -10,9 +10,9 @@ const FaqSection: React.FC = () => {
     >
       <Flex flexDir="column" gap="l" marginY="128px" backgroundColor="#FAFDFD">
         <Heading size="heading3" fontFamily="Domine" level="h2" lineHeight="1">
-          <Text>&quot;This tool represents a significant leap forward in</Text>
+          <Text>&ldquo;This tool represents a significant leap forward in</Text>
           <Text>NYPL&apos;s mission to provide world-wide access to</Text>
-          <Text>scholarly materials.&quot;</Text>
+          <Text>scholarly materials.&rdquo;</Text>
         </Heading>
         <Box>
           <Text
