@@ -3,7 +3,6 @@ import {
   Heading,
   Image,
   Text,
-  TextInputRefType,
 } from "@nypl/design-system-react-components";
 import {
   CONTROL_SUBNAV_IMAGE,
@@ -11,69 +10,14 @@ import {
   NATURAL_LANGUAGE_MESSAGE_IMAGE,
   SOURCE_MESSAGE_IMAGE,
 } from "~/src/constants/researchAssistant";
-import LandingButtons from "../LandingButtons";
 import LandingCard from "../LandingCard";
 import SectionContainer from "../SectionContainer";
-import AccessCard from "./AccessCard";
-import AwardIcon from "./AwardIcon";
-import BuildingIcon from "./BuildingIcon";
 import CheckVerifiedIcon from "./CheckVerifiedIcon";
-import DataFlowIcon from "./DataFlowIcon";
-import GraduationHatIcon from "./GraduationHatIcon";
 import LikeIcon from "./LikeIcon";
 import LockIcon from "./LockIcon";
 import MessageIcon from "./MessageIcon";
-import OpenBookIcon from "./OpenBookIcon";
-import TargetIcon from "./TargetIcon";
 
-interface AccessSectionProps {
-  heroSectionRef: React.RefObject<HTMLDivElement>;
-  textInputRef: React.RefObject<TextInputRefType>;
-}
-
-const accessCardData = [
-  {
-    icon: <BuildingIcon />,
-    title: "Grounded in authoritative sources",
-    description:
-      "We only search within our corpus of digitized research books to ensure that all responses are trustworthy and verifiable.",
-  },
-  {
-    icon: <OpenBookIcon />,
-    title: "Built in partnership with librarians",
-    description:
-      "We collaborate with our staff and experts to build features and flows that meet the needs of real-world researchers.",
-  },
-  {
-    icon: <AwardIcon />,
-    title: "Backed by rigorous quality checks",
-    description:
-      "We regularly evaluate our technical frameworks and the tool's outputs to ensure quality and accuracy.",
-  },
-  {
-    icon: <TargetIcon />,
-    title: "Designed for deep engagement",
-    description:
-      "We strive to connect you with scholarly sources as fast as possible so that you can free up time for deeper analysis.",
-  },
-  {
-    icon: <GraduationHatIcon />,
-    title: "Underpinned by academic integrity",
-    description:
-      "We're committed to using AI to enhance and democratize access to scholarly research - not replace or undermine it.",
-  },
-  {
-    icon: <DataFlowIcon />,
-    title: "Developed for research workflows",
-    description:
-      "We solicit feedback from the academic community so that we can continue to enhance the research experience.",
-  },
-];
-
-const AccessSection: React.FC<AccessSectionProps> = ({
-  heroSectionRef,
-  textInputRef,
-}) => {
+const HowItWorksSection: React.FC = () => {
   return (
     <SectionContainer
       borderTop="1px solid"
@@ -102,7 +46,7 @@ const AccessSection: React.FC<AccessSectionProps> = ({
         The power of technology backed by the stewardship of the New York Public
         Library
       </Text>
-      <Grid gridTemplateColumns="repeat(2, 1fr)" gap="l">
+      <Grid gridTemplateColumns="repeat(2, 1fr)" gap="l" marginBottom="xxl">
         <LandingCard
           icon={<MessageIcon />}
           heading={
@@ -184,35 +128,8 @@ const AccessSection: React.FC<AccessSectionProps> = ({
           }
         />
       </Grid>
-      <Heading
-        fontSize="desktop.heading.heading1"
-        fontFamily="Domine"
-        level="h2"
-        lineHeight="1"
-        marginY="128px"
-      >
-        <Text>Our mission is to use</Text>
-        <Text>technology responsibly to</Text>
-        <Text color="section.research.secondary">
-          expand access to research
-        </Text>
-      </Heading>
-      <Grid gridTemplateColumns="repeat(3, 1fr)" rowGap="xxl" columnGap="l">
-        {accessCardData.map((card, index) => (
-          <AccessCard
-            key={index}
-            icon={card.icon}
-            title={card.title}
-            description={card.description}
-          />
-        ))}
-      </Grid>
-      <LandingButtons
-        heroSectionRef={heroSectionRef}
-        textInputRef={textInputRef}
-      />
     </SectionContainer>
   );
 };
 
-export default AccessSection;
+export default HowItWorksSection;

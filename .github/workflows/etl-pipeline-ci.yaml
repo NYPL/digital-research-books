@@ -42,7 +42,7 @@ jobs:
           audience: sts.amazonaws.com
 
       - name: Mask secrets
-        uses: ./.github/actions/mask-secrets
+        uses: ./.github/actions/mask-etl-pipeline-secrets
 
       - name: Set up Python
         uses: actions/setup-python@v6

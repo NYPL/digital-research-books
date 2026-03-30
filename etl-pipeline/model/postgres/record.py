@@ -153,6 +153,8 @@ class Record(Base, Core):
     publisher_project_source = Column(
         Unicode, index=True
     )  # dc:publisherProjectSource, Non-Repeating
+    # TODO: create uniqueness constraint in source_id. Handle existing duplicates \
+    # that may have been created by concurrent RecordIngestor race conditions (unlikely)
     source_id = Column(Unicode, index=True)  # dc:identifier, Non-Repeating
     title = Column(Unicode)  # dc:title, Non-Repeating
     alternative = Column(ARRAY(Unicode, dimensions=1))  # dc:alternative, Repeating

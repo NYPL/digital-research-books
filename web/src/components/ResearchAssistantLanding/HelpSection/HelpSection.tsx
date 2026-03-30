@@ -61,6 +61,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
               </Text>
               <Link
                 to="https://www.nypl.org/get-help/contact-us"
+                hasVisitedState={false}
                 isUnderlined={false}
                 color="section.research.secondary"
                 fontWeight="bold"
@@ -91,6 +92,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
               <Link
                 to="#"
                 aria-label="Learn more about the project"
+                hasVisitedState={false}
                 isUnderlined={false}
                 color="section.research.secondary"
                 fontWeight="bold"

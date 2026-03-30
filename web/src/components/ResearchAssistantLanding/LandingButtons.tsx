@@ -16,7 +16,9 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({
 }) => {
   const handleTryItClick = () => {
     heroSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-    textInputRef.current?.focus();
+    window.addEventListener("scrollend", () => textInputRef.current?.focus(), {
+      once: true,
+    });
   };
 
   return (
@@ -48,6 +50,7 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({
         _hover={{
           backgroundColor: "section.research.primary-05",
         }}
+        isDisabled
       >
         Learn more
       </Button>
