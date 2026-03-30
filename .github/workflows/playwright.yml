@@ -97,7 +97,7 @@ jobs:
 
       - name: Install Playwright
         working-directory: ./web
-        run: npx playwright install --with-deps
+        run: npx playwright install chromium --with-deps --only-shell
 
       - name: Build app
         working-directory: ./web
