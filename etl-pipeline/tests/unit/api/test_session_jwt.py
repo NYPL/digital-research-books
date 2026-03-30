@@ -68,14 +68,18 @@ class TestSessionJWT:
         monkeypatch.delenv("SESSION_JWT_PRIVATE_KEY", raising=False)
 
         with pytest.raises(
-            ValueError, match="Environment variable \"SESSION_JWT_PRIVATE_KEY\" must be available."
+            ValueError,
+            match='Environment variable "SESSION_JWT_PRIVATE_KEY" must be available.',
         ):
             sign_session(str(uuid4()))
 
     def test_raises_when_public_key_missing(self, monkeypatch):
         monkeypatch.delenv("SESSION_JWT_PUBLIC_KEY", raising=False)
 
-        with pytest.raises(ValueError, match="Environment variable \"SESSION_JWT_PUBLIC_KEY\" must be available."):
+        with pytest.raises(
+            ValueError,
+            match='Environment variable "SESSION_JWT_PUBLIC_KEY" must be available.',
+        ):
             verify_session("any.token.value")
 
     def test_raises_on_tampered_signature(self, monkeypatch, rsa_key_pair):
