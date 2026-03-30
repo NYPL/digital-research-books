@@ -2,7 +2,7 @@ from base64 import b64decode
 from functools import wraps
 import os
 
-from flask import current_app, request
+from flask import current_app, make_response, request
 
 from utils.common import require_env
 
@@ -116,7 +116,7 @@ def require_session_jwt(func):
 
         if generated_token:
             try:
-                resp_obj = response[0] if isinstance(response, tuple) else response
+                resp_obj = make_response(response)
                 resp_obj.set_cookie(
                     cookie_name,
                     generated_token,
