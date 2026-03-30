@@ -1,26 +1,21 @@
 import os
 from datetime import datetime, timezone
+from utils.common import require_env
 
 import jwt
 
 
 def _load_private_key() -> str:
-    private_key = os.environ.get("SESSION_JWT_PRIVATE_KEY")
-    if private_key:
-        return private_key
-    raise RuntimeError("SESSION_JWT_PRIVATE_KEY not configured")
+    return require_env("SESSION_JWT_PRIVATE_KEY")
 
 
 def _load_public_key() -> str:
-    public_key = os.environ.get("SESSION_JWT_PUBLIC_KEY")
-    if public_key:
-        return public_key
-    raise RuntimeError("SESSION_JWT_PUBLIC_KEY not configured")
+    return require_env("SESSION_JWT_PUBLIC_KEY")
 
 
 def _load_public_keys() -> list[str]:
     keys = [_load_public_key()]
-    old_key = os.environ.get("SESSION_JWT_PUBLIC_KEY_OLD")
+    old_key = require_env("SESSION_JWT_PUBLIC_KEY_OLD")
     if old_key:
         keys.append(old_key)
     return keys
