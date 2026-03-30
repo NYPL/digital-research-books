@@ -11,8 +11,12 @@ permissions:
 
 jobs:
   run-tests:
+
     # Configure use of self-hosted GHA runner
+    # Self-hosted runner is needed so that the workflow can access hosts only \
+    # available on the NYPL private AWS sub-net.
     runs-on: self-hosted
+    
     env:
       AWS_REGION: us-east-1
 
@@ -65,10 +69,18 @@ jobs:
         working-directory: ./etl-pipeline
         run: |
           python -m pip install --upgrade pip wheel
-          pip install -r dev-requirements.txt
-          pip install -r requirements.txt
+          pip install --prefer-binary -r dev-requirements.txt
+          pip install --prefer-binary -r requirements.txt
 
-      - name: Run API tests
+      - name: Run API integration tests against QA env
         working-directory: ./etl-pipeline
         run: |
           pytest tests/integration/api --env=qa
+
+      - name: Run (some) functional tests against QA env
+        working-directory: ./etl-pipeline
+        run: |
+          python -m pytest tests/functional/processes/ingest \
+            --reruns=3 \
+            --reruns-delay=5 \
+            --env=qa
