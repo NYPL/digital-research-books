@@ -3,11 +3,13 @@ import React, { useRef } from "react";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import DrbHero from "../DrbHero/DrbHero";
 import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
-import AccessSection from "./AccessSection/AccessSection";
+import HowItWorksSection from "./AccessSection/HowItWorksSection";
 import FaqSection from "./FaqSection";
 import FeaturesSection from "./FeaturesSection/FeaturesSection";
 import HelpSection from "./HelpSection/HelpSection";
 import HeroSection from "./HeroSection";
+import PrinciplesSection from "./PrinciplesSection/PrinciplesSection";
+import QuoteSection from "./QuoteSection";
 
 const ResearchAssistantLanding: React.FC = () => {
   const heroSectionRef = useRef<HTMLDivElement>(null);
@@ -35,7 +37,9 @@ const ResearchAssistantLanding: React.FC = () => {
           heroSectionRef={heroSectionRef}
           textInputRef={textInputRef}
         />
-        <AccessSection
+        <HowItWorksSection />
+        <QuoteSection />
+        <PrinciplesSection
           heroSectionRef={heroSectionRef}
           textInputRef={textInputRef}
         />
