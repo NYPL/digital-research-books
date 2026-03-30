@@ -49,7 +49,7 @@ jobs:
           audience: sts.amazonaws.com
 
       - name: Mask secrets
-        uses: ./.github/actions/mask-secrets
+        uses: ./.github/actions/mask-etl-pipeline-secrets
 
       - name: Get GitHub API Key from SSM
         id: get-github-key
