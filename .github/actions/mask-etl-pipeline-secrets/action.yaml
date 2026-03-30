@@ -24,9 +24,9 @@ runs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r .github/actions/mask-secrets/requirements.txt
+        pip install -r .github/actions/mask-etl-pipeline-secrets/requirements.txt
       shell: bash
 
     - name: Mask secrets from AWS Parameter Store
-      run: python .github/actions/mask-secrets/mask_secrets.py
+      run: python .github/actions/mask-etl-pipeline-secrets/mask_secrets.py
       shell: bash

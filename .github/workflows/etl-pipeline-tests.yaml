@@ -41,7 +41,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Mask secrets
-        uses: ./.github/actions/mask-secrets
+        uses: ./.github/actions/mask-etl-pipeline-secrets
 
       - name: Install build essentials
         run: |
