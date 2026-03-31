@@ -47,11 +47,7 @@ This guide provides step-by-step instructions to set up local development and st
    - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . 
       - When asked, set profile name to "default". This allows AWS SDKs and CLI to authenticate to this profile without any extra arguments.
       - This authorization is temporary, to re-authenticate with SSO, run `aws sso login`.
-
-
-### Setup Steps
-
-1. Clone the repository:
+- Clone the repository:
 
    ```bash
    git clone git@github.com:NYPL/drb-etl-pipeline.git
@@ -59,8 +55,12 @@ This guide provides step-by-step instructions to set up local development and st
    ```
 
 
+### Run API Server Locally
 
-2. Seed data in the local dockerized DB instance (one-time only):
+#### (Option A) Run in docker compose
+
+
+1. Seed data in the local dockerized DB instance (one-time only):
 
    ```bash
    # Run the database seeding process
@@ -69,7 +69,7 @@ This guide provides step-by-step instructions to set up local development and st
 
    Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
 
-3. Startup Docker Services:
+2. Startup Docker Services:
 
    ```bash
    docker compose up
@@ -85,10 +85,63 @@ This guide provides step-by-step instructions to set up local development and st
   
    Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
 
-4. Verify the setup:
+#### (Option B) Run directly on local machine
+
+1. Set up local python env:
+
+   **Create a virtual environment**
+
+   *Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).* 
+
+   ```sh
+   python -m venv venv
+   ```
+
+   **Activate the virtual environment.**
+   The following steps assume the virtual environment is active. 
+   You will need to do this for every terminal session.
+
+   ```sh
+   source venv/bin/activate
+   ```
+
+   Make sure `wheel` is upgraded to avoid installation errors later
+
+   ```sh
+   pip install --upgrade wheel
+   ```
+
+   Or
+
+   ```sh
+   pip3 install --upgrade pip setuptools wheel
+   ```
+
+   **Install requirements**
+
+   ```sh
+   pip install -r requirements.txt
+   pip install -r dev-requirements.txt
+   ```
+
+
+   **Install pre-commit hooks**
+   `pre-commit install`
+
+
+2. Install GPG
+
+   The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
+   `gpg` is pre-installed on most linux distributions but must be installed on MacOs.
+
+   Ensure that it is available by installing it via `brew install gnupg` (if on a Mac) or the appropriate tool for your OS
+
+
+
+#### Verify the setup
 
    - Check the API server is up. Navigate to http://127.0.0.1:5050/apidocs/ in your browser.
-   - Check the local, dockerized DB instance is available. Connect to the local DB using PGAdmin4 or your preferred PostgreSQL client, with the following config:
+   - (option A only) Check the local, dockerized DB instance is available. Connect to the local DB using PGAdmin4 or your preferred PostgreSQL client, with the following config:
      ```
      Host: localhost
      Port: 5432
@@ -97,55 +150,6 @@ This guide provides step-by-step instructions to set up local development and st
      Password: localpsql
      ```
  
-5. Set up local python env:
-
-**Create a virtual environment**
-
-*Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).* 
-
-```sh
-python -m venv venv
-```
-
-**Activate the virtual environment.**
-The following steps assume the virtual environment is active. 
-You will need to do this for every terminal session.
-
-```sh
-source venv/bin/activate
-```
-
-Make sure `wheel` is upgraded to avoid installation errors later
-
-```sh
-pip install --upgrade wheel
-```
-
-Or
-
-```sh
-pip3 install --upgrade pip setuptools wheel
-```
-
-**Install requirements**
-
-```sh
-pip install -r requirements.txt
-pip install -r dev-requirements.txt
-```
-
-
-**Install pre-commit hooks**
-`pre-commit install`
-
-
-6. Install GPG
-
-The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
-`gpg` is pre-installed on most linux distributions but must be installed on MacOs.
-
-Ensure that it is available by installing it via `brew install gnupg` (if on a Mac) or the appropriate tool for your OS
-
 
 ## Available Processes
 
