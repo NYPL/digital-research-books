@@ -2,12 +2,12 @@ import pytest
 from api.assistant.agent import update_chat
 
 
-class TestOnMaxTurnsFunctional:
+class TestOnMaxTurns:
     def test_update_chat_max_turns_graceful_response(self, mocker):
         """
         Functional test: update_chat with max_turns=2, real Gemini LLM, mocked search backend.
-        hybrid_search always raises RuntimeError → SDK formats as tool error → LLM retries →
-        max_turns exhausted → _on_max_turns fires → graceful str response returned.
+        always raise error in search tool → LLM retries → max_turns exhausted →
+        _on_max_turns fires → graceful str response returned.
 
         Verifies:
         1. No MaxTurnsExceeded is raised.

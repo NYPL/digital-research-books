@@ -383,7 +383,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
     return df.set_index(source_col).to_dict(orient="index")
 
 
-_MAX_TURNS_GRACEFUL_SYSTEM_PROMPT = """\
+_MAX_TURNS_SYSTEM_PROMPT = """\
 You are a research library assistant. You have reached the maximum number of \
 allowed agent turns in the agent loop. 
 
@@ -407,7 +407,7 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
     messages = [
         {
             "role": "system",
-            "content": _MAX_TURNS_GRACEFUL_SYSTEM_PROMPT.format(
+            "content": _MAX_TURNS_SYSTEM_PROMPT.format(
                 agent_system_prompt=agent_system_prompt
             ),
         },

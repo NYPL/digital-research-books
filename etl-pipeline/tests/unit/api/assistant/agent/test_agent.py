@@ -11,7 +11,7 @@ from openai.types.chat.chat_completion_message_tool_call import (
 )
 from agents import Agent, Runner, RunConfig, function_tool
 from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
-from api.assistant.agent import update_chat, _on_max_turns
+from api.assistant.agent import update_chat, _on_max_turns, _MAX_TURNS_SYSTEM_PROMPT
 
 
 class TestAgent:
@@ -44,13 +44,36 @@ class TestAgent:
         mock_runner.run.assert_called_once()
 
 
-class TestOnMaxTurnsUnit:
+def make_mock_data(agent, history=None):
+    mock_data = MagicMock()
+    mock_data.run_data.last_agent = agent
+    mock_data.run_data.history = history if history is not None else []
+    return mock_data
+
+
+class TestOnMaxTurns:
+    @pytest.fixture
+    def mock_client(self):
+        client = AsyncMock()
+        client.chat.completions.create = AsyncMock(
+            return_value=MagicMock(choices=[MagicMock(message=MagicMock(content="ok"))])
+        )
+        return client
+
+    @pytest.fixture
+    def mock_agent(self, mock_client):
+        agent = MagicMock()
+        agent.model._client = mock_client
+        agent.model.model = "test-model"
+        agent.get_system_prompt = AsyncMock(return_value="STUB_AGENT_INSTRUCTIONS")
+        return agent
+
     @pytest.mark.asyncio
-    async def test_runner_calls_on_max_turns_and_returns_handler_output(self, mocker):
+    async def test_runner_calls_on_max_turns(self, mocker):
         """
         Real Runner.run with max_turns=2, a mocked LLM client, and _on_max_turns as handler.
         Verifies:
-        1. final_output equals the mocked graceful response string from _on_max_turns.
+        1. final_output equals the mocked response string from _on_max_turns.
         2. raw_responses has exactly 2 entries (one per agent-loop LLM call).
         3. No MaxTurnsExceeded is raised.
         """
@@ -144,20 +167,47 @@ class TestOnMaxTurnsUnit:
         assert len(result.raw_responses) == 2
 
     @pytest.mark.asyncio
-    async def test_on_max_turns_awaits_get_system_prompt(self):
+    async def test_on_max_turns_awaits_get_system_prompt(self, mock_agent):
         """
-        Calls _on_max_turns directly and asserts get_system_prompt was awaited.
-        assert_awaited_once() fails if the coroutine was called but not awaited,
+        Verifies get_system_prompt was awaited inside _on_max_turns.
+        Fails if the async get_system_prompt() was called not awaited,
         catching a missing `await` before the .format() call.
         """
-        mock_agent = MagicMock()
-        mock_agent.get_system_prompt = AsyncMock(return_value="SYSTEM PROMPT")
-        mock_agent.model._client.chat.completions.create = AsyncMock()
-
-        mock_data = MagicMock()
-        mock_data.run_data.last_agent = mock_agent
-        mock_data.run_data.history = []
-
-        await _on_max_turns(mock_data)
+        await _on_max_turns(make_mock_data(mock_agent))
 
         mock_agent.get_system_prompt.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_on_max_turns_system_prompt_contains_agent_instructions(
+        self, mock_client, mock_agent
+    ):
+        """System message must embed the agent's original instructions inside _MAX_TURNS_SYSTEM_PROMPT."""
+        await _on_max_turns(make_mock_data(mock_agent))
+
+        system_content = mock_client.chat.completions.create.call_args.kwargs[
+            "messages"
+        ][0]["content"]
+        assert "STUB_AGENT_INSTRUCTIONS" in system_content
+        assert system_content == _MAX_TURNS_SYSTEM_PROMPT.format(
+            agent_system_prompt="STUB_AGENT_INSTRUCTIONS"
+        )
+
+    @pytest.mark.asyncio
+    async def test_on_max_turns_uses_conversation_history(
+        self, mocker, mock_client, mock_agent
+    ):
+        """History items must appear after the system prompt, in order."""
+        history_messages = [
+            {"role": "user", "content": "find me a book"},
+            {"role": "assistant", "content": "searching..."},
+        ]
+        mocker.patch(
+            "api.assistant.agent.Converter.items_to_messages",
+            return_value=history_messages,
+        )
+
+        await _on_max_turns(make_mock_data(mock_agent, history=[object(), object()]))
+
+        sent_messages = mock_client.chat.completions.create.call_args.kwargs["messages"]
+        assert sent_messages[0]["role"] == "system"
+        assert sent_messages[1:] == history_messages
