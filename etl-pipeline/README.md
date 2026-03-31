@@ -253,14 +253,3 @@ Analytics projects are in the [analytics](analytics) folder:
   python3 analytics/upress_reporting/runner.py --start 2024-03-01 --end 2024-03-30
   python3 analytics/upress_reporting/runner.py --year 2025 --quarter Q1
   ```
-
-## Link Flags
-
-Boolean flags used in the API:
-
-- `reader`: Book has Read Online function
-- `embed`: Uses third party web reader
-- `download`: Book is downloadable
-- `catalog`: Book is requestable but not readable online
-- `nypl_login`: Requestable by NYPL patrons
-- `fulfill_limited_access`: Limited Access book for NYPL patrons
