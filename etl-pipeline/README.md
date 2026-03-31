@@ -154,18 +154,26 @@ Ensure that it is available by installing it via `brew install gnupg` (if on a M
 
 ## Available Processes
 
+Processes are classes that initialize with arguments in `args_parser.py` and execute with a `.run()` method and thus can be invoked via `main.py`.
+
 The main processes available in this pipeline are:
 
-- `LocalDevelopmentSetupProcess`: Initialize development database
-- `SeedLocalDataProcess`: Import sample data
+
+#### API Server
 - `APIProcess`: Run the DRB API server
+#### Book Ingest
 - `IngestProcess`: This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
-- `GRINConversion`: update our DB and ingest queues with the current status of books sent to Google for digitization.
+- `GRINIngestProcess`: (a) loads data from GRIN hosting to internal s3 (b) ingests the metadata into the Records table (like the `IngestProcess` does for other sources.)
+- `GRINConversion`: update our DB with the current status of books sent to Google for digitization and sends books ready for ingest to GRIN Ingest SQS queue.
+#### ETL
 - `RecordPipelineProcess`: The DRB ETL pipeline. A meta-process that calls the below stand alone processes:
    - `RecordClusterer`: Using KMeans clustering to create our work/edition/item data structure. Indexes "Works" into elastic search for keyword search.
    - `LinkFulfiller`: Ensure that the work record has displayable links via WebPub Manifests.
    - `RecordFileSaver`: Store any associated content files (PDFs, etc) in our s3 bucket (this is a more supporting step).
    - `RecordEmbellisher`: Using any standard numbers (ISBNs, etc) fetch additional metadata from 3rd parties and add it to the record being processed.
+#### Local Dev Setup
+- `LocalDevelopmentSetupProcess`: Initialize development database
+- `SeedLocalDataProcess`: Import sample data
 
 Source code for each process can be found from "[processes/\_\_init\_\_.py](processes/__init__.py)"
 
