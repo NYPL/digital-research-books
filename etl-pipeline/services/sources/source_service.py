@@ -7,6 +7,8 @@ from model import Record
 
 
 class SourceService(ABC):
+    """In charge of producing DRB `Records` by source id or date range/ordering"""
+
     @abstractmethod
     def get_records(
         self,

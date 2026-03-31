@@ -185,7 +185,7 @@ python main.py -p IngestProcess -e local -i daily --source hathitrust
 python main.py -p RecordPipelineProcess -e local
 ```
 
-See `python main.py --help` for all available options.
+See `python main.py --help` for all available options.  
 
 
 

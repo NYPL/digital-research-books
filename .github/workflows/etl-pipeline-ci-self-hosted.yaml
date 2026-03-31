@@ -45,8 +45,11 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: GHASecondarySession-${{ github.run_id }}
           role-chaining: true
-          role-duration-seconds: 1800
+          role-duration-seconds: 1800 # 30 mins
           audience: sts.amazonaws.com
+
+      - name: Mask secrets
+        uses: ./.github/actions/mask-etl-pipeline-secrets
 
       - name: Get GitHub API Key from SSM
         id: get-github-key

@@ -10,7 +10,6 @@ on:
 jobs:
   # Job to deploy to the QA environment on successful merge to `main`
   deploy_to_qa:
-    if: false
     uses: ./.github/workflows/web-deploy-qa.yml
     secrets: inherit
 

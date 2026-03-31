@@ -2,20 +2,18 @@ import { Box, Text } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef } from "react";
 import {
+  CATALOG_INITIAL_MESSAGE,
+  CONTENT_INITIAL_MESSAGE,
   getPanelLayout,
+  LOADING_MESSAGE,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import {
-  ConversationType,
-  ItemType,
-  MessageItem,
-  MessageRole,
-} from "~/src/types/ResearchAssistant";
+import { ConversationType } from "~/src/types/ResearchAssistant";
 import MessageBubble from "./MessageBubble";
 
 const ResearchAssistantWindow: React.FC = () => {
-  const { messages, isLoading, error } = useResearchAssistant();
+  const { messages, isLoading, error, results } = useResearchAssistant();
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,20 +28,15 @@ const ResearchAssistantWindow: React.FC = () => {
   const { marginX, paddingX, marginRight } = getPanelLayout();
 
   const router = useRouter();
+
   const conversationType = router.pathname.startsWith("/item/")
     ? ConversationType.Content
     : ConversationType.Catalog;
 
-  const messageText =
-    conversationType === ConversationType.Catalog
-      ? "What research topic can I help you explore today?"
-      : "I can help you find relevant content in this book. Ask me a question, or try the suggestions below.";
-
-  const initialMessage: MessageItem = {
-    type: ItemType.Message,
-    role: MessageRole.Assistant,
-    content: [{ text: messageText, type: "output_text" }],
-  };
+  const initialMessage =
+    conversationType === ConversationType.Content
+      ? CONTENT_INITIAL_MESSAGE
+      : CATALOG_INITIAL_MESSAGE;
 
   return (
     <Box
@@ -60,35 +53,35 @@ const ResearchAssistantWindow: React.FC = () => {
       paddingLeft={paddingX}
       paddingRight={`calc(${PADDING_COUNTER} * 2)`}
     >
-      <MessageBubble index={0} message={initialMessage} ref={null} />
+      <MessageBubble index={0} message={initialMessage} />
       {messages.map((message, index) => {
         if (message.type === "message")
           return (
-            <MessageBubble
+            <Box
               key={`message-${index + 1}`}
-              index={index + 1}
-              message={message}
-              ref={index === messages.length - 1 ? messagesEndRef : null}
-            />
+              ref={
+                index === messages.length - 1 && !isLoading
+                  ? messagesEndRef
+                  : null
+              }
+            >
+              <MessageBubble
+                index={index + 1}
+                message={message}
+                messageResults={results?.[index + 1] ?? null}
+              />
+            </Box>
           );
       })}
 
       {isLoading && (
-        <MessageBubble
-          index={messages.length + 1}
-          message={{
-            type: ItemType.Message,
-            role: MessageRole.Assistant,
-            content: [
-              {
-                text: "Thinking... This may take several seconds.",
-                type: "output_text",
-              },
-            ],
-          }}
-          ref={messagesEndRef}
-          isLoading={isLoading}
-        />
+        <Box ref={messagesEndRef}>
+          <MessageBubble
+            index={messages.length + 1}
+            message={LOADING_MESSAGE}
+            isLoading={isLoading}
+          />
+        </Box>
       )}
 
       {error && (

@@ -1,25 +1,17 @@
 import {
-  Accordion,
   Box,
   Flex,
   Grid,
   GridItem,
-  Heading,
-  Text,
   Toggle,
   Tooltip,
-  VStack,
 } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
-import React, { useEffect, useMemo, useState } from "react";
-import { useCookies } from "react-cookie";
-import { NYPL_SESSION_ID } from "~/src/constants/auth";
-import { ACCORDION_EXPANDED_BG } from "~/src/constants/colors";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   getGridColumns,
   getGridRows,
   getHeaderPaddingRight,
-  GRID_PADDING_X,
   HEADER_HEIGHT,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
@@ -27,18 +19,10 @@ import { useResultPageContext } from "~/src/context/ResultPageContext";
 import { HistoryItem } from "~/src/types/ResearchAssistant";
 import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
-import AuthorsList from "../AuthorsList/AuthorsList";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
-import Link from "../Link/Link";
 import ResearchAssistantPanel from "../ResearchAssistant/ResearchAssistantPanel";
 import ResearchAssistantViewer from "../ResearchAssistant/ResearchAssistantViewer";
-import AccordionLabelWithIcon from "./AccordionLabelWithIcon";
-import DetailsPanel from "./panels/DetailsPanel";
-import DownloadOptionsPanel from "./panels/DownloadOptionsPanel";
-import OtherEditionsPanel from "./panels/OtherEditionsPanel";
-import RelatedBooksPanel from "./panels/RelatedBooksPanel";
-import SearchPanel from "./panels/SearchPanel";
-import SummaryPanel from "./panels/SummaryPanel";
+import ItemDetailSidebar from "./ItemDetailSidebar";
 
 interface ItemDetailProps {
   workResult: WorkResult;
@@ -106,8 +90,38 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     }
   }, [previewLink, handlePreview, hasPreviewLoaded]);
 
+  const effectPayloadRef = useRef({
+    historyStack,
+    messages,
+    clearHistory,
+    setMessages,
+    setViewState,
+    page,
+    previewEditionId: previewEdition?.edition_id,
+  });
+
+  effectPayloadRef.current = {
+    historyStack,
+    messages,
+    clearHistory,
+    setMessages,
+    setViewState,
+    page,
+    previewEditionId: previewEdition?.edition_id,
+  };
+
   useEffect(() => {
     if (previewLink?.url && router.pathname.startsWith("/item")) {
+      const {
+        historyStack,
+        messages,
+        clearHistory,
+        setMessages,
+        setViewState,
+        page,
+        previewEditionId,
+      } = effectPayloadRef.current;
+
       const urlParts = previewLink.url.split("/");
       const [itemId, pageId] = [urlParts.at(-3), urlParts.at(-1)];
 
@@ -119,8 +133,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
         ...prev,
         itemId,
         pageId,
-        editionId: previewEdition?.edition_id,
-        showWebReader: true,
+        editionId: previewEditionId,
         results: null,
         linkResults: null,
       }));
@@ -143,20 +156,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
     goToPreviousState(parsedHistory);
     router.push("/research-assistant");
   };
-
-  const publisherNames = (previewEdition?.publishers ?? []).map(
-    (pubAgent) => pubAgent && pubAgent.name
-  );
-
-  const downloadLink = previewEdition
-    ? EditionCardUtils.selectDownloadLink(previewEdition)
-    : undefined;
-  const authorNames = work.authors
-    ? work.authors.map((author) => author.name)
-    : [];
-  const [cookies] = useCookies([NYPL_SESSION_ID]);
-  const loginCookie = cookies[NYPL_SESSION_ID];
-  const isLoggedIn = !!loginCookie;
 
   return (
     <Box fontSize="desktop.body.body2" bgColor="ui.bg.default" width="100%">
@@ -204,110 +203,12 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
             </Tooltip>
           </Flex>
         )}
-        <VStack
-          alignContent="left"
-          alignItems="left"
-          bgColor="ui.bg.default"
-          gridColumn="2"
-          gridRow={backUrl ? "2" : "1"}
-          paddingBottom="l"
-          paddingLeft={GRID_PADDING_X}
-          marginTop={backUrl ? "0" : "l"}
-        >
-          <Flex flexDir="column" gap="xxs">
-            <Text size="caption">E-BOOK</Text>
-            <Heading level="h1" size="heading6">
-              {work.title}
-            </Heading>
-          </Flex>
-          <VStack alignContent="left" alignItems="left" gap="l">
-            <Box>
-              {work.authors && work.authors.length > 0 && (
-                <AuthorsList authors={work.authors} />
-              )}
-            </Box>
-            {/* TODO: Re-add after download is implemented on the backend
-            <DownloadLink
-              authors={authorNames}
-              downloadLink={downloadLink}
-              title={work.title}
-              isLoggedIn={isLoggedIn}
-            /> 
-            Placeholder for Download Link
-            */}
-            <Link
-              to="#"
-              variant="buttonSecondary"
-              backgroundColor="ui.white"
-              borderColor="section.research.secondary"
-              color="section.research.secondary"
-              width="fit-content"
-            >
-              Download PDF
-            </Link>
-            <Accordion
-              accordionData={[
-                {
-                  ariaLabel: "Details",
-                  label: "Details",
-                  panel: (
-                    <DetailsPanel
-                      previewItem={previewItem}
-                      previewEdition={previewEdition}
-                      publisherNames={publisherNames}
-                      work={work}
-                    />
-                  ),
-                },
-                {
-                  ariaLabel: "What is this book about?",
-                  label: (
-                    <AccordionLabelWithIcon text="What is this book about?" />
-                  ),
-                  panel: <SummaryPanel previewEdition={previewEdition} />,
-                },
-                {
-                  ariaLabel: "Download options",
-                  label: "Download options",
-                  panel: (
-                    <DownloadOptionsPanel
-                      authorNames={authorNames}
-                      downloadLink={downloadLink}
-                      title={work.title}
-                      isLoggedIn={isLoggedIn}
-                    />
-                  ),
-                },
-                {
-                  ariaLabel: "Search inside this book",
-                  label: "Search inside this book",
-                  panel: <SearchPanel />,
-                },
-                {
-                  ariaLabel: "Other editions",
-                  label: "Other editions",
-                  panel: <OtherEditionsPanel work={work} />,
-                },
-                {
-                  ariaLabel: "Related books",
-                  label: <AccordionLabelWithIcon text="Related books" />,
-                  panel: <RelatedBooksPanel />,
-                },
-              ]}
-              isDefaultOpen
-              bgColor="ui.white"
-              id="item-detail-accordion"
-              sx={{
-                "button[aria-expanded=true]": {
-                  bgColor: ACCORDION_EXPANDED_BG,
-                },
-                ".chakra-collapse": {
-                  bgColor: "ui.white",
-                },
-              }}
-            />
-          </VStack>
-        </VStack>
+        <ItemDetailSidebar
+          work={work}
+          previewEdition={previewEdition}
+          previewItem={previewItem}
+          backUrl={backUrl}
+        />
         <Box
           gridColumn="3"
           gridRow={backUrl ? "2" : "1"}
