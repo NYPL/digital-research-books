@@ -2,16 +2,11 @@
 
 <!-- ![ETL_Pipeline_Tests](https://github.com/NYPL/drb-etl-pipeline/workflows/ETL_Pipeline_Tests/badge.svg) -->
 
-This directory contains the ETL pipeline, API server, and other deployable processes related to the DRB project (including GRIN books ingestion).
-
+This directory contains a containerized python application for importing data from multiple source projects and transforming this data into a unified format that can be accessed via an API. The curated data and API powers the [Virtual Research Assistant](http://digital-research-books-beta.nypl.org/research-assistant) and the legacy [Digital Research Books Beta](http://digital-research-books-beta.nypl.org/).
 
 ## ETL Pipeline 
 
-A containerized python application for importing data from multiple source projects and transforming this data into a unified format that can be accessed via an API (which powers [Digital Research Books Beta](http://digital-research-books-beta.nypl.org/)).
-
-### Process Overview
-
-This ETL pipeline transforms data from various sources into a unified "FRBRized" format where:
+The ETL pipeline transforms data from various sources into a unified "FRBRized" format where:
 
 - `Item`: Something that can be read online (e.g. a specific digital copy)
 - `Edition`: A specific published version (e.g. the 1917 edition)
@@ -26,14 +21,14 @@ The pipeline:
 3. Groups records into editions and works using machine learning (clustering)
 4. Makes the data available through an API
 
-## API Endpoints
+## API Server
 
-The DRB API is available at:
+The API is available at:
 
 - Production: [https://digital-research-books-api.nypl.org/](https://digital-research-books-api.nypl.org/)
 - QA: [https://drb-api-qa.nypl.org/](https://drb-api-qa.nypl.org/)
 
-Both endpoints provide Swagger documentation at `/apidocs/`.
+Both hosts provide Swagger documentation at `/apidocs/` for DRB-related public endpoints.
 
 ## Quickstart Guide
 
