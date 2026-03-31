@@ -430,7 +430,7 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
 
 
 @timer(logger)
-def update_chat(
+async def update_chat(
     conversation, conversation_type, edition_id=None, max_turns: int = DEFAULT_MAX_TURNS
 ) -> RunResult:
     """
