@@ -411,7 +411,7 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
                 agent_system_prompt=agent_system_prompt
             ),
         },
-        *Converter.items_to_messages(data.run_data.history),
+        *Converter.items_to_messages(data.run_data.history, model=model_name),
     ]
 
     response = await client.chat.completions.create(

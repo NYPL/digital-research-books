@@ -3,7 +3,8 @@ from api.assistant.agent import update_chat
 
 
 class TestOnMaxTurns:
-    def test_update_chat_max_turns_graceful_response(self, mocker):
+    @pytest.mark.asyncio
+    async def test_update_chat_max_turns_graceful_response(self, mocker):
         """
         Functional test: update_chat with max_turns=2, real Gemini LLM, mocked search backend.
         always raise error in search tool → LLM retries → max_turns exhausted →
@@ -33,7 +34,7 @@ class TestOnMaxTurns:
             {"role": "user", "content": "find me books about climate change"}
         ]
 
-        run_result = update_chat(conversation, "catalogSearch", max_turns=2)
+        run_result = await update_chat(conversation, "catalogSearch", max_turns=2)
 
         assert isinstance(run_result.final_output, str)
         assert len(run_result.final_output) > 0
