@@ -31,7 +31,7 @@ The pipeline:
 The DRB API is available at:
 
 - Production: [https://digital-research-books-api.nypl.org/](https://digital-research-books-api.nypl.org/)
-- QA: [https://drb-api-qa.nypl.org/](https://drb-api-qa.nypl.org/)
+- QA: [https://drb-api-qa.nypl.org/](https://drb-api-qa.nypl.org/) (Note: only available on private NYPL sub-net)
 
 Both endpoints provide Swagger documentation at `/apidocs/`.
 
@@ -227,7 +227,7 @@ The deployment process:
 
    - Builds Docker image
    - Pushes to ECR
-   - Deploys to QA environment at [https://drb-api-qa.nypl.org/](https://drb-api-qa.nypl.org/)
+   - Deploys to QA environment at [https://drb-api-qa.nypl.org/](https://drb-api-qa.nypl.org/) (Note: only available on private NYPL sub-net)
 
 2. **Run CI Tests**
 
