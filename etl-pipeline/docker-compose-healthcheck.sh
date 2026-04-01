@@ -9,7 +9,8 @@
 # - A health-checked service container reaching "unhealthy" causes immediate failure
 # - A health-checked service is resolved healthy when its active container reaches "healthy"
 # - "starting", "none", and empty health states are treated as pending (keep waiting)
-# - Polls until all health-checked services are resolved or TIMEOUT expires
+# - Polls until all health-checked services are resolved or TIMEOUT expires.
+# Note: TIMEOUT counter only starts when polling starts and does not include latency of setup work at the start of the script.
 # Options:
 #   -t, --timeout SECONDS       Override the default timeout (default: 180)
 #   -p, --poll-interval SECONDS Override the default poll interval (default: 10)
@@ -47,8 +48,6 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
-
-START=$SECONDS
 
 echo "Waiting for all health-checked services from docker compose file to become healthy..."
 echo "Timeout: ${TIMEOUT}s, Poll interval: ${POLL_INTERVAL}s"
@@ -102,6 +101,7 @@ echo "$SERVICES_WITH_HC" | sed 's/^/  - /'
 echo ""
 
 # Poll service states
+START=$SECONDS
 while [ $((SECONDS - START)) -lt $TIMEOUT ]; do
     echo "[$(date +%H:%M:%S)] Checking service health... ($((SECONDS - START))s elapsed)"
 
