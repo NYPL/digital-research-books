@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
+import traceback
 
 import pytest
 import requests_mock
@@ -62,13 +63,14 @@ def setup_env(pytestconfig, request):
     # will set an empty string to --env=
     environment = pytestconfig.getoption("--env") or "local"
 
-    # Error if attempting to run function or integration tests against \
+    # Exit if attempting to run function or integration tests against \
     # production environment
     if (not only_unit_tests) and ("production" in environment):
         pytest.exit(
             "ENVIRONMENT ERROR: Integration and functional tests cannot be run on production environments."
         )
 
+    # Exit if docker compose services are not ready
     if (not only_unit_tests) and (environment == "local"):
         import subprocess
 
@@ -86,8 +88,14 @@ def setup_env(pytestconfig, request):
 
     print(f'Loading environment: "{environment}" during test setup')
     config_dir = Path(__file__).parent.parent / "config"
-    load_env(config_dir / f".env.{environment}", raise_if_no_file=True)
-    # Setting ENVIRONMENT so that downstream fixtures and tests can determine \
+    # Exit early if env cannot be loaded
+    try:
+        load_env(config_dir / f".env.{environment}", raise_if_no_file=True)
+    except Exception as e:
+        pytest.exit(
+            f"Error loading environment {environment}: {e}\n\n{traceback.format_exc()}"
+        )
+    # Set ENVIRONMENT so that downstream fixtures and tests can determine \
     # execution behavior based on the environment
     os.environ["ENVIRONMENT"] = environment
 
@@ -152,7 +160,6 @@ def db_manager(setup_env):
         db_manager.close_connection()
     except:
         print("db_manager error")
-        import traceback
 
         traceback.print_exc()
         yield None
