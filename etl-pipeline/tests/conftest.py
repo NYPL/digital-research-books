@@ -69,6 +69,21 @@ def setup_env(pytestconfig, request):
             "ENVIRONMENT ERROR: Integration and functional tests cannot be run on production environments."
         )
 
+    if (not only_unit_tests) and (environment == "local"):
+        import subprocess
+
+        script_path = Path(__file__).parent.parent / "docker-compose-healthcheck.sh"
+        result = subprocess.run(
+            [str(script_path)],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            output = (result.stdout or "") + (result.stderr or "")
+            pytest.exit(
+                f"DOCKER HEALTHCHECK FAILED (exit code {result.returncode}):\n\n{output}"
+            )
+
     print(f'Loading environment: "{environment}" during test setup')
     config_dir = Path(__file__).parent.parent / "config"
     load_env(config_dir / f".env.{environment}", raise_if_no_file=True)
