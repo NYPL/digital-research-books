@@ -20,7 +20,7 @@ from ..utils import APIUtils, orm_to_dict
 from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
-from ..decorators import require_basic_authentication
+from ..decorators import require_basic_authentication, require_session_jwt
 from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
 from ..assistant.snippets import get_relevant_snippets
 
@@ -158,10 +158,11 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 @chat_blueprint.route("", methods=["POST"])
 @require_api_key
 @require_basic_authentication
+@require_session_jwt
 @timer(logger)
-def chat(user=None):
+def chat(user=None, session_id=None):
     conversation_type = request.json.get("conversationType")
-    conversation = request.json.get("messages")
+    message = request.json.get("message")
     edition_id = request.json.get("editionId")
 
     # Add custom attributes to transaction in New Relic
@@ -171,10 +172,14 @@ def chat(user=None):
         newrelic.agent.add_custom_attribute("editionId", edition_id)
 
     logger.info(
-        f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, messages_count={len(conversation) if conversation else 0}"
+        f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, session_id={session_id}"
     )
 
-    # Input parameter validation
+    if not message:
+        return APIUtils.formatResponseObject(
+            400, RESPONSE_TYPE, {"message": "message is required"}
+        )
+
     if not conversation_type:
         return APIUtils.formatResponseObject(
             400, RESPONSE_TYPE, {"message": "conversationType is required"}
@@ -197,12 +202,14 @@ def chat(user=None):
         )
 
     # get LLM response + search results
-    run_result = asyncio.run(
-        update_chat(conversation, conversation_type, edition_id=edition_id)
-    )
     # TODO: inside update_chat make sure than any errors are handled by a polite \
     # llm generated response (except no connectivity to LLM) (just handle the \
     # high level openai agents sdk errors)
+    run_result = asyncio.run(
+        update_chat(
+            message, conversation_type, edition_id=edition_id, session_id=session_id
+        )
+    )
 
     # Add relevant snippets to search result, if search was executed in this agent turn
     # snippets updated in run_result in place
