@@ -85,7 +85,7 @@ def setup_env(pytestconfig, request):
         if result.returncode != 0:
             output = (result.stdout or "") + (result.stderr or "")
             pytest.exit(
-                f"DOCKER HEALTHCHECK FAILED (exit code {result.returncode}):\n\n{output}"
+                f"DOCKER HEALTHCHECK FAILED: `docker compose up` required for non-unit tests in 'local' env.\n\n{output}"
             )
 
     print(f'Loading environment: "{environment}" during test setup')
