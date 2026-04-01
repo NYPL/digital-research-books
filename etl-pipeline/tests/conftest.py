@@ -71,6 +71,8 @@ def setup_env(pytestconfig, request):
         )
 
     # Exit if docker compose services are not ready
+    # ALT: use a custom @pytest.mark to identify tests that require compose \
+    # services to be up
     if (not only_unit_tests) and (environment == "local"):
         import subprocess
 
