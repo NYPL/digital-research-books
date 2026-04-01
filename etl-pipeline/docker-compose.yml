@@ -57,8 +57,8 @@ services:
   api:
     container_name: drb_local_api
     depends_on:
-      - database
-      - elasticsearch
+      devsetup:
+        condition: service_completed_successfully
     build:
       context: .
     command: -e local-compose -p APIProcess
