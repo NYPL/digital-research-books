@@ -35,10 +35,10 @@ from jinja2 import Template
 
 
 # api code
-from ..utils import APIUtils, remove_markdown_comments, shorten
-from ..db import get_frbr_data_by_edition, get_session
+from ..utils import remove_markdown_comments
+from ..db import get_frbr_data_by_edition, get_session, get_async_engine
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
-from .types import Snippet, CatalogSearchResult, ContentSearchResult
+from .types import CatalogSearchResult, ContentSearchResult
 
 # shared code
 from vector_indexing.components.embedders.google import GoogleEmbedder
@@ -431,18 +431,28 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
 
 @timer(logger)
 async def update_chat(
-    conversation, conversation_type, edition_id=None, max_turns: int = DEFAULT_MAX_TURNS
+    message: str,
+    conversation_type: str,
+    edition_id=None,
+    session_id: str = None,
+    max_turns: int = DEFAULT_MAX_TURNS,
 ) -> RunResult:
     """
     Send a message to the conversation and get the agent's response.
+
+    Conversation history is managed server-side via SQLAlchemySession keyed on
+    session_id. The caller sends only the new user message; the SDK loads prior
+    turns from the database automatically.
 
     The raw search results will be available in self.context.search_data
     for any post-processing or enrichment needed.
 
     Args:
-        conversation: The list of openai Responses API items representing the conversation history.
+        message: The new user message text.
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
         edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
+        session_id: Client-supplied session ID. History is persisted to and loaded
+                    from the database using this key.
 
     Returns:
         The agent's RunResult obj.
@@ -516,13 +526,16 @@ async def update_chat(
         tools=tools,
     )
 
+    session = SQLAlchemySession(session_id, engine=get_async_engine())
+
     run_result = await Runner.run(
         agent,
-        conversation,
+        message,
         context=exec_context,
         hooks=LLMLoggingHooks(),
         max_turns=max_turns,
         error_handlers={"max_turns": _on_max_turns},
+        session=session,
         run_config=RunConfig(
             tracing_disabled=True,
             model_settings=ModelSettings(
