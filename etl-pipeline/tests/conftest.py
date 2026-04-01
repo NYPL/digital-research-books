@@ -74,7 +74,7 @@ def setup_env(pytestconfig, request):
 
         script_path = Path(__file__).parent.parent / "docker-compose-healthcheck.sh"
         result = subprocess.run(
-            [str(script_path)],
+            [str(script_path), "--timeout", "1", "--poll-interval", "1"],
             capture_output=True,
             text=True,
         )

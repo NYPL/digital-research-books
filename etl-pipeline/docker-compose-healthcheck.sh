@@ -10,13 +10,44 @@
 # - A health-checked service is resolved healthy when its active container reaches "healthy"
 # - "starting", "none", and empty health states are treated as pending (keep waiting)
 # - Polls until all health-checked services are resolved or TIMEOUT expires
-# Usage: ./docker-compose-healthcheck.sh
+# Options:
+#   -t, --timeout SECONDS       Override the default timeout (default: 180)
+#   -p, --poll-interval SECONDS Override the default poll interval (default: 10)
+# Usage: ./docker-compose-healthcheck.sh [-t SECONDS] [-p SECONDS]
 
 set -euo pipefail
 
 # Configuration
 POLL_INTERVAL=10
 TIMEOUT=180
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -t|--timeout)
+            if [[ -z "${2:-}" || ! "$2" =~ ^[0-9]+$ ]]; then
+                echo "✗ Error: --timeout requires a positive integer argument"
+                exit 1
+            fi
+            TIMEOUT="$2"
+            shift 2
+            ;;
+        -p|--poll-interval)
+            if [[ -z "${2:-}" || ! "$2" =~ ^[0-9]+$ ]]; then
+                echo "✗ Error: --poll-interval requires a positive integer argument"
+                exit 1
+            fi
+            POLL_INTERVAL="$2"
+            shift 2
+            ;;
+        *)
+            echo "✗ Error: unknown argument '$1'"
+            echo "Usage: $0 [-t|--timeout SECONDS] [-p|--poll-interval SECONDS]"
+            exit 1
+            ;;
+    esac
+done
+
 START=$SECONDS
 
 echo "Waiting for all health-checked services from docker compose file to become healthy..."
