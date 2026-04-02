@@ -529,8 +529,8 @@ async def update_chat(
     session = SQLAlchemySession(session_id, engine=get_async_engine())
 
     run_result = await Runner.run(
-        agent,
-        message,
+        starting_agent=agent,
+        input=message,
         context=exec_context,
         hooks=LLMLoggingHooks(),
         max_turns=max_turns,

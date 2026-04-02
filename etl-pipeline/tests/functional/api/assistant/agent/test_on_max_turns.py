@@ -29,12 +29,12 @@ class TestOnMaxTurns:
             side_effect=RuntimeError("Search unavailable, please retry."),
         )
 
-        # GOOGLE_API_KEY must be set in environment (provided by setup_env fixture via .env.local)
-        conversation = [
-            {"role": "user", "content": "find me books about climate change"}
-        ]
-
-        run_result = await update_chat(conversation, "catalogSearch", max_turns=2)
+        run_result = await update_chat(
+            message="find me books about climate change",
+            conversation_type="catalogSearch",
+            session_id="test",
+            max_turns=2,
+        )
 
         assert isinstance(run_result.final_output, str)
         assert len(run_result.final_output) > 0
