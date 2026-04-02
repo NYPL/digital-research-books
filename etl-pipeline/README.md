@@ -136,6 +136,10 @@ This guide provides step-by-step instructions to set up local development and st
 
    Ensure that it is available by installing it via `brew install gnupg` (if on a Mac) or the appropriate tool for your OS
 
+3. Start localhost server
+
+   `STAGE="development" LOG_LEVEL="debug" DRB_API_HOST=localhost python main.py -p APIProcess -env production`
+   - to point at different cloud resources, use a different env file, e.g. `--env qa` or `--env local`
 
 
 #### Verify the setup
