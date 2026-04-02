@@ -519,7 +519,7 @@ def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
 
     missing_item_ids = []
     try:
-        # Retrieve map of record_id->item_id from DB
+        # map record_id->item_id to add to chunk metadata
         # book_id = record_id
         record_ids = set(cd.book_id for cd, _ in results)
         mapper = map_editions_and_records(record_ids=record_ids)
