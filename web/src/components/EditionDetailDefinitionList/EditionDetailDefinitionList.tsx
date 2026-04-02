@@ -1,7 +1,7 @@
-import React from "react";
 import { List } from "@nypl/design-system-react-components";
-import { ApiEdition } from "~/src/types/EditionQuery";
+import React from "react";
 import { Agent } from "~/src/types/DataModel";
+import { ApiEdition } from "~/src/types/EditionQuery";
 
 // Publisher
 const getPublishersList = (publishers: Agent[]): JSX.Element => {

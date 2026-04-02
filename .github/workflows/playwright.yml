@@ -93,7 +93,7 @@ jobs:
 
       - name: Install Test Dependencies
         working-directory: ./web
-        run: npm i @playwright/test@1.52.0
+        run: npm i @playwright/test@1.59.0
 
       - name: Install Playwright
         working-directory: ./web
