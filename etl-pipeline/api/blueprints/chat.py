@@ -173,7 +173,6 @@ def chat(user=None, session_id=None):
     for k, v in log_context.items():
         newrelic.agent.add_custom_attribute(k, v)
 
-    print("XXXX", log_context)
     with LogContextVars(get_app_logger(), context=log_context):
         return _chat_handler(user, session_id, conversation_type, message, edition_id)
 
