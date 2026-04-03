@@ -8,7 +8,7 @@ class _RecordCapture(logging.Handler):
     """Handler that stores emitted LogRecord objects for inspection."""
 
     def __init__(self):
-        super().__init__(level=logging.DEBUG)
+        super().__init__()
         self.records: list[logging.LogRecord] = []
 
     def emit(self, record: logging.LogRecord) -> None:
