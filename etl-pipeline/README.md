@@ -124,7 +124,6 @@ This guide provides step-by-step instructions to set up local development and st
    pip install -r dev-requirements.txt
    ```
 
-
    **Install pre-commit hooks**
    `pre-commit install`
 
@@ -134,11 +133,11 @@ This guide provides step-by-step instructions to set up local development and st
    The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
    `gpg` is pre-installed on most linux distributions but must be installed on MacOs.
 
-   Ensure that it is available by installing it via `brew install gnupg` (if on a Mac) or the appropriate tool for your OS
+   Ensure that it is available by installing it via `brew install gnupg` (if on a Mac) or the appropriate tool for your OS.
 
 3. Start localhost server
 
-   `STAGE="development" LOG_LEVEL="debug" DRB_API_HOST=localhost python main.py -p APIProcess -env production`
+   `STAGE="development" LOG_LEVEL="debug" DRB_API_HOST=localhost python main.py -p APIProcess --env production`
    - to point at different cloud resources, use a different env file, e.g. `--env qa` or `--env local`
 
 
@@ -202,8 +201,6 @@ See `python main.py --help` for all available options.
 
 ## Formatting
 We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files. 
-
-
 
 We also check formatting before committing. If you followed to the set up steps to install the pre-commit hooks, formatting of changed files will be performed at each commit.
 
