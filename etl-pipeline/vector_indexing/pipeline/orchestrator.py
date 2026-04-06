@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import os
 import sys
-import logging
 from dataclasses import dataclass, field
 from typing import Callable, TYPE_CHECKING
 
-from vector_indexing.core.types import Book, BookMetadata, ChunkDocument, InsertResult
 from logger import create_log
+from vector_indexing.core.types import Book, BookMetadata, ChunkDocument, InsertResult
 
 logger = create_log(__name__)
 
