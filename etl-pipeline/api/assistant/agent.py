@@ -1,19 +1,15 @@
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
-from importlib.resources import read_text
 import json
 from pathlib import Path
-import traceback
-from typing import Dict, Any, Literal, Optional, Union, List, Iterator
-import uuid
-from textwrap import indent
+from typing import Dict, Any, Literal, Optional, Union, List, Iterator, Callable, Tuple
+from typing_extensions import TypedDict
 import sys
 import os
-import asyncio
 import time
+
 import numpy as np
 import pandas as pd
-
 from agents import (
     Agent,
     RunHooks,
@@ -22,7 +18,6 @@ from agents import (
     RunConfig,
     function_tool,
     RunContextWrapper,
-    SQLiteSession,
     ModelSettings,
     RunResult,
 )
@@ -35,11 +30,11 @@ from sqlalchemy import text
 from jinja2 import Template
 
 
-# from sqlalchemy.ext.asyncio import create_async_engine
-
 # api code
-from ..utils import APIUtils, hit_to_dict, remove_markdown_comments
-from ..db import get_frbr_data_by_edition, get_session
+from ..utils import remove_markdown_comments
+from ..db import get_frbr_data_by_edition, get_session, get_async_engine
+from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
+from .types import CatalogSearchResult, ContentSearchResult
 
 # shared code
 from vector_indexing.components.embedders.google import GoogleEmbedder
@@ -49,9 +44,6 @@ from vector_indexing.core.utils import Timer
 from logger import create_log
 from utils.common import wrap, require_env
 from utils.timer import timer
-
-# hybrid search
-from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
 
 
 logger = create_log(__name__)
@@ -84,20 +76,6 @@ def dynamic_docstring(docstring):
         return func
 
     return decorator
-
-
-# Module-level docstring variables
-SEARCH_CATALOG_DOC = f"""
-{(PROMPTS_DIR / "tools" / "search_catalog.txt").read_text()}
-
-{remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
-"""
-
-SEARCH_BOOK_DOC = f"""
-{(PROMPTS_DIR / "tools" / "search_book.txt").read_text()}
-
-{remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
-"""
 
 
 def transform_datetime(filter_array: Any) -> List:
@@ -176,7 +154,7 @@ def transform_incomplete(filter_array: Any) -> List:
     ]
 
 
-def recurse_filters(filters: Any, processing_func: callable) -> Any:
+def recurse_filters(filters: Any, processing_func: Callable) -> Any:
     """
     Generic recursive post-processor for TurboPuffer style filters that applies
     a processing function to every simple (leaf) filter.
@@ -276,17 +254,8 @@ class ContentSearchExecutionContext:
     frbr_fields: Dict = field(default_factory=dict)
 
 
-@dataclass
-class EditionResult:
-    """Value object representing a single edition search result."""
-
-    orm_work: Any
-    orm_edition: Any
-    edition_id: int
-    chunk_hits: list
-    agg_score: float
-
-
+# TODO: make a name and args callback for any tool, and add a edition_id log message to search_book, add traceback log to this callback
+# also time tool call construction latency
 class LLMLoggingHooks(RunHooks):
     """Agent lifecycle hooks that log LLM call start/end with timing and response."""
 
@@ -411,17 +380,25 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
 
 
 @timer(logger)
-def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
+async def update_chat(
+    message: str, conversation_type: str, edition_id=None, session_id: str = None
+) -> RunResult:
     """
     Send a message to the conversation and get the agent's response.
+
+    Conversation history is managed server-side via SQLAlchemySession keyed on
+    session_id. The caller sends only the new user message; the SDK loads prior
+    turns from the database automatically.
 
     The raw search results will be available in self.context.search_data
     for any post-processing or enrichment needed.
 
     Args:
-        conversation: The list of openai Responses API items representing the conversation history.
+        message: The new user message text.
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
         edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
+        session_id: Client-supplied session ID. History is persisted to and loaded
+                    from the database using this key.
 
     Returns:
         The agent's RunResult obj.
@@ -480,7 +457,7 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         tools = [search_book]
 
     # Search for books in catalog
-    elif conversation_type == "catalogSearch":
+    else:  # conversation_type == "catalogSearch":
         exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
         template = Template((PROMPTS_DIR / "system" / "1.jinja.md").read_text())
         system_prompt = remove_markdown_comments(
@@ -495,11 +472,14 @@ def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
         tools=tools,
     )
 
-    run_result = Runner.run_sync(
+    session = SQLAlchemySession(session_id, engine=get_async_engine())
+
+    run_result = await Runner.run(
         agent,
-        conversation,
+        message,
         context=exec_context,
         hooks=LLMLoggingHooks(),
+        session=session,
         run_config=RunConfig(
             tracing_disabled=True,
             model_settings=ModelSettings(
@@ -527,7 +507,7 @@ def mean_chunk_score(chunk_hits):
 
 def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
     """
-    Yield chunk_hit's from search results. Adding item_id to each
+    Yield chunk_hit's from search index search results, adding item_id to each
     chunk_hit by mapping chunk record_id to item_id in DB.
 
     Args:
@@ -562,16 +542,25 @@ def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
             )
 
 
+# TODO: make score type metadata of the chunk index search method
 CHUNK_SCORE_TYPE: Literal["higher-is-better", "lower-is-better"] = "higher-is-better"
 
 if CHUNK_SCORE_TYPE == "higher-is-better":
-    score_aggregator = max_chunk_score
-    sort_direction = {"reverse": True}
-    score_label = "MAX SCORE"
+    SCORE_AGGREGATOR = max_chunk_score
+    SCORE_SORT_DIRECTION = {"reverse": True}
+    SCORE_LABEL = "MAX SCORE"
 else:
-    score_aggregator = min_chunk_score
-    sort_direction = {"reverse": False}
-    score_label = "MIN SCORE"
+    SCORE_AGGREGATOR = min_chunk_score
+    SCORE_SORT_DIRECTION = {"reverse": False}
+    SCORE_LABEL = "MIN SCORE"
+
+
+# Module-level docstring variables
+SEARCH_CATALOG_DOC = f"""
+{(PROMPTS_DIR / "tools" / "search_catalog.txt").read_text()}
+
+{remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
+"""
 
 
 @function_tool
@@ -620,7 +609,7 @@ def search_catalog(
 
         # Calculate aggregate edition score
         edition_hits = [
-            {**eh, "agg_score": score_aggregator(eh["chunk_hits"])}
+            {**eh, "agg_score": SCORE_AGGREGATOR(eh["chunk_hits"])}
             for eh in edition_hits.values()
         ]
         logger.info(
@@ -633,15 +622,16 @@ def search_catalog(
         # This sort order change (reverse=True) was intentional and also fixes a pre-existing
         # inconsistency between ES9 and Turbopuffer score semantics.
         edition_hits = sorted(
-            edition_hits, key=lambda eh: eh["agg_score"], **sort_direction
+            edition_hits, key=lambda eh: eh["agg_score"], **SCORE_SORT_DIRECTION
         )
 
         # Limit results to the 10 top scoring editions
-        logger.info(
-            f"Limiting results to first {PAGE_SIZE} editions sorted by '{CHUNK_SCORE_TYPE}'"
-        )
-        edition_hits = edition_hits[:PAGE_SIZE]
-        # TODO: handle paginating or providing more edition hits
+        if len(edition_hits) > PAGE_SIZE:
+            logger.info(
+                f"Limiting results to first {PAGE_SIZE} editions sorted by '{CHUNK_SCORE_TYPE}'"
+            )
+            edition_hits = edition_hits[:PAGE_SIZE]
+            # TODO: handle paginating or providing more edition hits
 
         # Fetch FRBR data (from DB)
         edition_ids = [h["edition_id"] for h in edition_hits]
@@ -657,6 +647,8 @@ def search_catalog(
             frbr_data = get_frbr_data_by_edition(edition_ids)
 
         # Merge ES hit data and FRBR metadata (maintaining edition sort order)
+        # ALT: if frbr_data was pre-sorted by edition_ids in the SQL call, we \
+        # could zip frbr data and edition hits bc order would be the same
         frbr_data = {row.Edition.id: row for row in frbr_data}
         edition_data = []  # list of EditionResult
         missing_data = []
@@ -667,7 +659,7 @@ def search_catalog(
                 missing_data.append(edition_hit["edition_id"])
             else:
                 edition_data.append(
-                    EditionResult(
+                    CatalogSearchResult(
                         orm_work=row.Work,
                         orm_edition=row.Edition,
                         edition_id=edition_hit["edition_id"],
@@ -675,11 +667,12 @@ def search_catalog(
                         agg_score=edition_hit["agg_score"],
                     )
                 )
-        # ALT: if frbr_data was pre-sorted by edition_ids in the SQL call, we \
-        # could zip frbr data and edition hits bc order would be the same
         if missing_data:
             logger.error(
-                f"Vector search hits for the following edition_ids have no matching data in DB: {missing_data}"
+                f"Missing Data: {len(missing_data)} edition_ids from vector search results have no matching data in DB: {missing_data}"
+            )
+            logger.info(
+                f"Limiting results to the {len(edition_data)} editions that have metadata in the DB."
             )
 
         # NOTE: the biggest difference btw VRA (current state) search and DRB \
@@ -699,11 +692,18 @@ def search_catalog(
         # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
         # than saving JSON/API response separately but edition data json may \
         # include irrelevant metadata)
-        return verbose_display_editions(edition_data, as_str=True)
+        return format_search_results(edition_data, as_str=True)
 
     except Exception as e:
-        logger.exception("Error during search_library_catalog tool execution.")
+        logger.exception(f"Error during {ctx.tool_name} tool execution.")
         raise e
+
+
+SEARCH_BOOK_DOC = f"""
+{(PROMPTS_DIR / "tools" / "search_book.txt").read_text()}
+
+{remove_markdown_comments((PROMPTS_DIR / "tools" / "tool.md").read_text())}
+"""
 
 
 @function_tool
@@ -754,17 +754,24 @@ def search_book(
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
             "tool_name": ctx.tool_name,
-            "chunk_hits": chunk_hits,
+            "edition_data": [
+                ContentSearchResult(
+                    edition_id=ctx.context.edition_id,
+                    chunk_hits=chunk_hits,
+                    frbr_fields=ctx.context.frbr_fields,
+                )
+            ],
             "search_params": json.loads(ctx.tool_arguments),
         }
 
         # Format results for LLM
-        return verbose_display_chunks(
-            chunk_hits, as_str=True, frbr_fields=ctx.context.frbr_fields
+        return format_search_results(
+            ctx.context.search_results[ctx.tool_call_id]["edition_data"],
+            as_str=True,
         )
 
     except Exception as e:
-        logger.exception("Error during search_in_book tool execution.")
+        logger.exception(f"Error during {ctx.tool_name} tool execution.")
         raise e
 
 
@@ -773,34 +780,34 @@ def format_frbr_fields(orm_work, orm_edition):
     Format ORM work and edition attributes for printing.
     """
     # Format work metadata
-    title = orm_work.title or "(No Title)"
+    title = orm_work.title or "(Title Unavailable)"
 
     authors = orm_work.authors or []
     author_names = (
         ", ".join([a.get("name", "") for a in authors if isinstance(a, dict)])
         if authors
-        else "(No Authors)"
+        else "(Authors Unavailable)"
     )
 
     subjects = orm_work.subjects or []
     subject_list = (
         ", ".join([s.get("heading", "") for s in subjects if isinstance(s, dict)])
         if subjects
-        else "(None)"
+        else "(Subjects Unavailable)"
     )
 
     # Format edition metadata
     pub_date = (
         str(orm_edition.publication_date)
         if orm_edition.publication_date
-        else "(No Date)"
+        else "(Publication Date Unavailable)"
     )
 
     publishers = orm_edition.publishers or []
     publisher_names = (
         ", ".join([p.get("name", "") for p in publishers if isinstance(p, dict)])
         if publishers
-        else "(No Publisher)"
+        else "(Publishers Unavailable)"
     )
 
     # Format language metadata
@@ -813,7 +820,7 @@ def format_frbr_fields(orm_work, orm_edition):
             ]
         )
         if languages
-        else "(No Language)"
+        else "(Languages Unavailable)"
     )
 
     return {
@@ -826,17 +833,71 @@ def format_frbr_fields(orm_work, orm_edition):
     }
 
 
-# TODO: rely on sort order from edition (and nested chunks) as passed (add to doc str)
-# TODO: move to agent.py
-def verbose_display_editions(edition_data, query=None, as_str=False):
+def display_book(lines, frbr_fields, chunk_hits, edition_id):
     """
-    Print or return a formatted str containing an ordered list book search
-    results and their associated text excerpts. For each book, metadata is
-    displayed including title, subjects, publication date. For each text excerpt,
-    page number and search score is displayed. Books are ordered by the input list.
+    Create lines of str for an XML display of book and chunk search results.
+    Chunk display order controlled by input data order.
+    """
+    lines.append("\n<edition>")
+    # Display book level metadata
+
+    # MAYBE: edition index not id?
+    lines.append(f"<edition_id>{edition_id}</edition_id>")
+    lines.append(f"<title>{frbr_fields['title']}</title>")
+    lines.append(f"<authors>{frbr_fields['author_names']}</authors>")
+    lines.append(f"<publisher>{frbr_fields['publisher_names']}</publisher>")
+    lines.append(f"<date>{frbr_fields['pub_date']}</date>")
+    lines.append(f"<subjects>{frbr_fields['subject_list']}</subjects>")
+    lines.append(f"<language>{frbr_fields['language_list']}</language>")
+    # MAYBE: add agg_score
+    # MAYBE: print the number of chunks per edition somehow
+
+    # Display chunk level information
+    lines.append("<chunks>")
+
+    # MAYBE: sort chunks by score (bigger is better, missing scores last) and limit display
+    for chunk_hit in chunk_hits:
+        text = chunk_hit.get("text", "(No Text)")
+        # Extract page range from chunk metadata (supports both formats)
+        start_page = chunk_hit.get("start_page") or chunk_hit.get("chunk_start_page")
+        end_page = chunk_hit.get("end_page") or chunk_hit.get("chunk_end_page")
+        if start_page is not None and end_page is not None:
+            if start_page == end_page:
+                page_display = str(start_page)
+            else:
+                page_display = f"{start_page}-{end_page}"
+        else:
+            page_display = "?"
+
+        lines.append("\n<chunk>")
+        # MAYBE: add chunk index? to tag?
+        # MAYBE: chunk score?
+        lines.append(
+            f"<item_id>{chunk_hit['item_id']}</item_id>"
+        )  # an edition might include chunks from multiple items
+        lines.append(f"<page>{page_display}</page>")
+        lines.append(f"<text>\n{text}\n</text>")
+        lines.append("</chunk>")
+
+    lines.append("\n</chunks>")
+    lines.append("</edition>")
+
+    return lines
+
+
+# MAYBE: remove book level info from search response for contentSearch to save tokens.
+def format_search_results(
+    edition_data, search_tool_call_id=None, query=None, as_str=False
+):
+    """
+    Print or return a formatted str containing an ordered list of editions and their
+    associated text excerpts. For each edition, metadata (title, authors, subjects,
+    publication date) and chunk text excerpts with page numbers are displayed.
+    Editions are ordered by the input list.
 
     Args:
-        edition_data: List of EditionResult containing 'orm_work', 'orm_edition', 'edition_hit'
+        edition_data: List of BaseEditionResult (CatalogSearchResult or ContentSearchResult)
+        search_tool_call_id: Optional tool call ID to include in output header
         query: The search query string
         as_str: If True, return as string; otherwise print
     """
@@ -844,69 +905,25 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
         return "There are no results for your query."
 
     lines = []
+    lines.append("<search_results>")
+
     if query is not None:
-        lines.append(f'QUERY: "{wrap(query)}"')
-        lines.append("\n")
+        lines.append(f"<query>{wrap(query)}</query>")
 
-    for i, edition_entry in enumerate(edition_data, 1):
-        orm_work = edition_entry.orm_work
-        orm_edition = edition_entry.orm_edition
-        # Format work and edition metadata
-        frbr_fields = format_frbr_fields(orm_work, orm_edition)
-
-        chunk_hits = edition_entry.chunk_hits
-
-        # Display work/edition data
-        base_indent = "  "
-        lines.append(f"EDITION {i}:")
+    if search_tool_call_id is not None:
         lines.append(
-            indent(
-                f"WORK ID: {orm_work.id} | EDITION ID: {orm_edition.id}", base_indent
-            )
+            f"<search_tool_call_id>{search_tool_call_id}</search_tool_call_id>"
         )
-        lines.append(indent(f"TITLE: {frbr_fields['title']}", base_indent))
-        lines.append(indent(f"AUTHORS: {frbr_fields['author_names']}", base_indent))
-        lines.append(
-            indent(f"PUBLISHER: {frbr_fields['publisher_names']}", base_indent)
+
+    for entry in edition_data:
+        frbr_fields = (
+            format_frbr_fields(entry.orm_work, entry.orm_edition)
+            if isinstance(entry, CatalogSearchResult)
+            else entry.frbr_fields
         )
-        lines.append(indent(f"DATE: {frbr_fields['pub_date']}", base_indent))
-        lines.append(
-            indent(f"SUBJECTS: {frbr_fields['subject_list']}", base_indent)
-        )  # Does this need to be wrap()'ed to multi-line
-        lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", base_indent))
-        lines.append(
-            indent(f"{score_label}: {edition_entry.agg_score:.4f}", base_indent)
-        )
-        lines.append(indent(f"CHUNKS FOUND: {len(chunk_hits)}", base_indent))
-        lines.append("")
+        lines = display_book(lines, frbr_fields, entry.chunk_hits, entry.edition_id)
 
-        # Display chunk data (for this edition)
-        # MAYBE: sort chunks by score and limit display
-        for j, chunk_hit in enumerate(chunk_hits, 1):
-            text = chunk_hit.get("text", "(No Text)")
-            score = chunk_hit.get("score", 0)
-            chunk_id = chunk_hit.get("doc_id", "unknown")
-            # Extract page range from chunk metadata (supports both formats)
-            start_page = chunk_hit.get("start_page") or chunk_hit.get(
-                "chunk_start_page"
-            )
-            end_page = chunk_hit.get("end_page") or chunk_hit.get("chunk_end_page")
-            if start_page is not None and end_page is not None:
-                if start_page == end_page:
-                    page_display = str(start_page)
-                else:
-                    page_display = f"{start_page}-{end_page}"
-            else:
-                page_display = "?"
-
-            lines.append(indent(f"CHUNK {j}:", base_indent * 2))
-            lines.append(indent(f"ID: {chunk_id}", base_indent * 3))
-            lines.append(indent(f"PAGE: {page_display}", base_indent * 3))
-            lines.append(indent(f"SCORE: {score:.4f}", base_indent * 3))
-            lines.append(indent(f"TEXT:\n{wrap(text)}", base_indent * 3))
-            lines.append("")
-
-        lines.append("-" * 80)
+    lines.append("\n</search_results>")
 
     msg = "\n".join(lines)
     if as_str:
@@ -915,6 +932,7 @@ def verbose_display_editions(edition_data, query=None, as_str=False):
         print(msg)
 
 
+# UNUSED
 def compact_display_editions(edition_data, query, as_str=False):
     """
     Display edition search results in compact format.
@@ -951,81 +969,7 @@ def compact_display_editions(edition_data, query, as_str=False):
         print(msg)
 
 
-def get_score(entry):
-    return entry.get("score", float("-inf"))
-
-
-# TODO: When we insert messages in context specifying book for content search \
-# context, remove book level info from search response to save tokens.
-# TODO: deduplicate book level metadata code in this and verbose_display_editions()
-def verbose_display_chunks(chunk_hits, query=None, as_str=False, frbr_fields=None):
-    """
-    Print or return a formatted str containing an ordered list book excerpts.
-    Book metadata  including title, subjects, publication date is optionally
-    displayed. For each text excerpt, page number and search score is displayed.
-    Excerpts are ordered by the input list.
-
-    Args:
-        chunk_hits: List of chunk hit dictionaries
-        query: The search query string
-        as_str: If True, return as string; otherwise print
-        frbr_fields: Optional dict of formatted FRBR fields for book context
-    """
-    if not chunk_hits:
-        return "There are no results for your query."
-
-    # TODO: should sorting be handled by the calling code
-    # Sort entries by ['meta']['score'] descending, missing scores last
-    sorted_hits = sorted(chunk_hits, key=get_score, reverse=True)
-
-    lines = []
-    if query is not None:
-        lines.append(f'QUERY: "{wrap(query)}"')
-        lines.append("\n")
-
-    # Display book context (if FRBR data provided)
-    if frbr_fields:
-        lines.append("BOOK INFORMATION:")
-        lines.append(indent(f"TITLE: {frbr_fields['title']}", "  "))
-        lines.append(indent(f"AUTHORS: {frbr_fields['author_names']}", "  "))
-        lines.append(indent(f"DATE: {frbr_fields['pub_date']}", "  "))
-        lines.append(indent(f"SUBJECTS: {frbr_fields['subject_list']}", "  "))
-        lines.append(indent(f"LANGUAGE: {frbr_fields['language_list']}", "  "))
-        lines.append("")
-        lines.append(f"FOUND {len(sorted_hits)} MATCHING SECTIONS:")
-        lines.append("-" * 80)
-
-    # Display chunk level information
-    for i, entry in enumerate(sorted_hits, 1):
-        text = entry.get("text", "(No Text)")
-        score = get_score(entry)
-
-        # Extract page range from chunk metadata (supports both formats)
-        start_page = entry.get("start_page") or entry.get("chunk_start_page")
-        end_page = entry.get("end_page") or entry.get("chunk_end_page")
-        if start_page is not None and end_page is not None:
-            if start_page == end_page:
-                page_display = str(start_page)
-            else:
-                page_display = f"{start_page}-{end_page}"
-        else:
-            page_display = "?"
-
-        lines.append(f"RESULT {i}:")
-        lines.append(indent(f"ID: {entry['doc_id']}", "  "))
-        lines.append(indent(f"PAGE: {page_display}", "  "))
-        lines.append(indent(f"SCORE: {score}", "  "))
-        lines.append(indent("TEXT:", "  "))
-        lines.append(indent(f"{wrap(text)}\n", "  "))
-        lines.append("-" * 60)
-
-    msg = "\n".join(lines)
-    if as_str:
-        return msg
-    else:
-        print(msg)
-
-
+# UNUSED
 def compact_display_chunks(chunk_hits, query, as_str=False):
     # Sort entries by ['meta']['score'] descending, missing scores last
     sorted_entries = sorted(chunk_hits, key=get_score, reverse=True)

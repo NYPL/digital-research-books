@@ -110,7 +110,7 @@ services:
 
   aws_services:
     container_name: drb_local_aws
-    image: localstack/localstack:latest
+    image: localstack/localstack:community-archive
     environment:
       - DEBUG=1
       - LOCALSTACK_HOSTNAME=localhost

@@ -74,7 +74,7 @@ def main(stmt=None):
                     Record.source == "grin",
                     func.split_part(Record.rights, "|", 2) == "public_domain",
                     GRINStatus.state == GRINState.DOWNLOADED.value,
-                    Record.state == "ingested",
+                    Record.cluster_status == False,
                 )
             )
 

@@ -1,9 +1,7 @@
 import { useRouter } from "next/router";
 import React, { createContext, useContext, useState } from "react";
-import { readFetcher } from "~/src/lib/api/SearchApi";
-import { LinkResult } from "~/src/types/LinkQuery";
 import {
-  ChatResults,
+  ChatResultsMap,
   ConversationType,
   HistoryItem,
   Item,
@@ -13,12 +11,10 @@ import {
 } from "~/src/types/ResearchAssistant";
 
 interface ResearchAssistantViewState {
-  showWebReader: boolean;
   editionId?: number;
   itemId: string;
   pageId: string;
-  results: ChatResults | null;
-  linkResults: LinkResult | null;
+  results: ChatResultsMap;
   resultType?: ConversationType;
 }
 
@@ -26,7 +22,7 @@ interface ResearchAssistantContextType extends ResearchAssistantViewState {
   messages: Item[];
   sendMessage: (message: string) => Promise<void>;
   setMessages: React.Dispatch<React.SetStateAction<Item[]>>;
-  results: ChatResults | null;
+  results: ChatResultsMap;
   isLoading: boolean;
   error: string | null;
   historyStack: HistoryItem[];
@@ -35,15 +31,12 @@ interface ResearchAssistantContextType extends ResearchAssistantViewState {
   clearHistory: (page: PageType) => void;
   setViewState: React.Dispatch<React.SetStateAction<any | null>>;
   handlePreview: (url: string) => Promise<void>;
-  handleReadOnline: (linkId: number) => Promise<void>;
   showChat: boolean;
   toggleChat: () => void;
 }
 
 interface PushNewStateArgs {
-  results: ChatResults | null;
-  showWebReader: boolean;
-  linkResults: LinkResult | null;
+  results: ChatResultsMap;
   itemId?: string;
   pageId?: string;
   resultType?: ConversationType;
@@ -63,11 +56,9 @@ export const ResearchAssistantProvider: React.FC<{
 
   const [historyStack, setHistoryStack] = useState<HistoryItem[]>([]);
   const [viewState, setViewState] = useState<ResearchAssistantViewState>({
-    showWebReader: false,
     itemId: "",
     pageId: "",
     results: null,
-    linkResults: null,
   });
 
   const router = useRouter();
@@ -77,8 +68,6 @@ export const ResearchAssistantProvider: React.FC<{
 
   const pushNewState = ({
     results,
-    showWebReader,
-    linkResults,
     itemId = "",
     pageId = "",
     resultType,
@@ -89,8 +78,6 @@ export const ResearchAssistantProvider: React.FC<{
         results: results,
         itemId: itemId,
         pageId: pageId,
-        showWebReader: showWebReader,
-        linkResults: linkResults,
         resultType: resultType,
       },
     ]);
@@ -109,11 +96,6 @@ export const ResearchAssistantProvider: React.FC<{
     };
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
 
-    const messagesForBackend: Item[] = [
-      ...messages,
-      { type: ItemType.Message, role: MessageRole.User, content: text },
-    ];
-
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch("/api/research-assistant", {
@@ -123,9 +105,9 @@ export const ResearchAssistantProvider: React.FC<{
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: messagesForBackend,
-          editionId: viewState.editionId,
+          message: text,
           conversationType,
+          editionId: viewState.editionId,
         }),
       });
 
@@ -144,21 +126,27 @@ export const ResearchAssistantProvider: React.FC<{
 
       const data = await response.json();
 
-      setMessages((prevMessages) => [...prevMessages, ...data.messages]);
+      let newMessagesLength = 0;
+      setMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages, ...data.messages];
+        newMessagesLength = updatedMessages.length;
+        return updatedMessages;
+      });
 
+      const newResults = {
+        ...viewState.results,
+        [newMessagesLength]: data.results,
+      };
       setViewState((prev) => ({
         ...prev,
-        results: data.results,
-        showWebReader: false,
+        results: newResults,
         resultType: data.resultType,
       }));
 
       if (data.resultType === ConversationType.Catalog) {
         setHistoryStack([]);
         pushNewState({
-          results: data.results,
-          showWebReader: false,
-          linkResults: null,
+          results: newResults,
           itemId: "",
           resultType: data.resultType,
         });
@@ -167,9 +155,7 @@ export const ResearchAssistantProvider: React.FC<{
         viewState.itemId
       ) {
         pushNewState({
-          results: data.results,
-          showWebReader: false,
-          linkResults: null,
+          results: newResults,
           itemId: viewState.itemId,
           resultType: data.resultType,
         });
@@ -196,34 +182,13 @@ export const ResearchAssistantProvider: React.FC<{
 
     setViewState((prev) => ({
       ...prev,
-      results: viewState.results,
       itemId: itemId,
       pageId: pageId,
-      showWebReader: true,
     }));
     pushNewState({
       results: null,
-      showWebReader: true,
-      linkResults: null,
       itemId: itemId,
       pageId: pageId,
-      resultType: viewState.resultType,
-    });
-  };
-
-  const handleReadOnline = async (linkId: number) => {
-    const linkResult = await readFetcher(linkId);
-    setViewState((prev) => ({
-      ...prev,
-      results: viewState.results,
-      linkResults: linkResult,
-      showWebReader: true,
-    }));
-    pushNewState({
-      results: null,
-      showWebReader: true,
-      linkResults: linkResult,
-      itemId: "",
       resultType: viewState.resultType,
     });
   };
@@ -231,6 +196,7 @@ export const ResearchAssistantProvider: React.FC<{
   const goToPreviousState = (restoredStack?: HistoryItem[]) => {
     setHistoryStack((prevStack) => {
       const stack = restoredStack ?? prevStack;
+
       if (stack.length > 0) {
         const prevState = stack.length > 1 ? stack[stack.length - 2] : stack[0];
         setViewState((prev) => ({
@@ -238,8 +204,6 @@ export const ResearchAssistantProvider: React.FC<{
           results: prevState.results,
           itemId: prevState.itemId || "",
           editionId: prevState.editionId,
-          showWebReader: prevState.showWebReader,
-          linkResults: prevState.linkResults,
           resultType: prevState.resultType,
         }));
         return stack.length > 1 ? stack.slice(0, -1) : stack;
@@ -249,8 +213,6 @@ export const ResearchAssistantProvider: React.FC<{
         results: null,
         itemId: "",
         editionId: undefined,
-        showWebReader: false,
-        linkResults: null,
       }));
       return [];
     });
@@ -263,10 +225,8 @@ export const ResearchAssistantProvider: React.FC<{
       setViewState((prev) => ({
         ...prev,
         results: null,
-        showWebReader: false,
         itemId: "",
         editionId: undefined,
-        linkResults: null,
       }));
     }
   };
@@ -286,7 +246,6 @@ export const ResearchAssistantProvider: React.FC<{
     ...viewState,
     setViewState,
     handlePreview,
-    handleReadOnline,
     showChat,
     toggleChat,
   };

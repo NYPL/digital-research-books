@@ -1,16 +1,16 @@
 import Head from "next/head";
 import React from "react";
+import ItemDetail from "~/src/components/ItemDetail/ItemDetail";
 import Layout from "~/src/components/Layout/Layout";
+import VRALayout from "~/src/components/VRALayout/VRALayout";
 import { MAX_PAGE_TITLE_LENGTH } from "~/src/constants/editioncard";
 import { documentTitles } from "~/src/constants/labels";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import { workFetcher } from "~/src/lib/api/SearchApi";
 import { WorkQuery, WorkResult } from "~/src/types/WorkQuery";
 import { getBackToVraUrl } from "~/src/util/LinkUtils";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import Error from "../_error";
-import ItemDetail from "~/src/components/ItemDetail/ItemDetail";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
-import VRALayout from "~/src/components/VRALayout/VRALayout";
 
 export async function getServerSideProps(context: any) {
   const isResearchAssistantEnabled = process.env.APP_ENV !== "production";
@@ -27,7 +27,7 @@ export async function getServerSideProps(context: any) {
 
   const backUrl = getBackToVraUrl(
     context.req.headers.referer,
-    context.req.headers.host,
+    context.req.headers.host
   );
 
   const workResult: WorkResult = await workFetcher(workQuery);
@@ -43,7 +43,7 @@ const ItemPage: React.FC<any> = (props) => {
 
   const truncatedTitle = truncateStringOnWhitespace(
     props.workResult.data.title,
-    MAX_PAGE_TITLE_LENGTH,
+    MAX_PAGE_TITLE_LENGTH
   );
 
   return (
@@ -63,7 +63,6 @@ const ItemPage: React.FC<any> = (props) => {
         <ResultPageProvider
           value={{
             page: "item",
-            onReadOnline: () => {},
           }}
         >
           <ItemDetail workResult={props.workResult} backUrl={props.backUrl} />

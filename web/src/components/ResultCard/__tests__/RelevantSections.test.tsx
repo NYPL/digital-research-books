@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithResearchAssistant } from "~/src/__tests__/testUtils/render";
 import RelevantSections from "../RelevantSections";
 
 describe("RelevantSections", () => {
@@ -19,20 +20,22 @@ describe("RelevantSections", () => {
     },
   ];
   beforeEach(() => {
-    render(<RelevantSections snippets={mockSnippets} workId="123" />);
+    renderWithResearchAssistant(
+      <RelevantSections snippets={mockSnippets} workId="123" />
+    );
   });
 
   test("should not render if there are no snippets", () => {
     expect(screen.queryByText("Relevant sections")).not.toBeInTheDocument();
   });
 
-  test("should render the component with snippets", () => {
+  test("renders the component with snippets", () => {
     expect(
       screen.getByText(`View ${mockSnippets.length} relevant sections`)
     ).toBeInTheDocument();
   });
 
-  test("should toggle open and display snippets when 'View relevant sections' is clicked", () => {
+  test("toggles open and display snippets when 'View relevant sections' is clicked", () => {
     expect(screen.queryByText("Page 5")).not.toBeInTheDocument();
     expect(screen.queryByText("Page 10")).not.toBeInTheDocument();
     fireEvent.click(
@@ -47,7 +50,7 @@ describe("RelevantSections", () => {
     expect(screen.getByText('"Another snippet of text."')).toBeInTheDocument();
   });
 
-  test("should toggle closed when 'Hide relevant sections' is clicked", () => {
+  test("toggles closed when 'Hide relevant sections' is clicked", () => {
     fireEvent.click(
       screen.getByText(`View ${mockSnippets.length} relevant sections`)
     );
@@ -56,21 +59,5 @@ describe("RelevantSections", () => {
     fireEvent.click(screen.getByText("Hide relevant sections"));
     expect(screen.queryByText("Page 5")).not.toBeInTheDocument();
     expect(screen.queryByText("Page 10")).not.toBeInTheDocument();
-  });
-
-  test("should generate correct links for snippets", () => {
-    fireEvent.click(
-      screen.getByText(`View ${mockSnippets.length} relevant sections`)
-    );
-    const links = screen.getAllByRole("link");
-    expect(links).toHaveLength(2);
-    expect(links[0]).toHaveAttribute(
-      "href",
-      "/item/123?previewItemId=123&previewPage=00000005"
-    );
-    expect(links[1]).toHaveAttribute(
-      "href",
-      "/item/123?previewItemId=456&previewPage=00000010"
-    );
   });
 });

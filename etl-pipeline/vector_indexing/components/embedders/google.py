@@ -24,7 +24,9 @@ if TYPE_CHECKING:
 DEFAULT_MODEL = "gemini-embedding-001"
 DEFAULT_DIMS = 768
 DEFAULT_BATCH_SIZE = 100
-# Rate limit: 20 calls/min = 2000 embeddings/min with batch size 100
+# Rate limit: 20 calls/min with batch size 100 = 2000 embeddings/min
+# (3000/min usually breaks the token limit with current  chunking leading to \
+# more backoff attempts and thus lower thruput)
 DEFAULT_RATE_LIMIT_CALLS = 20
 DEFAULT_RATE_LIMIT_PERIOD = 60  # seconds
 
@@ -100,6 +102,8 @@ class GoogleEmbedder(Embedder):
             vectors.extend([emb.values for emb in result.embeddings])
         return vectors
 
+    # ALT FUTURE: use a sleep until end of rate limit duration on \
+    # token induced rate limits instead of this exponential backoff for those
     @retry(
         stop=stop_after_attempt(7),
         wait=wait_exponential(multiplier=4, max=70),

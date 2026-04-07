@@ -18,7 +18,7 @@ const editionId = 123;
 
 const renderWithProvider = (page: PageType) =>
   render(
-    <ResultPageProvider value={{ page, onReadOnline: jest.fn() }}>
+    <ResultPageProvider value={{ page }}>
       <PreviewLink
         previewLink={previewLink}
         workId={workId}

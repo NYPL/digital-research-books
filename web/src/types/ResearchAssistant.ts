@@ -6,7 +6,6 @@ import {
   LinkFlags,
   Subject,
 } from "./DataModel";
-import { LinkResult } from "./LinkQuery";
 
 export type Item = MessageItem | ToolCallItem | ToolCallOutputItem;
 
@@ -163,15 +162,14 @@ export interface ContentSearchResults {
 }
 
 export interface HistoryItem {
-  results: ChatResults;
+  results: ChatResultsMap;
   itemId?: string;
   editionId?: number;
-  showWebReader: boolean;
-  linkResults: LinkResult;
   resultType?: ConversationType;
 }
 
 export type ChatResults = CatalogSearchResults | ContentSearchResults;
+export type ChatResultsMap = Record<number, ChatResults | null>;
 
 export type SearchParams = {
   query: [string, string][];
