@@ -73,12 +73,18 @@ class TestOnMaxTurns:
         """
         Real Runner.run with max_turns=2, a mocked LLM client, and _on_max_turns as handler.
         Verifies:
-        1. final_output equals the mocked response string from _on_max_turns.
-        2. raw_responses has exactly 2 entries (one per agent-loop LLM call).
+        1. final_output equals the mocked response string from the LLM call in
+        _on_max_turns (this expects _on_max_turns to call an LLM using the same
+        client as the main Runner)
+        2. raw_responses has exactly 2 entries (i.e. the agent-loop included 2
+        LLM calls only).
         3. No MaxTurnsExceeded is raised.
         """
+        # NOTE: this test is considerable asserts behavior internal to the
+        # openai agents SDK and is covered significantly by assertions in
+        # test_on_max_turns.py:TestOnMaxTurns:test_update_chat_max_turns_graceful_response
 
-        # --- Build mock ChatCompletion objects ---
+        # --- mock ChatCompletion response objects ---
 
         # Tool call response: LLM asks to call dummy_tool (triggers re-run, not final output)
         tool_call_response = ChatCompletion(
@@ -108,6 +114,8 @@ class TestOnMaxTurns:
             ],
         )
 
+        max_turns_response_content = "MOCKED_GRACEFUL_RESPONSE"
+
         # Graceful response: returned by _on_max_turns' direct client call (3rd call)
         graceful_response = ChatCompletion(
             id="fake-graceful-id",
@@ -120,7 +128,7 @@ class TestOnMaxTurns:
                     index=0,
                     message=ChatCompletionMessage(
                         role="assistant",
-                        content="MOCKED_GRACEFUL_RESPONSE",
+                        content=max_turns_response_content,
                         tool_calls=None,
                     ),
                 )
@@ -138,14 +146,14 @@ class TestOnMaxTurns:
         # Required by OpenAIChatCompletionsModel for base_url logging
         mock_client.base_url = "https://fake.api/"
 
-        # --- Build agent with inline dummy tool ---
+        model = OpenAIChatCompletionsModel(
+            model="test-model", openai_client=mock_client
+        )
+
         @function_tool
         def dummy_tool(query: str) -> str:
             return "dummy result"
 
-        model = OpenAIChatCompletionsModel(
-            model="test-model", openai_client=mock_client
-        )
         agent = Agent(
             name="Test Agent",
             model=model,
