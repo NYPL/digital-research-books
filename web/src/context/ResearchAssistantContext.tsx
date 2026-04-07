@@ -96,11 +96,6 @@ export const ResearchAssistantProvider: React.FC<{
     };
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
 
-    const messagesForBackend: Item[] = [
-      ...messages,
-      { type: ItemType.Message, role: MessageRole.User, content: text },
-    ];
-
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch("/api/research-assistant", {
@@ -110,9 +105,9 @@ export const ResearchAssistantProvider: React.FC<{
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: messagesForBackend,
-          editionId: viewState.editionId,
+          message: text,
           conversationType,
+          editionId: viewState.editionId,
         }),
       });
 
