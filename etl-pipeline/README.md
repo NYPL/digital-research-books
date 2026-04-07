@@ -60,7 +60,7 @@ This guide provides step-by-step instructions to set up local development and st
 #### (Option A) Run in docker compose
 
 
-1. Seed data in the local dockerized DB instance from HathiTrust (one-time only):
+1. Seed data in the local dockerized DB instance (one-time only):
 
    ```bash
    # Run the database seeding process
@@ -104,15 +104,15 @@ This guide provides step-by-step instructions to set up local development and st
 
    **Create a virtual environment**
 
-*Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).*
+   *Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).*
 
    ```sh
    python -m venv venv
    ```
 
-**Activate the virtual environment.**
-The following steps assume the virtual environment is active.
-You will need to do this for every terminal session.
+   **Activate the virtual environment.**
+   The following steps assume the virtual environment is active.
+   You will need to do this for every terminal session.
 
    ```sh
    source venv/bin/activate
@@ -214,8 +214,6 @@ See `python main.py --help` for all available options.
 
 ## Formatting
 We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files.
-
-
 
 We also check formatting before committing. If you followed to the set up steps to install the pre-commit hooks, formatting of changed files will be performed at each commit.
 
