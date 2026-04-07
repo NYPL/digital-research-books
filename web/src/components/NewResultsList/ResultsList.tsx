@@ -4,6 +4,7 @@ import { RESULT_TEST_ID } from "~/src/constants/testIds";
 import { Agent } from "~/src/types/DataModel";
 import { CatalogEdition } from "~/src/types/ResearchAssistant";
 import { ApiWork } from "~/src/types/WorkQuery";
+import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
 import ResultCard from "../ResultCard/ResultCard";
 
 // TODO: rename folder to ResultsList when we switch to VRA/Keyword search
@@ -11,7 +12,9 @@ const ResultsList: React.FC<{ works: ApiWork[] | CatalogEdition[] }> = ({
   works,
 }) => {
   if (!works || works.length === 0) {
-    return null;
+    return (
+      <EmptySearchPrompt message="No results found. Try a different topic." />
+    );
   }
 
   const isCatalogEditions = (arr: any[]): arr is CatalogEdition[] =>
