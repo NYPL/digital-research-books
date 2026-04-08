@@ -1,6 +1,55 @@
 repos:
+  # Check formatting for python files
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.7
     hooks:
       - id: ruff-format
         files: ^etl-pipeline/.*py$
+
+  # Detect secrets when committing to local in case we're leaking a secret
+  #
+  # USAGE:
+  #   - Bypass for false positives: 
+  #     Add `# pragma: allowlist secret` on the same line
+  #     or add `# pragma: allowlist nextline secret` on the line before.
+  #     See https://github.com/Yelp/detect-secrets#inline-allowlisting
+  #
+  #   - Update baseline after adding legitimate secrets/allowlisting:
+  #     detect-secrets scan --baseline .secrets.baseline \
+  #       --base64-limit 4 \
+  #       --exclude-files 'package-lock\.json' \
+  #       --exclude-files 'etl-pipeline/tests/fixtures/.*'
+  #
+  #   - Interactively audit existing baseline:
+  #     detect-secrets audit .secrets.baseline
+  #
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline', '--base64-limit', '4']
+        # Exclude files that commonly contain false positives (test fixtures, lock files)
+        exclude: |
+          (?x)^(
+            package-lock\.json|
+            etl-pipeline/tests/fixtures/.*
+          )$
+  # Precommit hooks that can be helpful 
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # Verify formatting of yaml and json files
+      - id: check-yaml
+      # Excluding two malformed json files that are already in the repo
+      - id: check-json 
+        exclude: ^(web/config/tsconfig.json|web/.eslintrc.json)$
+      # Verify that we're not adding any huge files
+      - id: check-added-large-files
+        args: ['--maxkb=1024']
+      # Verify that we have all valid python code
+      - id: check-ast
+      # Verify we never commit to the main branch
+      - id: no-commit-to-branch
+        args: ['--branch', 'main']
+      # Verify we never commit merge conflict tags
+      - id: check-merge-conflict
