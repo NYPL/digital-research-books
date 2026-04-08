@@ -26,7 +26,7 @@ def test_chat(conversation_type, role, prompt, vra_test_user):
     url = require_env("DRB_API_URL") + ENDPOINT_PATH
     payload = {
         "conversationType": conversation_type,
-        "messages": [{"role": role, "content": prompt}],
+        "message": prompt,
     }
     response = requests.post(url, json=payload, headers=get_vra_auth_headers())
 
