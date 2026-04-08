@@ -1,4 +1,5 @@
 from .postgres.base import Base, Core
+from .postgres.agent import AgentSession, AgentMessage
 from .postgres.record import Record, Part, FRBRStatus, FileFlags, RecordState
 from .postgres.work import Work
 from .postgres.edition import Edition

@@ -6,13 +6,15 @@ from itertools import repeat
 from math import ceil
 from json import JSONEncoder
 from uuid import UUID
+import re
+import os
 
 from model import Collection, Edition
-import re
 from model.postgres.collection import COLLECTION_EDITIONS
+from utils.common import require_env
 from logger import create_log
+
 from botocore.exceptions import ClientError
-import os
 from urllib.parse import urlparse
 from sqlalchemy import inspect
 from sqlalchemy.orm.attributes import NO_VALUE
@@ -519,7 +521,7 @@ class APIUtils:
                 if link.media_type == "application/ocr":
                     page_id = link.url.split("/")[-1]
                     link.url = (
-                        os.environ["DRB_API_HOST"] + f"/items/{item.id}/read/{page_id}"
+                        require_env("DRB_API_URL") + f"/items/{item.id}/read/{page_id}"
                     )
 
                 itemDict["links"].append(

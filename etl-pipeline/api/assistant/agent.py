@@ -20,9 +20,14 @@ from agents import (
     RunContextWrapper,
     ModelSettings,
     RunResult,
+    RunErrorHandlerInput,
+    RunErrorHandlerResult,
 )
+from agents.run_config import DEFAULT_MAX_TURNS
 from agents.items import ModelResponse
 from agents.tool_context import ToolContext
+from agents.extensions.memory import SQLAlchemySession
+from agents.models.chatcmpl_converter import Converter
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 from sqlalchemy import text
@@ -30,10 +35,10 @@ from jinja2 import Template
 
 
 # api code
-from ..utils import APIUtils, remove_markdown_comments, shorten
-from ..db import get_frbr_data_by_edition, get_session
+from ..utils import remove_markdown_comments
+from ..db import get_frbr_data_by_edition, get_session, get_async_engine
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
-from .types import Snippet, CatalogSearchResult, ContentSearchResult
+from .types import CatalogSearchResult, ContentSearchResult
 
 # shared code
 from vector_indexing.components.embedders.google import GoogleEmbedder
@@ -378,18 +383,76 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
     return df.set_index(source_col).to_dict(orient="index")
 
 
+_MAX_TURNS_SYSTEM_PROMPT = """\
+You are a research library assistant. You have reached the maximum number of \
+allowed agent turns in the agent loop. 
+
+Here is the original system prompt:
+```
+{agent_system_prompt}
+```
+
+Given the conversation context, deliver a polite response according to your \
+system prompt with the partially available information if possible or an \
+appropriate apology otherwise — it is fine to acknowledge that the search was not fully complete. \
+"""
+
+
+async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
+    """Handles assistant response if max agent turns are exceeded."""
+    client: AsyncOpenAI = data.run_data.last_agent.model._client
+    model_name: str = data.run_data.last_agent.model.model
+    agent_system_prompt = await data.run_data.last_agent.get_system_prompt(data.context)
+
+    messages = [
+        {
+            "role": "system",
+            "content": _MAX_TURNS_SYSTEM_PROMPT.format(
+                agent_system_prompt=agent_system_prompt
+            ),
+        },
+        *Converter.items_to_messages(data.run_data.history, model=model_name),
+    ]
+
+    response = await client.chat.completions.create(
+        model=model_name,
+        messages=messages,
+        temperature=0.0,
+        reasoning_effort=None,
+    )
+
+    logger.warning("update_chat: MaxTurnsExceeded — graceful final response generated.")
+
+    return RunErrorHandlerResult(
+        final_output=response.choices[0].message.content,
+        include_in_history=True,
+    )
+
+
 @timer(logger)
-async def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
+async def update_chat(
+    message: str,
+    conversation_type: str,
+    edition_id=None,
+    session_id: str = None,
+    max_turns: int = DEFAULT_MAX_TURNS,
+) -> RunResult:
     """
     Send a message to the conversation and get the agent's response.
+
+    Conversation history is managed server-side via SQLAlchemySession keyed on
+    session_id. The caller sends only the new user message; the SDK loads prior
+    turns from the database automatically.
 
     The raw search results will be available in self.context.search_data
     for any post-processing or enrichment needed.
 
     Args:
-        conversation: The list of openai Responses API items representing the conversation history.
+        message: The new user message text.
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
         edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
+        session_id: Client-supplied session ID. History is persisted to and loaded
+                    from the database using this key.
 
     Returns:
         The agent's RunResult obj.
@@ -463,11 +526,16 @@ async def update_chat(conversation, conversation_type, edition_id=None) -> RunRe
         tools=tools,
     )
 
+    session = SQLAlchemySession(session_id, engine=get_async_engine())
+
     run_result = await Runner.run(
-        agent,
-        conversation,
+        starting_agent=agent,
+        input=message,
         context=exec_context,
         hooks=LLMLoggingHooks(),
+        max_turns=max_turns,
+        error_handlers={"max_turns": _on_max_turns},
+        session=session,
         run_config=RunConfig(
             tracing_disabled=True,
             model_settings=ModelSettings(
