@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
 import {
   DSProvider,
   SkeletonLoader,
 } from "@nypl/design-system-react-components";
-import Feedback from "~/src/components/Feedback/Feedback";
 import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import Feedback from "~/src/components/Feedback/Feedback";
 
 /**
  * Container class providing header, footer,
@@ -13,7 +13,8 @@ import { useRouter } from "next/router";
 
 const Layout: React.FC<{
   children?: React.ReactNode;
-}> = ({ children }) => {
+  feedback?: React.ReactNode;
+}> = ({ children, feedback }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
@@ -46,7 +47,7 @@ const Layout: React.FC<{
         ) : (
           <>{children}</>
         )}
-        {!loading && <Feedback location={router.asPath} />}
+        {!loading && (feedback ?? <Feedback location={router.asPath} />)}
       </DSProvider>
     </>
   );
