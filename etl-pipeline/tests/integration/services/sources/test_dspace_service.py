@@ -15,4 +15,3 @@ def test_get_records():
             assert record is not None
     except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
         pytest.skip(f"Skipping due to external connection issue: {e}")
-
