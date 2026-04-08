@@ -13,20 +13,20 @@ TOP_LEVEL_FIELDS = {
     "data": dict,
 }
 
-TEST_CASES = [  # Defined as tuples of (conversation_type, role, prompt)
+TEST_CASES = [  # Defined as tuples of (conversation_type, message)
     # Smoke test for a catalog search
-    ("catalogSearch", "user", "Find something on fire."),
+    ("catalogSearch", "Find something on fire."),
     # TODO: Smoke test for a content search (SCHOL-384)
 ]
 
 
-@pytest.mark.parametrize("conversation_type, role, prompt", TEST_CASES)
-def test_chat(conversation_type, prompt, vra_test_user):
+@pytest.mark.parametrize("conversation_type, message", TEST_CASES)
+def test_chat(conversation_type, message, vra_test_user):
     # Set up the request then make an authenticated API call
     url = require_env("DRB_API_URL") + ENDPOINT_PATH
     payload = {
         "conversationType": conversation_type,
-        "message": prompt,
+        "message": message,
     }
     response = requests.post(url, json=payload, headers=get_vra_auth_headers())
 
