@@ -14,13 +14,10 @@ import os
 import re
 import tarfile
 import tempfile
-import logging
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import cached_property
 from typing import Optional, TYPE_CHECKING
-
-import re
 
 import boto3
 import gnupg

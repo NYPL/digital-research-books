@@ -4,9 +4,8 @@ Tests the loading flow: cache -> pages -> archive fallback.
 Uses mocked S3 client and GPG to avoid network/decryption dependencies.
 """
 
-import io
 import pytest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, patch
 from botocore.exceptions import ClientError
 
 from vector_indexing.core.types import Book
