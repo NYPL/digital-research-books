@@ -2,6 +2,13 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithResearchAssistant } from "~/src/__tests__/testUtils/render";
 import RelevantSections from "../RelevantSections";
 
+beforeEach(() => {
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    json: async () => ({}),
+  });
+});
+
 describe("RelevantSections", () => {
   const mockSnippets = [
     {

@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   ChatResultsMap,
   ConversationType,
@@ -28,7 +28,7 @@ interface ResearchAssistantContextType extends ResearchAssistantViewState {
   historyStack: HistoryItem[];
   setHistoryStack: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
   goToPreviousState: (restoredStack?: HistoryItem[]) => void;
-  clearHistory: (page: PageType) => void;
+  clearHistory: (page: PageType, invalidateSession?: boolean) => void;
   setViewState: React.Dispatch<React.SetStateAction<any | null>>;
   handlePreview: (url: string) => Promise<void>;
   showChat: boolean;
@@ -218,7 +218,8 @@ export const ResearchAssistantProvider: React.FC<{
     });
   };
 
-  const clearHistory = (page: PageType) => {
+  const clearHistory = (page: PageType, invalidateSession = false) => {
+    if (invalidateSession) clearSession();
     setMessages([]);
     setError(null);
     if (page !== "item") {
@@ -230,6 +231,16 @@ export const ResearchAssistantProvider: React.FC<{
       }));
     }
   };
+
+  const clearSession = () => {
+    fetch("/api/research-assistant-session", {
+      method: "DELETE",
+    }).catch((err) => console.error("Failed to clear session:", err));
+  };
+
+  useEffect(() => {
+    clearSession();
+  }, []);
 
   const toggleChat = () => setShowChat((prev) => !prev);
 
