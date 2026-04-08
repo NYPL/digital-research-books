@@ -20,7 +20,7 @@ type FeedbackContextType = {
   thumbValue?: "up" | "down" | null;
   setThumbValue?: React.Dispatch<React.SetStateAction<"up" | "down" | null>>;
   sessionId?: string;
-  setSessionId?: React.Dispatch<React.SetStateAction<string>>;
+  setSessionId: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export const FeedbackContext = createContext<FeedbackContextType | undefined>(

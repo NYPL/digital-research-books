@@ -230,5 +230,6 @@ def chat(user=None, session_id=None):
         "messages": messages,
         "result_type": result_type,
         "result": formatted_search_result,
+        "sessionId": session_id,
     }
     return APIUtils.formatResponseObject(200, RESPONSE_TYPE, response_data)
