@@ -6,12 +6,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   const cookieName = process.env.SESSION_COOKIE_NAME || "vra_session";
-  const isProduction = process.env.APP_ENV === "production";
+  const isNotDevelopment = process.env.APP_ENV !== "development";
 
   res.setHeader(
     "Set-Cookie",
     `${cookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${
-      isProduction ? "; Secure" : ""
+      isNotDevelopment ? "; Secure" : ""
     }`
   );
 
