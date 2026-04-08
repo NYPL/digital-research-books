@@ -36,7 +36,7 @@ repos:
           )$
   # Precommit hooks that can be helpful 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       # Verify formatting of yaml and json files
       - id: check-yaml
