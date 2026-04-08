@@ -1,26 +1,12 @@
-import appConfig from "~/config/appConfig";
 import { DRBFeedback, VRAFeedback } from "~/src/types/Feedback";
 import { log } from "../newrelic/NewRelic";
 
-// TODO: disable feedback in development
-
 export const submitDRBFeedback = async (feedback: DRBFeedback) => {
   try {
-    return await fetch(appConfig.feedback.drbFormURL, {
+    return await fetch("/api/feedback", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_AIRTABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fields: {
-          Feedback: feedback.feedback,
-          Category: feedback.category,
-          Date: new Date().toLocaleDateString("en-US"),
-          Environment: process.env.APP_ENV,
-          URL: feedback.url,
-        },
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "drb", ...feedback }),
     });
   } catch (error) {
     log(error, "Failed to submit feedback");
@@ -30,23 +16,10 @@ export const submitDRBFeedback = async (feedback: DRBFeedback) => {
 
 export const submitVRAFeedback = async (feedback: VRAFeedback) => {
   try {
-    return await fetch(appConfig.feedback.vraFormURL, {
+    return await fetch("/api/feedback", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_AIRTABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fields: {
-          Feedback: feedback.feedback,
-          Category: feedback.category,
-          Date: new Date().toLocaleDateString("en-US"),
-          Environment: process.env.APP_ENV,
-          URL: feedback.url,
-          "Session ID": feedback.sessionId,
-          "Thumbs up/down": feedback.thumbState,
-        },
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "vra", ...feedback }),
     });
   } catch (error) {
     log(error, "Failed to submit feedback");
