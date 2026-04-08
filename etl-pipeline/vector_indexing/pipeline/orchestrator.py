@@ -305,7 +305,7 @@ def main(barcodes: list[str] | None = None) -> BatchResult:
         ),
         metadata_provider=MetadataProvider(config=config),
         backend=TurbopufferBackend.from_config(
-            index_name="test_kn_03232026", config=config
+            index_name="vra-dev-test", config=config
         ),
     )
 
