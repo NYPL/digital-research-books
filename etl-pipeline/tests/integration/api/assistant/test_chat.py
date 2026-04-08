@@ -21,7 +21,7 @@ TEST_CASES = [  # Defined as tuples of (conversation_type, role, prompt)
 
 
 @pytest.mark.parametrize("conversation_type, role, prompt", TEST_CASES)
-def test_chat(conversation_type, role, prompt, vra_test_user):
+def test_chat(conversation_type, prompt, vra_test_user):
     # Set up the request then make an authenticated API call
     url = require_env("DRB_API_URL") + ENDPOINT_PATH
     payload = {
