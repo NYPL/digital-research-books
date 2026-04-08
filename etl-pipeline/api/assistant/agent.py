@@ -481,6 +481,10 @@ async def update_chat(
         ),
     )
 
+    system_prompt_template = Template(
+        (PROMPTS_DIR / "system" / "1.jinja.md").read_text()
+    )
+
     # Search within single book
     if conversation_type == "contentSearch":
         # Fetch FRBR data for the book
@@ -504,8 +508,7 @@ async def update_chat(
             frbr_fields=frbr_fields,
         )
 
-        template = Template((PROMPTS_DIR / "system" / "1.jinja.md").read_text())
-        system_prompt = template.render(
+        system_prompt = system_prompt_template.render(
             conversation_type="contentSearch", frbr_fields=frbr_fields
         )
         tools = [search_book]
@@ -513,9 +516,8 @@ async def update_chat(
     # Search for books in catalog
     else:  # conversation_type == "catalogSearch":
         exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
-        template = Template((PROMPTS_DIR / "system" / "1.jinja.md").read_text())
         system_prompt = remove_markdown_comments(
-            template.render(conversation_type="catalogSearch")
+            system_prompt_template.render(conversation_type="catalogSearch")
         )
         tools = [search_catalog]
 
