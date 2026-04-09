@@ -8,10 +8,10 @@ class TestAPI:
     @pytest.fixture
     def test_api(self, mocker):
         class MockTestAPI(API):
-            def __init__(self, db_engine, redis_client):
+            def __init__(self, redis_client):
                 self.app = mocker.MagicMock()
 
-        return MockTestAPI("testDBEngine", "testRedisClient")
+        return MockTestAPI("testRedisClient")
 
     def test_run_local(self, test_api):
         os.environ["STAGE"] = "development"

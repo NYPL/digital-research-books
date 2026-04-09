@@ -25,7 +25,7 @@ def fulfill_item(link_id):
         )
 
     try:
-        with DBClient(current_app.config["DB_CLIENT"]) as db_client:
+        with DBClient(current_app.config["SQL_ENGINE"]) as db_client:
             link = db_client.fetchSingleLink(link_id)
 
         if not link:

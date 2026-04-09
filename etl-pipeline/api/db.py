@@ -49,7 +49,7 @@ def get_readonly_engine():
     if _readonly_engine is None:
         _readonly_engine = DBManager(
             host=require_env("POSTGRES_READ_HOST")
-        ).generate_engine()
+        ).generate_engine()  # TODO: just create with sqlalchemy create_engine()
     return _readonly_engine
 
 
@@ -57,7 +57,9 @@ def get_engine():
     """Retrieve singleton read/write engine connected to POSTGRES_HOST."""
     global _engine
     if _engine is None:
-        _engine = DBManager().generate_engine()
+        _engine = (
+            DBManager().generate_engine()
+        )  # TODO: just create with sqlalchemy create_engine()
     return _engine
 
 

@@ -79,7 +79,7 @@ def collection_request_body():
 @pytest.fixture
 def test_app():
     flask_app = Flask("test")
-    flask_app.config["DB_CLIENT"] = "testDBClient"
+    flask_app.config["SQL_ENGINE"] = "testDBClient"
     return flask_app
 
 
