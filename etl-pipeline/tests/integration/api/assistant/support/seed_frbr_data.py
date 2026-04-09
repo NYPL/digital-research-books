@@ -1,4 +1,4 @@
-"""Seed a local Postgres DB with FRBR graph data (../seed_data/frbr_seed.json).
+"""Seed a local Postgres DB with FRBR graph data (tests/fixtures/frbr_seed.json).
 
 Upsert order (respects FK dependencies):
     works -> editions -> records -> items -> links -> item_links -> rights -> item_rights
@@ -41,8 +41,7 @@ from model.postgres.rights import Rights
 from model.postgres.work import Work
 from utils.load_env import load_env
 
-
-SEED_FILE_PATH = Path(__file__).parent.parent / "seed_data" / "frbr_seed.json"
+SEED_FILE_PATH = Path(__file__).resolve().parents[4] / "fixtures" / "frbr_seed.json"
 SUPPORTED_ENVS = ("local", "docker-compose")
 
 

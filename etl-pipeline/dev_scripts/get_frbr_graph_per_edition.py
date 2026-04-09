@@ -35,10 +35,7 @@ from utils.load_env import load_env
 DEFAULT_OUTPUT_PATH = (
     _PROJECT_ROOT
     / "tests"
-    / "integration"
-    / "api"
-    / "assistant"
-    / "seed_data"
+    / "fixtures"
     / "frbr_seed.json"
 )
 
