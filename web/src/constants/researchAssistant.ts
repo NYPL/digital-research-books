@@ -1,3 +1,5 @@
+import { ItemType, MessageItem, MessageRole } from "../types/ResearchAssistant";
+
 export const HEADER_HEIGHT = "58px";
 
 // ResearchAssistantLanding
@@ -48,6 +50,39 @@ export const FEATURES = [
       "PDF viewer showing a book cover. The AI assistant on the right suggests related content, including 'Life of Charles T. Walker, D.D.' by Silas Xavier Floyd and 'The first Colored Baptist church in North America' by James Simms.",
   },
 ];
+
+// ResearchAsistantWindow
+export const CATALOG_INITIAL_MESSAGE: MessageItem = {
+  type: ItemType.Message,
+  role: MessageRole.Assistant,
+  content: [
+    {
+      text: "What research topic can I help you explore today?",
+      type: "output_text",
+    },
+  ],
+};
+export const CONTENT_INITIAL_MESSAGE: MessageItem = {
+  type: ItemType.Message,
+  role: MessageRole.Assistant,
+  content: [
+    {
+      text:
+        "I can help you find relevant content in this book. Ask me a question, or try the suggestions below.",
+      type: "output_text",
+    },
+  ],
+};
+export const LOADING_MESSAGE: MessageItem = {
+  type: ItemType.Message,
+  role: MessageRole.Assistant,
+  content: [
+    {
+      text: "Thinking... This may take several seconds.",
+      type: "output_text",
+    },
+  ],
+};
 
 export const NATURAL_LANGUAGE_MESSAGE_IMAGE =
   "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/naturalLanguageMessage.png";
@@ -127,3 +162,6 @@ export const getGridRows = (backUrl?: string) => {
 export const getHeaderPaddingRight = (vraEnabled: boolean) => {
   return vraEnabled ? GRID_PADDING_X : ITEM_OUTER_MARGIN_CALC;
 };
+
+// SnippetList
+export const SNIPPETS_PER_PAGE = 6;

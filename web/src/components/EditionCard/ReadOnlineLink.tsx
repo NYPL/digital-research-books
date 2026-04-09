@@ -1,12 +1,11 @@
-import { Box, Button } from "@nypl/design-system-react-components";
+import { Box } from "@nypl/design-system-react-components";
 import React from "react";
 import Link from "~/src/components/Link/Link";
 import { LOGIN_LINK_BASE } from "~/src/constants/links";
-import { ItemLink } from "~/src/types/DataModel";
 import { LOGIN_TO_READ_TEST_ID } from "~/src/constants/testIds";
-import { getHostname } from "~/src/util/LinkUtils";
 import { trackEvent } from "~/src/lib/gtag/Analytics";
-import { useResultPageContext } from "~/src/context/ResultPageContext";
+import { ItemLink } from "~/src/types/DataModel";
+import { getHostname } from "~/src/util/LinkUtils";
 
 // "Read Online" button should only show up if the link was flagged as "reader" or "embed"
 const ReadOnlineLink: React.FC<{
@@ -16,9 +15,6 @@ const ReadOnlineLink: React.FC<{
   title: string;
   loginCookie?: any;
 }> = ({ authors, isLoggedIn, readOnlineLink, title }) => {
-  const { onReadOnline, page } = useResultPageContext();
-  const isResearchAssistant = page === "vra";
-
   let linkText = "Read Online";
   let linkUrl: any = {
     pathname: `/read/${readOnlineLink.link_id}`,
@@ -48,24 +44,14 @@ const ReadOnlineLink: React.FC<{
   return (
     readOnlineLink && (
       <Box data-testid={LOGIN_TO_READ_TEST_ID}>
-        {isResearchAssistant ? (
-          <Button
-            id={`read-online-button-${readOnlineLink.link_id}`}
-            onClick={() => onReadOnline(readOnlineLink.link_id)}
-            width="100%"
-          >
-            {linkText}
-          </Button>
-        ) : (
-          <Link
-            to={linkUrl}
-            variant="buttonPrimary"
-            aria-label={`${title} ${linkText}`}
-            onClick={trackReadOnlineClick}
-          >
-            {linkText}
-          </Link>
-        )}
+        <Link
+          to={linkUrl}
+          variant="buttonPrimary"
+          aria-label={`${title} ${linkText}`}
+          onClick={trackReadOnlineClick}
+        >
+          {linkText}
+        </Link>
       </Box>
     )
   );

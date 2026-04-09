@@ -1,4 +1,8 @@
+import asyncio
+from dataclasses import asdict
 from textwrap import indent
+from typing import Any, Dict, Tuple
+from api.assistant.types import CatalogSearchResult
 from flask import Blueprint, current_app, request
 import newrelic.agent
 
@@ -12,12 +16,13 @@ from model.postgres.work import Work
 from utils.timer import timer
 
 # API code
-from ..utils import APIUtils, orm_to_dict, shorten
+from ..utils import APIUtils, orm_to_dict
 from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
-from ..decorators import require_basic_authentication
-from ..assistant.agent import update_chat, PAGE_SIZE
+from ..decorators import require_basic_authentication, require_session_jwt
+from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
+from ..assistant.snippets import get_relevant_snippets
 
 
 logger = create_log(__name__)
@@ -27,29 +32,13 @@ chat_blueprint = Blueprint("chat", __name__, url_prefix="/chat")
 RESPONSE_TYPE = "chat"
 
 
-# TODO: Q: extract chunk hits here or in agent.py in search tool? any way to concurrently \
-# extract relevant snippets while LLM is finishing response?
-# TODO: handle ordering of relevant snippets!!!
-# TODO: extract snippets intelligently
-# MAYBE: limit the number of returned snippets
-def get_relevant_snippets(chunk_hits):
-    return [
-        {
-            "text": shorten(h["text"]),
-            "start_page": h.get("start_page") or h.get("chunk_start_page"),
-            "end_page": h.get("end_page") or h.get("chunk_end_page"),
-            "item_id": h.get("item_id"),
-            "chunk_score": h.get("score") or h.get("meta", {}).get("score"),
-        }
-        for h in chunk_hits
-    ]
-
-
-def format_search_results(search_results):
+def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, None]:
     """
-    Convert dict of tool_call_id->results into an output formatted for
-    frontend consumption.
-    Expects len(search_results)==1
+    Extract final search result, prepare structure for expected chat/ response,
+    and convert to serializable types.
+
+    Returns (result_type, formatted_search_result) where formatted_search_result
+    is the search results serialized for http response via flask.jsonify
     """
 
     # Extract (single) search tool result
@@ -62,20 +51,47 @@ def format_search_results(search_results):
     else:
         # TODO: handle no search result (i.e. the agent didn't update the search results (also no pagination))
         search_result = None
+        logger.info(
+            "No search results to return (agent did record search tool call result)"
+        )
 
     # Format search result for API response
+
+    result_type = None
+    formatted_search_result = None
     if search_result:
-        if search_result["tool_name"] == "search_catalog":
-            editions = []
-            for edition_result in search_result["edition_data"]:
-                # FRBR ORM to dict
-                work_dict = orm_to_dict(
-                    edition_result.orm_work,
-                    exclude=[(Work, "date_created"), (Work, "date_modified")],
+        result_type = (
+            "catalogSearch"
+            if search_result["tool_name"] == "search_catalog"
+            else "contentSearch"
+            if search_result["tool_name"] == "search_book"
+            else None
+        )
+        if result_type is None:
+            raise ValueError(
+                f"Unsupported search tool type: {search_result['tool_name']}"
+            )
+
+        search_params = search_result["search_params"]
+
+        editions = []
+        for edition_result in search_result["edition_data"]:
+            edition = {}
+
+            # Sort editions + convert to json serializable form
+            edition["snippets"] = [
+                asdict(s)
+                for s in sorted(
+                    edition_result.snippets,
+                    key=lambda s: s.chunk_score,
+                    **SCORE_SORT_DIRECTION,
                 )
-                # prepend "work_" to work fields
-                work_dict = {f"work_{k}": v for k, v in work_dict.items()}
-                edition_dict = orm_to_dict(
+            ]
+
+            if result_type == "catalogSearch":
+                # FRBR ORM to dict
+
+                edition_metadata = orm_to_dict(
                     edition_result.orm_edition,
                     exclude=[
                         (Edition, "date_created"),
@@ -100,19 +116,21 @@ def format_search_results(search_results):
                         "publication_date": (lambda d: d.year if d else None)
                     },
                 )
-                # Q: should we be including the chunk_hits/snippet in editions or top level?
-                edition_dict.update(
-                    {
-                        **work_dict,
-                        "snippets": get_relevant_snippets(edition_result.chunk_hits),
-                    }
+                work_metadata = orm_to_dict(
+                    edition_result.orm_work,
+                    exclude=[(Work, "date_created"), (Work, "date_modified")],
                 )
-                editions.append(edition_dict)
+                # prepend "work_" to work fields
+                work_metadata = {f"work_{k}": v for k, v in work_metadata.items()}
 
-            result_type = "catalogSearch"  # MAYBE: send search tool name
+                edition.update({**edition_metadata, **work_metadata})
+
+            editions.append(edition)
+
+        if result_type == "catalogSearch":
             formatted_search_result = {
                 "editions": editions,
-                "search_params": search_result["search_params"],
+                "search_params": search_params,
                 # NOTE: paginated search not yet implemented, only 1 fixed result set size
                 "paging": APIUtils.formatPagingOptions(
                     page=1,
@@ -124,25 +142,15 @@ def format_search_results(search_results):
                 f"Returning {len(editions)} editions in catalog search response"
             )  # Q: redundant to tool call logging
 
-        elif search_result["tool_name"] == "search_book":
-            result_type = "contentSearch"  # MAYBE: send search tool name
+        else:  # result_type == "contentSearch"
+            snippets = editions[0]["snippets"]
             formatted_search_result = {
-                "snippets": get_relevant_snippets(search_result["chunk_hits"]),
-                "search_params": search_result["search_params"],
+                "snippets": snippets,
+                "search_params": search_params,
             }
             logger.info(
-                f"Returning {len(search_result['chunk_hits'])} snippets in content search response"
+                f"Returning {len(snippets)} snippets in content search response"
             )
-        else:
-            raise ValueError(
-                f"Unsupported search tool type: {search_result['tool_name']}"
-            )
-    else:
-        result_type = None
-        formatted_search_result = None
-        logger.info(
-            "No search results to return (agent did record search tool call result)"
-        )
 
     return result_type, formatted_search_result
 
@@ -150,10 +158,11 @@ def format_search_results(search_results):
 @chat_blueprint.route("", methods=["POST"])
 @require_api_key
 @require_basic_authentication
+@require_session_jwt
 @timer(logger)
-def chat(user=None):
+def chat(user=None, session_id=None):
     conversation_type = request.json.get("conversationType")
-    conversation = request.json.get("messages")
+    message = request.json.get("message")
     edition_id = request.json.get("editionId")
 
     # Add custom attributes to transaction in New Relic
@@ -163,10 +172,14 @@ def chat(user=None):
         newrelic.agent.add_custom_attribute("editionId", edition_id)
 
     logger.info(
-        f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, messages_count={len(conversation) if conversation else 0}"
+        f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, session_id={session_id}"
     )
 
-    # Input parameter validation
+    if not message:
+        return APIUtils.formatResponseObject(
+            400, RESPONSE_TYPE, {"message": "message is required"}
+        )
+
     if not conversation_type:
         return APIUtils.formatResponseObject(
             400, RESPONSE_TYPE, {"message": "conversationType is required"}
@@ -189,8 +202,18 @@ def chat(user=None):
         )
 
     # get LLM response + search results
-    run_result = update_chat(conversation, conversation_type, edition_id=edition_id)
-    # TODO: when a search tool errors it is handled the LLM responds (ussually saying sorry I had an error) and a 200 response is returned
+    # TODO: inside update_chat make sure than any errors are handled by a polite \
+    # llm generated response (except no connectivity to LLM) (just handle the \
+    # high level openai agents sdk errors)
+    run_result = asyncio.run(
+        update_chat(
+            message, conversation_type, edition_id=edition_id, session_id=session_id
+        )
+    )
+
+    # Add relevant snippets to search result, if search was executed in this agent turn
+    # snippets updated in run_result in place
+    asyncio.run(get_relevant_snippets(run_result, approach="naive"))
 
     ## Build API response
 
@@ -199,7 +222,7 @@ def chat(user=None):
     logger.info(f"Agent generated {len(run_result.new_items)} new message items")
 
     # Format search results
-    result_type, formatted_search_result = format_search_results(
+    result_type, formatted_search_result = prepare_search_response(
         run_result.context_wrapper.context.search_results
     )
 

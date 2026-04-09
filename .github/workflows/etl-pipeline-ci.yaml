@@ -11,27 +11,49 @@ permissions:
 
 jobs:
   run-tests:
-    runs-on: ubuntu-latest
+
+    # Configure use of self-hosted GHA runner
+    # Self-hosted runner is needed so that the workflow can access hosts only \
+    # available on the NYPL private AWS sub-net.
+    runs-on: self-hosted
+    
+    env:
+      AWS_REGION: us-east-1
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
+      - name: Get AWS credentials for IAM role in primary NYPL account
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::946183545209:role/GithubActionsDeployerRole
-          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::491147561046:role/GithubActionsRunnerRole
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GHAPrimarySession-${{ github.run_id }}
+          audience: sts.amazonaws.com
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
+      - name: Get AWS credentials for IAM role in nypl-digital-dev account
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          python-version: "3.10"
+          role-to-assume: arn:aws:iam::946183545209:role/GHACrossAccountRole
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GHASecondarySession-${{ github.run_id }}
+          role-chaining: true
+          role-duration-seconds: 1800 # 30 mins
+          audience: sts.amazonaws.com
+
+      - name: Mask secrets
+        uses: ./.github/actions/mask-etl-pipeline-secrets
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: 'etl-pipeline/.python-version'
 
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('etl-pipeline/requirements.txt', 'etl-pipeline/dev-requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
             ${{ runner.os }}-
@@ -47,10 +69,18 @@ jobs:
         working-directory: ./etl-pipeline
         run: |
           python -m pip install --upgrade pip wheel
-          pip install -r dev-requirements.txt
-          pip install -r requirements.txt
+          pip install --prefer-binary -r dev-requirements.txt
+          pip install --prefer-binary -r requirements.txt
 
-      - name: Run API tests
+      - name: Run API integration tests against QA env
         working-directory: ./etl-pipeline
         run: |
           pytest tests/integration/api --env=qa
+
+      - name: Run (some) functional tests against QA env
+        working-directory: ./etl-pipeline
+        run: |
+          python -m pytest tests/functional/processes/ingest \
+            --reruns=3 \
+            --reruns-delay=5 \
+            --env=qa

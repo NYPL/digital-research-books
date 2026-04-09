@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, date, timezone
 from typing import List
 from sqlalchemy import Integer
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import (
     joinedload,
     sessionmaker,
@@ -9,6 +10,7 @@ from sqlalchemy.orm import (
     scoped_session,
     selectinload,
 )
+from sqlalchemy.pool import NullPool
 from sqlalchemy.sql import column, func, select, text, values
 from uuid import uuid4
 
@@ -37,6 +39,8 @@ from .utils import APIUtils
 _engine = None
 _Session = None
 
+_async_engine = None
+
 
 def get_session():
     """Retrieve singleton scoped session factory.
@@ -53,6 +57,38 @@ def get_session():
         _Session = scoped_session(sessionmaker(bind=_engine))
         # Consider autocommit=False, autoflush=False see: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#flushing
     return _Session
+
+
+def get_async_engine():
+    """Retrieve singleton async engine.
+
+    The get() function defers database connection until first access, allowing
+    this module to be imported as a library without requiring environment
+    variables to be set.
+
+    Uses NullPool because each asyncpg db connection is bound to the loop that
+    created it, each call asyncio.run() creates a fresh event loop, and using the
+    same engine, and thus the same connection pool, in multiple asyncio.run()
+    calls would cause cross-loop errors. NullPool ensures each db connection is
+    used only once, opened and closed, never entering a connection pool.
+    See: https://docs.sqlalchemy.org/en/21/orm/extensions/asyncio.html#using-multiple-asyncio-event-loops
+
+    The POSTGRES_USER/PSWD/HOST/PORT/NAME env vars point to the write-capable host,
+    separate from the read-only POSTGRES_READ_HOST used by get_session().
+    """
+    global _async_engine
+    if _async_engine is None:
+        _async_engine = create_async_engine(
+            "postgresql+asyncpg://{user}:{pswd}@{host}:{port}/{db}".format(
+                user=require_env("POSTGRES_USER"),
+                pswd=require_env("POSTGRES_PSWD"),
+                host=require_env("POSTGRES_HOST"),
+                port=require_env("POSTGRES_PORT"),
+                db=require_env("POSTGRES_NAME"),
+            ),
+            poolclass=NullPool,
+        )
+    return _async_engine
 
 
 def get_frbr_data_by_edition(edition_ids: List):

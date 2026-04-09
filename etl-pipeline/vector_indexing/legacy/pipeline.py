@@ -7,7 +7,7 @@ from logger import create_log
 import file_conversion.pdfs.mets_parser as mets_parser
 from managers import DBManager, ElasticsearchManager, S3Manager
 from model import Record, Part, FileFlags, Source
-from utils import with_logging  # , setup_env
+from utils.with_logging import with_logging
 from processes.record_embedder import RecordEmbedder
 from processes.record_pipeline import RecordPipelineProcess
 

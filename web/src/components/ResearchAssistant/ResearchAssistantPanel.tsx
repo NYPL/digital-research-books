@@ -53,7 +53,7 @@ const ResearchAssistantPanel: React.FC = () => {
             </Heading>
             <Flex gap="xxs">
               <Button
-                onClick={() => clearHistory(page)}
+                onClick={() => clearHistory(page, true)}
                 variant="text"
                 size="small"
                 color="ui.white"

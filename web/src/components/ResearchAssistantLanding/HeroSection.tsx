@@ -21,7 +21,13 @@ const HeroSection: React.ForwardRefExoticComponent<
   ({ featuresSectionRef, textInputRef }, ref) => {
     const handleHowDoesItWorkClick = () => {
       featuresSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-      featuresSectionRef.current?.focus();
+      window.addEventListener(
+        "scrollend",
+        () => featuresSectionRef.current?.focus(),
+        {
+          once: true,
+        }
+      );
     };
 
     return (
