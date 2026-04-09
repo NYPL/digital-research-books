@@ -395,7 +395,8 @@ Here is the original system prompt:
 
 Given the conversation context, deliver a polite response according to your \
 system prompt with the partially available information if possible or an \
-appropriate apology otherwise — it is fine to acknowledge that the search was not fully complete. \
+appropriate apology otherwise — If the search tool returned an error acknowledge \
+that the search was not fully complete. \
 """
 
 
