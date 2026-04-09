@@ -16,7 +16,6 @@ describe("MessageBubble", () => {
     expect(messageElement).toBeInTheDocument();
     expect(messageElement.closest("div")).toHaveClass("userBubble");
   });
-  ``;
   test("renders assistant message with correct content", () => {
     const assistantMessage: Item = {
       type: ItemType.Message,
