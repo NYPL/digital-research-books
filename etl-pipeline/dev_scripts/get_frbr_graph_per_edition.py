@@ -32,12 +32,7 @@ from model.postgres.record import Record
 from utils.load_env import load_env
 
 
-DEFAULT_OUTPUT_PATH = (
-    _PROJECT_ROOT
-    / "tests"
-    / "fixtures"
-    / "frbr_seed.json"
-)
+DEFAULT_OUTPUT_PATH = _PROJECT_ROOT / "tests" / "fixtures" / "frbr_seed.json"
 
 
 def _orm_columns_to_dict(obj) -> dict:
