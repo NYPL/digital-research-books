@@ -36,7 +36,7 @@ from jinja2 import Template
 
 # api code
 from ..utils import remove_markdown_comments
-from ..db import get_frbr_data_by_edition, get_session, get_async_engine
+from ..db import get_frbr_data_by_edition, get_readonly_session, get_async_engine
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
 from .types import CatalogSearchResult, ContentSearchResult
 
@@ -370,7 +370,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
             ORDER BY e.id
         """)
 
-    Session = get_session()
+    Session = get_readonly_session()
     with Session() as session:
         result = session.execute(query, {"ids": list(ids)})
         df = pd.DataFrame(result.fetchall(), columns=result.keys())
@@ -433,8 +433,8 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
 async def update_chat(
     message: str,
     conversation_type: str,
+    session_id: str,
     edition_id=None,
-    session_id: str = None,
     max_turns: int = DEFAULT_MAX_TURNS,
 ) -> RunResult:
     """
@@ -450,9 +450,9 @@ async def update_chat(
     Args:
         message: The new user message text.
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
-        edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
         session_id: Client-supplied session ID. History is persisted to and loaded
                     from the database using this key.
+        edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
 
     Returns:
         The agent's RunResult obj.

@@ -27,7 +27,7 @@ from .blueprints import (
     fulfill,
 )
 from .utils import APIUtils
-from .db import get_session
+from .db import get_readonly_session
 
 logger = create_log(__name__)
 
@@ -53,7 +53,7 @@ BLUEPRINTS = [
 
 class API:
     def __init__(self, db_engine, redis_client):
-        Session = get_session()
+        Session = get_readonly_session()
         self.app = Flask(__name__)
 
         CORS(self.app)
