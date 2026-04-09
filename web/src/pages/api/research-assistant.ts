@@ -77,7 +77,7 @@ export default async function handler(
       results: chatData.result,
       messages: chatData.messages,
       resultType: chatData.result_type,
-      sessionId: chatData.sessionId,
+      sessionId: chatData.session_id,
     });
   } catch (error) {
     console.error("Error in Next.js Research Assistant API route:", error);

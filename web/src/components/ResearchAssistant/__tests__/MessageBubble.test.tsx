@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { render } from "~/src/__tests__/testUtils/render";
 import { Item, ItemType, MessageRole } from "~/src/types/ResearchAssistant";
 import MessageBubble from "../MessageBubble";
 
@@ -15,7 +16,7 @@ describe("MessageBubble", () => {
     expect(messageElement).toBeInTheDocument();
     expect(messageElement.closest("div")).toHaveClass("userBubble");
   });
-
+  ``;
   test("renders assistant message with correct content", () => {
     const assistantMessage: Item = {
       type: ItemType.Message,
