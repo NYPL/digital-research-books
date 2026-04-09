@@ -11,7 +11,7 @@ describe("Feedback", () => {
   describe("Form Submission", () => {
     beforeEach(async () => {
       const feedbackButton = screen.getByRole("button", {
-        name: "Help and Feedback",
+        name: "Help and feedback",
       });
       await userEvent.click(feedbackButton);
     });
