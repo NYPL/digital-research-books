@@ -208,7 +208,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    # Initialize environment variables and logger configuration
+    # Initialize environment variables and ensure safe DB target
     env_file = f".env.{args.env}"
     load_env(Path("config") / env_file, raise_if_no_file=True)
     _assert_safe_db_target()

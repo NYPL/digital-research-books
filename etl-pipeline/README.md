@@ -61,7 +61,6 @@ This guide provides step-by-step instructions to set up local development and st
 
 
 1. Seed data in the local dockerized DB instance (one-time only):
-2. Seed data in the local dockerized DB instance from HathiTrust (one-time only):
 
    ```bash
    # Run the database seeding process
