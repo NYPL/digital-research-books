@@ -36,7 +36,12 @@ from jinja2 import Template
 
 # api code
 from ..utils import remove_markdown_comments
-from ..db import get_frbr_data_by_edition, get_readonly_session, get_async_engine
+from ..db import (
+    get_frbr_data_by_edition,
+    get_readonly_session,
+    get_async_engine,
+    get_engine,
+)
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
 from .types import CatalogSearchResult, ContentSearchResult
 
@@ -547,6 +552,21 @@ async def update_chat(
     )
 
     return run_result
+
+
+def delete_session_data(session_id: str) -> None:
+    """Delete all rows in agent_messages and agent_sessions for the given session_id."""
+    engine = get_engine()
+    with engine.connect() as conn:
+        with conn.begin():
+            conn.execute(
+                text("DELETE FROM agent_messages WHERE session_id = :sid"),
+                {"sid": session_id},
+            )
+            conn.execute(
+                text("DELETE FROM agent_sessions WHERE session_id = :sid"),
+                {"sid": session_id},
+            )
 
 
 def max_chunk_score(chunk_hits):

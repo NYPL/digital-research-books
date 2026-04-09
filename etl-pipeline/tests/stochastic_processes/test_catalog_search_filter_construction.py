@@ -14,6 +14,9 @@ from pathlib import Path
 from api.assistant.agent import update_chat, META_OPERATORS
 
 
+pytestmark = pytest.mark.asyncio
+
+
 def get_first_tool_args(run_result) -> dict:
     """Return the search_params dict from the first tool call in a run result."""
     return list(run_result.context_wrapper.context.search_results.values())[0][
@@ -97,18 +100,18 @@ def filter_match(filters, attribute=None, operator=None, value=None):
 class TestCatalogSearchFilterConstruction:
     """Test that the agent constructs appropriate filters for catalog searches."""
 
-    def test_no_filter_for_simple_keyword_search(self):
+    async def test_no_filter_for_simple_keyword_search(self, test_session):
         """
         Test: No filter is used when not needed (shipbuilding example).
 
         For a simple keyword search like "shipbuilding", the agent should
         rely on semantic ranking without applying restrictive filters.
         """
-        conversation = [
-            {"role": "user", "content": "I want to learn about shipbuilding"}
-        ]
-
-        run_result = update_chat(conversation, conversation_type="catalogSearch")
+        run_result = await update_chat(
+            "I want to learn about shipbuilding",
+            conversation_type="catalogSearch",
+            session_id=test_session,
+        )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
 
@@ -117,21 +120,18 @@ class TestCatalogSearchFilterConstruction:
         # Either no filters applied, or only basic non-restrictive filters
         assert filters is None
 
-    def test_filters_used_for_metadata_search(self):
+    async def test_filters_used_for_metadata_search(self, test_session):
         """
         Test: Filter is used when needed (poetry with mother-daughter themes).
 
         For a thematic search like "poetry that deals with mother daughter themes",
         the agent should apply subject filters to narrow results.
         """
-        conversation = [
-            {
-                "role": "user",
-                "content": "I want to find poetry that deals with mother daughter themes",
-            }
-        ]
-
-        run_result = update_chat(conversation, conversation_type="catalogSearch")
+        run_result = await update_chat(
+            "I want to find poetry that deals with mother daughter themes",
+            conversation_type="catalogSearch",
+            session_id=test_session,
+        )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
 
@@ -144,7 +144,7 @@ class TestCatalogSearchFilterConstruction:
             f"filters do not match expected criteria: {filters}"
         )
 
-    def test_negative_filter_construction(self):
+    async def test_negative_filter_construction(self, test_session):
         """
         Test: A negative filter is used when appropriate.
 
@@ -152,14 +152,11 @@ class TestCatalogSearchFilterConstruction:
         but not military history"), the agent should construct filters with
         negation operators.
         """
-        conversation = [
-            {
-                "role": "user",
-                "content": "I want books about history but not military history",
-            }
-        ]
-
-        run_result = update_chat(conversation, conversation_type="catalogSearch")
+        run_result = await update_chat(
+            "I want books about history but not military history",
+            conversation_type="catalogSearch",
+            session_id=test_session,
+        )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
 
@@ -171,21 +168,18 @@ class TestCatalogSearchFilterConstruction:
             f"filters do not match expected criteria: {filters}"
         )
 
-    def test_keyword_match_example(self):
+    async def test_keyword_match_example(self, test_session):
         """
         Test: A keyword match filter for specific terminology.
 
         When searching for books with specific technical terms or exact
         phrases, the agent should use appropriate text matching filters.
         """
-        conversation = [
-            {
-                "role": "user",
-                "content": 'Find books that mention "machine learning" in their content',
-            }
-        ]
-
-        run_result = update_chat(conversation, conversation_type="catalogSearch")
+        run_result = await update_chat(
+            'Find books that mention "machine learning" in their content',
+            conversation_type="catalogSearch",
+            session_id=test_session,
+        )
         search_params = get_first_tool_args(run_result)
 
         filters = search_params.get("filters")
@@ -197,18 +191,15 @@ class TestCatalogSearchFilterConstruction:
             value=lambda v: "machine learning" in v.lower(),
         ), f"filters do not match expected criteria: {filters}"
 
-    def test_language_filter(self):
+    async def test_language_filter(self, test_session):
         """
         Test: Language filter construction uses ContainsAny for multiple languages.
         """
-        conversation = [
-            {
-                "role": "user",
-                "content": "I want books written English or French about philosophy",
-            }
-        ]
-
-        run_result = update_chat(conversation, conversation_type="catalogSearch")
+        run_result = await update_chat(
+            "I want books written English or French about philosophy",
+            conversation_type="catalogSearch",
+            session_id=test_session,
+        )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
 
@@ -232,21 +223,18 @@ class TestCatalogSearchFilterConstruction:
             )
         ), f"filters do not match expected criteria: {filters}"
 
-    def test_date_range_filter_construction(self):
+    async def test_date_range_filter_construction(self, test_session):
         """
         Test: Date range filters for publication dates.
 
         When searching for books published in a specific time period,
         the agent should construct appropriate date range filters.
         """
-        conversation = [
-            {
-                "role": "user",
-                "content": "Find books published between 2000 and 2010 about technology",
-            }
-        ]
-
-        run_result = update_chat(conversation, conversation_type="catalogSearch")
+        run_result = await update_chat(
+            "Find books published between 2000 and 2010 about technology",
+            conversation_type="catalogSearch",
+            session_id=test_session,
+        )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
 
@@ -288,21 +276,18 @@ class TestCatalogSearchFilterConstruction:
     #             or "french" in filter_str
     #         ), f"Expected combined filters for subject and language, got: {filters}"
 
-    def test_author_filter_construction(self):
+    async def test_author_filter_construction(self, test_session):
         """
         Test: Author filter for books by specific authors.
 
         When searching for books by a specific author, the agent should
         apply author filters.
         """
-        conversation = [
-            {
-                "role": "user",
-                "content": "Find books written by Jane Austen",
-            }
-        ]
-
-        run_result = update_chat(conversation, conversation_type="catalogSearch")
+        run_result = await update_chat(
+            "Find books written by Jane Austen",
+            conversation_type="catalogSearch",
+            session_id=test_session,
+        )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
 
