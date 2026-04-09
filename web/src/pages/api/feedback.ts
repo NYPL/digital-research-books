@@ -31,7 +31,7 @@ export default async function handler(
   const airtableFields: Record<string, string> = {
     Feedback: fields.feedback,
     Category: fields.category,
-    Date: new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),
+    Date: new Date().toLocaleString("en-US"),
     Environment: process.env.APP_ENV ?? "",
     URL: fields.url,
   };
