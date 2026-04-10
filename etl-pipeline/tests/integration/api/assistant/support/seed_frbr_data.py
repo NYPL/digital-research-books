@@ -29,6 +29,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -216,11 +217,13 @@ def main() -> int:
     with SEED_FILE_PATH.open("r", encoding="utf-8") as fh:
         seed_data = json.load(fh)
 
-    # Execute DB upserts
+    # Execute DB upserts and record timing for performance insights
     with DBManager() as db_manager:
+        start_time = time.perf_counter()
         counts = seed(seed_data, db_manager)
+        elapsed_time = time.perf_counter() - start_time
 
-    # Print summary of seeded data by edition
+    # Print summary of seeded data by edition, number of rows affected, and elapsed time
     edition_rows = seed_data.get("editions", [])
     edition_ids = sorted({e["id"] for e in edition_rows})
     item_rows = [
@@ -238,6 +241,7 @@ def main() -> int:
         )
 
     print(f"Rows affected: {counts}")
+    print(f"Seeding completed in {elapsed_time:.2f} seconds")
 
     return 0
 
