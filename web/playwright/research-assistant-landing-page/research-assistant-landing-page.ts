@@ -53,7 +53,9 @@ class ResearchAssistantLandingPage {
     this.faqSectionHeading = page.getByRole("heading", {
       name: "Frequently asked questions",
     });
-    this.helpSectionHeading = page.getByText("Have more questions?");
+    this.helpSectionHeading = page.getByRole("heading", {
+      name: "Have more questions?",
+    });
   }
 
   async navigateTo() {

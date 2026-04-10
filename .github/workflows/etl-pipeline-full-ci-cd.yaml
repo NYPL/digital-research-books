@@ -10,6 +10,8 @@ concurrency:
   group: continuous-deployment
   cancel-in-progress: false
 
+permissions: {}
+
 jobs:
   deploy_to_qa:
     uses: ./.github/workflows/etl-pipeline-deploy-qa.yaml
