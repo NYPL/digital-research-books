@@ -74,7 +74,7 @@ const VRAFeedback: React.FC<VRAFeedbackProps> = ({ location }) => {
   return (
     <FeedbackBox
       showCategoryField={!isError}
-      showEmailField={isError}
+      showEmailField
       isOpen={isOpen}
       onClose={onCloseAndReset}
       onOpen={onOpen}
