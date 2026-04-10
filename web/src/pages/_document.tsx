@@ -25,7 +25,7 @@ class MyDocument extends Document<DocumentProps> {
           />
           {/* End Google Tag Manager */}
           <link
-            href="https://fonts.googleapis.com/css?family=Domine"
+            href="https://fonts.googleapis.com/css?family=Domine&display=optional"
             rel="stylesheet"
           ></link>
         </Head>
