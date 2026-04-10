@@ -98,7 +98,7 @@ def configure_loggers():
     console_log_handler.setLevel(levels[log_level])
 
     if "development" == os.environ.get("STAGE"):
-        formatter = logging.Formatter("[%(name)s] %(message)s")
+        formatter = logging.Formatter("[%(name)s %(levelname)s] %(message)s")
         console_log_handler.setFormatter(formatter)
     else:
         formatter = NewRelicContextFormatter(
