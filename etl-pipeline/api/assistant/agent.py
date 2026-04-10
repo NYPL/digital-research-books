@@ -34,7 +34,7 @@ from sqlalchemy import text
 from jinja2 import Template
 
 
-# api code
+#  api code
 from ..utils import remove_markdown_comments
 from ..db import get_frbr_data_by_edition, get_session, get_async_engine
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
