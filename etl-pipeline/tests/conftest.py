@@ -593,3 +593,37 @@ def expected_barcodes_statuses():
         "Not allowed to be downloaded",
         "Other error",
     ]
+
+
+TEST_SESSION_ID = "test"
+
+
+@pytest.fixture
+def test_session_id():
+    """
+    Provides a fixed session_id="test" for update_chat() with cleanup.
+
+    Setup: deletes any stale data for the session_id.
+    Teardown: prints the raw conversation (captured by pytest; shown on failure),
+              then always deletes session data.
+    """
+    from api.assistant.agent import delete_session_data
+    from api.db import get_engine
+
+    delete_session_data(TEST_SESSION_ID)
+
+    yield TEST_SESSION_ID
+
+    # Print convo history to logs
+    engine = get_engine()
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text("SELECT * FROM agent_messages WHERE session_id = :sid ORDER BY id"),
+            {"sid": TEST_SESSION_ID},
+        ).fetchall()
+    print(f"\n--- Raw agent_messages for session '{TEST_SESSION_ID}' ---")
+    for row in rows:
+        print(dict(row._mapping))
+    print("--- End of conversation ---\n")
+
+    delete_session_data(TEST_SESSION_ID)

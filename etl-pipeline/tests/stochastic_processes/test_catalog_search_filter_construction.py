@@ -100,7 +100,7 @@ def filter_match(filters, attribute=None, operator=None, value=None):
 class TestCatalogSearchFilterConstruction:
     """Test that the agent constructs appropriate filters for catalog searches."""
 
-    async def test_no_filter_for_simple_keyword_search(self, test_session):
+    async def test_no_filter_for_simple_keyword_search(self, test_session_id):
         """
         Test: No filter is used when not needed (shipbuilding example).
 
@@ -110,7 +110,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             "I want to learn about shipbuilding",
             conversation_type="catalogSearch",
-            session_id=test_session,
+            session_id=test_session_id,
         )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
@@ -120,7 +120,7 @@ class TestCatalogSearchFilterConstruction:
         # Either no filters applied, or only basic non-restrictive filters
         assert filters is None
 
-    async def test_filters_used_for_metadata_search(self, test_session):
+    async def test_filters_used_for_metadata_search(self, test_session_id):
         """
         Test: Filter is used when needed (poetry with mother-daughter themes).
 
@@ -130,7 +130,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             "I want to find poetry that deals with mother daughter themes",
             conversation_type="catalogSearch",
-            session_id=test_session,
+            session_id=test_session_id,
         )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
@@ -144,7 +144,7 @@ class TestCatalogSearchFilterConstruction:
             f"filters do not match expected criteria: {filters}"
         )
 
-    async def test_negative_filter_construction(self, test_session):
+    async def test_negative_filter_construction(self, test_session_id):
         """
         Test: A negative filter is used when appropriate.
 
@@ -155,7 +155,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             "I want books about history but not military history",
             conversation_type="catalogSearch",
-            session_id=test_session,
+            session_id=test_session_id,
         )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
@@ -168,7 +168,7 @@ class TestCatalogSearchFilterConstruction:
             f"filters do not match expected criteria: {filters}"
         )
 
-    async def test_keyword_match_example(self, test_session):
+    async def test_keyword_match_example(self, test_session_id):
         """
         Test: A keyword match filter for specific terminology.
 
@@ -178,7 +178,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             'Find books that mention "machine learning" in their content',
             conversation_type="catalogSearch",
-            session_id=test_session,
+            session_id=test_session_id,
         )
         search_params = get_first_tool_args(run_result)
 
@@ -191,14 +191,14 @@ class TestCatalogSearchFilterConstruction:
             value=lambda v: "machine learning" in v.lower(),
         ), f"filters do not match expected criteria: {filters}"
 
-    async def test_language_filter(self, test_session):
+    async def test_language_filter(self, test_session_id):
         """
         Test: Language filter construction uses ContainsAny for multiple languages.
         """
         run_result = await update_chat(
             "I want books written English or French about philosophy",
             conversation_type="catalogSearch",
-            session_id=test_session,
+            session_id=test_session_id,
         )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
@@ -223,7 +223,7 @@ class TestCatalogSearchFilterConstruction:
             )
         ), f"filters do not match expected criteria: {filters}"
 
-    async def test_date_range_filter_construction(self, test_session):
+    async def test_date_range_filter_construction(self, test_session_id):
         """
         Test: Date range filters for publication dates.
 
@@ -233,7 +233,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             "Find books published between 2000 and 2010 about technology",
             conversation_type="catalogSearch",
-            session_id=test_session,
+            session_id=test_session_id,
         )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
@@ -276,7 +276,7 @@ class TestCatalogSearchFilterConstruction:
     #             or "french" in filter_str
     #         ), f"Expected combined filters for subject and language, got: {filters}"
 
-    async def test_author_filter_construction(self, test_session):
+    async def test_author_filter_construction(self, test_session_id):
         """
         Test: Author filter for books by specific authors.
 
@@ -286,7 +286,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             "Find books written by Jane Austen",
             conversation_type="catalogSearch",
-            session_id=test_session,
+            session_id=test_session_id,
         )
         search_params = get_first_tool_args(run_result)
         filters = search_params.get("filters")
