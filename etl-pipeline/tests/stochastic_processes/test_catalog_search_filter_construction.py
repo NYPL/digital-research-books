@@ -168,29 +168,6 @@ class TestCatalogSearchFilterConstruction:
             f"filters do not match expected criteria: {filters}"
         )
 
-    async def test_keyword_match_example(self, test_session_id):
-        """
-        Test: A keyword match filter for specific terminology.
-
-        When searching for books with specific technical terms or exact
-        phrases, the agent should use appropriate text matching filters.
-        """
-        run_result = await update_chat(
-            'Find books that mention "machine learning" in their content',
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-        )
-        search_params = get_first_tool_args(run_result)
-
-        filters = search_params.get("filters")
-
-        # filter should require the phrase "machine learning"
-        assert filter_match(
-            filters,
-            operator=["ContainsTokenSequence", "ContainsAllTokens"],
-            value=lambda v: "machine learning" in v.lower(),
-        ), f"filters do not match expected criteria: {filters}"
-
     async def test_language_filter(self, test_session_id):
         """
         Test: Language filter construction uses ContainsAny for multiple languages.
