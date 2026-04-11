@@ -20,11 +20,13 @@ class TestAgent:
 
         # Mock external resource dependencies
         mocker.patch("api.assistant.agent.TurbopufferBackend")
-        mocker.patch("api.assistant.agent.GoogleEmbedder")
         mocker.patch("api.assistant.agent.get_config")
         mocker.patch("api.assistant.agent.get_async_engine")
         mocker.patch("api.assistant.agent.SQLAlchemySession")
         mocker.patch.dict(os.environ, {"GOOGLE_API_KEY": "fake-key"})
+        # Q: the pattern seems to be mock everything implemented in the top-level \
+        # of the function, so why not mock `OpenAIChatCompletionsModel` instead \
+        # of patch just the env var that it uses?
 
         # Mock the agent and its runner to simulate execution
         mocker.patch("api.assistant.agent.Agent")
