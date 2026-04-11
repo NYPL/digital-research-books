@@ -34,7 +34,7 @@ from sqlalchemy import text
 from jinja2 import Template
 
 
-# api code
+#  api code
 from ..utils import remove_markdown_comments
 from ..db import (
     get_frbr_data_by_edition,
@@ -163,10 +163,10 @@ def transform_incomplete(filter_array: Any) -> List:
     ]
 
 
-def recurse_filters(filters: Any, processing_func: Callable) -> Any:
+def recurse_filters(filter_: Any, processing_func: Callable) -> Any:
     """
-    Generic recursive post-processor for TurboPuffer style filters that applies
-    a processing function to every simple (leaf) filter.
+    Generic recursive post-processor for TurboPuffer style (nestable) filters
+    that applies a processing function to every simple (leaf) filter.
 
     Recursion is driven by filter structure:
     - Meta-operators (And, Or, Not) → recurse into child filters
@@ -176,41 +176,42 @@ def recurse_filters(filters: Any, processing_func: Callable) -> Any:
     are not met.
 
     Args:
-        filters: A complete filter specification (list/tuple). Scalars are invalid
+        filter_: A complete filter specification (list/tuple). Scalars are invalid
                  and will raise ValueError.
         processing_func: Function that takes a simple filter and returns either
                          a transformed filter or the original filter unchanged.
 
     Returns:
-        Processed filters with transformations applied where applicable
+        Processed filter with transformations applied where applicable
 
     Raises:
         ValueError: If filters is not a list or tuple
     """
-    if not isinstance(filters, (list, tuple)):
+    if not isinstance(filter_, (list, tuple)):
         raise ValueError(
-            f"Expected filter to be a list or tuple, got {type(filters).__name__}: {filters!r}"
+            f"Expected filter to be a list or tuple, got {type(filter_).__name__}: {filter_!r}"
         )
 
-    if len(filters) == 0:
+    if len(filter_) == 0:
         raise ValueError("Filter cannot be an empty list or tuple")
 
-    operator = filters[0]
+    operator = filter_[0]
 
+    print(filter_)
     if operator in META_OPERATORS:
         if operator == "Not":
             # ["Not", child_filter]
-            return [operator, recurse_filters(filters[1], processing_func)]
+            return [operator, recurse_filters(filter_[1], processing_func)]
         else:
             # ["And"/"Or", [child_filter, ...]]
             return [
                 operator,
-                [recurse_filters(child, processing_func) for child in filters[1]],
+                [recurse_filters(child, processing_func) for child in filter_[1]],
             ]
 
     # Simple filter: [attribute, operator, value] — pass whole filter to processing_func.
     # processing_func returns the filter unchanged if its conditions are not met.
-    return processing_func(filters)
+    return processing_func(filter_)
 
 
 def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> Any:
@@ -399,7 +400,8 @@ Here is the original system prompt:
 
 Given the conversation context, deliver a polite response according to your \
 system prompt with the partially available information if possible or an \
-appropriate apology otherwise — it is fine to acknowledge that the search was not fully complete. \
+appropriate apology otherwise — If the search tool returned an error acknowledge \
+that the search was not fully complete. \
 """
 
 
@@ -486,6 +488,10 @@ async def update_chat(
         ),
     )
 
+    system_prompt_template = Template(
+        (PROMPTS_DIR / "system" / "1.jinja.md").read_text()
+    )
+
     # Search within single book
     if conversation_type == "contentSearch":
         # Fetch FRBR data for the book
@@ -509,8 +515,7 @@ async def update_chat(
             frbr_fields=frbr_fields,
         )
 
-        template = Template((PROMPTS_DIR / "system" / "1.jinja.md").read_text())
-        system_prompt = template.render(
+        system_prompt = system_prompt_template.render(
             conversation_type="contentSearch", frbr_fields=frbr_fields
         )
         tools = [search_book]
@@ -518,9 +523,8 @@ async def update_chat(
     # Search for books in catalog
     else:  # conversation_type == "catalogSearch":
         exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
-        template = Template((PROMPTS_DIR / "system" / "1.jinja.md").read_text())
         system_prompt = remove_markdown_comments(
-            template.render(conversation_type="catalogSearch")
+            system_prompt_template.render(conversation_type="catalogSearch")
         )
         tools = [search_catalog]
 
@@ -595,7 +599,7 @@ def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
 
     missing_item_ids = []
     try:
-        # Retrieve map of record_id->item_id from DB
+        # map record_id->item_id to add to chunk metadata
         # book_id = record_id
         record_ids = set(cd.book_id for cd, _ in results)
         mapper = map_editions_and_records(record_ids=record_ids)

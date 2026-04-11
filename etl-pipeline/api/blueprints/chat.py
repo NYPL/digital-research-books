@@ -7,7 +7,7 @@ from flask import Blueprint, current_app, request
 import newrelic.agent
 
 # shared code
-from logger import create_log
+from logger import create_log, LogContextVars, get_app_logger
 from model.postgres.edition import Edition
 from model.postgres.item import Item
 from model.postgres.link import Link
@@ -165,15 +165,22 @@ def chat(user, session_id):
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
 
-    # Add custom attributes to transaction in New Relic
-    if conversation_type is not None:
-        newrelic.agent.add_custom_attribute("conversationType", conversation_type)
+    log_context = {"session_id": session_id, "conversation_type": conversation_type}
     if edition_id is not None:
-        newrelic.agent.add_custom_attribute("editionId", edition_id)
+        log_context["edition_id"] = edition_id
 
-    logger.info(
-        f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, session_id={session_id}"
-    )
+    # Add custom attributes to transaction in New Relic
+    for k, v in log_context.items():
+        newrelic.agent.add_custom_attribute(k, v)
+
+    with LogContextVars(get_app_logger(), context=log_context):
+        return _chat_handler(user, session_id, conversation_type, message, edition_id)
+
+
+def _chat_handler(user, session_id, conversation_type, message, edition_id):
+    """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
+
+    logger.info(f"Chat request received: {message[:20]}...")
 
     if not message:
         return APIUtils.formatResponseObject(
