@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import os
-import sys
 from dataclasses import dataclass, field
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 from logger import create_log
-from vector_indexing.core.types import Book, BookMetadata, ChunkDocument, InsertResult
+
+from vector_indexing.core.types import Book, BookMetadata, ChunkDocument
 
 logger = create_log(__name__)
 
@@ -283,12 +282,12 @@ def main(barcodes: list[str] | None = None) -> BatchResult:
     """Run the indexing pipeline with default components. Takes in a list of barcodes to index.
     Returns a BatchResult with indexing outcomes.
     """
-    from vector_indexing.core.config import GlobalConfig
     from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
     from vector_indexing.components.chunkers.sentence import SentenceSplitterChunker
     from vector_indexing.components.embedders.google import GoogleEmbedder
     from vector_indexing.components.loaders.s3 import CachedS3BookLoader
     from vector_indexing.components.metadata.provider import MetadataProvider
+    from vector_indexing.core.config import GlobalConfig
 
     if barcodes is None:
         return
