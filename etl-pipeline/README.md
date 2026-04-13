@@ -67,7 +67,7 @@ This guide provides step-by-step instructions to set up local development and st
    docker compose -f docker-compose.setup.yml up --abort-on-container-exit
    ```
 
-   Or to instead seed using a local fixture file:
+   Or to instead seed known books using a local fixture file:
 
    ```bash
    # Run dockerized local development setup
