@@ -1,5 +1,3 @@
-import os
-
 from logger import create_log
 from vector_indexing.pipeline.orchestrator import main
 
@@ -11,5 +9,5 @@ class VectorIndexingProcess:
         self.barcodes = args[-1]  # options is the last argument
 
     def run(self):
-        print(self.barcodes)
+        logger.info(f"Starting Vector Indexing Process with barcodes: {self.barcodes}")
         main(barcodes=self.barcodes)
