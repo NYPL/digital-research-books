@@ -27,6 +27,13 @@ const manySnippets = Array.from({ length: 7 }, (_, i) => ({
   text: `Snippet ${i + 1}`,
 }));
 
+beforeEach(() => {
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    json: async () => ({}),
+  });
+});
+
 describe("SnippetList", () => {
   test("renders snippet links and text", () => {
     renderWithResearchAssistant(

@@ -10,6 +10,10 @@ concurrency:
   group: continuous-deployment
   cancel-in-progress: false
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy_to_qa:
     uses: ./.github/workflows/etl-pipeline-deploy-qa.yaml
@@ -20,12 +24,7 @@ jobs:
     uses: ./.github/workflows/etl-pipeline-ci.yaml
     secrets: inherit
 
-  run_ci_self_hosted:
-    needs: deploy_to_qa
-    uses: ./.github/workflows/etl-pipeline-ci-self-hosted.yaml
-    secrets: inherit
-
   deploy_to_production:
-    needs: [run_ci, run_ci_self_hosted]
+    needs: run_ci
     uses: ./.github/workflows/etl-pipeline-deploy-production.yaml
     secrets: inherit
