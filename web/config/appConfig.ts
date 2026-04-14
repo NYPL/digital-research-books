@@ -31,7 +31,7 @@ const appConfig = {
   feedback: {
     drbFormURL: "https://api.airtable.com/v0/appFLZEc3LmVZCRxn/Feedback",
     vraFormURL: "https://api.airtable.com/v0/app30jN7kefzFZqq3/Feedback",
-    vraPopupUrl: "https://api.airtable.com/v0/applcKTUe2Otiqwac/Popup",
+    vraPopupUrl: "https://api.airtable.com/v0/app30jN7kefzFZqq3/Popup",
   },
   displayCitations: {
     experimentName: "DisplayCitations",

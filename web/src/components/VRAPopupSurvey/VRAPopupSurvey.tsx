@@ -9,6 +9,7 @@ import {
   TextInput,
 } from "@nypl/design-system-react-components";
 import React from "react";
+import { submitVRAPopupSurvey } from "~/src/lib/api/FeedbackApi";
 
 const SURVEY_QUESTIONS = [
   "The interface is easy and intuitive to navigate.",
@@ -43,8 +44,10 @@ const VRAPopupSurvey: React.FC = () => {
   );
 
   const onSubmit = () => {
+    submitVRAPopupSurvey({ responses, sessionId: "your-session-id" });
     setIsConfirmation(true);
   };
+
   return (
     <Form
       position="fixed"
