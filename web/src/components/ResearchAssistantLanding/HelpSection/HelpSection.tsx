@@ -4,6 +4,7 @@ import {
   Text,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
+import { ASK_NYPL } from "~/src/constants/links";
 import Link from "../../Link/Link";
 import ArrowIcon from "../../ResearchAssistant/icons/ArrowIcon";
 import LandingButtons from "../LandingButtons";
@@ -60,7 +61,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                 you.
               </Text>
               <Link
-                to="https://www.nypl.org/get-help/contact-us"
+                to={ASK_NYPL}
                 hasVisitedState={false}
                 isUnderlined={false}
                 color="section.research.secondary"

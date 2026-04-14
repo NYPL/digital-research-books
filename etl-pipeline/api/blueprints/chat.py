@@ -237,5 +237,6 @@ def _chat_handler(user, session_id, conversation_type, message, edition_id):
         "messages": messages,
         "result_type": result_type,
         "result": formatted_search_result,
+        "session_id": session_id,
     }
     return APIUtils.formatResponseObject(200, RESPONSE_TYPE, response_data)
