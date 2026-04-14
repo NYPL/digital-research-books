@@ -10,3 +10,5 @@ python main.py -e local -p SeedLocalDataProcess -i daily
 # then add seeddb to main docker compose file with `depends_on: devsetup; condition: service_completed_successfully`
 # ideas to make SeedLocalDataProcess idempotent: just  check if there are the same number of records present \
 #  in the db as the seed process fetches (50 records)
+
+# TODO: Seed from fixture file
