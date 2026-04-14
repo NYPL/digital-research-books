@@ -9,23 +9,19 @@ import {
   TextInput,
 } from "@nypl/design-system-react-components";
 import React from "react";
+import {
+  CHARACTER_LIMIT,
+  SURVEY_DESCRIPTION,
+  SURVEY_QUESTIONS,
+} from "~/src/constants/feedback";
+import { FeedbackContext } from "~/src/context/FeedbackContext";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { submitVRAPopupSurvey } from "~/src/lib/api/FeedbackApi";
 
-const SURVEY_QUESTIONS = [
-  "The interface is easy and intuitive to navigate.",
-  "Search results were displayed in a clear and useful format.",
-  "The results were relevant to my queries.",
-  "I could easily trace results back to their original source materials.",
-  "Would you like to share any additional details about your experience (optional)?",
-];
-
-const SURVEY_DESCRIPTION =
-  "A few quick questions! How do you feel about this statement?";
-
-const CHARACTER_LIMIT = 500;
-
 const VRAPopupSurvey: React.FC = () => {
-  const [isOpen, setIsOpen] = React.useState(true);
+  const { isSurveyVisible, markSurveyHandled } = useResearchAssistant();
+  const { sessionId } = React.useContext(FeedbackContext);
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
   const [responses, setResponses] = React.useState<string[]>(
     Array(SURVEY_QUESTIONS.length).fill("")
@@ -43,8 +39,13 @@ const VRAPopupSurvey: React.FC = () => {
     []
   );
 
+  const closeSurvey = React.useCallback(() => {
+    markSurveyHandled();
+  }, [markSurveyHandled]);
+
   const onSubmit = () => {
-    submitVRAPopupSurvey({ responses, sessionId: "your-session-id" });
+    markSurveyHandled();
+    submitVRAPopupSurvey({ responses, sessionId: sessionId ?? "" });
     setIsConfirmation(true);
   };
 
@@ -57,7 +58,7 @@ const VRAPopupSurvey: React.FC = () => {
       borderRadius="8px"
       border="1px solid"
       borderColor="ui.border.default"
-      display={isOpen ? "block" : "none"}
+      display={isSurveyVisible || isConfirmation ? "block" : "none"}
       gap="grid.xxs"
       padding="m"
       width="366px"
@@ -84,7 +85,7 @@ const VRAPopupSurvey: React.FC = () => {
               height="fit-content"
               minWidth="24px"
               padding="0"
-              onClick={() => setIsOpen(false)}
+              onClick={closeSurvey}
             >
               <Icon name="close" size="large" />
             </Button>
