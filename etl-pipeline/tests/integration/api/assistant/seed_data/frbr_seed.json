@@ -1,0 +1,2690 @@
+{
+  "works": [
+    {
+      "id": 4289863,
+      "uuid": "6698e089-2a88-46ab-93d7-f6297bbd6d47",
+      "title": "Elements of physics, or, Natural philosophy, general and medical : explained independently of technical mathematics, and containing new disquisitions and practical suggestions, in two volumes",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Arnott, Neil, 1788-1874",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        }
+      ],
+      "contributors": [
+        {
+          "name": "Hays, Isaac",
+          "viaf": "",
+          "lcnaf": "",
+          "roles": [
+            ""
+          ]
+        }
+      ],
+      "subjects": [
+        {
+          "heading": "Physics",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [],
+      "date_created": "2026-01-13 05:37:06.413778",
+      "date_modified": "2026-01-22 21:19:47.822438"
+    },
+    {
+      "id": 4343801,
+      "uuid": "17b928af-7c80-4d86-855a-d1ff383303f1",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "Fires -- Periodicals -- Statistics -- New York (State)",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "New York Board of Fire Underwriters -- Periodicals",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Fire insurance -- Periodicals -- Statistics -- New York (State)",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [],
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    }
+  ],
+  "editions": [
+    {
+      "id": 15257916,
+      "title": "Elements of physics, or, Natural philosophy, general and medical : explained independently of technical mathematics, and containing new disquisitions and practical suggestions, in two volumes",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": "2nd American ed. from the 4th London ed",
+      "publication_place": null,
+      "publication_date": "1831-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "2 v. :ill. ;23 cm",
+      "summary": "{\"Only vol. 1 and vol. 2, part 1 published ; vol. 2 is 1st American from the 1st London ed\"}",
+      "publishers": [
+        {
+          "name": "Carey & Lea",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1831",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [],
+      "dcdw_uuids": [
+        "64b0e87a-0680-4825-9773-d6ada3189227"
+      ],
+      "work_id": 4289863,
+      "date_created": "2026-01-22 21:19:47.822107",
+      "date_modified": "2026-01-22 21:19:47.822438"
+    },
+    {
+      "id": 15649870,
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": null,
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "summary": "{\"Description based on: 1881\"}",
+      "publishers": [
+        {
+          "name": "s.n",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [],
+      "measurements": [],
+      "languages": [],
+      "dcdw_uuids": [
+        "6a1a1594-4642-4ddd-9fc8-b63e15edb903",
+        "bbb5caf5-e426-462c-875d-53270c220da8",
+        "18e70483-df7e-43da-8458-3623e909472c",
+        "504511dc-f3ed-418c-9c97-ee40b3b52f3b",
+        "7f27a9df-6d37-4691-a129-53ef317cd700",
+        "58a84e7d-6787-4c29-953a-dc9b760ad2c6",
+        "b3fb062b-cd2d-4792-ba66-121441ea84e8",
+        "96d07f34-5207-4837-872a-07b4493a1ec9",
+        "ebd38a02-b257-472f-b014-0c2e9d00510b",
+        "290de8ab-3804-4fdc-8364-ad4310277393",
+        "45e296ce-659a-4693-a5d7-f02d835385d2",
+        "0a56196b-0246-457d-82ea-129a198e14a4",
+        "92ef7ce2-0141-4bbc-9faa-c59dda453b5b",
+        "033451ff-70c5-4be0-8d8a-0b2e3ee1acf1"
+      ],
+      "work_id": 4343801,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    }
+  ],
+  "records": [
+    {
+      "id": 62521060,
+      "uuid": "64b0e87a-0680-4825-9773-d6ada3189227",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433111532358|grin",
+      "title": "Elements of physics, or, Natural philosophy, general and medical : explained independently of technical mathematics, and containing new disquisitions and practical suggestions, in two volumes /",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Physics||"
+      ],
+      "authors": [
+        "Arnott, Neil, 1788-1874|||true"
+      ],
+      "contributors": [
+        "Hays, Isaac|||"
+      ],
+      "languages": [],
+      "dates": [
+        "1831|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "14276227|grin",
+        "SBM|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "Carey & Lea||"
+      ],
+      "has_version": "2nd American ed. from the 4th London ed||2|2",
+      "table_of_contents": null,
+      "extent": "2 v. :ill. ;23 cm",
+      "abstract": "{\"Only vol. 1 and vol. 2, part 1 published ; vol. 2 is 1st American from the 1st London ed\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433084032576|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433111532358/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-01-22 21:19:47.822444"
+    },
+    {
+      "id": 62727266,
+      "uuid": "6a1a1594-4642-4ddd-9fc8-b63e15edb903",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075947469|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075947469/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727267,
+      "uuid": "bbb5caf5-e426-462c-875d-53270c220da8",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075947451|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075947451/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727268,
+      "uuid": "18e70483-df7e-43da-8458-3623e909472c",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075947444|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075947444/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727269,
+      "uuid": "504511dc-f3ed-418c-9c97-ee40b3b52f3b",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075947436|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075947436/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727270,
+      "uuid": "7f27a9df-6d37-4691-a129-53ef317cd700",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075947428|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075947428/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727271,
+      "uuid": "58a84e7d-6787-4c29-953a-dc9b760ad2c6",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075947410|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075947410/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727272,
+      "uuid": "b3fb062b-cd2d-4792-ba66-121441ea84e8",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075947402|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075947402/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727273,
+      "uuid": "96d07f34-5207-4837-872a-07b4493a1ec9",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075947394|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075947394/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727274,
+      "uuid": "ebd38a02-b257-472f-b014-0c2e9d00510b",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075947386|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075947386/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727325,
+      "uuid": "290de8ab-3804-4fdc-8364-ad4310277393",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075946875|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075946875/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727335,
+      "uuid": "45e296ce-659a-4693-a5d7-f02d835385d2",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075946768|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075946768/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727337,
+      "uuid": "0a56196b-0246-457d-82ea-129a198e14a4",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075946743|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075946743/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727338,
+      "uuid": "92ef7ce2-0141-4bbc-9faa-c59dda453b5b",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075946735|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075946735/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 62727339,
+      "uuid": "033451ff-70c5-4be0-8d8a-0b2e3ee1acf1",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433075946727|grin",
+      "title": "Annual report of the Committee on Fire Patrol, to the New York Board of Fire Underwriters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "New York Board of Fire Underwriters -- Periodicals||",
+        "Fire insurance -- Periodicals -- Statistics -- New York (State)||",
+        "Fires -- Periodicals -- Statistics -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7545271|grin",
+        "0001663251|oclc",
+        "NYG|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "s.n||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "v. ;23 cm",
+      "abstract": "{\"Description based on: 1881\"}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433075946727|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946735|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946743|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946768|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075946875|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947386|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947394|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947402|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947410|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947428|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947436|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947444|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947451|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433075947469|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433075946727/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-02-04 22:16:17.914837"
+    }
+  ],
+  "items": [
+    {
+      "id": 23891844,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15257916,
+      "record_id": 62521060,
+      "date_created": "2026-01-22 21:19:47.822107",
+      "date_modified": "2026-01-22 21:19:47.822438"
+    },
+    {
+      "id": 25467432,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727339,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467431,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727338,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467430,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727337,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467429,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727335,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467428,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727325,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467427,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727274,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467426,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727273,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467425,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727272,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467424,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727271,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467423,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727270,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467422,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727269,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467421,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727268,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467420,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727267,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 25467419,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15649870,
+      "record_id": 62727266,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    }
+  ],
+  "links": [
+    {
+      "id": 18802779,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433111532358/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-13 05:37:06.413778",
+      "date_modified": "2026-01-13 05:37:06.414135"
+    },
+    {
+      "id": 18802780,
+      "url": "hdl.handle.net/2027/nyp.33433084032576",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-13 05:37:06.413778",
+      "date_modified": "2026-01-13 05:37:06.414135"
+    },
+    {
+      "id": 19096446,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075946727/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 00:52:02.116068",
+      "date_modified": "2026-02-04 00:52:02.116389"
+    },
+    {
+      "id": 18955529,
+      "url": "hdl.handle.net/2027/nyp.33433075946875",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955524,
+      "url": "hdl.handle.net/2027/nyp.33433075946768",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955523,
+      "url": "hdl.handle.net/2027/nyp.33433075947402",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955530,
+      "url": "hdl.handle.net/2027/nyp.33433075947469",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955528,
+      "url": "hdl.handle.net/2027/nyp.33433075947451",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955519,
+      "url": "hdl.handle.net/2027/nyp.33433075947444",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955526,
+      "url": "hdl.handle.net/2027/nyp.33433075946735",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955521,
+      "url": "hdl.handle.net/2027/nyp.33433075947394",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955518,
+      "url": "hdl.handle.net/2027/nyp.33433075947428",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955522,
+      "url": "hdl.handle.net/2027/nyp.33433075947436",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955525,
+      "url": "hdl.handle.net/2027/nyp.33433075946743",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955527,
+      "url": "hdl.handle.net/2027/nyp.33433075947386",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955531,
+      "url": "hdl.handle.net/2027/nyp.33433075947410",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955532,
+      "url": "hdl.handle.net/2027/nyp.33433075946727",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 18955520,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075946735/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-23 14:55:40.239778",
+      "date_modified": "2026-01-23 14:55:40.240145"
+    },
+    {
+      "id": 19096475,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075946743/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 06:26:05.888406",
+      "date_modified": "2026-02-04 06:26:05.898820"
+    },
+    {
+      "id": 19096526,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075946768/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 00:52:02.116068",
+      "date_modified": "2026-02-04 00:52:02.116389"
+    },
+    {
+      "id": 19099466,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075946875/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 22:16:15.030954",
+      "date_modified": "2026-02-04 22:16:15.031439"
+    },
+    {
+      "id": 19096511,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075947386/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 06:26:05.779459",
+      "date_modified": "2026-02-04 06:26:05.781161"
+    },
+    {
+      "id": 19100111,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075947394/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 22:16:17.148153",
+      "date_modified": "2026-02-04 22:16:17.165646"
+    },
+    {
+      "id": 19100138,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075947402/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 22:16:16.244238",
+      "date_modified": "2026-02-04 22:16:16.244588"
+    },
+    {
+      "id": 19096142,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075947410/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 00:52:02.116068",
+      "date_modified": "2026-02-04 00:52:02.116389"
+    },
+    {
+      "id": 19100077,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075947428/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 22:16:15.030954",
+      "date_modified": "2026-02-04 22:16:15.031439"
+    },
+    {
+      "id": 19101180,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075947436/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 19096372,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075947444/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 00:52:02.116068",
+      "date_modified": "2026-02-04 00:52:02.116389"
+    },
+    {
+      "id": 19100254,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075947451/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 22:16:15.030954",
+      "date_modified": "2026-02-04 22:16:15.031439"
+    },
+    {
+      "id": 19096955,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433075947469/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-02-04 06:26:05.888406",
+      "date_modified": "2026-02-04 06:26:05.898820"
+    }
+  ],
+  "item_links": [
+    {
+      "item_id": 23891844,
+      "link_id": 18802779
+    },
+    {
+      "item_id": 23891844,
+      "link_id": 18802780
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467419,
+      "link_id": 19096955
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467420,
+      "link_id": 19100254
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467421,
+      "link_id": 19096372
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467422,
+      "link_id": 19101180
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467423,
+      "link_id": 19100077
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467424,
+      "link_id": 19096142
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467425,
+      "link_id": 19100138
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467426,
+      "link_id": 19100111
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467427,
+      "link_id": 19096511
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467428,
+      "link_id": 19099466
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467429,
+      "link_id": 19096526
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467430,
+      "link_id": 19096475
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955520
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467431,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955518
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955519
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955521
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955522
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955523
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955524
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955525
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955526
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955527
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955528
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955529
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955530
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955531
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 18955532
+    },
+    {
+      "item_id": 25467432,
+      "link_id": 19096446
+    }
+  ],
+  "rights": [
+    {
+      "id": 35007349,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-22 21:19:47.822107",
+      "date_modified": "2026-01-22 21:19:47.822438"
+    },
+    {
+      "id": 36579048,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579047,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579046,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579045,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579044,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579043,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579042,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579041,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579040,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579039,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579038,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579037,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579036,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579035,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    }
+  ],
+  "item_rights": [
+    {
+      "item_id": 23891844,
+      "rights_id": 35007349
+    },
+    {
+      "item_id": 25467419,
+      "rights_id": 36579035
+    },
+    {
+      "item_id": 25467420,
+      "rights_id": 36579036
+    },
+    {
+      "item_id": 25467421,
+      "rights_id": 36579037
+    },
+    {
+      "item_id": 25467422,
+      "rights_id": 36579038
+    },
+    {
+      "item_id": 25467423,
+      "rights_id": 36579039
+    },
+    {
+      "item_id": 25467424,
+      "rights_id": 36579040
+    },
+    {
+      "item_id": 25467425,
+      "rights_id": 36579041
+    },
+    {
+      "item_id": 25467426,
+      "rights_id": 36579042
+    },
+    {
+      "item_id": 25467427,
+      "rights_id": 36579043
+    },
+    {
+      "item_id": 25467428,
+      "rights_id": 36579044
+    },
+    {
+      "item_id": 25467429,
+      "rights_id": 36579045
+    },
+    {
+      "item_id": 25467430,
+      "rights_id": 36579046
+    },
+    {
+      "item_id": 25467431,
+      "rights_id": 36579047
+    },
+    {
+      "item_id": 25467432,
+      "rights_id": 36579048
+    }
+  ]
+}

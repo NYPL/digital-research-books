@@ -93,7 +93,7 @@ jobs:
 
       - name: Install Test Dependencies
         working-directory: ./web
-        run: npm i @playwright/test@1.52.0
+        run: npm i @playwright/test@1.59.0
 
       - name: Install Playwright
         working-directory: ./web
@@ -112,7 +112,6 @@ jobs:
         shell: bash
 
       - name: Run Playwright tests (DRB)
-        if: false # Temporarily disable Playwright tests until we can establish API connectivity in CI
         working-directory: ./web
         run: npm run playwright:drb
         env:
@@ -120,7 +119,6 @@ jobs:
           CATALOG_USER_PIN: ${{ secrets.CATALOG_USER_PIN }}
 
       - name: Run Playwright tests (VRA)
-        if: false # Temporarily disable Playwright tests until we can establish API connectivity in CI
         working-directory: ./web
         run: npm run playwright:vra
         env:
