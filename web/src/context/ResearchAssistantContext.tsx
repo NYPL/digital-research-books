@@ -9,6 +9,8 @@ import {
   MessageRole,
   PageType,
 } from "~/src/types/ResearchAssistant";
+import { SURVEY_DELAY_MS } from "../constants/researchAssistant";
+import { getSurveyStorageKey } from "../util/ResearchAssistantUtils";
 import { FeedbackContext } from "./FeedbackContext";
 
 interface ResearchAssistantViewState {
@@ -49,13 +51,6 @@ interface PushNewStateArgs {
 const ResearchAssistantContext = createContext<
   ResearchAssistantContextType | undefined
 >(undefined);
-
-const SURVEY_SESSION_STORAGE_KEY = "vra-popup-survey-handled";
-const SURVEY_DELAY_MS = 180000;
-
-const getSurveyStorageKey = (sessionId?: string) => {
-  return `${SURVEY_SESSION_STORAGE_KEY}:${sessionId}`;
-};
 
 export const ResearchAssistantProvider: React.FC<{
   children: React.ReactNode;
