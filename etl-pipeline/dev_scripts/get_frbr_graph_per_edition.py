@@ -5,8 +5,7 @@ or qa for use by seed_frbr_data.py, which upserts to a local Postgres DB so that
 editions returned by the vector DB have the metadata needed for constructing /chat
 responses, enabling VRA integration tests against a local API.
 
-Hence the default output file path is set to a location within the integration test
-suite but it can be overridden as desired.
+The default output path is set to the centralized test fixtures location (/tests/fixtures).
 
 Usage:
     From etl-pipeline/:
