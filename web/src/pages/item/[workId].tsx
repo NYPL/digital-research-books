@@ -50,7 +50,7 @@ const ItemPage: React.FC<any> = (props) => {
   );
 
   return (
-    <Layout feedback={<VRAFeedback location={router.asPath} />}>
+    <Layout feedback={<VRAFeedback />}>
       <Head>
         <title>{`${truncatedTitle} | ${documentTitles.workItem}`}</title>
       </Head>

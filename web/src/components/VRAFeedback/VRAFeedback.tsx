@@ -1,4 +1,5 @@
 import { FeedbackBoxViewType } from "@nypl/design-system-react-components";
+import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
 import {
   BUTTON_DESCRIPTION_TEXT,
@@ -9,11 +10,7 @@ import {
 import { FeedbackContext } from "~/src/context/FeedbackContext";
 import { submitVRAFeedback } from "~/src/lib/api/FeedbackApi";
 
-interface VRAFeedbackProps {
-  location: string;
-}
-
-const VRAFeedback: React.FC<VRAFeedbackProps> = ({ location }) => {
+const VRAFeedback: React.FC = () => {
   const [view, setView] = useState<FeedbackBoxViewType>("form");
   const {
     FeedbackBox,
@@ -30,6 +27,7 @@ const VRAFeedback: React.FC<VRAFeedbackProps> = ({ location }) => {
     thumbValue,
     sessionId,
   } = useContext(FeedbackContext);
+  const router = useRouter();
 
   useEffect(() => {
     if (isError) {
@@ -56,7 +54,7 @@ const VRAFeedback: React.FC<VRAFeedbackProps> = ({ location }) => {
         ? `Error Code: ${statusCode ?? "Unknown"} - ${values.comment}`
         : values.comment,
       category: isError ? "Bug" : values.category,
-      url: location,
+      url: router.asPath,
       email: values.email,
       sessionId: sessionId ?? "",
       thumbState: thumbValue ?? "",
