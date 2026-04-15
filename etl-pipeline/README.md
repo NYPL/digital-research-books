@@ -1,10 +1,10 @@
-# Digital Research Books 
+# Digital Research Books
 
 <!-- ![ETL_Pipeline_Tests](https://github.com/NYPL/drb-etl-pipeline/workflows/ETL_Pipeline_Tests/badge.svg) -->
 
 This directory contains a containerized python application for importing data from multiple source projects and transforming this data into a unified format that can be accessed via an API. The curated data and API powers the [Virtual Research Assistant](http://digital-research-books-beta.nypl.org/research-assistant) and the legacy [Digital Research Books Beta](http://digital-research-books-beta.nypl.org/).
 
-## ETL Pipeline 
+## ETL Pipeline
 
 The ETL pipeline transforms data from various sources into a unified "FRBRized" format where:
 
@@ -32,7 +32,7 @@ Both hosts provide Swagger documentation at `/apidocs/` for DRB-related public e
 
 ## Quickstart Guide
 
-This guide provides step-by-step instructions to set up local development and start the DRB API server running locally in a docker container. 
+This guide provides step-by-step instructions to set up local development and start the DRB API server running locally in a docker container.
 
 ### Prerequisites
 
@@ -44,7 +44,7 @@ This guide provides step-by-step instructions to set up local development and st
    - Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
    - Sign into AWS console at http://awsconsole.nypl.org/.
    - Choose account:`nypl-digital-dev`
-   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . 
+   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure .
       - When asked, set profile name to "default". This allows AWS SDKs and CLI to authenticate to this profile without any extra arguments.
       - This authorization is temporary, to re-authenticate with SSO, run `aws sso login`.
 - Clone the repository:
@@ -67,7 +67,18 @@ This guide provides step-by-step instructions to set up local development and st
    docker compose -f docker-compose.setup.yml up --abort-on-container-exit
    ```
 
-   Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
+   Or to instead seed known books using a local fixture file:
+
+   ```bash
+   # Run dockerized local development setup
+   docker compose run --rm --entrypoint python devsetup main.py \
+      -p LocalDevelopmentSetupProcess \
+      -e docker-compose
+
+   # Run seeding script
+   docker compose run --rm --entrypoint python devsetup \
+      -m tests.integration.api.assistant.support.seed_frbr_data
+   ```
 
 2. Startup Docker Services:
 
@@ -82,7 +93,7 @@ This guide provides step-by-step instructions to set up local development and st
    - Redis
    - LocalStack (S3 and SQS)
    - API service
-  
+
    Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
 
 #### (Option B) Run directly on local machine
@@ -91,14 +102,14 @@ This guide provides step-by-step instructions to set up local development and st
 
    **Create a virtual environment**
 
-   *Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).* 
+   *Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).*
 
    ```sh
    python -m venv venv
    ```
 
    **Activate the virtual environment.**
-   The following steps assume the virtual environment is active. 
+   The following steps assume the virtual environment is active.
    You will need to do this for every terminal session.
 
    ```sh
@@ -152,7 +163,7 @@ This guide provides step-by-step instructions to set up local development and st
      Username: postgres
      Password: localpsql
      ```
- 
+
 
 ## Available Processes
 
@@ -195,12 +206,12 @@ python main.py -p IngestProcess -e local -i daily --source hathitrust
 python main.py -p RecordPipelineProcess -e local
 ```
 
-See `python main.py --help` for all available options.  
+See `python main.py --help` for all available options.
 
 
 
 ## Formatting
-We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files. 
+We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files.
 
 We also check formatting before committing. If you followed to the set up steps to install the pre-commit hooks, formatting of changed files will be performed at each commit.
 

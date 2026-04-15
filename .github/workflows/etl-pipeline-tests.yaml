@@ -92,19 +92,35 @@ jobs:
         run: |
           ./docker-compose-healthcheck.sh
 
+      - name: Run integration tests (DRB)
+        env:
+          ENVIRONMENT: local
+        working-directory: ./etl-pipeline
+        run: |
+          make integration-drb
+
+      - name: Seed local Postgres DB to support /chat API tests
+        working-directory: ./etl-pipeline
+        run: |
+          docker compose run --rm --entrypoint python devsetup main.py \
+            -p LocalDevelopmentSetupProcess \
+            -e docker-compose && \
+          docker compose run --rm --entrypoint python devsetup \
+            -m tests.integration.api.assistant.support.seed_frbr_data
+
+      - name: Run integration tests (VRA)
+        env:
+          ENVIRONMENT: local
+        working-directory: ./etl-pipeline
+        run: |
+          make integration-vra
+
       - name: Run functional tests
         env:
           ENVIRONMENT: local
         working-directory: ./etl-pipeline
         run: |
           make functional
-
-      - name: Run integration tests
-        env:
-          ENVIRONMENT: local
-        working-directory: ./etl-pipeline
-        run: |
-          make integration
 
       - name: Dump service logs
         if: always() && steps.build-images.outcome == 'success'
