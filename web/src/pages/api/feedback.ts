@@ -46,15 +46,15 @@ const feedbackHandlers: Record<string, FeedbackHandler> = {
     mapFields: (fields: PopupSurveyFeedback): AirtableFields => {
       const responses = fields.responses;
       return {
-        "Question 1": responses[0],
-        "Question 2": responses[1],
-        "Question 3": responses[2],
-        "Question 4": responses[3],
-        Comment: responses[4],
-        "Session ID": fields.sessionId,
-        Date: new Date().toLocaleString("en-US"),
-        URL: fields.url,
-        Environment: process.env.APP_ENV ?? "",
+        fldFYcj0dD3DYkOUF: responses[0],
+        fldp7kwoR2ZLJsX6M: responses[1],
+        fldTAM3mKfUGChBz7: responses[2],
+        fldFDnSBjZbPxS1NT: responses[3],
+        fldgod6a2P1BQUrYZ: responses[4],
+        fldj3N2Zvmqano680: fields.sessionId,
+        fld8tezDVVVc03SOm: new Date().toLocaleString("en-US"),
+        fldBlsYdy9t0iUqqG: fields.url,
+        fldTTU0PHBcY4y2Uc: process.env.APP_ENV ?? "",
       };
     },
   },
