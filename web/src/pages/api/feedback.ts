@@ -53,6 +53,7 @@ const feedbackHandlers: Record<string, FeedbackHandler> = {
         Comment: responses[4],
         "Session ID": fields.sessionId,
         Date: new Date().toLocaleString("en-US"),
+        URL: fields.url,
         Environment: process.env.APP_ENV ?? "",
       };
     },

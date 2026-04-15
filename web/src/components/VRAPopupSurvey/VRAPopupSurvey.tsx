@@ -8,6 +8,7 @@ import {
   Text,
   TextInput,
 } from "@nypl/design-system-react-components";
+import { useRouter } from "next/router";
 import React from "react";
 import {
   CHARACTER_LIMIT,
@@ -21,6 +22,7 @@ import { submitVRAPopupSurvey } from "~/src/lib/api/FeedbackApi";
 const VRAPopupSurvey: React.FC = () => {
   const { isSurveyVisible, markSurveyHandled } = useResearchAssistant();
   const { sessionId } = React.useContext(FeedbackContext);
+  const router = useRouter();
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
   const [responses, setResponses] = React.useState<string[]>(
@@ -41,11 +43,16 @@ const VRAPopupSurvey: React.FC = () => {
 
   const closeSurvey = React.useCallback(() => {
     markSurveyHandled();
+    setIsConfirmation(false);
   }, [markSurveyHandled]);
 
   const onSubmit = () => {
     markSurveyHandled();
-    submitVRAPopupSurvey({ responses, sessionId: sessionId ?? "" });
+    submitVRAPopupSurvey({
+      responses,
+      sessionId: sessionId ?? "",
+      url: router.asPath,
+    });
     setIsConfirmation(true);
   };
 

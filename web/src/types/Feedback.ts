@@ -15,4 +15,5 @@ export type VRAFeedback = Feedback & {
 export type PopupSurveyFeedback = {
   responses: string[];
   sessionId: string;
+  url: string;
 };
