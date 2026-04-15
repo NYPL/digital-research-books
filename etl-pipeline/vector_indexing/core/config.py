@@ -50,9 +50,12 @@ class GlobalConfig:
     environment: str = "local"
 
     # S3 settings
-    s3_bucket: str = "vra-experiments-dev"
-    s3_prefix: str = "data/experiment_books"
+    s3_bucket: str = "drb-files-limited-production"
+    s3_prefix: str = "grin"
     s3_max_workers: int = 30
+
+    # GRIN decryption key (for encrypted archives)
+    grin_access_key: str | None = None
 
     # Local paths
     data_dir: Path = field(default_factory=lambda: DATA_DIR)
@@ -109,6 +112,7 @@ class GlobalConfig:
             "pg_password",
             "pg_user",
             "turbopuffer_api_key",
+            "grin_access_key",
         }
     )
 
@@ -207,6 +211,7 @@ class GlobalConfig:
             s3_bucket=get_env(["S3_BUCKET"], defaults.s3_bucket),
             s3_prefix=get_env(["S3_PREFIX"], defaults.s3_prefix),
             s3_max_workers=get_env(["S3_MAX_WORKERS"], defaults.s3_max_workers),
+            grin_access_key=get_env(["GRIN_ACCESS_KEY"], defaults.grin_access_key),
             data_dir=get_env(["DATA_DIR"], defaults.data_dir),
             book_cache_dir=get_env(["BOOK_CACHE_DIR"], defaults.book_cache_dir),
             embedding_cache_dir=get_env(
@@ -370,6 +375,7 @@ class GlobalConfig:
             "s3_bucket": ["S3_BUCKET"],
             "s3_prefix": ["S3_PREFIX"],
             "s3_max_workers": ["S3_MAX_WORKERS"],
+            "grin_access_key": ["GRIN_ACCESS_KEY"],
             "data_dir": ["DATA_DIR"],
             "book_cache_dir": ["BOOK_CACHE_DIR"],
             "embedding_cache_dir": ["EMBEDDING_CACHE_DIR"],

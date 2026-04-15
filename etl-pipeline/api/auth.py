@@ -10,7 +10,7 @@ logger = create_log(__name__)
 def require_api_key(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        expected_key = require_env("API_KEY")
+        expected_key = require_env("VRA_API_KEY")
         key = request.headers.get("X-API-Key")
 
         if key is None:

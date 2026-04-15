@@ -1,17 +1,17 @@
 import { FeedbackBoxViewType } from "@nypl/design-system-react-components";
+import { useRouter } from "next/router";
 import React, { useContext, useEffect, useState } from "react";
+import {
+  BUTTON_DESCRIPTION_TEXT,
+  CONFIRMATION_TEXT,
+  ERROR_DESCRIPTION_TEXT,
+  ERROR_NOTIFICATION_TEXT,
+} from "~/src/constants/feedback";
 import { FeedbackContext } from "~/src/context/FeedbackContext";
-import { submitDRBFeedback } from "~/src/lib/api/FeedbackApi";
+import { submitVRAFeedback } from "~/src/lib/api/FeedbackApi";
 
-const DEFAULT_DESCRIPTION_TEXT = "Please share your question or feedback.";
-const ERROR_DESCRIPTION_TEXT = "We are here to help!";
-const ERROR_NOTIFICATION_TEXT = `You are asking for help or information about a page error.`;
-
-const Feedback: React.FC<any> = ({ location }) => {
+const VRAFeedback: React.FC = () => {
   const [view, setView] = useState<FeedbackBoxViewType>("form");
-  const [descriptionText, setDescriptionText] = useState(
-    DEFAULT_DESCRIPTION_TEXT
-  );
   const {
     FeedbackBox,
     isOpen,
@@ -22,20 +22,26 @@ const Feedback: React.FC<any> = ({ location }) => {
     statusCode,
     setIsError,
     setNotificationText,
+    descriptionText,
+    setDescriptionText,
+    thumbValue,
+    sessionId,
   } = useContext(FeedbackContext);
+  const router = useRouter();
 
   useEffect(() => {
     if (isError) {
       setDescriptionText(ERROR_DESCRIPTION_TEXT);
       setNotificationText(ERROR_NOTIFICATION_TEXT);
     } else {
-      setDescriptionText(DEFAULT_DESCRIPTION_TEXT);
+      setDescriptionText(BUTTON_DESCRIPTION_TEXT);
     }
   }, [isError, setNotificationText]);
 
   const onCloseAndReset = () => {
     if (isError) setIsError(false);
     if (notificationText) setNotificationText(null);
+    setDescriptionText(BUTTON_DESCRIPTION_TEXT);
     onClose();
     setView("form");
   };
@@ -43,13 +49,15 @@ const Feedback: React.FC<any> = ({ location }) => {
   const handleFeedbackSubmit = (
     values: React.ComponentProps<typeof FeedbackBox>["onSubmit"]
   ) => {
-    submitDRBFeedback({
+    submitVRAFeedback({
       feedback: isError
         ? `Error Code: ${statusCode ?? "Unknown"} - ${values.comment}`
         : values.comment,
       category: isError ? "Bug" : values.category,
-      url: location,
+      url: router.asPath,
       email: values.email,
+      sessionId: sessionId ?? "",
+      thumbState: thumbValue ?? "",
     })
       .then((res) => {
         if (res.ok) setView("confirmation");
@@ -64,19 +72,19 @@ const Feedback: React.FC<any> = ({ location }) => {
   return (
     <FeedbackBox
       showCategoryField={!isError}
-      showEmailField={isError}
+      showEmailField
       isOpen={isOpen}
       onClose={onCloseAndReset}
       onOpen={onOpen}
       onSubmit={handleFeedbackSubmit}
-      confirmationText="Thank you, your feedback has been submitted."
+      confirmationText={CONFIRMATION_TEXT}
       descriptionText={descriptionText}
       notificationText={notificationText}
       id="feedbackBox-id"
-      title="Help and Feedback"
+      title="Help and feedback"
       view={view}
     />
   );
 };
 
-export default Feedback;
+export default VRAFeedback;
