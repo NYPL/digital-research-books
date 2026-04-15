@@ -11,6 +11,8 @@ def require_api_key(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         expected_key = os.getenv("API_KEY")
+        if expected_key is None:
+            logger.error("API_KEY env var is not set.")
         key = request.headers.get("X-API-Key")
 
         if key is None:
