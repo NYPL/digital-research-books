@@ -67,7 +67,7 @@ This guide provides step-by-step instructions to set up local development and st
    docker compose -f docker-compose.setup.yml up --abort-on-container-exit
    ```
 
-   Or to instead seed using a local fixture file:
+   Or to instead seed known books using a local fixture file:
 
    ```bash
    # Run dockerized local development setup
@@ -79,8 +79,11 @@ This guide provides step-by-step instructions to set up local development and st
    docker compose run --rm --entrypoint python devsetup \
       -m tests.integration.api.assistant.support.seed_frbr_data
    ```
-
-   Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
+   Note: Any semantic search hits from the vector database must be accompanied with FRBR graph data in the Postgres database in order to be returned by the /chat endpoint.
+   - The first method seeds the Postgres database with brand new records from HathiTrust (making it highly non-deterministic) but they are not indexed in the vector database and hence cannot be returned as results from /chat.
+   - The second method seeds the Postgres database with records known to exist in at least the following vector database namespaces, allowing them to be returned by /chat:
+     - vra-dev
+     - vra-test
 
 2. Startup Docker Services:
 
@@ -214,8 +217,6 @@ See `python main.py --help` for all available options.
 
 ## Formatting
 We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files.
-
-
 
 We also check formatting before committing. If you followed to the set up steps to install the pre-commit hooks, formatting of changed files will be performed at each commit.
 
