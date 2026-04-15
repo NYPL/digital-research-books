@@ -257,10 +257,14 @@ export const ResearchAssistantProvider: React.FC<{
     }
   };
 
-  const clearSession = () => {
-    fetch("/api/research-assistant-session", {
-      method: "DELETE",
-    }).catch((err) => console.error("Failed to clear session:", err));
+  const clearSession = async () => {
+    try {
+      await fetch("/api/research-assistant-session", {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.error("Failed to clear session:", err);
+    }
   };
 
   useEffect(() => {
