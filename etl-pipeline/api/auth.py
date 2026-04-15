@@ -1,8 +1,8 @@
-import os
 from functools import wraps
 from flask import request, jsonify
 
 from logger import create_log
+from utils.common import require_env
 
 logger = create_log(__name__)
 
@@ -10,9 +10,7 @@ logger = create_log(__name__)
 def require_api_key(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        expected_key = os.getenv("API_KEY")
-        if expected_key is None:
-            logger.error("API_KEY env var is not set.")
+        expected_key = require_env("API_KEY")
         key = request.headers.get("X-API-Key")
 
         if key is None:
