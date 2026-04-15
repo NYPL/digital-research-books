@@ -9,6 +9,7 @@ import {
   MessageRole,
   PageType,
 } from "~/src/types/ResearchAssistant";
+import { FeedbackContext } from "./FeedbackContext";
 
 interface ResearchAssistantViewState {
   editionId?: number;
@@ -60,6 +61,8 @@ export const ResearchAssistantProvider: React.FC<{
     pageId: "",
     results: null,
   });
+
+  const { setSessionId } = useContext(FeedbackContext);
 
   const router = useRouter();
   const conversationType = router.pathname.startsWith("/item/")
@@ -125,6 +128,7 @@ export const ResearchAssistantProvider: React.FC<{
       }
 
       const data = await response.json();
+      setSessionId(data.sessionId);
 
       let newMessagesLength = 0;
       setMessages((prevMessages) => {
