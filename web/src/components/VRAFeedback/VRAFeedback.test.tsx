@@ -3,9 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { render } from "../../__tests__/testUtils/render";
 import VRAFeedback from "./VRAFeedback";
 
-describe("Feedback", () => {
+describe("VRAFeedback", () => {
   beforeEach(() => {
-    render(<VRAFeedback location={"/testing?testQuery"} />);
+    render(<VRAFeedback />);
   });
 
   describe("Form Submission", () => {

@@ -2,11 +2,11 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import appConfig from "~/config/appConfig";
 import {
   DRBFeedback,
-  PopupSurveyFeedback,
+  PopupSurveyResponse,
   VRAFeedback,
 } from "~/src/types/Feedback";
 
-type FeedbackFields = DRBFeedback | VRAFeedback | PopupSurveyFeedback;
+type FeedbackFields = DRBFeedback | VRAFeedback | PopupSurveyResponse;
 type AirtableFields = Record<string, string>;
 
 interface FeedbackHandler {
@@ -30,20 +30,20 @@ const feedbackHandlers: Record<string, FeedbackHandler> = {
   vra: {
     formURL: appConfig.feedback.vraFormURL,
     mapFields: (fields: VRAFeedback): AirtableFields => ({
-      Feedback: fields.feedback,
-      Category: fields.category,
-      Date: new Date().toLocaleString("en-US"),
-      Environment: process.env.APP_ENV ?? "",
-      URL: fields.url,
-      "Session ID": fields.sessionId,
-      "Thumbs up/down": fields.thumbState,
-      ...(fields.email && { Email: fields.email }),
+      fldmZTqpb3H9n1D8I: fields.feedback,
+      fldZYABlI2qvpZ77t: fields.category,
+      fldECb5srxCM9xPpv: new Date().toLocaleString("en-US"),
+      fldJ70WE84MvEpPmh: process.env.APP_ENV ?? "",
+      fldCHANfhWHyMc9u7: fields.url,
+      fldvQ4YxqeiGRImB6: fields.sessionId,
+      fldrD25IvZZXQ8zrC: fields.thumbState,
+      ...(fields.email && { fld8iTQqzy2Xe69jH: fields.email }),
     }),
   },
 
   vraPopup: {
     formURL: appConfig.feedback.vraPopupUrl,
-    mapFields: (fields: PopupSurveyFeedback): AirtableFields => {
+    mapFields: (fields: PopupSurveyResponse): AirtableFields => {
       const responses = fields.responses;
       return {
         fldFYcj0dD3DYkOUF: responses[0],

@@ -12,7 +12,7 @@ export type VRAFeedback = Feedback & {
   thumbState?: string;
 };
 
-export type PopupSurveyFeedback = {
+export type PopupSurveyResponse = {
   responses: string[];
   sessionId: string;
   url: string;

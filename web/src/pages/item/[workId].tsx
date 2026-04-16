@@ -1,7 +1,9 @@
 import Head from "next/head";
+import { useRouter } from "next/router";
 import React from "react";
 import ItemDetail from "~/src/components/ItemDetail/ItemDetail";
 import Layout from "~/src/components/Layout/Layout";
+import VRAFeedback from "~/src/components/VRAFeedback/VRAFeedback";
 import VRALayout from "~/src/components/VRALayout/VRALayout";
 import { MAX_PAGE_TITLE_LENGTH } from "~/src/constants/editioncard";
 import { documentTitles } from "~/src/constants/labels";
@@ -37,6 +39,7 @@ export async function getServerSideProps(context: any) {
 }
 
 const ItemPage: React.FC<any> = (props) => {
+  const router = useRouter();
   if (props.workResult.status !== 200) {
     return <Error statusCode={props.workResult.status} />;
   }
@@ -47,7 +50,7 @@ const ItemPage: React.FC<any> = (props) => {
   );
 
   return (
-    <Layout>
+    <Layout feedback={<VRAFeedback />}>
       <Head>
         <title>{`${truncatedTitle} | ${documentTitles.workItem}`}</title>
       </Head>

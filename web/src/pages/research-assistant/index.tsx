@@ -1,5 +1,4 @@
 import { GetServerSideProps } from "next";
-import { useRouter } from "next/router";
 import React from "react";
 import Layout from "~/src/components/Layout/Layout";
 import ResearchAssistant from "~/src/components/ResearchAssistant/ResearchAssistant";
@@ -7,9 +6,8 @@ import VRAFeedback from "~/src/components/VRAFeedback/VRAFeedback";
 import VRALayout from "~/src/components/VRALayout/VRALayout";
 
 const ResearchAssistantPage: React.FC = () => {
-  const router = useRouter();
   return (
-    <Layout feedback={<VRAFeedback location={router.asPath} />}>
+    <Layout feedback={<VRAFeedback />}>
       <VRALayout
         activePage="vra"
         breadcrumbsData={[

@@ -1,6 +1,6 @@
 import {
   DRBFeedback,
-  PopupSurveyFeedback as PopupSurveyResponse,
+  PopupSurveyResponse,
   VRAFeedback,
 } from "~/src/types/Feedback";
 import { log } from "../newrelic/NewRelic";
