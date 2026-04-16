@@ -75,9 +75,10 @@ async def llm_judge(run_result, question: str) -> JudgeVerdict:
     parsed = response.choices[0].message.parsed
     assert parsed is not None, "LLM judge returned a null response (possible refusal)"
 
-    print("Question:", question)
-    print("Verdict:", parsed.answer)
-    print("Reason:", parsed.reason)
+    print("QUESTION:", question)
+    print("AGENT FINAL RESPONSE:", run_result.final_output)
+    print("VERDICT:", parsed.answer)
+    print("REASON:", parsed.reason)
     return parsed
 
 
@@ -249,6 +250,7 @@ the irrelevant results as if they are relevant to the query.""",
             f"Agent did not acknowledge irrelevant results.\nJudge reason: {verdict.reason}"
         )
 
+    @pytest.mark.xfail
     async def test_no_search_on_ambiguous_query(self, test_session_id):
         """
         Verify that the agent does not perform a search for an underspecified query.

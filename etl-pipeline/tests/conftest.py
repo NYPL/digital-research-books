@@ -607,7 +607,7 @@ def test_session_id():
     Teardown: prints the raw conversation (captured by pytest; shown on failure),
               then always deletes session data.
     """
-    from api.assistant.agent import delete_session_data
+    from api.assistant.agent import delete_session_data, get_session_messages
 
     delete_session_data(TEST_SESSION_ID)
 
@@ -616,7 +616,7 @@ def test_session_id():
     # Print convo history to logs
     print(f"\n--- Raw agent_messages for session '{TEST_SESSION_ID}' ---")
     messages = get_session_messages(TEST_SESSION_ID)
-    print(messages)
+    print(json.dumps(messages, indent=2))
     print("--- End of conversation ---\n")
 
     delete_session_data(TEST_SESSION_ID)
