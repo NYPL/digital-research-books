@@ -74,6 +74,10 @@ async def llm_judge(run_result, question: str) -> JudgeVerdict:
     )
     parsed = response.choices[0].message.parsed
     assert parsed is not None, "LLM judge returned a null response (possible refusal)"
+
+    print("Question:", question)
+    print("Verdict:", parsed.answer)
+    print("Reason:", parsed.reason)
     return parsed
 
 
@@ -173,8 +177,6 @@ class TestAgentResponses:
             run_result,
             question=UNGROUNDED_INFORMATION_QUESTION,
         )
-        print(verdict.answer)
-        print(verdict.reason)
 
         assert verdict.answer == "NO", (
             f"Agent response contains ungrounded information.\nJudge reason: {verdict.reason}"
@@ -209,8 +211,6 @@ class TestAgentResponses:
             run_result,
             question=UNGROUNDED_INFORMATION_QUESTION,
         )
-        print(verdict.answer)
-        print(verdict.reason)
 
         assert verdict.answer == "NO", (
             f"Agent response contains ungrounded information.\nJudge reason: {verdict.reason}"
@@ -248,8 +248,6 @@ results do not include information directly related to the user query?
 Answer YES if the response makes this clear, NO if it discusses \
 the irrelevant results as if they are relevant to the query.""",
         )
-        print(verdict.answer)
-        print(verdict.reason)
 
         assert verdict.answer == "YES", (
             f"Agent did not acknowledge irrelevant results.\nJudge reason: {verdict.reason}"
