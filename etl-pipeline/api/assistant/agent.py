@@ -558,6 +558,20 @@ async def update_chat(
     return run_result
 
 
+def get_session_messages(session_id):
+    """Read message data for session ID as ND-JSON"""
+    engine = get_engine()
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                "SELECT * FROM agent_messages WHERE session_id = :sid ORDER BY created_at"
+            ),
+            {"sid": session_id},
+        ).fetchall()
+    messages = [json.loads(row.message_data) for row in rows]
+    return messages
+
+
 def delete_session_data(session_id: str) -> None:
     """Delete all rows in agent_messages and agent_sessions for the given session_id."""
     engine = get_engine()

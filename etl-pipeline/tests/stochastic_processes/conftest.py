@@ -1,5 +1,7 @@
+from contextlib import contextmanager
 from types import SimpleNamespace
 from typing import List, Optional
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -117,25 +119,21 @@ def mock_search_backend(mocker):
     return _setup
 
 
-@pytest.fixture
-def stub_search_catalog(mocker):
+@contextmanager
+def stub_search_catalog(return_value: str):
     """
-    Factory fixture that stubs search_catalog.on_invoke_tool with a fixed return value.
+    Context manager that stubs search_catalog.on_invoke_tool with a fixed return value.
     search_catalog is a openai agents sdk FunctionTool.
-
-    Call the returned function with the string the tool should return.
 
     Usage::
 
-        def test_something(test_session_id, stub_search_catalog):
-            stub_search_catalog("No results found.")
-            run_result = await update_chat(...)
+        def test_something(test_session_id):
+            with stub_search_catalog("No results found."):
+                run_result = await update_chat(...)
     """
 
-    def _setup(return_value: str) -> None:
-        async def _stub(ctx, input) -> str:
-            return return_value
+    async def _stub(ctx, input) -> str:
+        return return_value
 
-        mocker.patch.object(search_catalog, "on_invoke_tool", new=_stub)
-
-    return _setup
+    with patch.object(search_catalog, "on_invoke_tool", new=_stub):
+        yield

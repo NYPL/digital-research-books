@@ -608,22 +608,15 @@ def test_session_id():
               then always deletes session data.
     """
     from api.assistant.agent import delete_session_data
-    from api.db import get_engine
 
     delete_session_data(TEST_SESSION_ID)
 
     yield TEST_SESSION_ID
 
     # Print convo history to logs
-    engine = get_engine()
-    with engine.connect() as conn:
-        rows = conn.execute(
-            text("SELECT * FROM agent_messages WHERE session_id = :sid ORDER BY id"),
-            {"sid": TEST_SESSION_ID},
-        ).fetchall()
     print(f"\n--- Raw agent_messages for session '{TEST_SESSION_ID}' ---")
-    for row in rows:
-        print(dict(row._mapping))
+    messages = get_session_messages(TEST_SESSION_ID)
+    print(messages)
     print("--- End of conversation ---\n")
 
     delete_session_data(TEST_SESSION_ID)

@@ -20,7 +20,7 @@ from agents.items import ToolCallItem
 from api.assistant.agent import update_chat
 from utils.common import require_env
 
-from .conftest import make_chunk_doc
+from .conftest import make_chunk_doc, stub_search_catalog
 
 
 pytestmark = pytest.mark.asyncio
@@ -185,7 +185,7 @@ class TestAgentResponses:
     # TODO: parameterize the 2 grounding tests (bc they are identical besides \
     # the way the source the mocked search result)
     @pytest.mark.xfail
-    async def test_grounding_delco_accent(self, test_session_id, stub_search_catalog):
+    async def test_grounding_delco_accent(self, test_session_id):
         """
         Verify that the agent response does not include information not grounded
         in the search results, for a query about the Delco accent.
@@ -199,13 +199,12 @@ class TestAgentResponses:
             / "what-is-the-delco-accent-search_catalog-result-2026-04-14.txt"
         )
 
-        stub_search_catalog(delco_fixture.read_text())
-
-        run_result = await update_chat(
-            "what is the delco accent",
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-        )
+        with stub_search_catalog(delco_fixture.read_text()):
+            run_result = await update_chat(
+                "what is the delco accent",
+                conversation_type="catalogSearch",
+                session_id=test_session_id,
+            )
 
         verdict = await llm_judge(
             run_result,
@@ -216,9 +215,7 @@ class TestAgentResponses:
             f"Agent response contains ungrounded information.\nJudge reason: {verdict.reason}"
         )
 
-    async def test_irrelevant_results_acknowledged(
-        self, test_session_id, stub_search_catalog
-    ):
+    async def test_irrelevant_results_acknowledged(self, test_session_id):
         """
         Verify that the agent acknowledges search results are irrelevant to the query.
 
@@ -232,13 +229,12 @@ class TestAgentResponses:
             / "Hayao-Miyazaki-search_catalog-result-2026-04-14.txt"
         )
 
-        stub_search_catalog(miyazaki_fixture.read_text())
-
-        run_result = await update_chat(
-            "Hayao Miyazaki",
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-        )
+        with stub_search_catalog(miyazaki_fixture.read_text()):
+            run_result = await update_chat(
+                "Hayao Miyazaki",
+                conversation_type="catalogSearch",
+                session_id=test_session_id,
+            )
 
         verdict = await llm_judge(
             run_result,
@@ -253,21 +249,18 @@ the irrelevant results as if they are relevant to the query.""",
             f"Agent did not acknowledge irrelevant results.\nJudge reason: {verdict.reason}"
         )
 
-    async def test_no_search_on_ambiguous_query(
-        self, test_session_id, stub_search_catalog
-    ):
+    async def test_no_search_on_ambiguous_query(self, test_session_id):
         """
         Verify that the agent does not perform a search for an underspecified query.
         """
 
-        stub_search_catalog("No results found for your query.")
-
         query = "new york"
-        run_result = await update_chat(
-            query,
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-        )
+        with stub_search_catalog("No results found for your query."):
+            run_result = await update_chat(
+                query,
+                conversation_type="catalogSearch",
+                session_id=test_session_id,
+            )
 
         tool_calls = [
             item for item in run_result.new_items if isinstance(item, ToolCallItem)
@@ -280,19 +273,18 @@ the irrelevant results as if they are relevant to the query.""",
             f"but found {len(tool_calls)} call(s)."
         )
 
-    async def test_no_markdown_in_response(self, test_session_id, stub_search_catalog):
+    async def test_no_markdown_in_response(self, test_session_id):
         """
         Verify that the agent response does not contain markdown formatting.
         This checks the final output for common markdown elements using regex patterns.
         """
 
-        stub_search_catalog("No results found for your query.")
-
-        run_result = await update_chat(
-            "north american early medicine",
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-        )
+        with stub_search_catalog("No results found for your query."):
+            run_result = await update_chat(
+                "north american early medicine",
+                conversation_type="catalogSearch",
+                session_id=test_session_id,
+            )
 
         response_text = run_result.final_output
 
