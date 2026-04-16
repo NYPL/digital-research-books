@@ -119,6 +119,7 @@ def mock_search_backend(mocker):
     return _setup
 
 
+# TODO: make this a generic stub_function_tool()
 @contextmanager
 def stub_search_catalog(return_value: str):
     """

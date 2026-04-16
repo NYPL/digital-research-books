@@ -197,7 +197,6 @@ def recurse_filters(filter_: Any, processing_func: Callable) -> Any:
 
     operator = filter_[0]
 
-    print(filter_)
     if operator in META_OPERATORS:
         if operator == "Not":
             # ["Not", child_filter]
@@ -563,9 +562,7 @@ def get_session_messages(session_id):
     engine = get_engine()
     with engine.connect() as conn:
         rows = conn.execute(
-            text(
-                "SELECT * FROM agent_messages WHERE session_id = :sid ORDER BY created_at"
-            ),
+            text("SELECT * FROM agent_messages WHERE session_id = :sid ORDER BY id"),
             {"sid": session_id},
         ).fetchall()
     messages = [json.loads(row.message_data) for row in rows]
