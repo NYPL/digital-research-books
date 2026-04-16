@@ -194,7 +194,7 @@ class TestAgentResponses:
         delco_fixture = (
             Path(__file__).parents[1]
             / "fixtures"
-            / "what-is-the-delco-accentt-search_catalog-result-2026-04-14.txt"
+            / "what-is-the-delco-accent-search_catalog-result-2026-04-14.txt"
         )
 
         stub_search_catalog(delco_fixture.read_text())
