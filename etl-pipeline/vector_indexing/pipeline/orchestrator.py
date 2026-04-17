@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-import os
-import logging
 from dataclasses import dataclass, field
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
-from vector_indexing.core.types import Book, BookMetadata, ChunkDocument, InsertResult
+from logger import create_log
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from vector_indexing.core.types import Book, BookMetadata, ChunkDocument
+
+logger = create_log(__name__)
 
 if TYPE_CHECKING:
     from vector_indexing.components.backends.base import IndexBackend
@@ -237,7 +236,6 @@ class Pipeline:
             book = books[barcode]
             try:
                 insert_result = self._backend.insert(chunks)
-
                 result = IndexingResult(
                     barcode=barcode,
                     book_id=book.book_id,
@@ -259,6 +257,8 @@ class Pipeline:
             batch_result.results.append(result)
             if on_progress:
                 on_progress(result)
+
+        logger.info(f"Stage 5 (Insert): {len(book_errors)} errors")
 
         # Add results for books that failed earlier
         for barcode, error in book_errors.items():
@@ -282,27 +282,29 @@ def main(barcodes: list[str] | None = None) -> BatchResult:
     """Run the indexing pipeline with default components. Takes in a list of barcodes to index.
     Returns a BatchResult with indexing outcomes.
     """
-    from dotenv import load_dotenv
-    from vector_indexing.core.config import GlobalConfig, DOT_ENV_FILE
-    from vector_indexing.components.backends.elasticsearch import ElasticsearchBackend
+    from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
     from vector_indexing.components.chunkers.sentence import SentenceSplitterChunker
-    from vector_indexing.components.embedders.qwen import QwenEmbedder
+    from vector_indexing.components.embedders.google import GoogleEmbedder
     from vector_indexing.components.loaders.s3 import CachedS3BookLoader
     from vector_indexing.components.metadata.provider import MetadataProvider
+    from vector_indexing.core.config import GlobalConfig
 
     if barcodes is None:
         return
 
-    load_dotenv(DOT_ENV_FILE)
     config = GlobalConfig.for_environment()
 
     pipeline = Pipeline(
         loader=CachedS3BookLoader(config=config),
         chunker=SentenceSplitterChunker(config=config),
-        embedder=QwenEmbedder(config=config),
+        embedder=GoogleEmbedder(
+            model=config.embedding_model,
+            dimensions=config.embedding_dimensions,
+            batch_size=config.embedding_batch_size,
+        ),
         metadata_provider=MetadataProvider(config=config),
-        backend=ElasticsearchBackend.from_config(
-            index_name="qwen-test-index", config=config
+        backend=TurbopufferBackend.from_config(
+            index_name="vra-dev-test", config=config
         ),
     )
 
@@ -316,5 +318,6 @@ def main(barcodes: list[str] | None = None) -> BatchResult:
 
 if __name__ == "__main__":
     # Test using a few very small books
-    main(["33433000136972", "33433006239176"])
-    main(["33433071108306", "33433009163845"])
+    # main(["33433000136972", "33433006239176"])
+    # main(["33433071108306", "33433009163845"])
+    pass
