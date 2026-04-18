@@ -31,7 +31,7 @@ def get_citation(uuid):
                 400, response_type, {"message": "Citation formats are invalid"}
             )
 
-        with DBClient(current_app.config["DB_CLIENT"]) as db_client:
+        with DBClient(current_app.config["SQL_ENGINE"]) as db_client:
             work_to_cite = db_client.fetchSingleWork(uuid)
 
             if not work_to_cite:

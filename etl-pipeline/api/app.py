@@ -27,7 +27,7 @@ from .blueprints import (
     fulfill,
 )
 from .utils import APIUtils
-from .db import get_session
+from .db import get_readonly_engine, get_readonly_session
 
 logger = create_log(__name__)
 
@@ -52,8 +52,8 @@ BLUEPRINTS = [
 
 
 class API:
-    def __init__(self, db_engine, redis_client):
-        Session = get_session()
+    def __init__(self, redis_client):
+        Session = get_readonly_session()
         self.app = Flask(__name__)
 
         CORS(self.app)
@@ -67,8 +67,7 @@ class API:
             },
         )
 
-        # TODO: rename "SQL_ENGINE"
-        self.app.config["DB_CLIENT"] = db_engine
+        self.app.config["SQL_ENGINE"] = get_readonly_engine()
         self.app.config["REDIS_CLIENT"] = redis_client
         self.app.config["READER_VERSION"] = os.environ["READER_VERSION"]
 

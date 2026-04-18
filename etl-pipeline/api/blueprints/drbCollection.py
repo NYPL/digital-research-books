@@ -36,7 +36,7 @@ def collectionCreate(user=None):
         )
 
     # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
-    dbClient = DBClient(current_app.config["DB_CLIENT"])
+    dbClient = DBClient(current_app.config["SQL_ENGINE"])
     dbClient.createSession()
 
     if "workUUIDs" in collectionData or "editionIDs" in collectionData:
@@ -132,7 +132,7 @@ def collectionReplace(uuid, user=None):
         return APIUtils.formatResponseObject(400, "createCollection", errMsg)
 
     # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
-    dbClient = DBClient(current_app.config["DB_CLIENT"])
+    dbClient = DBClient(current_app.config["SQL_ENGINE"])
     dbClient.createSession()
 
     # Getting the collection the user wants to replace
@@ -176,7 +176,7 @@ def collectionUpdate(uuid, user=None):
     logger.info("Handling collection update request")
 
     # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
-    dbClient = DBClient(current_app.config["DB_CLIENT"])
+    dbClient = DBClient(current_app.config["SQL_ENGINE"])
     dbClient.createSession()
 
     title = request.args.get("title", None)
@@ -260,7 +260,7 @@ def get_collection(uuid):
         )
 
     try:
-        db_client = DBClient(current_app.config["DB_CLIENT"])
+        db_client = DBClient(current_app.config["SQL_ENGINE"])
         db_client.createSession()
 
         sort = request.args.get("sort", None)
@@ -300,7 +300,7 @@ def collectionDelete(uuid, user=None):
     logger.info("Deleting collection {}".format(uuid))
 
     # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
-    dbClient = DBClient(current_app.config["DB_CLIENT"])
+    dbClient = DBClient(current_app.config["SQL_ENGINE"])
     dbClient.createSession()
 
     deleteCount = dbClient.deleteCollection(uuid)
@@ -336,7 +336,7 @@ def collectionDeleteWorkEdition(uuid, user=None):
         return APIUtils.formatResponseObject(400, "deleteCollectionWorkEdition", errMsg)
 
     # TODO: Connect to write client: https://newyorkpubliclibrary.atlassian.net/browse/SFR-2668
-    dbClient = DBClient(current_app.config["DB_CLIENT"])
+    dbClient = DBClient(current_app.config["SQL_ENGINE"])
     dbClient.createSession()
 
     # Getting the collection the user wants to replace
@@ -381,7 +381,7 @@ def get_collections():
         )
 
     try:
-        db_client = DBClient(current_app.config["DB_CLIENT"])
+        db_client = DBClient(current_app.config["SQL_ENGINE"])
         db_client.createSession()
 
         collections = db_client.fetchCollections(sort=sort, page=page, perPage=per_page)

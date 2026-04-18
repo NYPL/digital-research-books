@@ -57,7 +57,7 @@ def get_counts():
     response_type = "totalCounts"
 
     try:
-        with DBClient(current_app.config["DB_CLIENT"]) as db_client:
+        with DBClient(current_app.config["SQL_ENGINE"]) as db_client:
             total_counts = db_client.fetchRowCounts()
 
         return APIUtils.formatResponseObject(

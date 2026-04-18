@@ -160,7 +160,7 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 @require_basic_authentication
 @require_session_jwt
 @timer(logger)
-def chat(user=None, session_id=None):
+def chat(user, session_id):
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
@@ -213,9 +213,7 @@ def _chat_handler(user, session_id, conversation_type, message, edition_id):
     # llm generated response (except no connectivity to LLM) (just handle the \
     # high level openai agents sdk errors)
     run_result = asyncio.run(
-        update_chat(
-            message, conversation_type, edition_id=edition_id, session_id=session_id
-        )
+        update_chat(message, conversation_type, session_id, edition_id=edition_id)
     )
 
     # Add relevant snippets to search result, if search was executed in this agent turn
