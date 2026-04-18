@@ -258,7 +258,6 @@ the irrelevant results as if they are relevant to the query.""",
             f"Agent did not acknowledge irrelevant results.\nJudge reason: {verdict.reason}"
         )
 
-    @pytest.mark.xfail
     async def test_no_search_on_ambiguous_query(self, test_session_id):
         """
         Verify that the agent does not perform a search for an underspecified query.
