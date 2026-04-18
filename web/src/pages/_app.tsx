@@ -79,16 +79,16 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
 
         <link rel="icon" href={appConfig.favIconPath} />
       </Head>
-      <ResearchAssistantProvider>
-        <FeedbackProvider>
+      <FeedbackProvider>
+        <ResearchAssistantProvider>
           <ErrorBoundary>
             <NewRelicSnippet />
             <FeatureFlagProvider>
               <Component {...pageProps} />
             </FeatureFlagProvider>
           </ErrorBoundary>
-        </FeedbackProvider>
-      </ResearchAssistantProvider>
+        </ResearchAssistantProvider>
+      </FeedbackProvider>
     </>
   );
 };

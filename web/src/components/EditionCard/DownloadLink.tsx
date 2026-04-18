@@ -7,12 +7,12 @@ import {
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import Link from "~/src/components/Link/Link";
-import { LOGIN_LINK_BASE } from "~/src/constants/links";
-import { trackEvent } from "~/src/lib/gtag/Analytics";
+import { ASK_NYPL, LOGIN_LINK_BASE } from "~/src/constants/links";
+import { LOGIN_TO_DOWNLOAD_TEST_ID } from "~/src/constants/testIds";
 import { fulfillFetcher } from "~/src/lib/api/SearchApi";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { ItemLink } from "~/src/types/DataModel";
 import { formatUrl } from "~/src/util/Util";
-import { LOGIN_TO_DOWNLOAD_TEST_ID } from "~/src/constants/testIds";
 
 const DownloadLink: React.FC<{
   authors: string[];
@@ -42,10 +42,7 @@ const DownloadLink: React.FC<{
             <span>
               We were unable to download your item. The system reports ‘
               {errorMessage}’. <br /> Please try again or{" "}
-              <Link to="https://www.nypl.org/get-help/contact-us">
-                contact us
-              </Link>{" "}
-              for assistance.
+              <Link to={ASK_NYPL}>contact us</Link> for assistance.
             </span>
           );
           const errorHeading = (
@@ -63,12 +60,13 @@ const DownloadLink: React.FC<{
         }
       }
       trackEvent({
-        "event":  "file_download",
-        "click_text": linkText,
-        "file_extension": downloadLink.mediaType == "application/pdf" ? "pdf" : "epub",
-        "file_name": title,
-        "item_title": title,
-        "item_author": authors,
+        event: "file_download",
+        click_text: linkText,
+        file_extension:
+          downloadLink.mediaType == "application/pdf" ? "pdf" : "epub",
+        file_name: title,
+        item_title: title,
+        item_author: authors,
       });
     };
 

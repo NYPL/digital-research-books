@@ -20,4 +20,4 @@ from .create_collection import main as createCollection
 from .grin_init import main as GRINInitialScrape
 from .grin_ingest_redrive import main as GRINIngestRedrive
 from .addHasPartToGRINRecords import main as addHasPartToGRINRecords
-from .create_user import create_user
+from .create_user import create_user_interactive

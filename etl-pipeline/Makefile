@@ -15,8 +15,11 @@ unit:
 functional:
 	python -m pytest tests/functional --env=$(ENVIRONMENT) -n=4
 
-integration:
-	python -m pytest tests/integration --env=$(ENVIRONMENT) -n=4
+integration-drb:
+	python -m pytest tests/integration --ignore=tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4
+
+integration-vra:
+	python -m pytest tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4
 
 up:
 	$(compose_command) up -d

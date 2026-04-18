@@ -24,7 +24,9 @@ const renderWithResearchAssistant = (
   options?: Omit<RenderOptions, "wrapper">
 ): RenderResult => {
   const Providers = ({ children }) => (
-    <ResearchAssistantProvider>{children}</ResearchAssistantProvider>
+    <FeedbackProvider>
+      <ResearchAssistantProvider>{children}</ResearchAssistantProvider>
+    </FeedbackProvider>
   );
 
   return render(component, { wrapper: Providers, ...options });
