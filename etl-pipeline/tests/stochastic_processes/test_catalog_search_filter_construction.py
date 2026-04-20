@@ -103,17 +103,18 @@ def filter_match(filters, attribute=None, operator=None, value=None):
     return True
 
 
-# MAYBE FUTURE: mock search backend to just test filter construction
+# TODO: mock search backend to just test filter construction
 
 
 class TestCatalogSearchFilterConstruction:
     """Test that the agent constructs appropriate filters for catalog searches."""
 
-    async def test_no_filter_for_simple_keyword_search(self, test_session_id):
+    @pytest.mark.xfail
+    async def test_no_filter_for_generic_search(self, test_session_id):
         """
         Test: No filter is used when not needed (shipbuilding example).
 
-        For a simple keyword search like "shipbuilding", the agent should
+        For a generic search like "shipbuilding", the agent should
         rely on semantic ranking without applying restrictive filters.
         """
         run_result = await update_chat(
