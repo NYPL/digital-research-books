@@ -26,7 +26,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from sqlalchemy import inspect
 
-from api.db import get_frbr_data_by_edition, get_session
+from api.db import get_frbr_data_by_edition, get_readonly_session
 from model.postgres.record import Record
 from utils.load_env import load_env
 
@@ -100,7 +100,7 @@ def generate_seed_data(edition_ids: list[int]) -> dict:
 
     records: list[dict] = []
     if record_ids:
-        Session = get_session()
+        Session = get_readonly_session()
         with Session() as session:
             query = session.query(Record).filter(Record.id.in_(list(record_ids)))
             for record in query.order_by(Record.id.asc()).all():
