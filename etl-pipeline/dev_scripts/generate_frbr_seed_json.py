@@ -9,7 +9,7 @@ The default output path is set to the centralized test fixtures location (/tests
 
 Usage:
     From etl-pipeline/:
-        python dev-scripts/get_frbr_graph_per_edition.py --edition-ids 15257916 15649870
+        python dev-scripts/generate_frbr_seed_json.py --edition-ids 15257916 15649870
 """
 
 import argparse
@@ -20,7 +20,7 @@ from pathlib import Path
 _HERE = Path(__file__).resolve().parent
 _PROJECT_ROOT = _HERE.parent
 
-# Allow direct execution via `python scripts/get_frbr_graph_per_edition.py`
+# Allow direct execution via `python scripts/generate_frbr_seed_json.py`
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
