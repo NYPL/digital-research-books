@@ -181,7 +181,6 @@ class TestCatalogSearchFilterConstruction:
             f"filters do not match expected criteria: {filters}"
         )
 
-    @pytest.mark.xfail(reason="behavior unstable")
     async def test_language_filter(self, test_session_id):
         """
         Test: Language filter construction uses ContainsAny for multiple languages.
@@ -215,7 +214,6 @@ class TestCatalogSearchFilterConstruction:
             )
         ), f"filters do not match expected criteria: {filters}"
 
-    @pytest.mark.xfail(reason="behavior unstable")
     async def test_date_range_filter_construction(self, test_session_id):
         """
         Test: Date range filters for publication dates.
