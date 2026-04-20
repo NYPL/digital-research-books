@@ -69,8 +69,12 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                 display="flex"
                 alignItems="center"
                 gap="xxs"
+                _hover={{
+                  color: "section.research.primary",
+                  path: { stroke: "#00838A" },
+                }}
               >
-                Contact us <ArrowIcon direction="right" color="#006166" />
+                Get help <ArrowIcon direction="right" color="#006166" />
               </Link>
             </Flex>
           }
@@ -100,6 +104,10 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                 display="flex"
                 alignItems="center"
                 gap="xxs"
+                _hover={{
+                  color: "section.research.primary",
+                  path: { stroke: "#00838A" },
+                }}
               >
                 <Text>Learn more</Text>
                 <ArrowIcon direction="right" color="#006166" />
