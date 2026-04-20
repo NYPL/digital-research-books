@@ -1,7 +1,8 @@
 import { Button, Flex } from "@nypl/design-system-react-components";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { THUMB_DESCIPTION_TEXT } from "~/src/constants/feedback";
 import { FeedbackContext } from "~/src/context/FeedbackContext";
+import { FeedbackState } from "~/src/types/ResearchAssistant";
 import ThumbsDownIcon from "./icons/ThumbsDownIcon";
 import ThumbsUpIcon from "./icons/ThumbsUpIcon";
 
@@ -20,24 +21,33 @@ const feedbackButtonStyles = {
 };
 
 const FeedbackButtons = () => {
-  const { thumbValue, setThumbValue, onOpen, setDescriptionText } = useContext(
+  const [thumbValue, setThumbValueState] = useState<FeedbackState>(null);
+  const { setThumbValue, onOpen, setDescriptionText } = useContext(
     FeedbackContext
   );
 
   const handleThumbsUp = () => {
+    const newThumbValue = thumbValue === "up" ? null : "up";
+
     if (thumbValue === null) {
       onOpen();
       setDescriptionText(THUMB_DESCIPTION_TEXT);
     }
-    setThumbValue(thumbValue === "up" ? null : "up");
+
+    setThumbValueState(newThumbValue);
+    setThumbValue(newThumbValue);
   };
 
   const handleThumbsDown = () => {
+    const newThumbValue = thumbValue === "down" ? null : "down";
+
     if (thumbValue === null) {
       onOpen();
       setDescriptionText(THUMB_DESCIPTION_TEXT);
     }
-    setThumbValue(thumbValue === "down" ? null : "down");
+
+    setThumbValueState(newThumbValue);
+    setThumbValue(newThumbValue);
   };
 
   return (

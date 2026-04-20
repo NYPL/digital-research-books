@@ -193,4 +193,4 @@ export type ApiItemsRead = {
   nextPages: string[];
 };
 
-export type FeedbackState = "up" | "down";
+export type FeedbackState = "up" | "down" | null;
