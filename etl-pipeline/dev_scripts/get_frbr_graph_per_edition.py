@@ -126,6 +126,38 @@ def generate_seed_data(edition_ids: list[int]) -> dict:
     return seed_data
 
 
+def _merge_seed_data(existing_data: dict, new_data: dict) -> dict:
+    if not existing_data:
+        return new_data
+
+    merged = {}
+    
+    entity_keys = ["works", "editions", "records", "items", "links", "rights"]
+    for key in entity_keys:
+        entities = {str(item["id"]): item for item in existing_data.get(key, [])}
+        for item in new_data.get(key, []):
+            entities[str(item["id"])] = item
+        merged[key] = list(entities.values())
+
+    item_links = {
+        (item["item_id"], item["link_id"]): item 
+        for item in existing_data.get("item_links", [])
+    }
+    for item in new_data.get("item_links", []):
+        item_links[(item["item_id"], item["link_id"])] = item
+    merged["item_links"] = list(item_links.values())
+
+    item_rights = {
+        (item["item_id"], item["rights_id"]): item 
+        for item in existing_data.get("item_rights", [])
+    }
+    for item in new_data.get("item_rights", []):
+        item_rights[(item["item_id"], item["rights_id"])] = item
+    merged["item_rights"] = list(item_rights.values())
+
+    return merged
+
+
 def _write_seed_data(output_path: Path, seed_data: dict) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as fh:
@@ -159,23 +191,33 @@ def main() -> int:
     load_env(env_path, raise_if_no_file=True)
 
     edition_ids = _normalize_ids(parsed_args.edition_ids)
-    seed_data = generate_seed_data(edition_ids)
+    new_data = generate_seed_data(edition_ids)
     output_path = Path(parsed_args.output).expanduser()
     if not output_path.is_absolute():
         output_path = _PROJECT_ROOT / output_path
-    _write_seed_data(output_path, seed_data)
+
+    existing_data = {}
+    if output_path.exists():
+        with open(output_path, "r", encoding="utf-8") as fh:
+            try:
+                existing_data = json.load(fh)
+            except json.JSONDecodeError:
+                existing_data = {}
+
+    final_data = _merge_seed_data(existing_data, new_data)
+    _write_seed_data(output_path, final_data)
 
     print(f"Wrote to seed file: {output_path}")
     print(
         "Counts: "
-        f"works={len(seed_data['works'])}, "
-        f"editions={len(seed_data['editions'])}, "
-        f"records={len(seed_data['records'])}, "
-        f"items={len(seed_data['items'])}, "
-        f"links={len(seed_data['links'])}, "
-        f"item_links={len(seed_data['item_links'])}, "
-        f"rights={len(seed_data['rights'])}, "
-        f"item_rights={len(seed_data['item_rights'])}"
+        f"works={len(final_data['works'])}, "
+        f"editions={len(final_data['editions'])}, "
+        f"records={len(final_data['records'])}, "
+        f"items={len(final_data['items'])}, "
+        f"links={len(final_data['links'])}, "
+        f"item_links={len(final_data['item_links'])}, "
+        f"rights={len(final_data['rights'])}, "
+        f"item_rights={len(final_data['item_rights'])}"
     )
 
     return 0
