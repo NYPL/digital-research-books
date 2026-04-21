@@ -131,7 +131,7 @@ def _merge_seed_data(existing_data: dict, new_data: dict) -> dict:
         return new_data
 
     merged = {}
-    
+
     entity_keys = ["works", "editions", "records", "items", "links", "rights"]
     for key in entity_keys:
         entities = {str(item["id"]): item for item in existing_data.get(key, [])}
@@ -140,7 +140,7 @@ def _merge_seed_data(existing_data: dict, new_data: dict) -> dict:
         merged[key] = list(entities.values())
 
     item_links = {
-        (item["item_id"], item["link_id"]): item 
+        (item["item_id"], item["link_id"]): item
         for item in existing_data.get("item_links", [])
     }
     for item in new_data.get("item_links", []):
@@ -148,7 +148,7 @@ def _merge_seed_data(existing_data: dict, new_data: dict) -> dict:
     merged["item_links"] = list(item_links.values())
 
     item_rights = {
-        (item["item_id"], item["rights_id"]): item 
+        (item["item_id"], item["rights_id"]): item
         for item in existing_data.get("item_rights", [])
     }
     for item in new_data.get("item_rights", []):
