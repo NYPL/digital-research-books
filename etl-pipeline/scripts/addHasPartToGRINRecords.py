@@ -104,6 +104,8 @@ def main(stmt=None):
                     mets_file = get_mets_file_from_s3(s3_client, barcode)
                     if mets_file:
                         first_page_part = create_first_page_part(barcode, mets_file)
+
+                        # update record ORM object
                         record.has_part.append(str(first_page_part))
 
                         db_manager.session.add(record)
