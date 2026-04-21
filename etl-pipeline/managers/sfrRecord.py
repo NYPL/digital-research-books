@@ -322,6 +322,7 @@ class SFRRecordManager:
         editionData["items"].extend([None] * number_of_parts)
 
         for item in rec.parts:
+            # Update Edition.links
             try:
                 linkFlags = json.loads(item.flags)
                 linkFlags = linkFlags if isinstance(linkFlags, dict) else {}
@@ -334,6 +335,7 @@ class SFRRecordManager:
                 )
                 continue
 
+            # Update Item
             itemPos = startPos + int(item.index)
             if editionData["items"][itemPos] is None:
                 editionData["items"][itemPos] = {
@@ -353,6 +355,8 @@ class SFRRecordManager:
                 },
             }
 
+            # Q: why is this append() rather than direct assignment? The logic \
+            # never visits this itemPos again, right?
             editionData["items"][itemPos]["links"].append(
                 "{}|{}|{}".format(item.url, item.file_type, item.flags)
             )
