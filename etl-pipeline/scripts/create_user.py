@@ -22,7 +22,7 @@ def create_user_interactive(*args):
     """
     Create a new user in the database with interactive input.
 
-    run via `main.py -sc create_user -e <target_env>`
+    run via `main.py -sc create_user_interactive -e <target_env>`
 
     <target_env> should be a env file stem configured with details for the DB
     with a `users` table you want to write to (e.g. local-qa, qa, production).
