@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Text } from "@nypl/design-system-react-components";
+import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import SectionContainer from "./SectionContainer";
 
 const FaqSection: React.FC = () => {
@@ -8,12 +8,24 @@ const FaqSection: React.FC = () => {
       borderTop="1px solid"
       borderColor="section.research.primary-10"
     >
-      <Flex flexDir="column" gap="l" marginY="128px" backgroundColor="#FAFDFD">
-        <Heading size="heading3" fontFamily="Domine" level="h2" lineHeight="1">
-          <Text>&ldquo;This tool represents a significant leap forward in</Text>
-          <Text>NYPL&apos;s mission to provide world-wide access to</Text>
-          <Text>scholarly materials.&rdquo;</Text>
-        </Heading>
+      <Flex
+        flexDir="column"
+        gap="l"
+        marginY="128px"
+        backgroundColor="#FAFDFD"
+        alignItems="center"
+      >
+        <Text
+          as="blockquote"
+          color="ui.typography.heading"
+          fontSize="desktop.heading.heading3"
+          fontFamily="Domine"
+          lineHeight="1"
+          maxWidth="765px"
+        >
+          &ldquo;This tool represents a significant leap forward in NYPL&apos;s
+          mission to provide world-wide access to scholarly materials.&rdquo;
+        </Text>
         <Box>
           <Text
             color="section.research.secondary"
