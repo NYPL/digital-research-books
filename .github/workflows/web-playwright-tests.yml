@@ -168,6 +168,13 @@ jobs:
           VRA_PASSWORD: ${{ env.VRA_PASSWORD }}
         run: npm run playwright:vra
 
+      - name: Upload error context upon failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-error-context
+          path: web/test-results/*/error-context.md
+
       - name: Dump app logs
         if: always() && inputs.base_url == 'http://local.nypl.org:3000/'
         run: docker logs web || echo "No container logs found."
