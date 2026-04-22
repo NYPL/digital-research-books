@@ -168,7 +168,7 @@ jobs:
           VRA_PASSWORD: ${{ env.VRA_PASSWORD }}
         run: npm run playwright:vra
 
-      - name: Upload error context upon failure
+      - name: Upload error context (if any)
         if: failure()
         uses: actions/upload-artifact@v7
         with:
