@@ -94,8 +94,8 @@ jobs:
 
       - name: Build and export Docker image
         env:
-            APP_ENV: development
-            AIRTABLE_KEY: dummy_airtable_api_key  # Prevent exposure in exported artifact
+          APP_ENV: development
+          AIRTABLE_KEY: dummy_airtable_api_key  # Prevent exposure in exported artifact
         working-directory: ./web
         run: |
           docker build -f Dockerfile \
