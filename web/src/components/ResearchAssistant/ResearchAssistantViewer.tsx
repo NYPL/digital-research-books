@@ -32,7 +32,10 @@ const ResearchAssistantViewer: React.FC<{
   itemId: string;
   pageId: string;
 }> = ({ itemId, pageId }) => {
+  const [isFullViewport, setIsFullViewport] = React.useState(false);
   const manifestApiUrl = `${origin}/api/manifest/${itemId}?pageId=${pageId}`;
+
+  const toggleFullScreen = () => setIsFullViewport((v) => !v);
 
   if (!itemId || !pageId || !manifestApiUrl) {
     return (
@@ -43,7 +46,15 @@ const ResearchAssistantViewer: React.FC<{
   }
 
   return (
-    <Box>
+    <Box
+      margin="0 auto"
+      width={isFullViewport ? "100vw" : "auto"}
+      height={isFullViewport ? "100vh" : "auto"}
+      position={isFullViewport ? "fixed" : "relative"}
+      top={isFullViewport ? 0 : undefined}
+      left={isFullViewport ? 0 : undefined}
+      zIndex={isFullViewport ? 9999 : undefined}
+    >
       {manifestApiUrl && (
         <WebReader
           key={manifestApiUrl}
@@ -51,6 +62,7 @@ const ResearchAssistantViewer: React.FC<{
           pdfWorkerSrc="/pdf-worker/pdf.worker.min.mjs"
           injectablesFixed={injectables}
           height="70vh"
+          toggleFullScreen={toggleFullScreen}
         />
       )}
     </Box>

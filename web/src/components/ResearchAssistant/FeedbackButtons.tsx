@@ -19,7 +19,11 @@ const feedbackButtonStyles = {
   },
 };
 
-const FeedbackButtons = () => {
+interface FeedbackButtonsProps {
+  label: string;
+}
+
+const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({ label }) => {
   const { thumbValue, setThumbValue, onOpen, setDescriptionText } = useContext(
     FeedbackContext
   );
@@ -45,7 +49,7 @@ const FeedbackButtons = () => {
       <Button
         id="thumbs-up-button"
         variant="text"
-        aria-label="Thumbs up"
+        aria-label={`${label} Thumbs up`}
         aria-pressed={thumbValue === "up"}
         padding="xs"
         minWidth="18px"
@@ -58,7 +62,7 @@ const FeedbackButtons = () => {
       <Button
         id="thumbs-down-button"
         variant="text"
-        aria-label="Thumbs down"
+        aria-label={`${label} Thumbs down`}
         aria-pressed={thumbValue === "down"}
         padding="xs"
         minWidth="18px"

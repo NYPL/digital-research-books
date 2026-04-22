@@ -158,78 +158,80 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
   };
 
   return (
-    <Box fontSize="desktop.body.body2" bgColor="ui.bg.default" width="100%">
-      <Grid
-        templateColumns={getGridColumns(vraEnabled, showChat)}
-        templateRows={getGridRows(backUrl)}
-        gap="l"
-        marginBottom="xs"
-        margin="0 auto"
-        width="100%"
-      >
-        <GridItem colSpan={1} gridRow={backUrl ? "2" : "1"} />
-        {backUrl && (
-          <Flex
-            alignItems="center"
-            justifyContent="space-between"
-            padding="s"
-            bgColor="ui.white"
-            gridColumn={vraEnabled ? "1 / span 3" : "1 / span 4"}
-            gridRow="1"
-            borderBottom="1px solid"
-            borderColor="ui.border.default"
-            paddingLeft="calc((100vw - 1280px) / 2)"
-            paddingRight={getHeaderPaddingRight(vraEnabled)}
-            paddingY="s"
-            marginRight={vraEnabled ? "0" : "-2rem"}
-            height={HEADER_HEIGHT}
-          >
-            <BackToResultsButton handleBackToResults={handleBackToResults} />
-            <Tooltip
-              content="Toggle off if you would like to opt out of using the AI tool. When toggled off, chat window will close and chat history will be lost."
-              shouldWrapChildren
+    <main id="mainContent">
+      <Box fontSize="desktop.body.body2" bgColor="ui.bg.default" width="100%">
+        <Grid
+          templateColumns={getGridColumns(vraEnabled, showChat)}
+          templateRows={getGridRows(backUrl)}
+          gap="l"
+          marginBottom="xs"
+          margin="0 auto"
+          width="100%"
+        >
+          <GridItem colSpan={1} gridRow={backUrl ? "2" : "1"} />
+          {backUrl && (
+            <Flex
+              alignItems="center"
+              justifyContent="space-between"
+              padding="s"
+              bgColor="ui.white"
+              gridColumn={vraEnabled ? "1 / span 3" : "1 / span 4"}
+              gridRow="1"
+              borderBottom="1px solid"
+              borderColor="ui.border.default"
+              paddingLeft="calc((100vw - 1280px) / 2)"
+              paddingRight={getHeaderPaddingRight(vraEnabled)}
+              paddingY="s"
+              marginRight={vraEnabled ? "0" : "-2rem"}
+              height={HEADER_HEIGHT}
             >
-              <Toggle
-                isChecked={vraEnabled}
-                labelText="Use Virtual Research Assistant"
-                onChange={() => setVraEnabled((prev) => !prev)}
-                size="small"
-                sx={{
-                  ".chakra-switch__track[data-checked]": {
-                    backgroundColor: "section.research.secondary",
-                  },
-                }}
-              />
-            </Tooltip>
-          </Flex>
-        )}
-        <ItemDetailSidebar
-          work={work}
-          previewEdition={previewEdition}
-          previewItem={previewItem}
-          backUrl={backUrl}
-        />
-        <Box
-          gridColumn="3"
-          gridRow={backUrl ? "2" : "1"}
-          marginRight={vraEnabled ? "l" : "0"}
-          marginTop={backUrl ? "0" : "l"}
-          paddingBottom="l"
-        >
-          <ResearchAssistantViewer itemId={itemId} pageId={pageId} />
-        </Box>
-        <Box
-          gridColumn={vraEnabled ? "4 / span 2" : "4"}
-          gridRow={backUrl ? "1 / span 2" : "1"}
-          height="100%"
-          marginLeft="-2rem"
-          display="flex"
-          flexDirection="column"
-        >
-          {vraEnabled && <ResearchAssistantPanel />}
-        </Box>
-      </Grid>
-    </Box>
+              <BackToResultsButton handleBackToResults={handleBackToResults} />
+              <Tooltip
+                content="Toggle off if you would like to opt out of using the AI tool. When toggled off, chat window will close and chat history will be lost."
+                shouldWrapChildren
+              >
+                <Toggle
+                  isChecked={vraEnabled}
+                  labelText="Use Virtual Research Assistant"
+                  onChange={() => setVraEnabled((prev) => !prev)}
+                  size="small"
+                  sx={{
+                    ".chakra-switch__track[data-checked]": {
+                      backgroundColor: "section.research.secondary",
+                    },
+                  }}
+                />
+              </Tooltip>
+            </Flex>
+          )}
+          <ItemDetailSidebar
+            work={work}
+            previewEdition={previewEdition}
+            previewItem={previewItem}
+            backUrl={backUrl}
+          />
+          <Box
+            gridColumn="3"
+            gridRow={backUrl ? "2" : "1"}
+            marginRight={vraEnabled ? "l" : "0"}
+            marginTop={backUrl ? "0" : "l"}
+            paddingBottom="l"
+          >
+            <ResearchAssistantViewer itemId={itemId} pageId={pageId} />
+          </Box>
+          <Box
+            gridColumn={vraEnabled ? "4 / span 2" : "4"}
+            gridRow={backUrl ? "1 / span 2" : "1"}
+            height="100%"
+            marginLeft="-2rem"
+            display="flex"
+            flexDirection="column"
+          >
+            {vraEnabled && <ResearchAssistantPanel />}
+          </Box>
+        </Grid>
+      </Box>
+    </main>
   );
 };
 
