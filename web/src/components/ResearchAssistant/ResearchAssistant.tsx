@@ -1,5 +1,5 @@
 import { Box, Flex } from "@nypl/design-system-react-components";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   HEADER_HEIGHT,
   MARGIN_BLEED,
@@ -44,10 +44,18 @@ const ResearchAssistant: React.FC = () => {
     ? "1fr 640px 640px 1fr"
     : "1fr 1152px 128px 1fr";
 
-  const latestResults =
-    messages && results && results[messages.length]
-      ? results[messages.length]
-      : null;
+  const latestResults = useMemo(() => {
+    if (!results) return null;
+
+    const exactMatch = results[messages.length];
+    if (exactMatch) return exactMatch;
+
+    const latest = Object.entries(results)
+      .filter(([, value]) => value)
+      .sort(([a], [b]) => Number(b) - Number(a))[0]?.[1];
+
+    return latest || null;
+  }, [messages.length, results]);
 
   return (
     <ResultPageProvider

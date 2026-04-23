@@ -1,8 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import appConfig from "~/config/appConfig";
-import { DRBFeedback, VRAFeedback } from "~/src/types/Feedback";
+import {
+  DRBFeedback,
+  PopupSurveyResponse,
+  VRAFeedback,
+} from "~/src/types/Feedback";
 
-type FeedbackFields = DRBFeedback | VRAFeedback;
+type FeedbackFields = DRBFeedback | VRAFeedback | PopupSurveyResponse;
 type AirtableFields = Record<string, string>;
 
 interface FeedbackHandler {
@@ -35,6 +39,24 @@ const feedbackHandlers: Record<string, FeedbackHandler> = {
       fldrD25IvZZXQ8zrC: fields.thumbState,
       ...(fields.email && { fld8iTQqzy2Xe69jH: fields.email }),
     }),
+  },
+
+  vraPopup: {
+    formURL: appConfig.feedback.vraPopupUrl,
+    mapFields: (fields: PopupSurveyResponse): AirtableFields => {
+      const responses = fields.responses;
+      return {
+        fldFYcj0dD3DYkOUF: responses[0],
+        fldp7kwoR2ZLJsX6M: responses[1],
+        fldTAM3mKfUGChBz7: responses[2],
+        fldFDnSBjZbPxS1NT: responses[3],
+        fldgod6a2P1BQUrYZ: responses[4],
+        fldj3N2Zvmqano680: fields.sessionId,
+        fld8tezDVVVc03SOm: new Date().toLocaleString("en-US"),
+        fldBlsYdy9t0iUqqG: fields.url,
+        fldTTU0PHBcY4y2Uc: process.env.APP_ENV ?? "",
+      };
+    },
   },
 };
 
