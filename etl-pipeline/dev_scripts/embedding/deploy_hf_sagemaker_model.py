@@ -94,7 +94,6 @@ boto3.setup_default_session(profile_name=AWS_PROFILE)  # ALT: set AWS_PROFILE en
 # Set IAM role ARN to use - use pre-created sagemaker execution role
 # https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html
 iam_client = boto3.client("iam")
-role_name = "AmazonSageMaker-ExecutionRole-20180212T130350"  # pragma: allowlist secret
 load_dotenv(".env.execution_role")
 role = iam_client.get_role(RoleName=require_env("SAGEMAKER_EXECUTION_ROLE"))["Role"][
     "Arn"
