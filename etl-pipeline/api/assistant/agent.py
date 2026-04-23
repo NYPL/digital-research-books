@@ -34,9 +34,14 @@ from sqlalchemy import text
 from jinja2 import Template
 
 
-#  api code
+# api code
 from ..utils import remove_markdown_comments
-from ..db import get_frbr_data_by_edition, get_session, get_async_engine
+from ..db import (
+    get_frbr_data_by_edition,
+    get_readonly_session,
+    get_async_engine,
+    get_engine,
+)
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
 from .types import CatalogSearchResult, ContentSearchResult
 
@@ -55,7 +60,7 @@ logger = create_log(__name__)
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
 
-INDEX_NAME = "vra-dev"
+INDEX_NAME = os.getenv("TURBOPUFFER_NAMESPACE") or "vra-dev"
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
@@ -371,7 +376,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
             ORDER BY e.id
         """)
 
-    Session = get_session()
+    Session = get_readonly_session()
     with Session() as session:
         result = session.execute(query, {"ids": list(ids)})
         df = pd.DataFrame(result.fetchall(), columns=result.keys())
@@ -435,8 +440,8 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
 async def update_chat(
     message: str,
     conversation_type: str,
+    session_id: str,
     edition_id=None,
-    session_id: str = None,
     max_turns: int = DEFAULT_MAX_TURNS,
 ) -> RunResult:
     """
@@ -452,9 +457,9 @@ async def update_chat(
     Args:
         message: The new user message text.
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
-        edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
         session_id: Client-supplied session ID. History is persisted to and loaded
                     from the database using this key.
+        edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
 
     Returns:
         The agent's RunResult obj.
@@ -551,6 +556,21 @@ async def update_chat(
     )
 
     return run_result
+
+
+def delete_session_data(session_id: str) -> None:
+    """Delete all rows in agent_messages and agent_sessions for the given session_id."""
+    engine = get_engine()
+    with engine.connect() as conn:
+        with conn.begin():
+            conn.execute(
+                text("DELETE FROM agent_messages WHERE session_id = :sid"),
+                {"sid": session_id},
+            )
+            conn.execute(
+                text("DELETE FROM agent_sessions WHERE session_id = :sid"),
+                {"sid": session_id},
+            )
 
 
 def max_chunk_score(chunk_hits):

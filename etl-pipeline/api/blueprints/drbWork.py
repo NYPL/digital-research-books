@@ -24,7 +24,7 @@ def get_work(uuid):
         )
 
     try:
-        with DBClient(current_app.config["DB_CLIENT"]) as db_client:
+        with DBClient(current_app.config["SQL_ENGINE"]) as db_client:
             search_params = APIUtils.normalizeQueryParams(request.args)
             terms = {
                 param: APIUtils.extractParamPairs(param, search_params)

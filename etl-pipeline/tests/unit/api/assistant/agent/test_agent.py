@@ -18,10 +18,15 @@ class TestAgent:
     def test_update_chat_catalog_search(self, mocker):
         """Test update_chat in catalogSearch mode returns run_result."""
 
-        # Mock search dependencies
+        # Mock external resource dependencies
         mocker.patch("api.assistant.agent.TurbopufferBackend")
         mocker.patch("api.assistant.agent.get_config")
+        mocker.patch("api.assistant.agent.get_async_engine")
+        mocker.patch("api.assistant.agent.SQLAlchemySession")
         mocker.patch.dict(os.environ, {"GOOGLE_API_KEY": "fake-key"})
+        # Q: the pattern seems to be mock everything implemented in the top-level \
+        # of the function, so why not mock `OpenAIChatCompletionsModel` instead \
+        # of patch just the env var that it uses?
 
         # Mock the agent and its runner to simulate execution
         mocker.patch("api.assistant.agent.Agent")
@@ -36,8 +41,9 @@ class TestAgent:
         mock_template_instance.render.return_value = "system prompt"
 
         # Execute a catalog search using a simple user prompt
-        conversation = [{"role": "user", "content": "Some query"}]
-        result = asyncio.run(update_chat(conversation, "catalogSearch"))
+        result = asyncio.run(
+            update_chat("Some query", "catalogSearch", "test-session-id")
+        )
 
         # Verify result and that the runner was called just once
         assert result == mock_run_result

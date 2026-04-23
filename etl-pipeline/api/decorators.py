@@ -56,7 +56,7 @@ def require_basic_authentication(func):
                 403, "authResponse", {"message": "user/password not provided"}
             )
 
-        db_client = DBClient(current_app.config["DB_CLIENT"])
+        db_client = DBClient(current_app.config["SQL_ENGINE"])
         db_client.createSession()
 
         user = db_client.fetchUser(username)

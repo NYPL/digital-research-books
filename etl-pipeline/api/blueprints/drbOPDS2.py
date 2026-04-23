@@ -30,7 +30,7 @@ def newPublications():
     page = int(params.get("page", [1])[0]) - 1
     pageSize = int(params.get("size", [25])[0])
 
-    dbClient = DBClient(current_app.config["DB_CLIENT"])
+    dbClient = DBClient(current_app.config["SQL_ENGINE"])
     dbClient.createSession()
 
     baseFeed = constructBaseFeed(
@@ -69,7 +69,7 @@ def opdsSearch():
         searchTerms["filter"].append(("showAll", params["showAll"][0]))
 
     esClient = ElasticClient(current_app.config["REDIS_CLIENT"])
-    dbClient = DBClient(current_app.config["DB_CLIENT"])
+    dbClient = DBClient(current_app.config["SQL_ENGINE"])
     dbClient.createSession()
 
     logger.info("Executing ES Query {}".format(searchTerms))
@@ -113,7 +113,7 @@ def opdsSearch():
 def fetchPublication(uuid):
     logger.info("Returning OPDS2 publication for {}".format(uuid))
 
-    dbClient = DBClient(current_app.config["DB_CLIENT"])
+    dbClient = DBClient(current_app.config["SQL_ENGINE"])
     dbClient.createSession()
 
     workRecord = dbClient.fetchSingleWork(uuid)

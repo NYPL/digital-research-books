@@ -51,7 +51,12 @@ def main(args):
         logger.exception(f"Failed to initialize process {process} in {environment}")
         return
 
-    if process in ("APIProcess", "DevelopmentSetupProcess", "MigrationProcess"):
+    if process in (
+        "APIProcess",
+        "DevelopmentSetupProcess",
+        "MigrationProcess",
+        "VectorIndexingProcess",
+    ):
         process_instance.run()
     else:
         # Configure a separate scope for logs of this process in New Relic UI

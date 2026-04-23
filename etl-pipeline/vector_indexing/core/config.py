@@ -35,7 +35,7 @@ VECTOR_INDEXING_ROOT = Path(__file__).resolve().parent.parent
 
 # Config paths - using existing etl-pipeline conventions
 CONFIG_DIR = PROJECT_ROOT / "config"
-DATA_DIR = PROJECT_ROOT / "data"
+DATA_DIR = VECTOR_INDEXING_ROOT / "data"
 
 
 @dataclass(frozen=True)
@@ -82,7 +82,7 @@ class GlobalConfig:
     pg_database: str = "vra"
 
     # Embedding settings
-    embedding_model: str = "text-embedding-004"
+    embedding_model: str = "gemini-embedding-001"
     embedding_batch_size: int = 100
     embedding_dimensions: int = 768
 
