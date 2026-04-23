@@ -1,4 +1,8 @@
-import { DRBFeedback, VRAFeedback } from "~/src/types/Feedback";
+import {
+  DRBFeedback,
+  PopupSurveyResponse,
+  VRAFeedback,
+} from "~/src/types/Feedback";
 import { log } from "../newrelic/NewRelic";
 
 export const submitDRBFeedback = async (feedback: DRBFeedback) => {
@@ -20,6 +24,19 @@ export const submitVRAFeedback = async (feedback: VRAFeedback) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: "vra", ...feedback }),
+    });
+  } catch (error) {
+    log(error, "Failed to submit feedback");
+    throw new Error(`Failed to submit feedback: ${error.message}`);
+  }
+};
+
+export const submitVRAPopupSurvey = async (feedback: PopupSurveyResponse) => {
+  try {
+    return await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "vraPopup", ...feedback }),
     });
   } catch (error) {
     log(error, "Failed to submit feedback");
