@@ -1,7 +1,6 @@
 import os
 import sys
 from pathlib import Path
-from turtle import st
 from dotenv import find_dotenv
 
 PROJ_ROOT = Path(find_dotenv("requirements.txt")).parent
@@ -19,7 +18,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from model.postgres.grin_public_domain_10k import GrinPublicDomain10k
-from vector_indexing.core.config import get_config
+from vector_indexing.core.config import PROJECT_ROOT, get_config
 from vector_indexing.components.backends.turbopuffer import (
     TurbopufferBackend,
     load_default_schema,
@@ -51,7 +50,7 @@ def list_10k_barcodes():
 
 # List barcodes to embed
 # barcodes = list_10k_barcodes()
-barcodes = [33433062509165]
+barcodes = ["33433062509165"]
 
 
 # Run the indexing pipeline with the SageMaker (harrier) embedder
@@ -69,3 +68,5 @@ batch_result = run_pipeline(
 )
 
 print(f"\n{batch_result}")
+out_dir = Path(__file__, "..", "indexing_results").resolve()
+batch_result.save(out_dir)

@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import dataclasses
+import json
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 from logger import create_log
@@ -33,6 +37,14 @@ class IndexingResult:
     def __repr__(self) -> str:
         status = "y" if self.success else "n"
         return f"IndexingResult({status} {self.barcode}, {self.chunks_inserted}/{self.chunks_created} chunks)"
+
+    def to_dict(self) -> dict:
+        return dataclasses.asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "IndexingResult":
+        known = {f.name for f in dataclasses.fields(cls)}
+        return cls(**{k: v for k, v in data.items() if k in known})
 
 
 @dataclass
@@ -66,6 +78,28 @@ class BatchResult:
             f"BatchResult({self.succeeded}/{self.total} books, "
             f"{self.total_chunks_inserted}/{self.total_chunks_created} chunks)"
         )
+
+    def to_dict(self) -> dict:
+        return dataclasses.asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "BatchResult":
+        results = [IndexingResult.from_dict(r) for r in data.get("results", [])]
+        return cls(results=results)
+
+    def save(self, save_dir: str | Path | None = None) -> Path:
+        """Serialize to JSON and write to save_dir (default: CWD). Returns the saved file path."""
+        save_dir = Path(save_dir) if save_dir is not None else Path.cwd()
+        save_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        path = save_dir / f"batch_result_{timestamp}.json"
+        path.write_text(json.dumps(self.to_dict(), indent=2))
+        return path
+
+    @classmethod
+    def load(cls, path: str | Path) -> "BatchResult":
+        """Load a BatchResult from a JSON file saved by .save()."""
+        return cls.from_dict(json.loads(Path(path).read_text()))
 
 
 # Type alias for progress callback
@@ -167,13 +201,32 @@ class Pipeline:
         # Stage 2: Fetch metadata for all books in one query (keyed by barcode)
         loaded_barcodes = list(books.keys())
         metadata_map: dict[str, BookMetadata] = {}
+        enriched_books = {}
         if loaded_barcodes:
             try:
                 metadata_map = self._metadata_provider.get_metadata(loaded_barcodes)
             except Exception as e:
-                # If metadata fetch fails, continue with empty metadata
-                # Log this in production
-                pass
+                book_errors.update(
+                    dict(
+                        zip(
+                            loaded_barcodes,
+                            [f"Metadata retrieval error: {e}"] * len(loaded_barcodes),
+                        )
+                    )
+                )
+            else:
+                for barcode, book in books.items():
+                    if barcode in metadata_map:
+                        # Enrich book with metadata before chunking
+                        enriched_book = Book(
+                            barcode=book.barcode,
+                            pages=book.pages,
+                            book_id=book.book_id,
+                            metadata=metadata_map[barcode],
+                        )
+                        enriched_books[barcode] = enriched_book
+                    else:
+                        book_errors[barcode] = "Metadata retrieval failed"
 
         logger.info(
             f"Stage 2 (Metadata): {len(metadata_map)} fetched, {len(book_errors)} errors"
@@ -182,27 +235,8 @@ class Pipeline:
         # Stage 3: Chunk all books
         all_chunks: list[ChunkDocument] = []
         chunks_by_barcode: dict[str, list[ChunkDocument]] = {}
-
-        for barcode, book in list(books.items()):
+        for barcode, enriched_book in list(enriched_books.items()):
             try:
-                # Get metadata or create empty default (now keyed by barcode)
-                metadata = metadata_map.get(barcode) or BookMetadata(
-                    edition_id=None,
-                    title=None,
-                    author=[],
-                    subject=[],
-                    publication_date=None,
-                    language=[],
-                )
-
-                # Enrich book with metadata before chunking
-                enriched_book = Book(
-                    barcode=book.barcode,
-                    pages=book.pages,
-                    book_id=book.book_id,
-                    metadata=metadata,
-                )
-
                 chunks = list(self._chunker.chunk(enriched_book))
                 chunks_by_barcode[barcode] = chunks
                 all_chunks.extend(chunks)
