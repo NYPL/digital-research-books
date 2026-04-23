@@ -130,6 +130,9 @@ class DiskBookCache(BookCache):
 
     def get(self, barcode: str) -> Optional[Book]:
         """Get a book from disk cache. Book if cached, None otherwise."""
+        # MAYBE: add some logic that checks the page count from S3 and makes
+        # sure its the same in the local cache and invalidates the local cache if not
+
         barcode = str(barcode)
         barcode_dir = self._cache_dir / barcode
 
@@ -148,7 +151,10 @@ class DiskBookCache(BookCache):
             return None
 
     def put(self, barcode: str, book: Book) -> None:
-        """Store a book in disk cache. Creates directory structure and writes pages as numbered .txt files."""
+        """Store a book in disk cache.
+        Creates directory structure and writes pages as numbered .txt files.
+        Existing files are overwritten.
+        """
         barcode = str(barcode)
         barcode_dir = self._cache_dir / barcode
 

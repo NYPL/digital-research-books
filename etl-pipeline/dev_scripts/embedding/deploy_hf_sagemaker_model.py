@@ -2,6 +2,8 @@
 # To use this snippet, install a compatible version:
 # pip install 'sagemaker<3.0.0'
 import datetime as dt
+import os
+from pathlib import Path
 
 import sagemaker
 import boto3
@@ -11,8 +13,6 @@ from dotenv import load_dotenv
 
 # --- CLI args ---
 import argparse
-
-from utils.common import require_env
 
 parser = argparse.ArgumentParser(
     description="Deploy Harrier embedding model to SageMaker"
@@ -33,6 +33,12 @@ print(f"[config] model={HF_MODEL_ID}  instance={INSTANCE_TYPE}  profile={AWS_PRO
 
 
 # --- Functions ---
+
+
+# TODO: duplicated in bedrock deploy script, create shared utils
+def _short_name(hf_model_id: str) -> str:
+    """'Qwen/Qwen3-Embedding-8B' -> 'qwen3-embedding-8b'"""
+    return hf_model_id.split("/")[-1].lower()
 
 
 def run_instance_recommendation_job(
@@ -94,8 +100,10 @@ boto3.setup_default_session(profile_name=AWS_PROFILE)  # ALT: set AWS_PROFILE en
 # Set IAM role ARN to use - use pre-created sagemaker execution role
 # https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html
 iam_client = boto3.client("iam")
-load_dotenv(".env.execution_role")
-role = iam_client.get_role(RoleName=require_env("SAGEMAKER_EXECUTION_ROLE"))["Role"][
+assert load_dotenv(Path(__file__, "../.env.execution_role").resolve()), (
+    "Env file not found"
+)
+role = iam_client.get_role(RoleName=os.environ["SAGEMAKER_EXECUTION_ROLE"])["Role"][
     "Arn"
 ]
 print(f"[iam] role ARN: {role}")
@@ -115,7 +123,9 @@ huggingface_model = HuggingFaceModel(
 print("[model] HuggingFaceModel created")
 
 # Define deployment configuration
-endpoint_name = f"hf-tei-{dt.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+endpoint_name = (
+    f"hf-tei-{_short_name(HF_MODEL_ID)}-{dt.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+)
 if INSTANCE_TYPE == "auto":
     model_with_rec = run_instance_recommendation_job(huggingface_model)
     best = model_with_rec.inference_recommendations[0]

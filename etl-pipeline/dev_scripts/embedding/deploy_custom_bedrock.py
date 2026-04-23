@@ -65,6 +65,7 @@ _TRANSFER_CONFIG = TransferConfig(
 )
 
 
+# TODO: duplicated in sagemaker deploy script, create shared utils
 def _short_name(hf_model_id: str) -> str:
     """'Qwen/Qwen3-Embedding-8B' -> 'qwen3-embedding-8b'"""
     return hf_model_id.split("/")[-1].lower()

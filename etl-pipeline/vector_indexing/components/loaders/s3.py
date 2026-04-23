@@ -54,11 +54,12 @@ class S3BookLoader(BookLoader):
     """Load books from S3 with parallel downloads.
 
     Tries to load books in this order:
-    1. Local cache (if configured)
-    2. Unpacked .txt pages from S3 (validates page count against XML metadata)
+    1. Local cache (if configured. Validation check: at least one page file must be present)
+    2. Unpacked .txt pages from S3 (Validation check: use only if page count matches XML metadata)
     3. Encrypted .tar.gz.gpg archive from S3 (decrypts and extracts)
 
-    If unpacked pages exist but fail validation, falls back to the archive.
+    If cache is configured, each book loaded from S3 pages or S3 archive is
+    overwritten in cache.
 
     Args:
         bucket: S3 bucket name. Defaults to config.s3_bucket.
@@ -296,6 +297,9 @@ class S3BookLoader(BookLoader):
 
     def _try_cache(self, barcode: str) -> Optional[Book]:
         """Try to load from cache."""
+        # TODO: implement a cache validation step that checks that the local
+        # cache pages match the S3 page count (similar to _try_cache())
+
         if self._cache is None:
             return None
         book = self._cache.get(barcode)
