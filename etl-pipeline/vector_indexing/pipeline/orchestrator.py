@@ -194,7 +194,9 @@ class Pipeline:
                 else:
                     books[barcode] = book
             except Exception as e:
-                book_errors[barcode] = f"Load error: {e}"
+                book_errors[barcode] = (
+                    f"Load error: {type(e).__module__}.{type(e).__qualname__}: {e}"
+                )
 
         logger.info(f"Stage 1 (Load): {len(books)} loaded, {len(book_errors)} errors")
 
@@ -210,7 +212,10 @@ class Pipeline:
                     dict(
                         zip(
                             loaded_barcodes,
-                            [f"Metadata retrieval error: {e}"] * len(loaded_barcodes),
+                            [
+                                f"Metadata retrieval error: {type(e).__module__}.{type(e).__qualname__}: {e}"
+                            ]
+                            * len(loaded_barcodes),
                         )
                     )
                 )
@@ -241,7 +246,9 @@ class Pipeline:
                 chunks_by_barcode[barcode] = chunks
                 all_chunks.extend(chunks)
             except Exception as e:
-                book_errors[barcode] = f"Chunk error: {e}"
+                book_errors[barcode] = (
+                    f"Chunk error: {type(e).__module__}.{type(e).__qualname__}: {e}"
+                )
 
         logger.info(
             f"Stage 3 (Chunk): {len(all_chunks)} chunks from {len(chunks_by_barcode)} books, {len(book_errors)} errors"
@@ -258,7 +265,9 @@ class Pipeline:
                 # If embedding fails entirely, mark all remaining books as failed
                 for barcode in chunks_by_barcode:
                     if barcode not in book_errors:
-                        book_errors[barcode] = f"Embed error: {e}"
+                        book_errors[barcode] = (
+                            f"Embed error: {type(e).__module__}.{type(e).__qualname__}: {e}"
+                        )
                 chunks_by_barcode.clear()
 
         logger.info(

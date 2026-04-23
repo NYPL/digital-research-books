@@ -7,7 +7,10 @@ Calls a SageMaker endpoint configure with a HuggingFace Text Embeddings Inferenc
 from __future__ import annotations
 
 import sagemaker
-from sagemaker.predictor import Predictor
+from sagemaker.huggingface import HuggingFacePredictor
+# from sagemaker.predictor import Predictor # requires manual passing of JSONSerializer
+# from sagemaker.deserializers import JSONDeserializer
+# from sagemaker.serializers import JSONSerializer
 
 from vector_indexing.components.embedders.base import Embedder
 
@@ -25,7 +28,7 @@ class SageMakerEmbedder(Embedder):
         endpoint_name: str,
     ) -> None:
         self._endpoint_name = endpoint_name
-        self._predictor = Predictor(
+        self._predictor = HuggingFacePredictor(
             endpoint_name=endpoint_name,
             sagemaker_session=sagemaker.Session(),
         )

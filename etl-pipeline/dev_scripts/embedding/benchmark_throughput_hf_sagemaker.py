@@ -13,19 +13,23 @@ from typing import List
 import boto3
 import numpy as np
 import sagemaker
-from sagemaker.predictor import Predictor
+
+# from sagemaker.predictor import Predictor # requires manual passing of JSONSerializer
+# from sagemaker.deserializers import JSONDeserializer
+# from sagemaker.serializers import JSONSerializer
+from sagemaker.huggingface import HuggingFacePredictor
 from transformers import AutoTokenizer
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-ENDPOINT_NAME = "tei-2026-04-20-16-04-22-386"  # Qwen, ml.g5.2xlarge
+ENDPOINT_NAME = "hf-tei-20260423-113751"  # Qwen, ml.g5.2xlarge
 AWS_PROFILE = "sandbox"
 
 TOTAL_REQUESTS = 200  # requests at each concurrency level
-# CONCURRENCY_LEVELS = [1, 16, 32, 64]
-CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
+CONCURRENCY_LEVELS = [1, 16, 32, 64]
+# CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -132,7 +136,7 @@ class BatchResult:
 # ---------------------------------------------------------------------------
 
 
-async def _call_endpoint(predictor: Predictor, semaphore: asyncio.Semaphore):
+async def _call_endpoint(predictor: HuggingFacePredictor, semaphore: asyncio.Semaphore):
     """Run one synchronous predictor.predict() call inside a thread."""
     async with semaphore:
         start = time.perf_counter()
@@ -146,7 +150,10 @@ async def _call_endpoint(predictor: Predictor, semaphore: asyncio.Semaphore):
 
 
 async def run_benchmark(
-    predictor: Predictor, concurrency: int, total_requests: int, token_count: int
+    predictor: HuggingFacePredictor,
+    concurrency: int,
+    total_requests: int,
+    token_count: int,
 ) -> BatchResult:
     """
     Send *total_requests* embedding requests capped at *concurrency* in-flight at once.
@@ -209,7 +216,7 @@ async def run_benchmark(
 # ---------------------------------------------------------------------------
 
 
-def get_endpoint_info(predictor: Predictor) -> tuple[str | None, str | None]:
+def get_endpoint_info(predictor: HuggingFacePredictor) -> tuple[str | None, str | None]:
     """Return (HF_MODEL_ID, instance_type) by introspecting the predictor's session.
 
     Uses predictor._get_endpoint_config_name() (caches describe_endpoint) so we only
@@ -231,7 +238,7 @@ async def main() -> List[BatchResult]:
     boto3.setup_default_session(profile_name=AWS_PROFILE)
     session = sagemaker.Session()
 
-    predictor = Predictor(
+    predictor = HuggingFacePredictor(
         endpoint_name=ENDPOINT_NAME,
         sagemaker_session=session,
     )
