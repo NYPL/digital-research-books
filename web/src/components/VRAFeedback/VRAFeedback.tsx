@@ -36,7 +36,7 @@ const VRAFeedback: React.FC = () => {
     } else {
       setDescriptionText(BUTTON_DESCRIPTION_TEXT);
     }
-  }, [isError, setNotificationText]);
+  }, [isError, setDescriptionText, setNotificationText]);
 
   const onCloseAndReset = () => {
     if (isError) setIsError(false);

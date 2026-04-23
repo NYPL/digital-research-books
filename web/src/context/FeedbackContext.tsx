@@ -3,6 +3,7 @@ import React, { createContext, useState } from "react";
 import { ChakraComponent } from "@chakra-ui/react";
 import { useFeedbackBox } from "@nypl/design-system-react-components";
 import { BUTTON_DESCRIPTION_TEXT } from "../constants/feedback";
+import { FeedbackState } from "../types/ResearchAssistant";
 
 type FeedbackContextType = {
   onOpen: () => void;
@@ -17,8 +18,8 @@ type FeedbackContextType = {
   setStatusCode: React.Dispatch<React.SetStateAction<number | null>>;
   descriptionText?: string;
   setDescriptionText?: React.Dispatch<React.SetStateAction<string>>;
-  thumbValue?: "up" | "down" | null;
-  setThumbValue?: React.Dispatch<React.SetStateAction<"up" | "down" | null>>;
+  thumbValue?: FeedbackState;
+  setThumbValue?: React.Dispatch<React.SetStateAction<FeedbackState>>;
   sessionId?: string;
   setSessionId: React.Dispatch<React.SetStateAction<string>>;
 };
@@ -37,7 +38,7 @@ export const FeedbackProvider: React.FC<{
   const [descriptionText, setDescriptionText] = useState(
     BUTTON_DESCRIPTION_TEXT
   );
-  const [thumbValue, setThumbValue] = useState<"up" | "down" | null>(null);
+  const [thumbValue, setThumbValue] = useState<FeedbackState>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   return (
