@@ -2,10 +2,12 @@ import {
   Box,
   Icon,
   SubNav,
+  SubNavButton,
   SubNavLink,
   Text,
 } from "@nypl/design-system-react-components";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { FeedbackContext } from "~/src/context/FeedbackContext";
 import { PageType } from "~/src/types/ResearchAssistant";
 import KeywordSearchIcon from "./icons/KeywordSearchIcon";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
@@ -18,6 +20,8 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
   activePage,
 }) => {
   const [token, setToken] = useState<string | null>(null);
+
+  const { onOpen } = useContext(FeedbackContext);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -69,9 +73,9 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
       secondaryActions={
         <>
           {/* TODO: add real links to help and account pages */}
-          <SubNavLink href="#help" id="subnav-help">
+          <SubNavButton onClick={onOpen} id="subnav-contact-us">
             Contact us
-          </SubNavLink>
+          </SubNavButton>
           <SubNavLink
             isOutlined
             href={token ? "#account" : "/research-assistant-login"}
