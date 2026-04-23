@@ -20,6 +20,7 @@ Usage:
 
 import argparse
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 # Add project root to path if running directly
@@ -29,22 +30,23 @@ if __name__ == "__main__":
         sys.path.insert(0, str(project_root))
 
 from vector_indexing import (
-    GlobalConfig,
     get_config,
-    ElasticsearchBackend,
     SentenceSplitterChunker,
 )
+from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
 from vector_indexing.pipeline import Pipeline
 from vector_indexing.components.loaders import S3BookLoader, LocalBookLoader
 from vector_indexing.components.embedders import GoogleEmbedder
 from vector_indexing.components.metadata import MetadataProvider
 
+TURBOPUFFER_INDEX_NAME = "vra-dev"
+
 
 class MockEmbedder:
     """Mock embedder for testing - returns random vectors."""
 
-    def __init__(self, dimensions: int = 768):
-        self.dimensions = dimensions
+    def __init__(self, dimensions: int | None = None):
+        self.dimensions = dimensions or get_config().embedding_dimensions
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         import random
@@ -69,6 +71,67 @@ class MockMetadataProvider:
             )
             for barcode in barcodes
         }
+
+
+def _default_on_progress(result):
+    status = "y" if result.success else "n"
+    print(
+        f"  {status} {result.barcode}: {result.chunks_inserted} chunks"
+        + (f" ({result.error})" if result.error else "")
+    )
+
+
+def run_pipeline(
+    barcodes: list[str],
+    *,
+    config_overrides: dict | None = None,
+    loader=None,
+    chunker=None,
+    embedder=None,
+    metadata_provider=None,
+    backend=None,
+    on_progress=_default_on_progress,
+):
+    """Run Pipeline with defaults"""
+    # Q: better to bring the print logging into the run_pipeline() scope rather
+    # than main() so its available where ever run_pipeline is called?
+
+    config = get_config()
+    if config_overrides:
+        config = replace(config, **config_overrides)
+        # FUTURE: remove config_overrides and just pass non-default pipeline
+        # step objects when non-default config is desired.
+
+    if loader is None:
+        loader = S3BookLoader(config=config)
+    if chunker is None:
+        chunker = SentenceSplitterChunker(config=config)
+    if embedder is None:
+        embedder = GoogleEmbedder()
+    if metadata_provider is None:
+        metadata_provider = MetadataProvider(config=config)
+    if backend is None:
+        backend = TurbopufferBackend.from_config(
+            index_name=TURBOPUFFER_INDEX_NAME,
+            config=config,
+            # TODO: set default index name in env config files
+        )
+
+    pipeline = Pipeline(
+        loader=loader,
+        chunker=chunker,
+        embedder=embedder,
+        metadata_provider=metadata_provider,
+        backend=backend,
+    )
+
+    result = pipeline.index_books(barcodes, on_progress=on_progress)
+
+    print(f"\nDone: {result}")
+    print(f"  Succeeded: {result.succeeded}/{result.total}")
+    print(f"  Chunks: {result.total_chunks_inserted}/{result.total_chunks_created}")
+
+    return result
 
 
 def parse_args():
@@ -117,8 +180,10 @@ def parse_args():
 
     # Config overrides
     parser.add_argument(
-        "--es-index",
-        help="Override Elasticsearch index name",
+        "--index-name",
+        default=TURBOPUFFER_INDEX_NAME,  # ALT: import INDEX_NAME from api.assistant.agent
+        type=str,
+        help="Override IndexBackend index_name",
     )
     parser.add_argument(
         "--chunk-size",
@@ -144,79 +209,48 @@ def main():
 
     print(f"Processing {len(barcodes)} barcodes")
 
-    # Load config from env
-    config = get_config()
-
-    # Apply overrides
-    if args.es_index or args.chunk_size:
-        from dataclasses import replace
-
-        overrides = {}
-        if args.es_index:
-            overrides["es_index"] = args.es_index
-        if args.chunk_size:
-            overrides["chunk_size"] = args.chunk_size
-        config = replace(config, **overrides)
-
-    print(f"Config: es_index={config.es_index}, chunk_size={config.chunk_size}")
-
     if args.dry_run:
         print("DRY RUN - would process these barcodes:")
         for barcode in barcodes:
             print(f"  {barcode}")
         return
 
-    # Build pipeline components
-    if args.local:
-        loader = LocalBookLoader(config=config)
-        print(f"Using LocalBookLoader from {config.resolved_book_cache_dir}")
-    else:
-        loader = S3BookLoader(config=config)
-        print(f"Using S3BookLoader from s3://{config.s3_bucket}/{config.s3_prefix}")
+    kwargs = {}
 
-    chunker = SentenceSplitterChunker(config=config)
+    # Only build and pass components that differ from run_pipeline()'s defaults
+    if args.chunk_size:
+        kwargs["chunker"] = SentenceSplitterChunker(chunk_size=args.chunk_size)
+        print(f"Using SentenceSplitterChunker with chunk_size={args.chunk_size}")
+    else:
+        print("Using SentenceSplitterChunker (default)")
+
+    if args.local:
+        kwargs["loader"] = LocalBookLoader()
+        print("Using LocalBookLoader (local)")
+    else:
+        print("Using S3BookLoader (default)")
 
     if args.mock_embedder:
-        embedder = MockEmbedder(config.embedding_dimensions)
+        kwargs["embedder"] = MockEmbedder()
         print("Using MockEmbedder (random vectors)")
     else:
-        embedder = GoogleEmbedder(config=config)
-        print(f"Using GoogleEmbedder model={config.embedding_model}")
+        print("Using GoogleEmbedder (default)")
+
+    if args.index_name != TURBOPUFFER_INDEX_NAME:
+        kwargs["backend"] = TurbopufferBackend(index_name=args.index_name)
+        print(f"Using TurbopufferBackend for index {args.index_name}")
+    else:
+        print(f"Using TurbopufferBackend for index {TURBOPUFFER_INDEX_NAME} (default)")
 
     if args.mock_metadata:
-        metadata_provider = MockMetadataProvider()
+        kwargs["metadata_provider"] = MockMetadataProvider()
         print("Using MockMetadataProvider")
     else:
-        metadata_provider = MetadataProvider(config=config)
-        print(f"Using MetadataProvider at {config.pg_host}")
+        print("Using MetadataProvider (default)")
 
-    backend = ElasticsearchBackend.from_config(config)
-    print(f"Using ElasticsearchBackend at {config.es_url}")
-
-    # Create pipeline
-    pipeline = Pipeline(
-        loader=loader,
-        chunker=chunker,
-        embedder=embedder,
-        metadata_provider=metadata_provider,
-        backend=backend,
-    )
-
-    # Run pipeline
     print(f"\nIndexing {len(barcodes)} books...")
 
-    def on_progress(result):
-        status = "y" if result.success else "n"
-        print(
-            f"  {status} {result.barcode}: {result.chunks_inserted} chunks"
-            + (f" ({result.error})" if result.error else "")
-        )
-
-    result = pipeline.index_books(barcodes, on_progress=on_progress)
-
-    print(f"\nDone: {result}")
-    print(f"  Succeeded: {result.succeeded}/{result.total}")
-    print(f"  Chunks: {result.total_chunks_inserted}/{result.total_chunks_created}")
+    result = run_pipeline(barcodes, **kwargs)
 
     if result.failed > 0:
         print("\nFailed books:")

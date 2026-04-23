@@ -1,0 +1,168 @@
+# WARNING: This snippet is not yet compatible with SageMaker version >= 3.0.0.
+# To use this snippet, install a compatible version:
+# pip install 'sagemaker<3.0.0'
+import datetime as dt
+
+import sagemaker
+import boto3
+from sagemaker.huggingface import HuggingFaceModel, get_huggingface_llm_image_uri
+from dotenv import load_dotenv
+
+
+# --- CLI args ---
+import argparse
+
+from utils.common import require_env
+
+parser = argparse.ArgumentParser(
+    description="Deploy Harrier embedding model to SageMaker"
+)
+parser.add_argument("--hf-model-id", required=True)
+parser.add_argument("--instance-type", required=True)
+parser.add_argument("--profile", default="sandbox")
+args = parser.parse_args()
+# --------------
+
+
+# --- Config ---
+HF_MODEL_ID = args.hf_model_id
+INSTANCE_TYPE = args.instance_type
+AWS_PROFILE = args.profile
+print(f"[config] model={HF_MODEL_ID}  instance={INSTANCE_TYPE}  profile={AWS_PROFILE}")
+# --------------
+
+
+# --- Functions ---
+
+
+def run_instance_recommendation_job(
+    model: HuggingFaceModel,
+    payload_key: str = "harrier/payload.tar.gz",
+) -> HuggingFaceModel:
+    """Run a SageMaker Inference Recommender job and return the model with recommendations.
+
+    Uploads a sample payload, triggers a Default recommendation job (~15-45 min, real cost),
+    then deletes the payload. See:
+    https://docs.aws.amazon.com/sagemaker/latest/dg/instance-recommendation-create.html
+    """
+    bucket = model.sagemaker_session.default_bucket()
+    payload_s3_url = f"s3://{bucket}/{payload_key}"
+    print(f"[auto] sample payload URL: {payload_s3_url}")
+
+    model_with_rec = model.right_size(
+        sample_payload_url=payload_s3_url,
+        supported_content_types=["application/json"],
+        # supported_instance_types=["ml.g4dn.xlarge", "ml.g5.xlarge", "ml.g6.2xlarge"],
+    )
+
+    model.sagemaker_session.boto_session.client("s3").delete_object(
+        Bucket=bucket, Key=payload_key
+    )
+    print(f"[cleanup] deleted {payload_s3_url}")
+    return model_with_rec
+
+
+def _cleanup_resources(
+    sm_client, model_name: str | None, endpoint_config_name: str
+) -> None:
+    """Delete the SageMaker model and endpoint config created before a failed deploy."""
+    if model_name:
+        try:
+            sm_client.delete_model(ModelName=model_name)
+            print(f"[cleanup] deleted model: {model_name}")
+        except Exception as e:
+            print(f"[cleanup] could not delete model {model_name}: {e}")
+    try:
+        sm_client.delete_endpoint_config(EndpointConfigName=endpoint_config_name)
+        print(f"[cleanup] deleted endpoint config: {endpoint_config_name}")
+    except Exception as e:
+        print(f"[cleanup] could not delete endpoint config {endpoint_config_name}: {e}")
+
+
+# ----------------
+
+
+# --- Script ---
+
+# set default sso auth profile (used by sagemaker.Session())
+boto3.setup_default_session(profile_name=AWS_PROFILE)  # ALT: set AWS_PROFILE env var
+
+
+# Set IAM role ARN to use - Fetches role derived from caller identity available to default boto3 session
+# role = sagemaker.get_execution_role()
+
+# Set IAM role ARN to use - use pre-created sagemaker execution role
+# https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html
+iam_client = boto3.client("iam")
+role_name = "AmazonSageMaker-ExecutionRole-20180212T130350"  # pragma: allowlist secret
+load_dotenv(".env.execution_role")
+role = iam_client.get_role(RoleName=require_env("SAGEMAKER_EXECUTION_ROLE"))["Role"][
+    "Arn"
+]
+print(f"[iam] role ARN: {role}")
+
+
+# create Sagemaker `Model` class
+print("[model] fetching HuggingFace TEI image URI...")
+image_uri = get_huggingface_llm_image_uri(
+    "huggingface-tei", version="1.8.2"
+)  # Q: when do we change the version?
+print(f"[model] image_uri={image_uri}")
+huggingface_model = HuggingFaceModel(
+    image_uri=image_uri,
+    env={"HF_MODEL_ID": HF_MODEL_ID},
+    role=role,
+)
+print("[model] HuggingFaceModel created")
+
+# Define deployment configuration
+endpoint_name = f"hf-tei-{dt.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+if INSTANCE_TYPE == "auto":
+    model_with_rec = run_instance_recommendation_job(huggingface_model)
+    best = model_with_rec.inference_recommendations[0]
+    recommended_instance = best["EndpointConfiguration"]["InstanceType"]
+    recommendation_id = best["RecommendationId"]
+    print(f"Recommended instance: {recommended_instance}  (id={recommendation_id})")
+    deploy_model = model_with_rec
+    deploy_args = {
+        "inference_recommendation_id": recommendation_id,
+        "endpoint_name": endpoint_name,
+    }
+else:
+    deploy_model = huggingface_model
+    deploy_args = {
+        "initial_instance_count": 1,
+        "instance_type": INSTANCE_TYPE,
+        "endpoint_name": endpoint_name,
+    }
+
+
+# Create SageMaker `Endpoint`
+print(f"[deploy] deploying endpoint (instance_type={INSTANCE_TYPE})...")
+t0 = dt.datetime.now()
+try:
+    predictor = deploy_model.deploy(**deploy_args)
+except Exception as exc:
+    print(f"[deploy] failed: {exc}")
+    _cleanup_resources(
+        huggingface_model.sagemaker_session.sagemaker_client,
+        deploy_model.name,
+        endpoint_name,
+    )
+    raise
+print(f"[deploy] elapsed took: {dt.datetime.now() - t0}")
+print()
+print(f"[deploy] endpoint ready: {predictor.endpoint_name}")
+# NOTE: seems to return AsyncPredictor... why?
+
+
+# # send request
+# predictor.predict({
+# 	"inputs": "My name is Clara and I am",
+# })
+# internally calls `predictor.sagemaker_session.sagemaker_runtime_client.invoke_endpoint_async()`
+# https://docs.aws.amazon.com/boto3/latest/reference/services/sagemaker-runtime/client/invoke_endpoint_async.html
+# Why? isn't a sync call slightly cheaper?
+
+
+# --------------
