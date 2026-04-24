@@ -137,7 +137,7 @@ print(f"[iam] role ARN: {role}")
 print("[model] fetching HuggingFace TEI image URI...")
 image_uri = get_huggingface_llm_image_uri(
     "huggingface-tei",
-    # version="1.8.2",
+    version="1.8.2",
 )
 print(f"[model] image_uri={image_uri}")
 huggingface_model = HuggingFaceModel(
