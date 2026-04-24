@@ -8,3 +8,4 @@ pytest-rerunfailures==16.1
 pytest-xdist==3.8.0
 requests-mock==1.12.1
 ruff==0.11.7
+ipykernel==7.2.0

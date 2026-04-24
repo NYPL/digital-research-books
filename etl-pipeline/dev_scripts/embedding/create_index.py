@@ -34,9 +34,7 @@ configure_loggers(log_level="debug", stage="development")
 INDEX_NAME = "vra_test-sketches_of_the_north_river-harrier_oss_v1_.6b"
 HARRIER_OSS_V1_DIMENSIONS = 1024
 # Embedder Config
-HARRIER_OSS_V1_ENDPOINT = (
-    "hf-tei-20260423-113751"  # harrier-oss-v1-0.6b  (1024-dimensional output)
-)
+HARRIER_OSS_V1_ENDPOINT = "hf-tei-harrier-oss-v1-0-6b-ml-g6-2xlarge-20260424-011130"  # pragma: allowlist secret
 CONCURRENCY = 41
 
 
