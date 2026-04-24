@@ -42,16 +42,27 @@ print(f"[config] model={HF_MODEL_ID}  instance={INSTANCE_TYPE}  profile={AWS_PRO
 
 # TODO: duplicated in bedrock deploy script, create shared utils
 def _sanitize_name(name: str) -> str:
-    """Replace anything not a word or hyphen for compatibility with endpoint
-    name restrictions:
-    https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpoint.html#API_CreateEndpoint_RequestSyntax
-    """
+    """Replace any non word or hyphe char"""
     return re.sub(r"[^a-zA-Z0-9-]", r"-", name)
 
 
 def _short_name(hf_model_id: str) -> str:
     """'Qwen/Qwen3-Embedding-8B' -> 'qwen3-embedding-8b'"""
     return hf_model_id.split("/")[-1].lower()
+
+
+def _make_endpoint_name(hf_model_id: str, instance_type: str) -> str:
+    """Build a SageMaker endpoint name
+    Max len 62 chars
+    See: https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpoint.html#API_CreateEndpoint_RequestSyntax
+    """
+    datetime_str = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    # fixed overhead: "hf-tei-" + "-" + instance_type + "-" + datetime_str
+    overhead = len("hf-tei-") + 1 + len(instance_type) + 1 + len(datetime_str)
+    max_endpoint_name_len = 63
+    max_model_len = max_endpoint_name_len - overhead
+    short_model = _short_name(hf_model_id)[:max_model_len]
+    return _sanitize_name(f"hf-tei-{short_model}-{instance_type}-{datetime_str}")
 
 
 def run_instance_recommendation_job(
@@ -137,9 +148,7 @@ huggingface_model = HuggingFaceModel(
 print("[model] HuggingFaceModel created")
 
 # Define deployment configuration
-endpoint_name = _sanitize_name(
-    f"hf-tei-{_short_name(HF_MODEL_ID)}-{INSTANCE_TYPE}-{dt.datetime.now().strftime('%Y%m%d-%H%M%S')}"
-)
+endpoint_name = _make_endpoint_name(HF_MODEL_ID, INSTANCE_TYPE)
 if INSTANCE_TYPE == "auto":
     # TODO: add model cleanup if error in instance recommender job
     model_with_rec = run_instance_recommendation_job(huggingface_model)
