@@ -5,13 +5,14 @@ from __future__ import annotations
 import dataclasses
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 from logger import create_log
 
 from vector_indexing.core.types import Book, BookMetadata, ChunkDocument
+from vector_indexing.core.utils import Timer
 
 logger = create_log(__name__)
 
@@ -52,6 +53,7 @@ class BatchResult:
     """Result of indexing a batch of books."""
 
     results: list[IndexingResult] = field(default_factory=list)
+    total_time: float | None = None
 
     @property
     def total(self) -> int:
@@ -74,9 +76,14 @@ class BatchResult:
         return sum(r.chunks_inserted for r in self.results)
 
     def __repr__(self) -> str:
+        time_str = (
+            f", {timedelta(seconds=self.total_time)}"
+            if self.total_time is not None
+            else ""
+        )
         return (
             f"BatchResult({self.succeeded}/{self.total} books, "
-            f"{self.total_chunks_inserted}/{self.total_chunks_created} chunks)"
+            f"{self.total_chunks_inserted}/{self.total_chunks_created} chunks{time_str})"
         )
 
     def to_dict(self) -> dict:
@@ -85,7 +92,7 @@ class BatchResult:
     @classmethod
     def from_dict(cls, data: dict) -> "BatchResult":
         results = [IndexingResult.from_dict(r) for r in data.get("results", [])]
-        return cls(results=results)
+        return cls(results=results, total_time=data.get("total_time"))
 
     def save(self, save_dir: str | Path | None = None) -> Path:
         """Serialize to JSON and write to save_dir (default: CWD). Returns the saved file path."""
@@ -182,142 +189,146 @@ class Pipeline:
         if not barcodes:
             return batch_result
 
-        # Stage 1: Load all books
-        books: dict[str, Book] = {}
-        book_errors: dict[str, str] = {}
+        with Timer("index_books") as timer:
+            # Stage 1: Load all books
+            books: dict[str, Book] = {}
+            book_errors: dict[str, str] = {}
 
-        for barcode in barcodes:
-            try:
-                book = self._loader.load(barcode)
-                if book is None:
-                    book_errors[barcode] = "Book not found"
-                else:
-                    books[barcode] = book
-            except Exception as e:
-                book_errors[barcode] = (
-                    f"Load error: {type(e).__module__}.{type(e).__qualname__}: {e}"
-                )
+            for barcode in barcodes:
+                try:
+                    book = self._loader.load(barcode)
+                    if book is None:
+                        book_errors[barcode] = "Book not found"
+                    else:
+                        books[barcode] = book
+                except Exception as e:
+                    book_errors[barcode] = (
+                        f"Load error: {type(e).__module__}.{type(e).__qualname__}: {e}"
+                    )
 
-        logger.info(f"Stage 1 (Load): {len(books)} loaded, {len(book_errors)} errors")
+            logger.info(
+                f"Stage 1 (Load): {len(books)} loaded, {len(book_errors)} errors"
+            )
 
-        # Stage 2: Fetch metadata for all books in one query (keyed by barcode)
-        loaded_barcodes = list(books.keys())
-        metadata_map: dict[str, BookMetadata] = {}
-        enriched_books = {}
-        if loaded_barcodes:
-            try:
-                metadata_map = self._metadata_provider.get_metadata(loaded_barcodes)
-            except Exception as e:
-                book_errors.update(
-                    dict(
-                        zip(
-                            loaded_barcodes,
-                            [
-                                f"Metadata retrieval error: {type(e).__module__}.{type(e).__qualname__}: {e}"
-                            ]
-                            * len(loaded_barcodes),
+            # Stage 2: Fetch metadata for all books in one query (keyed by barcode)
+            loaded_barcodes = list(books.keys())
+            metadata_map: dict[str, BookMetadata] = {}
+            enriched_books = {}
+            if loaded_barcodes:
+                try:
+                    metadata_map = self._metadata_provider.get_metadata(loaded_barcodes)
+                except Exception as e:
+                    book_errors.update(
+                        dict(
+                            zip(
+                                loaded_barcodes,
+                                [
+                                    f"Metadata retrieval error: {type(e).__module__}.{type(e).__qualname__}: {e}"
+                                ]
+                                * len(loaded_barcodes),
+                            )
                         )
                     )
-                )
-            else:
-                for barcode, book in books.items():
-                    if barcode in metadata_map:
-                        # Enrich book with metadata before chunking
-                        enriched_book = Book(
-                            barcode=book.barcode,
-                            pages=book.pages,
-                            book_id=book.book_id,
-                            metadata=metadata_map[barcode],
-                        )
-                        enriched_books[barcode] = enriched_book
-                    else:
-                        book_errors[barcode] = "Metadata retrieval failed"
+                else:
+                    for barcode, book in books.items():
+                        if barcode in metadata_map:
+                            # Enrich book with metadata before chunking
+                            enriched_book = Book(
+                                barcode=book.barcode,
+                                pages=book.pages,
+                                book_id=book.book_id,
+                                metadata=metadata_map[barcode],
+                            )
+                            enriched_books[barcode] = enriched_book
+                        else:
+                            book_errors[barcode] = "Metadata retrieval failed"
 
-        logger.info(
-            f"Stage 2 (Metadata): {len(metadata_map)} fetched, {len(book_errors)} errors"
-        )
-
-        # Stage 3: Chunk all books
-        all_chunks: list[ChunkDocument] = []
-        chunks_by_barcode: dict[str, list[ChunkDocument]] = {}
-        for barcode, enriched_book in list(enriched_books.items()):
-            try:
-                chunks = list(self._chunker.chunk(enriched_book))
-                chunks_by_barcode[barcode] = chunks
-                all_chunks.extend(chunks)
-            except Exception as e:
-                book_errors[barcode] = (
-                    f"Chunk error: {type(e).__module__}.{type(e).__qualname__}: {e}"
-                )
-
-        logger.info(
-            f"Stage 3 (Chunk): {len(all_chunks)} chunks from {len(chunks_by_barcode)} books, {len(book_errors)} errors"
-        )
-
-        # Stage 4: Embed all chunks together (most efficient)
-        if all_chunks:
-            try:
-                texts = [c.text for c in all_chunks]
-                vectors = self._embedder.embed_batch(texts)
-                for chunk, vector in zip(all_chunks, vectors):
-                    chunk.vector = vector
-            except Exception as e:
-                # If embedding fails entirely, mark all remaining books as failed
-                for barcode in chunks_by_barcode:
-                    if barcode not in book_errors:
-                        book_errors[barcode] = (
-                            f"Embed error: {type(e).__module__}.{type(e).__qualname__}: {e}"
-                        )
-                chunks_by_barcode.clear()
-
-        logger.info(
-            f"Stage 4 (Embed): {len(all_chunks)} embedded, {len(book_errors)} errors"
-        )
-
-        # Stage 5: Insert chunks per book (to track per-book results)
-        for barcode, chunks in chunks_by_barcode.items():
-            book = books[barcode]
-            try:
-                insert_result = self._backend.insert(chunks)
-                result = IndexingResult(
-                    barcode=barcode,
-                    book_id=book.book_id,
-                    success=insert_result.failed == 0,
-                    chunks_created=len(chunks),
-                    chunks_inserted=insert_result.inserted,
-                    error=insert_result.errors[0] if insert_result.errors else None,
-                )
-            except Exception as e:
-                result = IndexingResult(
-                    barcode=barcode,
-                    book_id=book.book_id,
-                    success=False,
-                    chunks_created=len(chunks),
-                    chunks_inserted=0,
-                    error=f"Insert error: {e}",
-                )
-
-            batch_result.results.append(result)
-            if on_progress:
-                on_progress(result)
-
-        logger.info(f"Stage 5 (Insert): {len(book_errors)} errors")
-
-        # Add results for books that failed earlier
-        for barcode, error in book_errors.items():
-            book = books.get(barcode)
-            result = IndexingResult(
-                barcode=barcode,
-                book_id=book.book_id if book else None,
-                success=False,
-                chunks_created=0,
-                chunks_inserted=0,
-                error=error,
+            logger.info(
+                f"Stage 2 (Metadata): {len(metadata_map)} fetched, {len(book_errors)} errors"
             )
-            batch_result.results.append(result)
-            if on_progress:
-                on_progress(result)
 
+            # Stage 3: Chunk all books
+            all_chunks: list[ChunkDocument] = []
+            chunks_by_barcode: dict[str, list[ChunkDocument]] = {}
+            for barcode, enriched_book in list(enriched_books.items()):
+                try:
+                    chunks = list(self._chunker.chunk(enriched_book))
+                    chunks_by_barcode[barcode] = chunks
+                    all_chunks.extend(chunks)
+                except Exception as e:
+                    book_errors[barcode] = (
+                        f"Chunk error: {type(e).__module__}.{type(e).__qualname__}: {e}"
+                    )
+
+            logger.info(
+                f"Stage 3 (Chunk): {len(all_chunks)} chunks from {len(chunks_by_barcode)} books, {len(book_errors)} errors"
+            )
+
+            # Stage 4: Embed all chunks together (most efficient)
+            if all_chunks:
+                try:
+                    texts = [c.text for c in all_chunks]
+                    vectors = self._embedder.embed_batch(texts)
+                    for chunk, vector in zip(all_chunks, vectors):
+                        chunk.vector = vector
+                except Exception as e:
+                    # If embedding fails entirely, mark all remaining books as failed
+                    for barcode in chunks_by_barcode:
+                        if barcode not in book_errors:
+                            book_errors[barcode] = (
+                                f"Embed error: {type(e).__module__}.{type(e).__qualname__}: {e}"
+                            )
+                    chunks_by_barcode.clear()
+
+            logger.info(
+                f"Stage 4 (Embed): {len(all_chunks)} embedded, {len(book_errors)} errors"
+            )
+
+            # Stage 5: Insert chunks per book (to track per-book results)
+            for barcode, chunks in chunks_by_barcode.items():
+                book = books[barcode]
+                try:
+                    insert_result = self._backend.insert(chunks)
+                    result = IndexingResult(
+                        barcode=barcode,
+                        book_id=book.book_id,
+                        success=insert_result.failed == 0,
+                        chunks_created=len(chunks),
+                        chunks_inserted=insert_result.inserted,
+                        error=insert_result.errors[0] if insert_result.errors else None,
+                    )
+                except Exception as e:
+                    result = IndexingResult(
+                        barcode=barcode,
+                        book_id=book.book_id,
+                        success=False,
+                        chunks_created=len(chunks),
+                        chunks_inserted=0,
+                        error=f"Insert error: {e}",
+                    )
+
+                batch_result.results.append(result)
+                if on_progress:
+                    on_progress(result)
+
+            logger.info(f"Stage 5 (Insert): {len(book_errors)} errors")
+
+            # Add results for books that failed earlier
+            for barcode, error in book_errors.items():
+                book = books.get(barcode)
+                result = IndexingResult(
+                    barcode=barcode,
+                    book_id=book.book_id if book else None,
+                    success=False,
+                    chunks_created=0,
+                    chunks_inserted=0,
+                    error=error,
+                )
+                batch_result.results.append(result)
+                if on_progress:
+                    on_progress(result)
+
+        batch_result.total_time = timer.elapsed
         return batch_result
 
 
