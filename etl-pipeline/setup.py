@@ -33,4 +33,7 @@ setup(
         "logger",
     ],  # TODO: any way to mark in the file that we want these non-package modules discovered.
     install_requires=install_requires,
+    package_data={
+        "vector_indexing": ["config/schemas/*.json"],
+    },
 )
