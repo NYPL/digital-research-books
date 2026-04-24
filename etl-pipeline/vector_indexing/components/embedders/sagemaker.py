@@ -79,7 +79,7 @@ class SageMakerEmbedder(Embedder):
 
     async def _embed_batch_async(self, texts: list[str]) -> list[list[float]]:
         """Async implementation of embed_batch using a semaphore to cap concurrency."""
-        # MAYBE: switch to ThreadPoolExecutor
+        # TODO: switch to ThreadPoolExecutor (one version of embed_one)
         semaphore = asyncio.Semaphore(self._concurrency)
 
         async def _embed_one(text: str) -> list[float]:

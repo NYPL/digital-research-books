@@ -284,7 +284,7 @@ class Pipeline:
                 f"Stage 4 (Embed): {len(all_chunks)} embedded, {len(book_errors)} errors"
             )
 
-            # Stage 5: Insert chunks per book (to track per-book results)
+            # Stage 5: Insert chunks per book (record per-book indexing results)
             for barcode, chunks in chunks_by_barcode.items():
                 book = books[barcode]
                 try:
@@ -298,14 +298,16 @@ class Pipeline:
                         error=insert_result.errors[0] if insert_result.errors else None,
                     )
                 except Exception as e:
+                    err_str = f"Insert error:  {type(e).__module__}.{type(e).__qualname__}: {e}"
                     result = IndexingResult(
                         barcode=barcode,
                         book_id=book.book_id,
                         success=False,
                         chunks_created=len(chunks),
                         chunks_inserted=0,
-                        error=f"Insert error: {e}",
+                        error=err_str,
                     )
+                    book_errors[barcode] = err_str
 
                 batch_result.results.append(result)
                 if on_progress:
@@ -313,7 +315,7 @@ class Pipeline:
 
             logger.info(f"Stage 5 (Insert): {len(book_errors)} errors")
 
-            # Add results for books that failed earlier
+            # Add book indexing result for each book that failed earlier
             for barcode, error in book_errors.items():
                 book = books.get(barcode)
                 result = IndexingResult(

@@ -258,6 +258,7 @@ class TurbopufferBackend(IndexBackend):
                 "distance_metric": "cosine_distance",
                 "schema": self._schema,
             }
+            # NOTE: vector dims match btw schema and insert rows are enforced with error
 
             with self._timers.time("write"):
                 response = self._ns.write(**write_kwargs)

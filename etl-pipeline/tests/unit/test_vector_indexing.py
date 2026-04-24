@@ -281,7 +281,7 @@ class TestPipeline:
 
         metadata_provider = Mock()
         metadata_provider.get_metadata.return_value = {
-            sample_book.book_id: sample_metadata
+            sample_book.barcode: sample_metadata
         }
 
         backend = Mock()
