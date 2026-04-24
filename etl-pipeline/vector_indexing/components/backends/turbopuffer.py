@@ -263,7 +263,9 @@ class TurbopufferBackend(IndexBackend):
                 response = self._ns.write(**write_kwargs)
 
             billing = getattr(response, "billing", None)
-            written_bytes = getattr(billing, "written_bytes", 0) if billing else 0
+            written_bytes = (
+                getattr(billing, "billable_logical_bytes_written", 0) if billing else 0
+            )
             total_written_bytes += written_bytes
 
             logger.info(

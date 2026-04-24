@@ -36,6 +36,7 @@ HARRIER_OSS_V1_ENDPOINT = (
     "hf-tei-20260423-113751"  # harrier-oss-v1-0.6b  (1024-dimensional output)
 )
 HARRIER_OSS_V1_DIMENSIONS = 1024
+CONCURRENCY = 41
 
 
 def list_10k_barcodes():
@@ -63,6 +64,8 @@ batch_result = run_pipeline(
     ),
     embedder=SageMakerEmbedder(
         endpoint_name=HARRIER_OSS_V1_ENDPOINT,
+        aws_profile="sandbox",
+        concurrency=CONCURRENCY,
     ),
     backend=TurbopufferBackend(index_name=INDEX_NAME, schema=schema),
 )

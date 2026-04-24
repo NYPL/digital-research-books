@@ -6,6 +6,9 @@ Calls a SageMaker endpoint configure with a HuggingFace Text Embeddings Inferenc
 
 from __future__ import annotations
 
+import asyncio
+
+import boto3
 import sagemaker
 from sagemaker.huggingface import HuggingFacePredictor
 # from sagemaker.predictor import Predictor # requires manual passing of JSONSerializer
@@ -20,14 +23,21 @@ class SageMakerEmbedder(Embedder):
 
     Args:
         endpoint_name: Name of the deployed SageMaker endpoint.
-        dimensions: Dimensionality of the output embeddings.
+        aws_profile: AWS SSO profile to use to authenticate to Sagemaker.
+        concurrency: concurrent request in embed_batch()
     """
 
     def __init__(
         self,
         endpoint_name: str,
+        aws_profile: str | None = None,
+        concurrency: int = 1,
     ) -> None:
         self._endpoint_name = endpoint_name
+        self._aws_profile = aws_profile
+        self._concurrency = concurrency
+        if self._aws_profile:
+            boto3.setup_default_session(profile_name=self._aws_profile)
         self._predictor = HuggingFacePredictor(
             endpoint_name=endpoint_name,
             sagemaker_session=sagemaker.Session(),
@@ -56,11 +66,27 @@ class SageMakerEmbedder(Embedder):
     def embed_one(self, text: str) -> list[float]:
         """Embed a single text string."""
         # NOTE: The HF TEI endpoint accepts requests in the form {"inputs": "text"} and returns a list of floats.
-        response = self._predictor.predict({"inputs": text})
-        return response
+        embeddings = self._predictor.predict({"inputs": text})
+        return embeddings[0]
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        """Embed multiple texts, one request per text (endpoint only accepts a single input)."""
-        # TODO: look at other sagemaker deployments that support better batch speed and cost
-        # TODO: try I think a list of texts is actually allowed via this HF TEI config
-        return [self.embed_one(text) for text in texts]
+        """Embed multiple texts up to `concurrency` in-flight requests."""
+        # TODO: look at other sagemaker deployments that support better batch speed and cost like, batch_transform, async inference endpoint
+        # TODO: try  {inputs: [<str>, <str>]}
+        if self._concurrency <= 1:
+            return [self.embed_one(text) for text in texts]
+        return asyncio.run(self._embed_batch_async(texts))
+
+    async def _embed_batch_async(self, texts: list[str]) -> list[list[float]]:
+        """Async implementation of embed_batch using a semaphore to cap concurrency."""
+        # MAYBE: switch to ThreadPoolExecutor
+        semaphore = asyncio.Semaphore(self._concurrency)
+
+        async def _embed_one(text: str) -> list[float]:
+            async with semaphore:
+                result = await asyncio.to_thread(
+                    self._predictor.predict, {"inputs": text}
+                )
+                return result[0]
+
+        return list(await asyncio.gather(*[_embed_one(t) for t in texts]))
