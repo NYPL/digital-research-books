@@ -1,5 +1,8 @@
 import { ItemType, MessageItem, MessageRole } from "../types/ResearchAssistant";
 
+export const SURVEY_SESSION_STORAGE_KEY = "vra-popup-survey-handled";
+export const SURVEY_DELAY_MS = 180000;
+
 export const HEADER_HEIGHT = "58px";
 
 // ResearchAssistantLanding

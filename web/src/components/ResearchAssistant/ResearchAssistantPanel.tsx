@@ -103,7 +103,7 @@ const ResearchAssistantPanel: React.FC = () => {
             backgroundColor="section.research.primary"
             position="sticky"
             bottom="0"
-            zIndex="1000"
+            zIndex="10001"
           >
             <ResearchAssistantInput />
           </Box>
