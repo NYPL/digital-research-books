@@ -2,6 +2,8 @@ from setuptools import setup, find_packages
 import os
 from packaging.requirements import Requirement
 
+# TODO: move package root up a level and let vra_experiments install as etl_pipeline.logger (for example)
+
 
 def parse_requirements(filename, version_spec=True):
     """list reqs from requirements.txt
