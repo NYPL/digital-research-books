@@ -72,7 +72,7 @@ class SageMakerEmbedder(Embedder):
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """Embed multiple texts up to `concurrency` in-flight requests."""
         # TODO: look at other sagemaker deployments that support better batch speed and cost like, batch_transform, async inference endpoint
-        # TODO: try  {inputs: [<str>, <str>]}
+        # TODO: try  {inputs: [<str>, <str>]}. see --max-client-batch-size https://github.com/huggingface/text-embeddings-inference
         if self._concurrency <= 1:
             return [self.embed_one(text) for text in texts]
         return asyncio.run(self._embed_batch_async(texts))

@@ -4,6 +4,8 @@
 import datetime as dt
 import os
 from pathlib import Path
+import re
+
 
 import sagemaker
 import boto3
@@ -36,6 +38,17 @@ print(f"[config] model={HF_MODEL_ID}  instance={INSTANCE_TYPE}  profile={AWS_PRO
 
 
 # TODO: duplicated in bedrock deploy script, create shared utils
+
+
+# TODO: duplicated in bedrock deploy script, create shared utils
+def _sanitize_name(name: str) -> str:
+    """Replace anything not a word or hyphen for compatibility with endpoint
+    name restrictions:
+    https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpoint.html#API_CreateEndpoint_RequestSyntax
+    """
+    return re.sub(r"[^a-zA-Z0-9-]", r"-", name)
+
+
 def _short_name(hf_model_id: str) -> str:
     """'Qwen/Qwen3-Embedding-8B' -> 'qwen3-embedding-8b'"""
     return hf_model_id.split("/")[-1].lower()
@@ -112,8 +125,9 @@ print(f"[iam] role ARN: {role}")
 # create Sagemaker `Model` class
 print("[model] fetching HuggingFace TEI image URI...")
 image_uri = get_huggingface_llm_image_uri(
-    "huggingface-tei", version="1.8.2"
-)  # Q: when do we change the version?
+    "huggingface-tei",
+    # version="1.8.2",
+)
 print(f"[model] image_uri={image_uri}")
 huggingface_model = HuggingFaceModel(
     image_uri=image_uri,
@@ -123,10 +137,11 @@ huggingface_model = HuggingFaceModel(
 print("[model] HuggingFaceModel created")
 
 # Define deployment configuration
-endpoint_name = (
-    f"hf-tei-{_short_name(HF_MODEL_ID)}-{dt.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+endpoint_name = _sanitize_name(
+    f"hf-tei-{_short_name(HF_MODEL_ID)}-{INSTANCE_TYPE}-{dt.datetime.now().strftime('%Y%m%d-%H%M%S')}"
 )
 if INSTANCE_TYPE == "auto":
+    # TODO: add model cleanup if error in instance recommender job
     model_with_rec = run_instance_recommendation_job(huggingface_model)
     best = model_with_rec.inference_recommendations[0]
     recommended_instance = best["EndpointConfiguration"]["InstanceType"]

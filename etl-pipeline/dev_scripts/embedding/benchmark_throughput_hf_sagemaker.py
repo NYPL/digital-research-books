@@ -28,8 +28,8 @@ ENDPOINT_NAME = "hf-tei-20260423-142720"  # Qwen, g6e
 AWS_PROFILE = "sandbox"
 
 TOTAL_REQUESTS = 200  # requests at each concurrency level
-# CONCURRENCY_LEVELS = [1, 16, 32, 64]
-CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
+CONCURRENCY_LEVELS = [1, 16, 32, 64]
+# CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
 
 # TODO: for higher thruput. try  {inputs: [<str>, <str>]} (this works!),  batch_transform, async inference endpoint
 

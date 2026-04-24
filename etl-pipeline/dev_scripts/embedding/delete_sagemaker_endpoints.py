@@ -19,28 +19,61 @@ import argparse
 import sys
 
 import boto3
-import sagemaker
-from sagemaker.predictor import Predictor
+from botocore.exceptions import ClientError
 
 
-def delete_endpoint_resources(
-    sagemaker_session: sagemaker.Session, endpoint_name: str, dry_run: bool
-) -> None:
-    """Delete endpoint + endpoint config + model(s) via the HuggingFacePredictor SDK."""
-    predictor = Predictor(
-        endpoint_name=endpoint_name,
-        sagemaker_session=sagemaker_session,
-    )
+def delete_endpoint_resources(sm_client, endpoint_name: str, dry_run: bool) -> None:
+    """Delete endpoint + endpoint config + model(s) using boto3 directly."""
+    # Resolve endpoint config name from the endpoint description
+    try:
+        endpoint_desc = sm_client.describe_endpoint(EndpointName=endpoint_name)
+        endpoint_config_name = endpoint_desc["EndpointConfigName"]
+    except ClientError as e:
+        print(f"  [warning] could not describe endpoint: {e}")
+        endpoint_config_name = None
 
-    print(f"  endpoint : {endpoint_name}")
-    print(f"  model(s) : {predictor._get_model_names()}")
+    # Resolve model names from the endpoint config
+    model_names = []
+    if endpoint_config_name:
+        try:
+            config_desc = sm_client.describe_endpoint_config(
+                EndpointConfigName=endpoint_config_name
+            )
+            model_names = [v["ModelName"] for v in config_desc["ProductionVariants"]]
+        except ClientError as e:
+            print(f"  [warning] could not describe endpoint config: {e}")
+
+    print(f"  endpoint        : {endpoint_name}")
+    print(f"  endpoint config : {endpoint_config_name or '[not found]'}")
+    print(f"  model(s)        : {model_names or '[not found]'}")
 
     if dry_run:
         print("  [dry-run] skipping deletion\n")
         return
 
-    predictor.delete_model()
-    predictor.delete_endpoint(delete_endpoint_config=True)
+    # Delete models first
+    for model_name in model_names:
+        try:
+            sm_client.delete_model(ModelName=model_name)
+            print(f"  deleted model: {model_name}")
+        except ClientError as e:
+            print(f"  [warning] could not delete model {model_name}: {e}")
+
+    # Delete endpoint config
+    if endpoint_config_name:
+        try:
+            sm_client.delete_endpoint_config(EndpointConfigName=endpoint_config_name)
+            print(f"  deleted endpoint config: {endpoint_config_name}")
+        except ClientError as e:
+            print(f"  [warning] could not delete endpoint config: {e}")
+
+    # Delete endpoint
+    try:
+        sm_client.delete_endpoint(EndpointName=endpoint_name)
+        print(f"  deleted endpoint: {endpoint_name}")
+    except ClientError as e:
+        print(f"  [warning] could not delete endpoint: {e}")
+
     print()
 
 
@@ -75,7 +108,7 @@ def main() -> None:
     args = parser.parse_args()
 
     boto3.setup_default_session(profile_name=args.profile, region_name=args.region)
-    sm_session = sagemaker.Session()
+    sm_client = boto3.client("sagemaker")
 
     if args.dry_run:
         print("[dry-run mode — nothing will be deleted]\n")
@@ -83,7 +116,7 @@ def main() -> None:
     if args.endpoint_name:
         endpoint_names = [args.endpoint_name]
     else:
-        endpoint_names = list_all_endpoint_names(sm_session.sagemaker_client)
+        endpoint_names = list_all_endpoint_names(sm_client)
         if not endpoint_names:
             print("No endpoints found.")
             sys.exit(0)
@@ -91,7 +124,7 @@ def main() -> None:
 
     for name in endpoint_names:
         print(f"Cleaning up endpoint: {name}")
-        delete_endpoint_resources(sm_session, name, args.dry_run)
+        delete_endpoint_resources(sm_client, name, args.dry_run)
 
     print("Done.")
 
