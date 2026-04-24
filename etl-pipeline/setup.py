@@ -3,16 +3,20 @@ import os
 from packaging.requirements import Requirement
 
 
-def parse_requirements(filename):
-    """list requirements.txt, package name only"""
+def parse_requirements(filename, version_spec=True):
+    """list reqs from requirements.txt
+    Optionally stripping the version spec"""
     reqs = []
     with open(filename, "r") as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            req = Requirement(line)
-            reqs.append(req.name)
+            if version_spec:
+                reqs.append(line)
+            else:
+                req = Requirement(line)
+                reqs.append(req.name)
     return reqs
 
 
@@ -25,6 +29,6 @@ setup(
     py_modules=[
         "load_env",
         "logger",
-    ],  # TODO: any way to mark in the file that we want these discovered.
+    ],  # TODO: any way to mark in the file that we want these non-package modules discovered.
     install_requires=install_requires,
 )
