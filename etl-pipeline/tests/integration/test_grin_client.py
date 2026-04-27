@@ -36,8 +36,6 @@ def test_get(grin_client, fragment):
     assert response.status_code == 200
 
 
-# TODO: when backfill is complete, unskip this test
-@pytest.mark.skip(reason="backfill can cause this test to fail")
 def test_convert(grin_client, generate_test_barcodes, expected_barcodes_statuses):
     response = grin_client.convert(generate_test_barcodes)
 
