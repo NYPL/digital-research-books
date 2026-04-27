@@ -5,7 +5,7 @@ import {
   Heading,
   Text,
 } from "@nypl/design-system-react-components";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { getPanelLayout } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
@@ -22,6 +22,22 @@ const ResearchAssistantPanel: React.FC = () => {
   const { paddingX } = getPanelLayout();
 
   const { page } = useResultPageContext();
+
+  const showChatButtonRef = useRef<HTMLButtonElement>(null);
+  const hideChatButtonRef = useRef<HTMLButtonElement>(null);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (showChat) {
+      hideChatButtonRef.current?.focus();
+    } else {
+      showChatButtonRef.current?.focus();
+    }
+  }, [showChat]);
 
   return (
     <Box
@@ -58,6 +74,7 @@ const ResearchAssistantPanel: React.FC = () => {
                 size="small"
                 color="ui.white"
                 fontSize="desktop.body.body2"
+                outlineColor="ui.white"
                 id="clear-history-button"
                 sx={{
                   "&:hover": {
@@ -67,6 +84,9 @@ const ResearchAssistantPanel: React.FC = () => {
                       stroke: "ui.white",
                     },
                   },
+                  "&:not([disabled]):focus": {
+                    outlineColor: "ui.white",
+                  },
                 }}
               >
                 <Flex gap="xxs" alignItems="center">
@@ -74,6 +94,7 @@ const ResearchAssistantPanel: React.FC = () => {
                 </Flex>
               </Button>
               <Button
+                ref={hideChatButtonRef}
                 onClick={toggleChat}
                 variant="text"
                 size="small"
@@ -87,6 +108,9 @@ const ResearchAssistantPanel: React.FC = () => {
                     path: {
                       stroke: "ui.white",
                     },
+                  },
+                  "&:not([disabled]):focus": {
+                    outlineColor: "ui.white",
                   },
                 }}
               >
@@ -111,6 +135,7 @@ const ResearchAssistantPanel: React.FC = () => {
       ) : (
         <ResearchAssistantHeader>
           <Button
+            ref={showChatButtonRef}
             onClick={toggleChat}
             variant="text"
             size="small"
@@ -124,6 +149,9 @@ const ResearchAssistantPanel: React.FC = () => {
                 path: {
                   stroke: "ui.white",
                 },
+              },
+              "&:not([disabled]):focus": {
+                outlineColor: "ui.white",
               },
             }}
           >
