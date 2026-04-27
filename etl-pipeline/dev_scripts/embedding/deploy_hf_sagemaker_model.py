@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument("--hf-model-id", required=True)
 parser.add_argument("--instance-type", required=True)
-parser.add_argument("--profile", default="sandbox")
+parser.add_argument("--profile", default="vra-sandbox")
 parser.add_argument(
     "--no-cleanup",
     action="store_true",
@@ -125,20 +125,19 @@ def _cleanup_resources(
 # set default sso auth profile (used by sagemaker.Session())
 boto3.setup_default_session(profile_name=AWS_PROFILE)  # ALT: set AWS_PROFILE env var
 
+# NOTE: The sagemaker service needs a IAM role (with necessary permissions) it
+# can assume while running the inference container.
 
-# Set IAM role ARN to use - Fetches role derived from caller identity available to default boto3 session
+# # Set inference IAM role ARN - Fetches role derived from caller identity available to default boto3 session
 # role = sagemaker.get_execution_role()
 
-# Set IAM role ARN to use - use pre-created sagemaker execution role
+# Set inference IAM role ARN - use pre-created sagemaker execution role
 # https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html
 iam_client = boto3.client("iam")
-assert load_dotenv(Path(__file__, "../.env.execution_role").resolve()), (
-    "Env file not found"
-)
-role = iam_client.get_role(RoleName=os.environ["SAGEMAKER_EXECUTION_ROLE"])["Role"][
-    "Arn"
-]
-print(f"[iam] role ARN: {role}")
+role_name = "SageMakerExecutionRole"  # nypl-vra-sandbox account
+# role_name = "AmazonSageMaker-ExecutionRole-20180212T130350" # nypl-sandbox account # pragma: allowlist secret
+role_arn = iam_client.get_role(RoleName=role_name)["Role"]["Arn"]
+print(f"[iam] role ARN: {role_arn}")
 
 
 # create Sagemaker `Model` class
@@ -151,7 +150,7 @@ print(f"[model] image_uri={image_uri}")
 huggingface_model = HuggingFaceModel(
     image_uri=image_uri,
     env={"HF_MODEL_ID": HF_MODEL_ID},
-    role=role,
+    role=role_arn,
 )
 print("[model] HuggingFaceModel created")
 
