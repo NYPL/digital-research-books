@@ -22,6 +22,12 @@ parser = argparse.ArgumentParser(
 parser.add_argument("--hf-model-id", required=True)
 parser.add_argument("--instance-type", required=True)
 parser.add_argument("--profile", default="sandbox")
+parser.add_argument(
+    "--no-cleanup",
+    action="store_true",
+    default=False,
+    help="Skip deleting SageMaker resources (model, endpoint config, endpoint) on deployment failure.",
+)
 args = parser.parse_args()
 # --------------
 
@@ -37,15 +43,12 @@ print(f"[config] model={HF_MODEL_ID}  instance={INSTANCE_TYPE}  profile={AWS_PRO
 # --- Functions ---
 
 
-# TODO: duplicated in bedrock deploy script, create shared utils
-
-
-# TODO: duplicated in bedrock deploy script, create shared utils
 def _sanitize_name(name: str) -> str:
     """Replace any non word or hyphe char"""
     return re.sub(r"[^a-zA-Z0-9-]", r"-", name)
 
 
+# TODO: duplicated in bedrock deploy script, create shared utils
 def _short_name(hf_model_id: str) -> str:
     """'Qwen/Qwen3-Embedding-8B' -> 'qwen3-embedding-8b'"""
     return hf_model_id.split("/")[-1].lower()
@@ -93,20 +96,25 @@ def run_instance_recommendation_job(
 
 
 def _cleanup_resources(
-    sm_client, model_name: str | None, endpoint_config_name: str
+    sm_client, model_name: str | None, endpoint_config_name: str, endpoint_name: str
 ) -> None:
-    """Delete the SageMaker model and endpoint config created before a failed deploy."""
+    """Delete the SageMaker endpoint, endpoint config, and model created before a failed deploy."""
+    try:
+        sm_client.delete_endpoint(EndpointName=endpoint_name)
+        print(f"[cleanup] deleted endpoint: {endpoint_name}")
+    except Exception as e:
+        print(f"[cleanup] could not delete endpoint {endpoint_name}: {e}")
+    try:
+        sm_client.delete_endpoint_config(EndpointConfigName=endpoint_config_name)
+        print(f"[cleanup] deleted endpoint config: {endpoint_config_name}")
+    except Exception as e:
+        print(f"[cleanup] could not delete endpoint config {endpoint_config_name}: {e}")
     if model_name:
         try:
             sm_client.delete_model(ModelName=model_name)
             print(f"[cleanup] deleted model: {model_name}")
         except Exception as e:
             print(f"[cleanup] could not delete model {model_name}: {e}")
-    try:
-        sm_client.delete_endpoint_config(EndpointConfigName=endpoint_config_name)
-        print(f"[cleanup] deleted endpoint config: {endpoint_config_name}")
-    except Exception as e:
-        print(f"[cleanup] could not delete endpoint config {endpoint_config_name}: {e}")
 
 
 # ----------------
@@ -177,11 +185,16 @@ try:
     predictor = deploy_model.deploy(**deploy_args)
 except Exception as exc:
     print(f"[deploy] failed: {exc}")
-    _cleanup_resources(
-        huggingface_model.sagemaker_session.sagemaker_client,
-        deploy_model.name,
-        endpoint_name,
-    )
+    if args.no_cleanup:
+        print("[cleanup] --no-cleanup set; skipping resource deletion")
+    else:
+        # NOTE: sagemaker uses the same name for endpoint and endpoint_config
+        _cleanup_resources(
+            huggingface_model.sagemaker_session.sagemaker_client,
+            deploy_model.name,
+            endpoint_name,
+            endpoint_name,
+        )
     raise
 print(f"[deploy] elapsed took: {dt.datetime.now() - t0}")
 print()
