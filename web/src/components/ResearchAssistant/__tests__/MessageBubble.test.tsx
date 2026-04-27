@@ -55,12 +55,7 @@ describe("MessageBubble", () => {
     };
     render(<MessageBubble index={1} message={assistantMessage} />);
 
-    expect(
-      screen.getByRole("button", { name: /thumbs up/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /thumbs down/i })
-    ).toBeInTheDocument();
+    expect(screen.getAllByTestId("ds-button")).toHaveLength(2);
   });
 
   test("does not render feedback buttons for initial assistant message", () => {

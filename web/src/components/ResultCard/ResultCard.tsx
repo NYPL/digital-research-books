@@ -147,7 +147,16 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         <Box display="flex" flexDir="column" gap="xs">
           {edition.summary ||
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
-          <AiGeneratedText />
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            height="1.125rem"
+            __css={{ button: { padding: "xs" } }}
+          >
+            <AiGeneratedText />
+            <FeedbackButtons />
+          </Box>
         </Box>
       ),
     });
