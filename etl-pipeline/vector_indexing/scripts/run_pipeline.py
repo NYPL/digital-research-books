@@ -128,8 +128,10 @@ def run_pipeline(
     result = pipeline.index_books(barcodes, on_progress=on_progress)
 
     print(f"\nDone: {result}")
-    print(f"  Succeeded: {result.succeeded}/{result.total}")
-    print(f"  Chunks: {result.total_chunks_inserted}/{result.total_chunks_created}")
+    print(f"  Books Succeeded: {result.succeeded}/{result.total}")
+    print(
+        f"  Chunks Inserted: {result.total_chunks_inserted}/{result.total_chunks_created}"
+    )
 
     return result
 
