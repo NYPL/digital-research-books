@@ -9,7 +9,7 @@ from logger import create_log
 from mappings.base_mapping import MappingError
 from mappings.xml import XMLMapping
 from model import Record
-from .source_service import SourceService
+from .source_service import SourceService, ServiceNotAvailableError
 
 logger = create_log(__name__)
 
@@ -141,4 +141,6 @@ class DSpaceService(SourceService):
 
             return BytesIO(content)
 
-        raise Exception(f"Received {response.status_code} status code from {url}")
+        raise ServiceNotAvailableError(
+            f"Received {response.status_code} status code from {url}"
+        )

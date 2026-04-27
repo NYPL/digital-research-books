@@ -2,7 +2,7 @@ import pytest
 import requests
 
 from model import Source
-from services import get_source_service
+from services import get_source_service, ServiceNotAvailableError
 
 
 def test_get_records():
@@ -13,5 +13,9 @@ def test_get_records():
 
         for record in records:
             assert record is not None
-    except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as e:
+    except (
+        ServiceNotAvailableError,
+        requests.exceptions.ReadTimeout,
+        requests.exceptions.ConnectionError,
+    ) as e:
         pytest.skip(f"Skipping due to external connection issue: {e}")

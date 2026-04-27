@@ -21,3 +21,9 @@ class SourceService(ABC):
     @abstractmethod
     def get_record(self, record_id: str) -> Record:
         pass
+
+
+class ServiceNotAvailableError(Exception):
+    """Raised when a network request to a source service returns a non-200 HTTP code."""
+
+    pass
