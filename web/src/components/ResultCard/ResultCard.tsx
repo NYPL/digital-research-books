@@ -155,7 +155,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             __css={{ button: { padding: "xs" } }}
           >
             <AiGeneratedText />
-            <FeedbackButtons />
+            <FeedbackButtons label="Summary feedback" />
           </Box>
         </Box>
       ),
