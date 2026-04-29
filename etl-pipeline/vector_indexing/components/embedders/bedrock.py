@@ -12,12 +12,12 @@ import json
 
 import boto3
 
+from utils.s3 import get_boto3_session_with_assumed_role
 from vector_indexing.components.embedders.base import Embedder
 
 
-# Qwen3-Embedding-8B: 4096-dimensional output, supports MRL down to 32 dims.
 # TODO: figure out how to do MRL
-QWEN3_EMBEDDING_8B_DIMS = 4096
+# TODO: set dims to NotImplemented unless we can get the info from the endpoint
 
 
 class BedrockEmbedder(Embedder):
@@ -26,12 +26,16 @@ class BedrockEmbedder(Embedder):
     The ``model_arn`` is the ARN of a successfully imported model, e.g.
     ``arn:aws:bedrock:us-east-1:123456789012:imported-model/xyz``.
     It can be found in the Bedrock console or from the output of the
-    deploy_qwen3_bedrock.py import script.
+    deploy_custom_bedrock.py import script.
 
     Args:
         model_arn: ARN of the imported Bedrock model.
         dimensions: Dimensionality of the output embeddings.
         region: AWS region where the model is hosted.
+        aws_profile: AWS SSO profile to apply to the default session. When
+            ``assume_role`` is also provided, this profile is used to perform
+            the STS AssumeRole call.
+        assume_role: ARN of an IAM role to assume for model inference calls.
     """
 
     def __init__(
@@ -39,10 +43,20 @@ class BedrockEmbedder(Embedder):
         model_arn: str,
         dimensions: int = QWEN3_EMBEDDING_8B_DIMS,
         region: str = "us-east-1",
+        aws_profile: str | None = None,
+        assume_role: str | None = None,
     ) -> None:
         self._model_arn = model_arn
         self._dimensions = dimensions
-        self._client = boto3.client("bedrock-runtime", region_name=region)
+        if aws_profile:
+            boto3.setup_default_session(profile_name=aws_profile)
+        if assume_role:
+            session = get_boto3_session_with_assumed_role(
+                role_arn=assume_role, region_name=region
+            )
+            self._client = session.client("bedrock-runtime", region_name=region)
+        else:
+            self._client = boto3.client("bedrock-runtime", region_name=region)
 
     @property
     def dimensions(self) -> int:

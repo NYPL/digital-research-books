@@ -15,6 +15,7 @@ from sagemaker.huggingface import HuggingFacePredictor
 # from sagemaker.deserializers import JSONDeserializer
 # from sagemaker.serializers import JSONSerializer
 
+from utils.s3 import get_boto3_session_with_assumed_role
 from vector_indexing.components.embedders.base import Embedder
 
 
@@ -23,7 +24,10 @@ class SageMakerEmbedder(Embedder):
 
     Args:
         endpoint_name: Name of the deployed SageMaker endpoint.
-        aws_profile: AWS SSO profile to use to authenticate to Sagemaker.
+        aws_profile: AWS SSO profile to use to authenticate to SageMaker. When
+            ``assume_role`` is also provided, this profile is applied to the
+            default session used to perform the STS AssumeRole call.
+        assume_role: ARN of an IAM role to assume for model inference calls.
         concurrency: concurrent request in embed_batch()
     """
 
@@ -31,6 +35,7 @@ class SageMakerEmbedder(Embedder):
         self,
         endpoint_name: str,
         aws_profile: str | None = None,
+        assume_role: str | None = None,
         concurrency: int = 1,
     ) -> None:
         self._endpoint_name = endpoint_name
@@ -38,9 +43,14 @@ class SageMakerEmbedder(Embedder):
         self._concurrency = concurrency
         if self._aws_profile:
             boto3.setup_default_session(profile_name=self._aws_profile)
+        if assume_role:
+            session = get_boto3_session_with_assumed_role(role_arn=assume_role)
+            sm_session = sagemaker.Session(boto_session=session)
+        else:
+            sm_session = sagemaker.Session()
         self._predictor = HuggingFacePredictor(
             endpoint_name=endpoint_name,
-            sagemaker_session=sagemaker.Session(),
+            sagemaker_session=sm_session,
         )
 
     @property
