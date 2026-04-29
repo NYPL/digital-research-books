@@ -102,9 +102,9 @@ for i, batch in enumerate(batched(barcodes, 100)):
     print(f"\nBatch {i + 1}: barcodes {batch[0]!r} .. {batch[-1]!r}")
     batch_result = run_pipeline(
         batch,
-        loader=LocalBookLoader(
-            data_dir=PROJ_ROOT / "../.." / "vra_experiments/data/experiment_books"
-        ),
+        # loader=LocalBookLoader(
+        #     data_dir=PROJ_ROOT / "../.." / "vra_experiments/data/experiment_books"
+        # ),
         embedder=index_config["embedder"],
         backend=index_config["backend"],
     )
