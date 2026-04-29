@@ -35,6 +35,8 @@ const ResearchAssistantPanel: React.FC = () => {
       width="100%"
       paddingLeft={paddingX}
       paddingRight={page === "item" ? "l" : undefined}
+      role="region"
+      aria-labelledby="vra-panel-heading"
     >
       {showChat ? (
         <>
@@ -47,6 +49,7 @@ const ResearchAssistantPanel: React.FC = () => {
               alignItems="center"
               gap="xs"
               height="40px"
+              id="vra-panel-heading"
             >
               <ResearchAssistantIcon inCircle />
               <span>Virtual Research Assistant</span>

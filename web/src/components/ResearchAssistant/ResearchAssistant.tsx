@@ -67,6 +67,8 @@ const ResearchAssistant: React.FC = () => {
         display="grid"
         gridTemplateColumns={gridTemplateColumns}
         width="100%"
+        id="mainContent"
+        role="main"
       >
         <Flex
           gridColumn="1 / span 2"
