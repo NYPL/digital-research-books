@@ -145,6 +145,8 @@ role_name = roles[args.profile]
 role_arn = iam_client.get_role(RoleName=role_name)["Role"]["Arn"]
 print(f"[iam] role ARN: {role_arn}")
 
+# NOTE: the image maps the TEI /embed endpoint to the sagemaker \
+# required /invocations. see: https://docs.aws.amazon.com/sagemaker/latest/dg/adapt-inference-container.html
 
 # create Sagemaker `Model` class
 print("[model] fetching HuggingFace TEI image URI...")

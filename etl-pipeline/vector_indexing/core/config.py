@@ -13,13 +13,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from vector_indexing.components.backends.turbopuffer import (
-    TurbopufferBackend,
-    load_default_schema,
-)
-from vector_indexing.components.embedders.google import GoogleEmbedder
-from vector_indexing.components.embedders.sagemaker import SageMakerEmbedder
-
 if TYPE_CHECKING:
     from typing import Self
 
@@ -473,6 +466,8 @@ def reset_config() -> None:
 
 
 def get_default_schema_with_dims(dims: str):
+    from vector_indexing.components.backends.turbopuffer import load_default_schema
+
     schema = load_default_schema()
     schema["vector"]["type"] = f"[{dims}]f16"
     return schema
@@ -484,6 +479,13 @@ QWEN3_EMBEDDING_8B_DIMENSIONS = 1024
 
 
 def get_index_config(index_name):
+    from vector_indexing.components.backends.turbopuffer import (
+        TurbopufferBackend,
+        load_default_schema,
+    )
+    from vector_indexing.components.embedders.google import GoogleEmbedder
+    from vector_indexing.components.embedders.sagemaker import SageMakerEmbedder
+
     INDEX_CONFIG = [
         {  # Google
             "names": [
@@ -515,7 +517,7 @@ def get_index_config(index_name):
         },
         {  # Qwen
             "names": [
-                "vra_test-sketches_of_the_north-qwen3-embedding-8b"  # pragma: allowlist secret
+                "vra_test-sketches_of_the_north-qwen3_embedding_8b"  # pragma: allowlist secret
             ],
             "embedder": {
                 "class": SageMakerEmbedder,

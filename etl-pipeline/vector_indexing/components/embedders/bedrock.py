@@ -41,7 +41,7 @@ class BedrockEmbedder(Embedder):
     def __init__(
         self,
         model_arn: str,
-        dimensions: int = QWEN3_EMBEDDING_8B_DIMS,
+        dimensions: int = None,  # QWEN3_EMBEDDING_8B_DIMS,
         region: str = "us-east-1",
         aws_profile: str | None = None,
         assume_role: str | None = None,

@@ -6,7 +6,7 @@ Calls a SageMaker endpoint configure with a HuggingFace Text Embeddings Inferenc
 
 from __future__ import annotations
 
-import asyncio
+import concurrent.futures
 
 import boto3
 import sagemaker
@@ -24,6 +24,9 @@ class SageMakerEmbedder(Embedder):
 
     Args:
         endpoint_name: Name of the deployed SageMaker endpoint.
+        dimensions: Specify dimensions of embedding output. Embeddings will be
+            returned normalized regardless. Use to specify output dimensions for
+            MRL trained models.
         aws_profile: AWS SSO profile to use to authenticate to SageMaker. When
             ``assume_role`` is also provided, this profile is applied to the
             default session used to perform the STS AssumeRole call.
@@ -34,11 +37,13 @@ class SageMakerEmbedder(Embedder):
     def __init__(
         self,
         endpoint_name: str,
+        dimensions: int | None = None,
+        concurrency: int = 1,
         aws_profile: str | None = None,
         assume_role: str | None = None,
-        concurrency: int = 1,
     ) -> None:
         self._endpoint_name = endpoint_name
+        self._dimensions = dimensions
         self._aws_profile = aws_profile
         self._concurrency = concurrency
         if self._aws_profile:
@@ -55,8 +60,12 @@ class SageMakerEmbedder(Embedder):
 
     @property
     def dimensions(self) -> int:
-        raise NotImplementedError()
-        # Q: is there a way to retrieve the dims from the endpoint or endpoint config?
+        if self._dimensions:
+            return self._dimensions
+        else:
+            raise NotImplementedError()
+            # Q: is there a way to retrieve the dims from the endpoint or \
+            # endpoint config? other then calling the endpoint and measuring the response?
 
     @property
     def model_name(self) -> str:
@@ -75,8 +84,13 @@ class SageMakerEmbedder(Embedder):
 
     def embed_one(self, text: str) -> list[float]:
         """Embed a single text string."""
+        extra_args = {}
+        if self._dimensions:
+            extra_args["dimensions"] = self._dimensions
+
         # NOTE: The HF TEI endpoint accepts requests in the form {"inputs": "text"} and returns a list of floats.
-        embeddings = self._predictor.predict({"inputs": text})
+        # NOTE: L2 normalization is applied by default regardless of `dimensions`
+        embeddings = self._predictor.predict({"inputs": text, **extra_args})
         return embeddings[0]
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
@@ -85,18 +99,7 @@ class SageMakerEmbedder(Embedder):
         # TODO: try  {inputs: [<str>, <str>]}. see --max-client-batch-size https://github.com/huggingface/text-embeddings-inference
         if self._concurrency <= 1:
             return [self.embed_one(text) for text in texts]
-        return asyncio.run(self._embed_batch_async(texts))
-
-    async def _embed_batch_async(self, texts: list[str]) -> list[list[float]]:
-        """Async implementation of embed_batch using a semaphore to cap concurrency."""
-        # TODO: switch to ThreadPoolExecutor (one version of embed_one)
-        semaphore = asyncio.Semaphore(self._concurrency)
-
-        async def _embed_one(text: str) -> list[float]:
-            async with semaphore:
-                result = await asyncio.to_thread(
-                    self._predictor.predict, {"inputs": text}
-                )
-                return result[0]
-
-        return list(await asyncio.gather(*[_embed_one(t) for t in texts]))
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=self._concurrency
+        ) as executor:
+            return list(executor.map(self.embed_one, texts))

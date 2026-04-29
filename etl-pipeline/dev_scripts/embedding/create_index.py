@@ -11,8 +11,6 @@ os.chdir(PROJ_ROOT)
 from utils.load_env import load_env
 
 load_env("config/.env.production")
-os.environ["STAGE"] = "development"
-os.environ["LOG_LEVEL"] = "debug"
 
 from datetime import datetime, timezone
 
@@ -70,16 +68,20 @@ def rerun_indexing(results_dir: Path) -> Iterator[str]:
 INDEXING_RESULTS_DIR = Path(__file__, "..", "indexing_results").resolve()
 
 
+# ============================================================================
 # Index Config
+# ============================================================================
 # INDEX_NAME = "vra_test-sketches_of_the_north_river-harrier_oss_v1_.6b"
-# INDEX_NAME = "vra_test-10k-harrier_oss_v1_.6b"
-INDEX_NAME = "vra_test-sketches_of_the_north_river-harrier_oss_v1_.6b"
-index_config = get_index_config(INDEX_NAME)
+INDEX_NAME = "vra_test-10k-harrier_oss_v1_.6b"
+# INDEX_NAME = "vra_test-sketches_of_the_north-qwen3_embedding_8b" # pragma: allowlist secret
 
+
+# ============================================================================
 # Books config
+# ============================================================================
 barcodes = list_10k_barcodes(start_from="33433066574009")
 # barcodes = list_10k_barcodes()
-# barcodes = ["33433062509165"]
+# barcodes = ["33433062509165"] # sketches_of_the_north_river
 # barcodes = rerun_indexing(INDEXING_RESULTS_DIR / "20260427T015457Z")
 
 
@@ -88,6 +90,8 @@ barcodes = list_10k_barcodes(start_from="33433066574009")
 # TODO: run progress percent
 # TODO: option abort run on first non-100% batch and save last successful barcode to re-start with start_from=
 
+
+index_config = get_index_config(INDEX_NAME)
 
 # Define directories
 run_timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
