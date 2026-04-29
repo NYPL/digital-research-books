@@ -86,10 +86,10 @@ def configure_loggers(log_level=None, stage=None):
     """
     Configure log level and format for 'drb' application root logger.
 
-    log_level is resolved in this order: (1) argument passed (2) environment
-    variable (c) default to "info"
-    stage is resolved in this order: (1) argument passed (2) environment
-    variable (c) default to None
+    `log_level` is resolved in this order: (1) passed argument (2) LOG_LEVEL
+    environment variable (3) default to "info".
+    `stage` is resolved in this order: (1) passed argument (2) STAGE environment
+    variable (3) default to None.
     """
     log_level = log_level or os.environ.get("LOG_LEVEL", "").lower() or "info"
     print("log level", os.environ.get("LOG_LEVEL"))
