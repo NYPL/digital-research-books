@@ -7,7 +7,9 @@ from typing_extensions import TypedDict
 import sys
 import os
 import time
+import uuid
 
+import newrelic.agent
 import numpy as np
 import pandas as pd
 from agents import (
@@ -249,6 +251,8 @@ class CatalogSearchExecutionContext:
 
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
+    session_id: str
+    conversation_type: str = "catalogSearch"
     search_results: Dict = field(default_factory=dict)
 
 
@@ -258,7 +262,9 @@ class ContentSearchExecutionContext:
 
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
+    session_id: str
     edition_id: int
+    conversation_type: str = "contentSearch"
     search_results: Dict = field(default_factory=dict)
     frbr_fields: Dict = field(default_factory=dict)
 
@@ -268,9 +274,168 @@ class ContentSearchExecutionContext:
 class LLMLoggingHooks(RunHooks):
     """Agent lifecycle hooks that log LLM call start/end with timing and response."""
 
-    def __init__(self):
+    def __init__(
+        self, session_id: str, conversation_type: str, edition_id: Optional[int] = None
+    ):
+        self.session_id = session_id
+        self.conversation_type = conversation_type
+        self.edition_id = edition_id
+
         self._llm_start_time: Optional[float] = None
         self._tool_start_time: Optional[float] = None
+
+        self.num_llm_calls = 0
+        self.total_input_tokens = 0
+        self.total_output_tokens = 0
+        self.total_llm_elapsed = 0.0
+
+        self._last_system_prompt: Optional[str] = None
+        self._last_input_items: list = []
+        self._last_response: Optional[ModelResponse] = None
+
+    def record_newrelic_llm_events(self, agent: Agent) -> None:
+        """Custom event logging for New Relic AI monitoring"""
+        if not self._last_response:
+            return
+
+        # Extract text content from LLM response
+        content = ""
+        try:
+            if hasattr(self._last_response, "output") and self._last_response.output:
+                first_out = self._last_response.output[0]
+                if hasattr(first_out, "content"):
+                    content_val = first_out.content
+                    if isinstance(content_val, list) and len(content_val) > 0:
+                        content = getattr(content_val[0], "text", "")
+                    else:
+                        content = str(content_val)
+        except Exception as e:
+            logger.warning(f"Failed to extract LLM message content: {e}")
+
+        event_id_unique = str(uuid.uuid4())
+        resp_id = str(uuid.uuid4())
+
+        transaction = newrelic.agent.current_transaction()
+        if transaction:
+            transaction.add_ml_model_info("OpenAI", "1.0.0")
+            transaction._add_agent_attribute("llm", True)
+
+        trace_id = newrelic.agent.current_trace_id()
+        span_id = newrelic.agent.current_span_id()
+
+        timestamp_ms = int(time.time() * 1000)
+
+        total_tokens = self.total_input_tokens + self.total_output_tokens
+
+        sequence = 0
+
+        # 1. Log event for system prompt
+        if self._last_system_prompt:
+            system_msg_payload = {
+                "id": f"{event_id_unique}-{sequence}",
+                "request_id": resp_id,
+                "completion_id": event_id_unique,
+                "llm.conversation_id": self.session_id,
+                "content": self._last_system_prompt,
+                "role": "system",
+                "sequence": sequence,
+                "response.model": agent.model.model,
+                "vendor": "openai",
+                "ingest_source": "Python",
+                "trace_id": trace_id,
+                "span_id": span_id,
+                "timestamp": timestamp_ms,
+            }
+            newrelic.agent.record_custom_event(
+                "LlmChatCompletionMessage", system_msg_payload
+            )
+            sequence += 1
+
+        # 2. Log events for user, assistant, and tool calls in the order they're sent
+        try:
+            converted_msgs = Converter.items_to_messages(
+                self._last_input_items, model=agent.model.model
+            )
+            for msg in converted_msgs:
+                role = msg.get("role", "unknown")
+                if role == "system":
+                    continue  # System prompt handled above
+
+                msg_payload = {
+                    "id": f"{event_id_unique}-{sequence}",
+                    "request_id": resp_id,
+                    "completion_id": event_id_unique,
+                    "llm.conversation_id": self.session_id,
+                    "role": role,
+                    "sequence": sequence,
+                    "response.model": agent.model.model,
+                    "vendor": "openai",
+                    "ingest_source": "Python",
+                    "trace_id": trace_id,
+                    "span_id": span_id,
+                    "timestamp": timestamp_ms,
+                }
+
+                content_val = msg.get("content")
+                if content_val:
+                    msg_payload["content"] = str(content_val)
+
+                newrelic.agent.record_custom_event(
+                    "LlmChatCompletionMessage", msg_payload
+                )
+                sequence += 1
+        except Exception as e:
+            logger.warning(f"Error logging previous messages: {e}")
+
+        # 3. Log event for final response (i.e. the message the user sees)
+        final_msg_payload = {
+            "id": f"{event_id_unique}-{sequence}",
+            "request_id": resp_id,
+            "completion_id": event_id_unique,
+            "llm.conversation_id": self.session_id,
+            "content": content,
+            "role": "assistant",
+            "is_response": True,
+            "sequence": sequence,
+            "token_count": self.total_output_tokens,
+            "response.model": agent.model.model,
+            "vendor": "openai",
+            "ingest_source": "Python",
+            "trace_id": trace_id,
+            "span_id": span_id,
+            "timestamp": timestamp_ms,
+        }
+        newrelic.agent.record_custom_event(
+            "LlmChatCompletionMessage", final_msg_payload
+        )
+
+        # 4. Log summary event with aggregate LLM response metadata
+        summary_payload = {
+            "id": event_id_unique,
+            "span_id": span_id,
+            "trace_id": trace_id,
+            "request.model": agent.model.model,
+            "request.temperature": 0.0,
+            "request.max_tokens": None,
+            "vendor": "openai",
+            "ingest_source": "Python",
+            "request_id": resp_id,
+            "duration": float(self.total_llm_elapsed * 1000),
+            "response.model": agent.model.model,
+            "response.organization": "",
+            "response.choices.finish_reason": "stop",
+            "response.number_of_messages": sequence + 1,
+            "timestamp": timestamp_ms,
+            "llm.conversation_id": self.session_id,
+            "llm.conversation_type": self.conversation_type,
+            "llm.edition_id": self.edition_id,
+            "llm.is_final_turn": True,
+            "response.usage.prompt_tokens": self.total_input_tokens,
+            "response.usage.completion_tokens": self.total_output_tokens,
+            "response.usage.total_tokens": total_tokens,
+        }
+
+        newrelic.agent.record_custom_event("LlmChatCompletionSummary", summary_payload)
 
     async def on_llm_start(
         self,
@@ -281,6 +446,9 @@ class LLMLoggingHooks(RunHooks):
     ) -> None:
         self._llm_start_time = time.perf_counter()
 
+        self._last_system_prompt = system_prompt
+        self._last_input_items = input_items
+
     async def on_llm_end(
         self,
         context: RunContextWrapper,
@@ -290,12 +458,20 @@ class LLMLoggingHooks(RunHooks):
         elapsed = (
             time.perf_counter() - self._llm_start_time
             if self._llm_start_time is not None
-            else None
+            else 0.0
         )
         self._llm_start_time = None
-        elapsed_str = f"{elapsed:.3f}s" if elapsed is not None else "unknown"
 
-        output_types = [o.type for o in response.output]
+        self.num_llm_calls += 1
+        self.total_llm_elapsed += elapsed
+        self._last_response = response
+
+        if response.usage:
+            self.total_input_tokens = response.usage.input_tokens or 0
+            self.total_output_tokens = response.usage.output_tokens or 0
+
+        elapsed_str = f"{elapsed:.3f}s"
+        output_types = [o.type for o in response.output] if response.output else []
         logger.info(
             f"LLM response received | elapsed: {elapsed_str} | output types: {output_types} | token usage: input={response.usage.input_tokens} output={response.usage.output_tokens}"
         )
@@ -511,6 +687,7 @@ async def update_chat(
             backend=backend,
             embedder=embedder,
             edition_id=edition_id,
+            session_id=session_id,
             frbr_fields=frbr_fields,
         )
 
@@ -521,7 +698,9 @@ async def update_chat(
 
     # Search for books in catalog
     else:  # conversation_type == "catalogSearch":
-        exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
+        exec_context = CatalogSearchExecutionContext(
+            backend=backend, embedder=embedder, session_id=session_id
+        )
         system_prompt = remove_markdown_comments(
             system_prompt_template.render(conversation_type="catalogSearch")
         )
@@ -536,23 +715,40 @@ async def update_chat(
 
     session = SQLAlchemySession(session_id, engine=get_async_engine())
 
-    run_result = await Runner.run(
-        starting_agent=agent,
-        input=message,
-        context=exec_context,
-        hooks=LLMLoggingHooks(),
-        max_turns=max_turns,
-        error_handlers={"max_turns": _on_max_turns},
-        session=session,
-        run_config=RunConfig(
-            tracing_disabled=True,
-            model_settings=ModelSettings(
-                temperature=0.0,
-                reasoning=Reasoning(effort="none"),
-                # include_usage=True, # TODO: research if this returns loggable usage info
-            ),
-        ),
+    # Add conversation metadata to New Relic transaction for grouping and filtering
+    newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
+    newrelic.agent.add_custom_attribute("llm.conversation_type", conversation_type)
+    newrelic.agent.add_custom_attribute(
+        "llm.edition_id", edition_id if conversation_type == "contentSearch" else None
     )
+
+    logging_hooks = LLMLoggingHooks(
+        session_id=session_id,
+        conversation_type=conversation_type,
+        edition_id=edition_id if conversation_type == "contentSearch" else None,
+    )
+
+    # Wrap agent exec loop in NR APM trace for AI monitoring dashboard compatibility
+    with newrelic.agent.FunctionTrace(name="create", group="Llm/completion/OpenAI"):
+        run_result = await Runner.run(
+            starting_agent=agent,
+            input=message,
+            context=exec_context,
+            hooks=logging_hooks,
+            max_turns=max_turns,
+            error_handlers={"max_turns": _on_max_turns},
+            session=session,
+            run_config=RunConfig(
+                tracing_disabled=True,
+                model_settings=ModelSettings(
+                    temperature=0.0,
+                    reasoning=Reasoning(effort="none"),
+                    include_usage=True,
+                ),
+            ),
+        )
+
+    logging_hooks.record_newrelic_llm_events(agent)
 
     return run_result
 
