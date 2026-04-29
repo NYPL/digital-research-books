@@ -95,6 +95,8 @@ def run_instance_recommendation_job(
     return model_with_rec
 
 
+# TODO: handle case where endpoint fails to be deleted while it is "creating" \
+# which can take 10s of minutes
 def _cleanup_resources(
     sm_client, model_name: str | None, endpoint_config_name: str, endpoint_name: str
 ) -> None:
@@ -134,8 +136,11 @@ boto3.setup_default_session(profile_name=AWS_PROFILE)  # ALT: set AWS_PROFILE en
 # Set inference IAM role ARN - use pre-created sagemaker execution role
 # https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html
 iam_client = boto3.client("iam")
-role_name = "SageMakerExecutionRole"  # nypl-vra-sandbox account
-# role_name = "AmazonSageMaker-ExecutionRole-20180212T130350" # nypl-sandbox account # pragma: allowlist secret
+roles = {
+    "vra-sandbox": "SageMakerExecutionRole",  # nypl-vra-sandbox account
+    "sandbox": "AmazonSageMaker-ExecutionRole-20180212T130350",  # nypl-sandbox account # pragma: allowlist secret
+}
+role_name = roles[args.profile]
 role_arn = iam_client.get_role(RoleName=role_name)["Role"]["Arn"]
 print(f"[iam] role ARN: {role_arn}")
 

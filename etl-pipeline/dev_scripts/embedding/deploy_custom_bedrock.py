@@ -2,24 +2,23 @@
 Deploy a HuggingFace model to Amazon Bedrock via Custom Model Import.
 
 Pipeline:
-  1. Download model from HuggingFace to a local cache dir
-  2. Upload model files to a user-specified S3 prefix
+  1. Download model from HuggingFace to a local cache dir (if not already downloaded)
+  2. Upload model files to a S3 prefix (if they don't already exist)
   3. Submit a Bedrock CreateModelImportJob
   4. Poll until the job reaches Completed or Failed
 
 Usage:
-    uv run scratch/embedding/deploy_custom_bedrock.py \
-        --role-arn arn:aws:iam::123456789012:role/BedrockModelImportRole \
-        [--bucket my-bedrock-models] \
+    uv run dev_scripts/embedding/deploy_custom_bedrock.py \
         [--hf-model-id Qwen/Qwen3-Embedding-8B] \
         [--region us-east-1] \
+        [--aws-profile vra-sandbox] \
         [--force-upload] \
         [--no-poll]
 
-Derived from --hf-model-id automatically:
+Names derived from --hf-model-id automatically:
   s3-prefix, bedrock model name  ->  lowercase tail of the model ID
   local cache dir                ->  /tmp/<short-model-name>
-  job name                       ->  <short-model-name>-import-<unix-timestamp>
+  model import job name          ->  <short-model-name>-import-<unix-timestamp>
 
 IAM requirements
 ----------------
@@ -33,10 +32,6 @@ Bedrock service role (--role-arn):
   - s3:ListBucket  on the model bucket
   Trust policy principal: bedrock.amazonaws.com
   see: https://docs.aws.amazon.com/bedrock/latest/userguide/model-import-iam-role.html
-
-Other:
-  - AWS SSO session active (aws sso login)
-  - uv pip install huggingface_hub boto3
 """
 
 import argparse
@@ -54,7 +49,11 @@ from huggingface_hub import snapshot_download
 POLL_INTERVAL_SECONDS = 60
 MAX_POLL_ATTEMPTS = 180  # 3 hours max
 
-BUCKET = "vra-bedrock-models-test"
+BUCKET = "vra-bedrock-models-test-260496020663-us-east-1-an"  # pragma: allowlist secret
+BEDROCK_SERVICE_ROLE_ARN = (
+    "arn:aws:iam::260496020663:role/BedrockCustomModelImportServiceRole"
+)
+LOCAL_CACHE_DIR = Path(__file__, "..", "tmp", "model_weights").resolve()
 
 # Multipart threshold: 1 GB (safetensor shards are typically 4–5 GB each)
 _GB = 1024**3
@@ -75,16 +74,10 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="Deploy a HuggingFace model to Amazon Bedrock via Custom Model Import"
     )
-    p.add_argument("--bucket", default=BUCKET, help="S3 bucket name")
     p.add_argument(
         "--hf-model-id",
         default="Qwen/Qwen3-Embedding-8B",
         help="HuggingFace model ID (default: Qwen/Qwen3-Embedding-8B)",
-    )
-    p.add_argument(
-        "--role-arn",
-        required=True,
-        help="ARN of the IAM role Bedrock will assume to read from S3",
     )
     p.add_argument(
         "--region", default="us-east-1", help="AWS region (default: us-east-1)"
@@ -99,22 +92,21 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Submit the import job and exit without polling for completion",
     )
+    p.add_argument(
+        "--aws-profile",
+        default="vra-sandbox",
+        help="AWS profile name (default: vra-sandbox)",
+    )
     return p.parse_args()
 
 
+# TODO: useless wrapper function. remove
 def download_model(hf_model_id: str, local_cache: str) -> Path:
     cache_path = Path(local_cache)
     print(f"Downloading {hf_model_id} to {cache_path} ...")
     snapshot_download(
         repo_id=hf_model_id,
         local_dir=str(cache_path),
-        ignore_patterns=[
-            "*.msgpack",
-            "*.h5",
-            "flax_model*",
-            "tf_model*",
-            "rust_model*",
-        ],
     )
     print(f"Download complete: {cache_path}")
     return cache_path
@@ -134,12 +126,18 @@ def _s3_content_length(s3_client, bucket: str, key: str) -> int | None:
 def upload_to_s3(
     local_path: Path, bucket: str, prefix: str, region: str, force: bool = False
 ) -> str:
+    """Upload files at `local_path` to s3 `prefix` (recursive).
+    By default, check if local file matches s3 objects by relative path/prefix and
+    file size, and skip up upload if file already exists in s3.
+    """
+    # List local files
     s3 = boto3.client("s3", region_name=region)
     files = sorted(f for f in local_path.rglob("*") if f.is_file())
     if not files:
         raise RuntimeError(f"No files found in {local_path}")
 
     print(f"Uploading {len(files)} files to s3://{bucket}/{prefix}/ ...")
+    # Upload local files (optionally if not present in s3)
     skipped = 0
     for i, file_path in enumerate(files, 1):
         relative = file_path.relative_to(local_path)
@@ -173,7 +171,8 @@ def upload_to_s3(
     return s3_uri
 
 
-def submit_import_job(
+# TODO: useless wrapper function. remove
+def create_model_import_job(
     s3_uri: str,
     role_arn: str,
     model_name: str,
@@ -233,10 +232,13 @@ def poll_import_job(job_arn: str, region: str) -> None:
 def main() -> None:
     args = parse_args()
 
+    if args.aws_profile:
+        os.environ["AWS_PROFILE"] = args.aws_profile
+
     short = _short_name(args.hf_model_id)
     model_name = short
     s3_prefix = short
-    local_cache = f"/tmp/{short}"
+    local_cache = LOCAL_CACHE_DIR / short
     job_name = f"{short}-import-{int(time.time())}"
 
     # Step 1: download
@@ -244,13 +246,13 @@ def main() -> None:
 
     # Step 2: upload
     s3_uri = upload_to_s3(
-        local_path, args.bucket, s3_prefix, args.region, force=args.force_upload
+        local_path, BUCKET, s3_prefix, args.region, force=args.force_upload
     )
 
     # Step 3: submit import job
-    job_arn = submit_import_job(
+    job_arn = create_model_import_job(
         s3_uri=s3_uri,
-        role_arn=args.role_arn,
+        role_arn=BEDROCK_SERVICE_ROLE_ARN,
         model_name=model_name,
         job_name=job_name,
         region=args.region,
