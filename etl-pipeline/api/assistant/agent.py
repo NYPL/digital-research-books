@@ -380,7 +380,15 @@ class LLMLoggingHooks(RunHooks):
 
                 content_val = msg.get("content")
                 if content_val:
-                    msg_payload["content"] = str(content_val)
+                    if (
+                        role == "user"
+                        and os.getenv(
+                            "NEW_RELIC_CUSTOM_LLM_SEND_USER_PROMPT_TEXT_ENABLED"
+                        ) != "true"
+                    ):
+                        pass
+                    else:
+                        msg_payload["content"] = str(content_val)
 
                 newrelic.agent.record_custom_event(
                     "LlmChatCompletionMessage", msg_payload
