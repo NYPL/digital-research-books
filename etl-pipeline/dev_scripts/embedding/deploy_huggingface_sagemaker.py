@@ -97,6 +97,7 @@ def run_instance_recommendation_job(
 
 # TODO: handle case where endpoint fails to be deleted while it is "creating" \
 # which can take 10s of minutes
+# TODO: dedupe with delete_sagemaker_endpoint.py
 def _cleanup_resources(
     sm_client, model_name: str | None, endpoint_config_name: str, endpoint_name: str
 ) -> None:
