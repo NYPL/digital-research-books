@@ -13,6 +13,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from vector_indexing.components.backends.turbopuffer import (
+    TurbopufferBackend,
+    load_default_schema,
+)
+from vector_indexing.components.embedders.google import GoogleEmbedder
+from vector_indexing.components.embedders.sagemaker import SageMakerEmbedder
+
 if TYPE_CHECKING:
     from typing import Self
 
@@ -460,3 +467,73 @@ def reset_config() -> None:
     """Reset the global configuration (for testing)."""
     global _default_config
     _default_config = None
+
+
+####### Index Config ########
+
+
+def get_default_schema_with_dims(dims: str):
+    schema = load_default_schema()
+    schema["vector"]["type"] = f"[{dims}]f16"
+    return schema
+
+
+HARRIER_OSS_V1_DIMENSIONS = 1024
+
+QWEN3_EMBEDDING_8B_DIMENSIONS = 1024
+
+
+def get_index_config(index_name):
+    INDEX_CONFIG = [
+        {  # Google
+            "names": [
+                "vra-dev",
+                "vra_test-sketches_of_the_north_river-gemini-001",
+            ],
+            "embedder": {
+                "class": GoogleEmbedder,
+                "params": {
+                    # All are default and unnecessary
+                    "model": "gemini-embedding-001",
+                    "dimensions": 768,
+                    "task_type": "RETRIEVAL_QUERY",
+                },
+            },
+            "schema": load_default_schema(),
+        },
+        {  # Harrier
+            "names": ["vra_test-sketches_of_the_north_river-harrier_oss_v1_.6b"],
+            "embedder": {
+                "class": SageMakerEmbedder,
+                "params": {
+                    "endpoint_name": "hf-tei-harrier-oss-v1-0-6b-ml-g6-2xlarge-20260424-011130",  # pragma: allowlist secret
+                    "aws_profile": "sandbox",
+                    "concurrency": 41,
+                },
+            },
+            "schema": get_default_schema_with_dims(HARRIER_OSS_V1_DIMENSIONS),
+        },
+        {  # Qwen
+            "names": [
+                "vra_test-sketches_of_the_north-qwen3-embedding-8b"  # pragma: allowlist secret
+            ],
+            "embedder": {
+                "class": SageMakerEmbedder,
+                "params": {
+                    "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6e-xlarge-20260428-235752",  # pragma: allowlist secret
+                    "aws_profile": "sandbox",
+                    "concurrency": 14,
+                    "dimensions": QWEN3_EMBEDDING_8B_DIMENSIONS,
+                },
+            },
+            "schema": get_default_schema_with_dims(QWEN3_EMBEDDING_8B_DIMENSIONS),
+        },
+    ]
+
+    entry = next((e for e in INDEX_CONFIG if index_name in e["names"]), None)
+    if entry is None:
+        raise ValueError(f"No index config found for index name: {index_name!r}")
+
+    embedder = entry["embedder"]["class"](**entry["embedder"]["params"])
+    backend = TurbopufferBackend(index_name=index_name, schema=entry["schema"])
+    return {"embedder": embedder, "backend": backend}
