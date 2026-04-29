@@ -56,7 +56,7 @@ const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({ label }) => {
         <Button
           id="thumbs-up-button"
           variant="text"
-          aria-label={`${label} Thumbs up`}
+          aria-label={`${label} Good response`}
           aria-pressed={thumbValue === "up"}
           padding="xs"
           borderRadius="100px"
@@ -75,7 +75,7 @@ const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({ label }) => {
         <Button
           id="thumbs-down-button"
           variant="text"
-          aria-label={`${label} Thumbs down`}
+          aria-label={`${label} Bad response`}
           aria-pressed={thumbValue === "down"}
           padding="xs"
           borderRadius="100px"

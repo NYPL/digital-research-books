@@ -84,7 +84,7 @@ const MessageBubble = memo(
                     ) : (
                       <Flex alignItems="center" justifyContent="space-between">
                         <AiGeneratedText />
-                        <FeedbackButtons label={`message ${index} feedback`} />
+                        <FeedbackButtons label="message feedback" />
                       </Flex>
                     ))}
                 </Flex>
