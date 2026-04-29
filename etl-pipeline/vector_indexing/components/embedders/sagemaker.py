@@ -46,13 +46,18 @@ class SageMakerEmbedder(Embedder):
         self._dimensions = dimensions
         self._aws_profile = aws_profile
         self._concurrency = concurrency
-        if self._aws_profile:
-            boto3.setup_default_session(profile_name=self._aws_profile)
+        boto_session = (
+            boto3.Session(profile_name=self._aws_profile)
+            if self._aws_profile
+            else boto3.Session()
+        )
         if assume_role:
-            session = get_boto3_session_with_assumed_role(role_arn=assume_role)
-            sm_session = sagemaker.Session(boto_session=session)
+            assumed_session = get_boto3_session_with_assumed_role(
+                role_arn=assume_role, boto_session=boto_session
+            )
+            sm_session = sagemaker.Session(boto_session=assumed_session)
         else:
-            sm_session = sagemaker.Session()
+            sm_session = sagemaker.Session(boto_session=boto_session)
         self._predictor = HuggingFacePredictor(
             endpoint_name=endpoint_name,
             sagemaker_session=sm_session,

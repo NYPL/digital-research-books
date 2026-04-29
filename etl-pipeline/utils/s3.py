@@ -1,4 +1,4 @@
-import uuid
+import time
 from typing import Optional
 
 import boto3
@@ -11,6 +11,7 @@ def get_boto3_session_with_assumed_role(
     session_name: Optional[str] = None,
     region_name: Optional[str] = None,
     duration_seconds: Optional[int] = None,
+    boto_session: Optional[boto3.Session] = None,
 ) -> boto3.Session:
     """Return a boto3 Session configured with auto-refreshing credentials from
     an assumed-role. The default boto3 session needs to have permissions to
@@ -24,12 +25,16 @@ def get_boto3_session_with_assumed_role(
                      Falls back to the environment / config default when None.
         duration_seconds: Lifetime of each set of temporary credentials (900-43200).
                           Omit to use the STS default (3600 s).
+        boto_session: boto3 Session to use for the STS AssumeRole call. Defaults
+                      to the global default session when None.
     """
 
-    _session_name = session_name or f"AssumedRoleSession-{uuid.uuid4().hex}"
+    _session_name = session_name or f"AssumedRoleSession-{int(time.time())}"
+
+    _boto_session = boto_session or boto3.Session()
 
     def _fetch_credentials() -> dict:
-        sts_client = boto3.client("sts", region_name=region_name)
+        sts_client = _boto_session.client("sts", region_name=region_name)
         assume_role_kwargs = {
             "RoleArn": role_arn,
             "RoleSessionName": _session_name,
