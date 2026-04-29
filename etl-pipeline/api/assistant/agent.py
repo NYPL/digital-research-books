@@ -295,6 +295,8 @@ class LLMLoggingHooks(RunHooks):
 
     def record_newrelic_llm_events(self, agent: Agent) -> None:
         """Custom event logging for New Relic AI monitoring"""
+        if os.getenv("NEW_RELIC_CUSTOM_LLM_EVENT_LOGGING_ENABLED") != "true":
+            return
         if not self._last_response:
             return
 
