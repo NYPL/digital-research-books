@@ -504,7 +504,10 @@ def get_index_config(index_name):
             "schema": load_default_schema(),
         },
         {  # Harrier
-            "names": ["vra_test-sketches_of_the_north_river-harrier_oss_v1_.6b"],
+            "names": [
+                "vra_test-sketches_of_the_north_river-harrier_oss_v1_.6b",
+                "vra_test-10k-harrier_oss_v1_.6b",
+            ],
             "embedder": {
                 "class": SageMakerEmbedder,
                 "params": {
