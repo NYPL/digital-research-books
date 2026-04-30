@@ -384,7 +384,8 @@ class LLMLoggingHooks(RunHooks):
                         role == "user"
                         and os.getenv(
                             "NEW_RELIC_CUSTOM_LLM_SEND_USER_PROMPT_TEXT_ENABLED"
-                        ) != "true"
+                        )
+                        != "true"
                     ):
                         pass
                     else:
