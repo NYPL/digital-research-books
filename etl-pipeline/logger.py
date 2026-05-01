@@ -82,28 +82,37 @@ class LogContextVars:
         self._context_var.reset(self._token)
 
 
-def configure_loggers():
+def configure_loggers(log_level=None, stage=None):
     """
-    Configure 'drb' application root logger, using values from LOG_LEVEL and
-    STAGE environment variables.
+    Configure log level and format for 'drb' application root logger.
+
+    log_level is resolved in this order: (1) argument passed (2) environment
+    variable (c) default to "info"
+    stage is resolved in this order: (1) argument passed (2) environment
+    variable (c) default to None
     """
-    logger = get_app_logger()
-    logger.handlers.clear()  # remove any pre-existing log handlers
+    log_level = log_level or os.environ.get("LOG_LEVEL", "").lower() or "info"
+    print("log level", os.environ.get("LOG_LEVEL"))
+    level_name = levels[log_level]
+
+    stage = stage or os.environ.get("STAGE")
+
+    # Define handler
     console_log_handler = logging.StreamHandler(stream=sys.stdout)
 
-    print("log level", os.environ.get("LOG_LEVEL"))
-    log_level = os.environ.get("LOG_LEVEL", "info").lower()
-
-    logger.setLevel(levels[log_level])
-    console_log_handler.setLevel(levels[log_level])
-
-    if "development" == os.environ.get("STAGE"):
+    # Define formatter
+    if "development" == stage:
         formatter = logging.Formatter("[%(name)s %(levelname)s] %(message)s")
-        console_log_handler.setFormatter(formatter)
     else:
         formatter = NewRelicContextFormatter(
             "%(asctime)s | %(name)s | %(levelname)s: %(message)s"
         )  # noqa: E501
-        console_log_handler.setFormatter(formatter)
 
+    logger = get_app_logger()
+    logger.handlers.clear()  # remove any pre-existing log handlers
+
+    # Set log level + handler + formatter
+    logger.setLevel(level_name)
+    console_log_handler.setLevel(level_name)
+    console_log_handler.setFormatter(formatter)
     logger.addHandler(console_log_handler)

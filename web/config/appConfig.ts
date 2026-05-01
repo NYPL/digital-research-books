@@ -29,7 +29,9 @@ const appConfig = {
     experimentName: "RequestDigital",
   },
   feedback: {
-    formURL: "https://api.airtable.com/v0/appFLZEc3LmVZCRxn/Feedback",
+    drbFormURL: "https://api.airtable.com/v0/appFLZEc3LmVZCRxn/Feedback",
+    vraFormURL: "https://api.airtable.com/v0/app30jN7kefzFZqq3/Feedback",
+    vraPopupUrl: "https://api.airtable.com/v0/app30jN7kefzFZqq3/Popup",
   },
   displayCitations: {
     experimentName: "DisplayCitations",

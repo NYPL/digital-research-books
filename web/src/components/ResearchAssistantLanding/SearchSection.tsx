@@ -33,11 +33,6 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
     }
   };
 
-  const handleClearSearch = () => {
-    setSearchInput("");
-    textInputRef.current.value = "";
-  };
-
   const handleSuggestionClick = (suggestion: string) => {
     onSubmit(suggestion);
   };
@@ -119,22 +114,6 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
             }}
           />
           <Flex flexDir="row" paddingY="xs">
-            {searchInput !== "" && (
-              <Button
-                onClick={handleClearSearch}
-                id="research-landing-clear"
-                backgroundColor="transparent"
-                minWidth="1.5rem"
-                borderRadius="8px"
-                _hover={{
-                  backgroundColor: "section.research.primary-10",
-                }}
-                aria-label="Clear"
-                padding="xs"
-              >
-                <Icon name="close" size="large" color="ui.black" />
-              </Button>
-            )}
             <Button
               onClick={handleLocalSearchSubmit}
               id="research-landing-submit"

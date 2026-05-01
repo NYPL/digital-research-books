@@ -9,6 +9,9 @@ import {
   MessageRole,
   PageType,
 } from "~/src/types/ResearchAssistant";
+import { SURVEY_DELAY_MS } from "../constants/researchAssistant";
+import { getSurveyStorageKey } from "../util/ResearchAssistantUtils";
+import { FeedbackContext } from "./FeedbackContext";
 
 interface ResearchAssistantViewState {
   editionId?: number;
@@ -33,6 +36,9 @@ interface ResearchAssistantContextType extends ResearchAssistantViewState {
   handlePreview: (url: string) => Promise<void>;
   showChat: boolean;
   toggleChat: () => void;
+  isSurveyVisible: boolean;
+  setIsSurveyVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  markSurveyHandled: () => void;
 }
 
 interface PushNewStateArgs {
@@ -53,6 +59,10 @@ export const ResearchAssistantProvider: React.FC<{
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(true);
+  const [hasSentFirstQuery, setHasSentFirstQuery] = useState(false);
+  const [activeSearchTimeMs, setActiveSearchTimeMs] = useState(0);
+  const [isSurveyVisible, setIsSurveyVisible] = useState(false);
+  const [hasSurveyBeenHandled, setHasSurveyBeenHandled] = useState(false);
 
   const [historyStack, setHistoryStack] = useState<HistoryItem[]>([]);
   const [viewState, setViewState] = useState<ResearchAssistantViewState>({
@@ -61,10 +71,20 @@ export const ResearchAssistantProvider: React.FC<{
     results: null,
   });
 
+  const { sessionId, setSessionId } = useContext(FeedbackContext);
+
   const router = useRouter();
   const conversationType = router.pathname.startsWith("/item/")
     ? ConversationType.Content
     : ConversationType.Catalog;
+
+  const markSurveyHandled = React.useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(getSurveyStorageKey(sessionId), "true");
+    }
+    setHasSurveyBeenHandled(true);
+    setIsSurveyVisible(false);
+  }, [sessionId]);
 
   const pushNewState = ({
     results,
@@ -85,6 +105,10 @@ export const ResearchAssistantProvider: React.FC<{
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
+
+    if (!hasSentFirstQuery && !hasSurveyBeenHandled) {
+      setHasSentFirstQuery(true);
+    }
 
     setError(null);
     setIsLoading(true);
@@ -125,14 +149,10 @@ export const ResearchAssistantProvider: React.FC<{
       }
 
       const data = await response.json();
+      setSessionId(data.sessionId);
 
-      let newMessagesLength = 0;
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages, ...data.messages];
-        newMessagesLength = updatedMessages.length;
-        return updatedMessages;
-      });
-
+      const newMessagesLength = messages.length + data.messages.length;
+      setMessages((prevMessages) => [...prevMessages, ...data.messages]);
       const newResults = {
         ...viewState.results,
         [newMessagesLength]: data.results,
@@ -232,15 +252,50 @@ export const ResearchAssistantProvider: React.FC<{
     }
   };
 
-  const clearSession = () => {
-    fetch("/api/research-assistant-session", {
-      method: "DELETE",
-    }).catch((err) => console.error("Failed to clear session:", err));
+  const clearSession = async () => {
+    try {
+      await fetch("/api/research-assistant-session", {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.error("Failed to clear session:", err);
+    }
   };
 
   useEffect(() => {
     clearSession();
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hasHandledSurvey =
+      window.sessionStorage.getItem(getSurveyStorageKey(sessionId)) === "true";
+    if (hasHandledSurvey) {
+      setHasSurveyBeenHandled(true);
+      setIsSurveyVisible(false);
+      return;
+    }
+    setHasSurveyBeenHandled(false);
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (!hasSentFirstQuery || hasSurveyBeenHandled || isSurveyVisible) return;
+
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        setActiveSearchTimeMs((prev) => prev + 1000);
+      }
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [hasSentFirstQuery, hasSurveyBeenHandled, isSurveyVisible]);
+
+  useEffect(() => {
+    if (hasSurveyBeenHandled || isSurveyVisible) return;
+    if (activeSearchTimeMs >= SURVEY_DELAY_MS) {
+      setIsSurveyVisible(true);
+    }
+  }, [activeSearchTimeMs, hasSurveyBeenHandled, isSurveyVisible]);
 
   const toggleChat = () => setShowChat((prev) => !prev);
 
@@ -259,6 +314,9 @@ export const ResearchAssistantProvider: React.FC<{
     handlePreview,
     showChat,
     toggleChat,
+    isSurveyVisible,
+    setIsSurveyVisible,
+    markSurveyHandled,
   };
 
   return (

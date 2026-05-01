@@ -18,7 +18,6 @@ class TestAPIProcess:
     @pytest.fixture
     def api_process(self):
         with (
-            patch("processes.api.DBManager"),
             patch("processes.api.ElasticsearchManager"),
             patch("processes.api.RedisManager"),
         ):
@@ -30,7 +29,6 @@ class TestAPIProcess:
 
             api_process.run()
 
-            api_process.db_manager.generate_engine.assert_called_once()
             api_process.redis_manager.create_client.assert_called_once()
             api_process.elastic_search_manager.create_elastic_connection.assert_called_once()
             mock_api.create_error_responses.assert_called_once()

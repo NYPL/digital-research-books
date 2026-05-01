@@ -1,0 +1,1742 @@
+<search_results>
+
+<edition>
+<edition_id>15287442</edition_id>
+<title>Index to records of the United States Strategic Bombing Survey</title>
+<authors>United States Strategic Bombing Survey</authors>
+<publisher>the United States Strategic Bombing Survey</publisher>
+<date>1947-01-01</date>
+<subjects>United States Strategic Bombing Survey -- Bibliography -- Archives, World War, 1939-1945 -- Bibliography -- Destruction and pillage, World War, 1939-1945 -- Bibliography -- Aerial operations</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>24037108</item_id>
+<page>312-313</page>
+<text>
+Serial No. 22.
+(6) Hiraga, T.; Morimoto, T.; Utsonomiya, H.
+Subject: Shibawa Electric Company.
+Serial No. 25.
+(7) Yasukawa, D.; Kaobayashi, Y.; and others.
+Subject: Electrical Equipment Control Associa-
+tion.
+Serial No. 26.
+(8) Messrs. Sakura; Hattori; Hirota.
+Subject: Production statistics on electrical equip-
+ment.
+Serial No. 27.
+(9) Nagakawa, S.; Yamaguchi, S.; Tanaka, Mr.
+Subject: Metal Industry Control Association.
+Serial No. 36.
+(10) Dr. Kajii and Saiki, N.; Sumitomo Tsuskin
+Kogyo.
+Subject: Manufacture of communication equip-
+ment.
+Serial No. 43.
+(11) Hazama, S.; Uchida, T.; Kiso, D.
+Subject: Equipment and construction.
+Serial No. 58.
+(12) Personnel of Karatau iron works.
+Subject: Machine tools.
+Serial No. 60.
+302
+
+2. g. (13) Major Ishikawa.
+Subject: Army construction section.
+Serial No. 76.
+(14) Messrs. Kato and Takeshi.
+Subject: Construction industry.
+Serial No. 77.
+(15) Matsuhara, Mr.
+Subject: Hazama-Gumi Construction Company.
+Serial No. 79.
+(16) Inouye, Mr.
+Subject: Construction Industry Control Associ-
+ation.
+Serial No. 87.
+(17) Viscount Okochi, M.
+Subject: Production of machinery.
+Serial No. 88.
+(18) Messrs. Inomye; Ota; Ito.
+Subject: Construction Control Association.
+Serial No. 95.
+(19) Miyazaki, K. and Hazama, S.
+Subject: Organization of Mitsubishi Corporation.
+Serial No. 105.
+(20) Messrs. Kato; Ogawa; Maehara.
+Subject: Plant office of Mitsubishi Electric
+Company, inspection of plant.
+Serial No. 119.
+(21) Fujii, S; Mochizaki, S; Sakai, G.
+Subject: Mitsubishi Heavy Industries, plant
+visit.
+Serial No. 120.
+(22) Miyagawa, Mr; Kunura, M; Matsuda, M; Mori,
+Mr.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24037108</item_id>
+<page>322-323</page>
+<text>
+Serial No. 420.
+(88) Captain Shibata, B.
+Subject: 21st Air Flotilla.
+Serial No. 424.
+(89) Commander Terai, Y.
+Subject: Carrier aircraft strikes on Saigon and
+Formosa.
+Serial No. 427,
+312
+
+2. p. (90) Admiral Nomura, K.
+Subject: Observation on Japan at war.
+Serial No. 429.
+(91) Captain Sasaki, A.
+Subject: Shore-based aircraft in Mariana
+Campaign.
+Serial No. 434.
+(92) Commander Doi, Fusumi.
+Subject: Ship operations in the Palan area.
+Serial No. 435.
+(93) Commander Okumiya.
+Subject: Aleutians Campaign, Japanese his-
+torical account of the Naval battle
+fought off Komeanderski Island.
+Serial No. 438.
+(94) Captain Kaneko, R.
+Subject: Japanese Army Air Force, New
+Guinea area.
+Serial No. 440.
+(95) Captain Ohmae, T.
+Subject: Japanese Naval operations in New
+Guinea area.
+Serial No. 441.
+(96) Admiral Nabeshima, S.
+Subject: Marshalls and Gilberts operations.
+Serial No. 445.
+(97) Captain Miyazaki.
+Subject: Air operations by Japanese Naval Air
+Force based at Rabaul, including
+Solomons and New Guinea.
+Serial No. 446.
+(98) Lieutenant General Kawabe.
+Subject: Over-all planning and policies.
+Serial No. 447.
+(99) Captain Fuehida.
+Subject: Shore-based air in the Marianas.
+Serial No. 448.
+(100) Commander Nakajima, C.
+Subject: Palau strikes-Marianas.
+Serial No. 454.
+(101) Rear Admiral Shoji.
+Subject: Sinking of Houston.
+Serial No. 459.
+(102) Captain Oi and Commander Sogawa.
+Subject: Escort of shipping.
+Serial No. 460.
+(103) Major Mashida.
+Subject: Development of Japanese Army troops
+and Air unit in Kuriles, December
+1941 to August 1945-Aleutian Cam-
+paign.
+Serial No. 461.
+(104) Captain Shimanouchi.
+Subject: Kon plan.
+Serial No. 462.
+(105) Rear Admiral Matsuzaki.
+Subject: Escort of shipping.
+Serial No. 463.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24037108</item_id>
+<page>319-320</page>
+<text>
+Subject: Japanese Army Air Force suicide
+organization and operation.
+Serial No. 472.
+(38) Commander Okumiya.
+Subject: Japanese Naval air personnel.
+Serial No. 475.
+(39) Takiyanagi, K.
+Subject: Special weapons and radar.
+Serial No. 476.
+(40) Colonel Satake, K.
+Subject: Army radar-applied tactics.
+Serial No. 477.
+(41) Major General Takashima, T.
+Subject: Defense preparations of 12th Area
+Army in Tokyo area.
+Serial No. 478.
+(42) Captain Genda, M.
+Subject: Japanese Naval Air Force.
+Serial No. 479.
+(43) Lieutenant Colonel Tanaka.
+Subject: Amplification of answers to question-
+naire submitted to War Ministry.
+Serial No. 483.
+(44) General Umezu, Y.
+Subject: Japanese Army activities in China,
+Manchuria, and Pacific.
+Serial No. 488.
+(45) Admiral Oikawa, K.
+Subject: Japanese war plans.
+Serial No. 494.
+(46) Captain Ohmae.
+Subject: Japanese Navy Air Force.
+Serial No. 495.
+(47) Lieutenant Iwashita, K.
+Subject: Japanese Naval air combat aircraft
+and tactics.
+Serial No. 496.
+(48) Lieutenant General Miyazaki, S.
+Subject: Effect of Allied air activity.
+Serial No. 497.
+(49) Fleet Admiral Nagano, O.
+Subject: Planning of the Pearl Harbor attack.
+Serial No. 498.
+(50) Lieutenant General Miyazaki, Shuichi.
+Subject: Organization of Dai Honei and Joint
+Planning.
+Serial No. 502.
+(51) Major General Nishimura.
+Subject: Plans and operations in the defense of
+the Philippines, October-December
+1944.
+Serial No. 506.
+(52) Admiral Hyakutake.
+Subject: Emperor's position in respect to politi-
+cal and military development, 1936-45.
+Serial No. 507.
+(53) Captain Fuchida.
+Subject: First Air Fleet.
+Serial No. 514.
+(54) Captain Sonokawa, Xameo.
+Subject: Japanese Navy Air Force in Malayan
+Campaign.
+Serial No. 515.
+309
+
+2. 0. (55) Major General Takashima, Tatsuhiko.
+Subject: Invasion of Java by Sixteenth Army.
+Serial No.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24037108</item_id>
+<page>313-314</page>
+<text>
+Serial No. 211.
+(38) Hattori, Mr.
+Subject: Statistics on construction industry.
+Serial No. 212.
+(39) Dr. Sasabe.
+Subject: Structural steel.
+Serial No. 213.
+(40) Colonel Sato; Major Kato; Major Ito.
+Subject: Army production and purchases of
+machine tools and machinery.
+Serial No. 214.
+(41) Fujii, S; Nochizaki, S; Sakai, A; Kokubo, R;
+Shigetori, H; Mizukami, T; Oya, M; and others.
+Subject: Mitsubishi Heavy Industries Company,
+Ltd.
+Serial No. 215.
+(42) Matsushita, K; Scriba, K; and others.
+Subject: Matsushita Electric Industries Com-
+pany.
+Serial No. 216.
+(43) Messrs. Matsuhara and Izuka.
+Subject: Repair of bomb damage.
+Serial No. 264.
+(44) Matsuo, T. and Shibata, S.
+Subject: Japan lumber production and distribu-
+tion.
+Serial No. 265.
+(45) Messrs. Akiyama; Kishimoto; Yamaji, T.
+Subject: Interview with abrasive industry repre-
+sentatives.
+Serial No. 297.
+(46) Miyazaki, Mr.
+Subject: Electric industry, Mitsubishi Electric
+Company.
+Serial No. 298.
+303
+
+2. g. (47) Takao, H., and Yokota, C.
+Subject: Visit to Hitachi, Limited.
+Serial No. 315.
+(48) Messrs. Watarabe; Nagasawa; Isnimochi.
+Subject: Bomb damage repair to factories.
+Serial No. 328.
+(49) Matsuo, T., and Shibata, S.
+Subject: Control of lumber in Japan.
+Serial No. 333.
+(50) Messrs. Tsumori and Kubo.
+Subject: Visit to Tokyo-Shibaura Company.
+Serial No. 339.
+(51) Nakagawa, S.
+Subject: Furukawa Electric Company.
+Serial No. 340.
+(52) Wada, Mr.
+Subject: Fuji Electric Company.
+Serial No. 348.
+(53) Messrs. Shimizu and Kurihara.
+Subject: General discussion of contractors war-
+time problems, Shimizu-Gumi.
+Serial No. 361.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24037108</item_id>
+<page>300-301</page>
+<text>
+(31) No. 90.36, Sasebo, Japan
+No. 90.39, Tsushima, Japan
+}
+18 July 1944.
+(32) No. 91.1, Kurile Islands area, Japanese Pacific
+islands, 1 November 1942.
+290
+
+No. 91.4, Taiwan west area, Japan-
+ese Pacific islands.
+No. 91.5, Taiwan east area, Japan-
+ese Pacific islands.
+No. 91.6, Takao area, Japanese
+Pacific islands.
+Pacific islands, 15 February 1943.
+(35) No. 92.1, Malay States north
+No. 92.2, Singapore, Malay States
+15 April 1943.
+(36) No. 93.1, Manchuria north, Man-
+churia areas.
+No. 93.2, Manchuria east, Man-
+1-d. (33) No. 91.3, Taihoku area, Japanese
+Pacific islands.
+1 December
+1942.
+(34) No. 91.7, Pescadores Islands area, Japanese
+(13) Kinki No. 1, Hyogo, Nara, Kyoto, and Kobe
+City.
+(14) Kinki No. 2, Osaka and Osaka city.
+(15) Kinki No. 3, Shiga and Wakayama.
+(16) Kuriles.
+(17) Kyushu No. 1, master index book.
+(18) Kyushu No. 2, miscellaneous data.
+(19) Kyushu No. 3, miscellaneous data.
+(20) Kyushu No. 4, industries.
+(21) Kyushu No. 5, Fukuoka, Saga, and Nagasaki.
+(22) Kyushu No. 6, Oita, Miyazaki, Kagoshima, and
+Kumamoto.
+(23) Miyagi, Fukushima, and Iwate.
+(24) Nagoya, Kobe, and Osaka, master index book,
+Vol. 1.
+churia areas.
+No. 93.3, Mukden, Manchuria 31 July 1944.
+(25) Nagaya, Kobe, and Osaka, master index book,
+Vol. 2.
+areas.
+No.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24037108</item_id>
+<page>162-163</page>
+<text>
+*(b) Ethanol.
+(c) Acetone.
+(d) Butanol.
+*(e) Glycerine (part Japanese).
+*(f) Benzene and naphthalene (part Japanese).
+*(g) Methanol (part Japanese).
+(29) Ammonia and nitric acid:
+(a) Production records-chemical Bureau.
+(b) USSBS-production and consumption re-
+port.
+(c) Export and import balance.
+(d) Munitions ministry report.
+(e) Memorandum on concentration of nitric
+acid.
+(f) Interrogation sheet and answers.
+(g) Commerce and industry report.
+(h) Nitric acid production and distribution
+records.
+*(i) Chemical Bureau Report (part Japanese).
+(30) Steel allocations:
+(a) Report on amount of steel to civilians.
+(b) List of tank cars and survey of oil tankers.
+(c) National allocation categories.
+(d) Cabinet planning board plans.
+(e) Steel delivered for use in fuel industries.
+(f) Steel allocated to civilians.
+(g) Report on materials.
+(q) Vegetable and animal oils.
+(r) Fertilizers.
+(s) Phosphorous (red and yellow).
+(t) Sodium cyanide.
+(31) Coal Requirements:
+(u) Finished rubber products.
+(v) Chemical warfare materials.
+(w) Ammonia.
+(x) Nitric acid.
+(y) Sulfuric acid.
+(z) Hexanitrodiphenylamine.
+(aa) Caustic soda.
+(a) Statistical data pertaining to coal consump-
+tion.
+(32) Organic glass (plastics):
+(a) Production data.
+(b) Report on organic glass present condition.
+* In Japanese.
+152
+
+51. b. (32) (c) Outline of establishment and expansion
+work of the organic glass factories.
+*(d) Reports on the inquiries concerning organic
+glass (Japanese).
+(33) Vegetable and animal fats and oils:
+(a) Notes and work sheets.
+(b) Reply to USSBS questionnaire.
+*(c) Statistical data pertaining to imports and
+exports of oils and fats (part Japanese).
+(d) Production data.
+(34) Japanese Textile Association:
+(a) Production and consumption data.
+(b) Report on rayon pulp stocks.
+(c) List of rayon pulp mills.
+*(d) Actual distribution chart (part Japanese).
+(35) German information about Japan and German
+aid to Japan.
+(36) Japanese tanker data:
+(a) Report on transportation between Japan
+and southern region.
+(c) Navy photographs of Japanese shipping.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24037108</item_id>
+<page>90</page>
+<text>
+Warning system:
+*(1) Letters sent by Ministry of Home Affairs to
+various prefectures (with translations).
+*(2) Conditions under which alarms were to be
+sounded.
+(3) Instructions to air watchers.
+ss. Fire department operational practices in Japan.
+tt. First-aid training manual.
+uu. Long-term defense of Hyogo prefectures.
+vv. Air-defense plans for Hyogo, Kyoto and Nagasaki
+prefectures:
+*(1) Hyogo prefecture-plan for air defense-Notes
+pertaining to air defense.
+*(2) Kyoto prefecture-plan for air defense.
+*(3) Nagasaki prefecture-plan for air defense.
+ww. (1) Special atomic-bomb report on Japanese civil-
+ian-defense forces for inclusion in the over-all
+report (four copies).
+(2) Work sheets.
+11. Final report covering air-raid protection and allied
+subjects in Japan (final report and original draft).
+a. Government and administration:
+(1) ASF manual M354-2B, local government.
+(2) Home affairs ministry.
+(3) ASF manual M354-2, section 2, government
+and administration.
+(4) ASF manual M354-2-A, section 2A, govern-
+ment and administration.
+(5) Local government in Japan.
+(6) Renovation of local administration.
+(7) Changes in local administration.
+(8) Simplification of administration.
+(9) Establishment of Tokyo metropolitan adminis-
+tration.
+(10) Weak points of Japanese character and faults of
+the family system.
+(11) The Japanese police.
+(12) Mobilization of students in Japan.
+(13) ASF manual M354-21, Nagasaki-Ken.
+(14) Ministry of home affairs.
+(15) Tokyo municipal officials.
+(16) China's wartime economic structure.
+(17) ASF manual M354-19, Kagoshima-Ken.
+(18) ASF manual M354-20, Miyazaki-Ken.
+(19) ASF manual M354-22, Saga-Ken.
+(20) ASF manual M354-23, Fukuoka-Ken.
+(21) ASF manual M354-24, Kumamoto-Ken.
+(22) ASG manual M354-25, Oita-Ken.
+(23) The metropolitan police board.
+b. Commerce and industry:
+(1) Japanese industry.
+(2) Directory of ministry of commerce and industry.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24037108</item_id>
+<page>189</page>
+<text>
+(12) Dimensions of railway cars.
+(13) Interrogation pertaining to rail transport.
+h. Ground logistics-motor transportation:
+*(1) General report on motor transportation.
+(2) Preliminary report-motor vehicles.
+(3) Motor transportation questionnaire.
+*(4) Report on motor transportation for China thea-
+ter (part Japanese).
+* In Japanese.
+i. Logistics-intendance:
+*(1) Investigation of the imported provisions for
+Army (part Japanese).
+(2) Miscellaneous data and work sheets.
+(3) Data on supply of clothing and provisions.
+(4) Charts.
+j. Naval logistics:
+(1) Report pertaining to Naval logistics, Singapore.
+(2) General report.
+(3) List of strategic targets attacked by Naval units.
+(4) Navy air and bombardment targets.
+k. Japanese Army veterinary service and remount
+depots:
+(1) Evacuation of sick and wounded horses of the
+Japanese Expeditionary Forces.
+*(2) Supply of horses and other animals for Japanese
+Army use (part Japanese).
+(3) Supply of horses for Japanese Army, remount
+depots.
+(4) Veterinary supplies stored in Singapore.
+(5) The production of veterinary materials.
+(6) General report on veterinary department.
+1. Troop dispositions in China and Manchuria:
+(1) Troop disposition in China, August 1941.
+(2) Troop disposition in China, August 1945.
+(3) Troop disposition in Manchuria, August 1941.
+(4) Troop disposition in Manchuria, August 1945.
+m. Miscellaneous data, notes and work sheets pertain-
+ing to Manchuria.
+*n. Maps.
+o. Questionnaires.
+p. The effect of air action on Japanese Ground Army
+logistics (mimeographed copies of Chapters I, II,
+III, IV, V, VI & VII).
+65. Employment of Forces Under the Southwest Pacific
+Command (final report and original draft).
+66. The Strategic Air Operations of Very Heavy Bombard-
+ment in the War Against Japan (Twentieth Air
+Force) (final report and original draft).
+a. Operational charts, notes, and work sheets.
+b. Graphs:
+(1) Combat sorties of the Twentieth Air Force.
+(2) B-29 combat crew inventory.
+(3) Actual vs. planned bombing sorties.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24037108</item_id>
+<page>324-325</page>
+<text>
+Serial No. 355.
+(21) Colonel Ashihara.
+Subject: Organization and operation of Japanese
+Army Air Force.
+Serial No. 362.
+(22) Lieutenant Colonel Oya, K.
+Subject: Intelligence organization of Imperial
+Headquarters.
+Serial No. 364.
+(23) Commander Yamaguchi, M.
+Subject: Briefing and interrogation of Navy.
+Serial No. 365.
+(24) Commander Miyazaki, I.
+Subject: Intelligence sources used in operational
+Subject: Organization and operation of Tokumu
+planning.
+Serial No. 369.
+(25) Lieutenant Colonel Asai.
+Kikan in Manchuria.
+Serial No. 372.
+(26) Commander Takita, Η.
+Subject: Procedure and functions of aviation
+unit of section 5, Naval General Staff,
+third department.
+Serial No. 374.
+(27) Yoda, Takogo.
+Subject: Operation and organization of First
+Naval Air Technical Arsenal.
+Serial No. 384.
+(28) Major General Harada, H.
+Subject: Intelligence activities of Tokumu
+Kikan.
+Serial No. 397.
+(29) Lieutenant Colonel Yamasaki, T.
+Subject: Intelligence duties of Tolimu Kikan.
+Serial No. 398.
+(30) Colonel Sugita, K.
+Subject: Intelligence organization and proce-
+dure of Japanese Army.
+Serial No. 402.
+(31) Rear Admiral Takeuchi.
+Subject: Naval Intelligence at Imperial Head-
+Subject: Organization of Naval Attache staff in
+Subject: Squadron (Army) Intelligence proce-
+quarters level.
+Serial No. 410.
+(32) Suzuki, М.
+Berlin.
+Serial No. 411.
+(33) Major Saeki, A.
+dure.
+Serial No. 412.
+(34) Captain Sanematsu, Y.
+Subject: Naval Intelligence and war planning.
+Serial No. 350.
+Serial No. 421.
+Subject: Intelligence operations at Air General
+Headquarters.
+Serial No. 343.
+(19) Captain Ohmae, T.
+Subject: Intelligence activities of Department
+"D," 5th section, Naval General Staff.
+!
+314
+
+2. r. (35) Captain Shigehiro, A.
+Subject: Organization of Naval Attache staff in
+Argentina.
+Serial No. 422.
+(36) Captain Wachi, I.
+Subject: Organization of Naval Attache staff in
+Mexico.
+Serial No. 423.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15267835</edition_id>
+<title>Sketches of the history of man</title>
+<authors>Kames, Henry Home, Lord, 1696-1782</authors>
+<publisher>W. Creech</publisher>
+<date>1807-01-01</date>
+<subjects>Civilization -- History, Human beings</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>23962803</item_id>
+<page>18-19</page>
+<text>
+Few animals of
+different ſpecies copulate together. Some may be
+brought to copulate, but without effect; and ſome
+produce a mongrel, a mule for example, which ſel-
+dom
+* That every ſpecies of plants has a proper climate where
+it grows to perfection, is a fact uncontroverted. The fame
+holds in brute animals. Biledulgerid, the kindly climate for
+lions, would be mortal to the bear, the wolf, the deer, and
+other inhabitants of a cold region. Providence has not only
+fitted the productions of nature for different climates, but has
+guarded theſe productions against the extremities of the wea-
+ther in the fame climate. Many plants cloſe their leaves
+during night; and ſome cloſe them at mid-day against the
+burning rays of the fun. In cold climates, plants during win-
+ter are protected against cold by ſnow. In theſe climates, the
+hair of fome animals grows long in winter: ſeveral animals
+are covered with much fat, which protects them against cold;
+and many birds are fatter in winter than in ſummer, though
+probably their nourishment is leſs plentiful. Several animals
+fleep during winter in ſheltered places; and birds of paſſage
+are taught by nature to change the climate, when too hot or
+too cold.
+
+OF MEN, AND OF LANGUAGES.
+9
+dom procreates, if at all. In ſome few inſtances,
+where a mixture of ſpecies is harmleſs, procreation
+goes on without limitation. All the different ſpe-
+cies of the dog-kind copulate together; and the
+mongrels produced generate others without end.
+M. Buffon, in his Natural History, borrows from
+Ray * a very artificial rule for aſcertaining the
+different ſpecies of animals : "Any two animals
+" that can procreate together, and whoſe iſſue can
+"alfo procreate, are of the ſame ſpecies †."
+</text>
+</chunk>
+
+<chunk>
+<item_id>23962803</item_id>
+<page>468-469</page>
+<text>
+[B. I.
+of high importance; not ſingly with reſpect to
+private happiness, but with reſpect to the ſociety
+in general.
+APPENDIX.
+CONCERNING PROPAGATION OF ANIMALS, AND
+CARE OF PROGENY.
+T
+HE natural history of animals, with reſpect to
+pairing and care of progeny, is fufceptible of
+more elucidation, than could regularly be introdu-
+ced into the ſketch itſelf, where it makes but a
+fingle argument. Loth to quit a ſubject that emi-
+nently diſplays the wisdom and benevolence of
+Providence, I embrace the preſent opportunity,
+however flight, to add what further occurs upon
+it. M. Buffon, in many large volumes, beſtows
+ſcarce a thought on that favourite ſubject; and
+the neglect of our countrymen Ray and Derham
+is ſtill leſs excufable, confidering that to diſplay
+the conduct of Providence was their ſole purpoſe
+in writing natural hiſtory.
+The instinct of pairing is bestowed on every ſpe-
+cies of animals to which it is neceſſary for rearing
+their young; and on no other ſpecies. All wild
+birds pair: but with a remarkable difference be-
+tween
+
+SK. 6. APP.]
+481
+ANIMALS.
+tween ſuch as place their neſts on trees, and fuch
+as place them on the ground. The young of the
+former, being hatched blind and without feathers,
+require the nursing care of both parents till they
+be able to fly. The male feeds his mate on the
+neft, and cheers her with a fong. As foon as the
+young are hatched, finging yields to a more necef-
+fary occupation, that of providing food for a nu-
+merous iſſue, a taſk that requires both parents.
+Eagles and other birds of prey build on trees,
+or on other places difficult of acceſs.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23962803</item_id>
+<page>11-13</page>
+<text>
+Above thir-
+ty years ago, the author began to collect materials
+for that hiſtory; and, in the vigour of youth, did
+not think the undertaking too bold even for a fingle
+hand: but, in the progreſs of the work, he found
+his abilities no more than fufficient for profecuting
+a few imperfect Sketches. These are brought un-
+der the following heads. 1. Progreſs of Men in-
+dependent of Society. 2. Progreſs of Men in So-
+ciety.
+A
+
+2
+HISTORY OF MAN.
+ciety. 3. Progreſs of the Sciences. To explain
+theſe heads, a preliminary diſcourſe is neceſſary;
+which is, to examine, Whether all men be of one
+lineage, deſcended from a fingle pair, or whether
+there be different races originally liſtinct.
+PRE-
+1
+
+2
+PRELIMINARY DISCOURSE, concerning the Origin of
+MEN and of LANGUAGES.
+W
+HETHER there are different races of men,
+or whether all men are of one race with-
+out any difference but what proceeds from climate
+or other external cauſe, is a queſtion which philo-
+ſophers differ widely about. As the queſtion is of
+moment in tracing the history of man, I purpoſe to
+contribute my mite. And, in order to admit all
+the light poſſible, a view of brute animals as di-
+vided into different races or kinds, will make a
+proper introduction.
+As many animals contribute to our well-being,
+and as many are noxious, man would be a being
+not a little imperfect, were he provided with no
+means but experience for distinguishing the one
+fort from the other.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23962803</item_id>
+<page>472-473</page>
+<text>
+The beavers, with reſpect to pairing, reſemble
+birds that place their neſts on the ground. As
+foon as the young are produced, the males aban-
+don their ſtock of food to their mates, and live at
+large; but return frequently to visit them, while
+they are ſuckling their young.
+Hedge-hogs pair, and ſeveral of the monkey
+kind. We are not well acquainted with the na-
+tural history of theſe animals; but it may be pre-
+fumed that the young require the nursing care of
+both parents.
+Seals have a fingular economy. Polygamy ſeems
+to be a law of nature among them, as a male affo-
+ciates with ſeveral females. The fea-turtle has no
+occafion to pair, as the female concludes her taſk
+with laying her eggs in the ſand. The young are
+hatched by the fun; and immediately crawl to the
+fea.
+In every other branch of animal economy con-
+cerning the continuance of the ſpecies, the hand of
+Providence is equally confpicuous. The young of
+pairing
+
+SK. 6. APP.]
+485
+ANIMALS.
+pairing birds are produced in the ſpring, when the
+weather begins to be comfortable; and their early
+production makes them firm and vigorous before
+winter, to endure the hardſhips of that rigorous
+ſeaſon. Such early production is in particular fa-
+vourable to eagles, and other birds of prey; for in
+the ſpring they have plenty of food, by the return
+of birds of paſſage.
+Though the time of geſtation varies confiderably
+in the different quadrupeds that feed on graſs, yet
+the female is regularly delivered early in fummer,
+when graſs is in plenty. The mare admits the ſtal-
+lion in ſummer, carries eleven months, and is deli-
+vered the beginning of May. The cow differs
+little. A sheep and a goat take the male in No-
+vember, carry five months, and produce when
+grafs begins to ſpring.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23962803</item_id>
+<page>69-72</page>
+<text>
+From that
+ſtate of degeneracy, they have been emerging gra-
+dually. Some nations, ſtimulated by their own na-
+ture, or by their climate, have made a rapid pro-
+greſs; ſome have proceeded more ſlowly; and
+ſome continue ſavages. To trace out that progreſs
+towards maturity in different nations, is the ſub-
+ject of the preſent undertaking.
+VOL. I.
+E
+SKETCHES
+
+7
+1
+
+SKETCHES
+OF THE
+HISTORY OF MΑΝ.
+BOOK I.
+PROGRESS OF MEN INDEPENDENT OF
+SOCIETY.
+I
+SKETCH I.
+PROGRESS RESPECTING FOOD AND POPULATION.
+N temperate climes, men fed originally on fruits
+that grow without culture, and on the flesh of
+land-animals. As ſuch animals become ſhy when
+often hunted, there is a contrivance of nature, no
+leſs ſimple than effectual, which engages men to
+bear with chearfulneſs the fatigues of hunting, and
+the uncertainty of capture; and that is, an appe-
+tite for hunting. Hunger alone is not fufficient:
+ſavages who act by ſenſe, not by forefight, move
+E2
+not
+
+68
+[Β. Ι.
+MEN INDEPENDENT OF SOCIETY.
+not when the ſtomach is full; and it would be too
+late when the ſtomach is empty, to form a hunt-
+ing-party. As that appetite is common to all fa-
+vages whoſe food depends on hunting; it is an il-
+Juſtrious inſtance of providential care, the adapting
+the internal conftitution of man to his external
+circumſtances.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23962803</item_id>
+<page>13-14</page>
+<text>
+As many animals contribute to our well-being,
+and as many are noxious, man would be a being
+not a little imperfect, were he provided with no
+means but experience for distinguishing the one
+fort from the other. Did every animal make a
+ſpecies by itſelf (indulging the expreſſion) dif-
+fering from all others, a man would finiſh his
+courſe without acquiring as much knowledge of
+animals as is neceſſary even for ſelf-preſervation:
+be would be abſolutely at a loſs with reſpect to
+unknown individuals. The Deity has left none
+of his works imperfect. Animals are formed of
+different kinds; resemblance prevailing among
+animals of the fame kind, diſſimilitude among ani-
+mals of different kinds. And, to prevent confu-
+fion,
+A 2
+
+4
+PRELIMINARY DISCOURSE.
+fion, kinds are diftinguiſhed externally by figure,
+air, manner, ſo clearly as not to eſcape even a
+child *. Nor does Divine Wisdom ſtop here: to
+complete the ſyſtem, we are endued with an in-
+-nate conviction, that each kind has properties pe-
+culiar to itſelf; and that theſe properties belong
+to every individual of the kind †. Our road to
+the knowledge of animals is thus wonderfully
+ſhortened: the experience we have of the diſpoſi-
+tion and properties of any animal, is applied without
+hefitation to every one of the kind. By that con-
+viction, a child, familiar with one dog, is fond of
+others that reſemble it: An European, upon the
+firſt fight of a cow in Africa, ſtrokes it as gentle
+and innocent: and an African avoids a tiger in
+Hindoſtan as at home.
+If the foregoing theory be well founded, neither
+experience nor argument is required to prove, that
+a horfe is not an aſs, or that a monkey is not
+a mant.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23962803</item_id>
+<page>22-23</page>
+<text>
+Не
+diſtinguiſheth, in the ſame manner, the true Afia-
+tic tiger from ſeveral American animals, that bear
+the fame name. He mentions its fize, its force, its
+ferocity, the colour of its hair, the ſtripes black
+and white that like rings ſurround alternately its
+trunk, and are continued to the tip of its tail:
+" Characters," ſays he, " that clearly distinguiſh
+"the true tiger from all animals of prey in the new
+"world; the largest of which ſcarce equals one
+" of our maſtives." And he reasons in the fame
+manner upon the other animals of the torrid zone *.
+Here truth obliges our author to acknowledge, that
+we are taught by nature to distinguiſh animals in-
+to different kinds by viſible marks, without regard
+to his artificial rule. And if ſo, there must be dif-
+ferent kinds of men; for certain tribes differ viſi-
+bly from each other, no less than the lama and pacos
+from the camel or from the ſheep, nor leſs than
+the true tiger from the American animals of that
+namet. For proving that dogs were created of
+different
+* See vol. 8. ſect. Of animals common to the two conti-
+nents.
++ No perſon thinks that all trees can be traced back to one
+kind. Yet the figure leaves, fruit, &c. of different kinds, are
+...not
+
+OF MEN, AND OF LANGUAGES.
+13
+different kinds, what better evidence can be ex-
+pected than that the kinds continue diſtinct to this
+day? Our author pretends to derive the mastiff,
+the bull-dog, the hound, the greyhound, the ter-
+rier, the water-dog, &c. all of them from the, prick-
+eared ſhepherd's cur.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23962803</item_id>
+<page>411-412</page>
+<text>
+He added, that the females in Lap-
+land, both married and unmarried, are extremely
+chafte. The inhabitants of Otaheité, if Bougain-
+ville can be trusted, ſeem to have as little notion
+of modesty as of chastity. But many of that au-
+thor's facts ſtand contradicted by later voyagers.
+The women of New Zealand are both chafte and
+modeft. Captain Cook, in his voyage round the
+world, ſtumbled upon ſome of them naked, diving
+for lobſters; and they were in great confufion for
+being ſeen in that condition by ſtrangers.
+1:
+:
+But
+* Doth not modeſty prevail among many animals? Ele.
+phants are never feen in copulation, nor cats, nor beasts of
+prey.
+
+424
+[B. I.
+MEN INDEPENDENT OF SOCIETY.
+But now, if pairing in the ſtricteſt ſenſe be a
+law of nature among men, as among ſome other
+animals, how is polygamy to be accounted for,
+which formerly was univerſal, and to this day ob-
+tains among many nations? Polygamy, I anſwer,
+is derived from two ſources; firſt, from ſavage
+manners, once univerſal; and next, from volup-
+tuouſneſs in warm climates, which inſtigates men
+of wealth to tranſgreſs every rule of temperance.
+Theſe two ſources I propoſe to handle with care,
+becauſe they make a large branch in the hiſtory of
+the female ſex.
+With reſpect to the firſt, ſweetneſs of temper,
+a capital article in the female character, diſplays
+itſelf externally by mild looks and gentle manners,
+But ſuch graces are ſcarce difcernible in a female
+favage; and even in the moſt poliſhed women,
+would not be perceived by a male ſavage.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15276679</edition_id>
+<title>[Dances, solo and group, arranged by Louis H. Chalif]</title>
+<authors>Chalif, Louis H. 1876-1948</authors>
+<publisher>L. H. Chalif</publisher>
+<date>1914-01-01</date>
+<subjects>Dance -- Study and teaching</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>24004851</item_id>
+<page>283</page>
+<text>
+studio@
+edt vd vino 9162 707
+CHVTIE LEXL BOOK OE DI
+ms listab 129junim 9d ni esdireb
+sta silt Todtus sdt to
+Ognisasb gainsal ni beau Zerio
+arsa dose „elov S
+1903 190D 9908@ 2710M
+500 I someti oloqz614-870
+DIG ERETIEN LOIR DI 306)
+OBI POMIIG DBG6" T
+noitizoq lstromsbaut 94T :I dood oosts 299
+resib 28,29lq ‚esg6q ¿W ;eszin
+gainismer 201d sb tro II dood
+gogsboq moorlind bisbaste be
+291siq
+dignions ni 29eiotex 701 sierM
+Isɔizaslo tolisoxs to 250mlov S
+bavod-199sq
+I to exe Ils tot eloe 0,69 cint
+2512
+Lob
+3
+306-
+503
+coned galvised and
+food 77 odT
+Wig AGRP Dunge
+erositions2 halfgilI
+ORG 12 th daint
+RMEDEN
+DODGE T: 306"
+I M. BOUR: 300
+HUR
+DUUNG
+I: 9067
+TODE
+void to tenid
+пsvbs not enoitola 08 189 1oins (0) 2 ouT risinek
+.as.se
+nioasa to thА edt to soms 'nos
+.2SIATKU00
+WOI SHT
+2 2510
+Silimanişte
+.dotm
+doti
+seisbn9320
+Sason2 geboo
+limbal edT
+BORENIV
+akoPA, 1-5 boks/ D
+HYPOLER
+S
+Brokom
+stian vints of
+log & Ana
+ADITUMA
+somna ng'o7oller
+I aolos & soirom A
+8-S ba bal 1067 191
+&'a solzeM emels I
+1.A-8 ge T810 .9loor) a!
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15290769</edition_id>
+<title>A history of the Church,</title>
+<authors>Pise, Charles Constantine, 1801-1866</authors>
+<publisher>P. Blenkinsop</publisher>
+<date>1827-01-01</date>
+<subjects>Church history</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>24045388</item_id>
+<page>312-314</page>
+<text>
+de anim 18. et lib. 3. c.
+9. Id. de temp. barb. c. 10. c.
+
+HISTORY OF THE CHURCH.
+281
+usually worn by the priests of Saturn: to the
+women, a white fillet sacred to Ceres, to be tied
+round their heads: they scornfully rejected
+these trappings of idolatry; and the tribune
+permitted them to pass on in their common
+dress. Different kinds of wild animals were let
+loose upon the men. Perpetua and Felicitas
+were at first stripped of all their clothes, but
+the people cried out to have them covered.
+They were then shut up in a net and thrown to
+be lacerated by a wild cow. From this animal,
+they received no mortal injury; but they sunk
+under the repeated wounds inflicted by the in-
+experienced gladiators. The pains which she
+suffered on this occasion caused some agitation
+in the delicate Perpetua, but she soon resumed
+her wonted tranquillity, and showing the exe-
+cutioner where to strike, she received the final
+blow and crowned her heroic sufferings by a
+glorious death.
+In Gaul the persecution raged with peculiar
+fury. Severus, perceiving that the number of
+Christians had increased, in such a manner, at
+Lyons, as to threaten the destruction of idolatry
+in that city, ordered some of his troops to sur-
+VOL. I.-24*
+
+282
+HISTORY OF THE CHURCH.
+round the town, while the rest broke into the
+houses, and massacred, indiscriminately, all that
+professed the Christian faith. The streets were
+deluged with blood: for according to an inscrip-
+tion on an ancient monument still extant, nine-
+teen hundred, exclusive of women and children,
+perished on this occasion. The venerable bish-
+op, Irenæus, (1) was brought before the tyrant,
+who condemned him to death, and boasted that
+he had, at once, despatched the shepherd and
+the flock.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24045388</item_id>
+<page>311-313</page>
+<text>
+I felt the more compassion for him, as he was
+the only one of our family that continued so
+strangely blind to the truth. Without suffering
+my resolution to be shaken by his tears, I gave
+him the most expressive marks of affection, and
+ended by telling him that our lives were not at
+our disposal; and that God, to whom every
+thing was subject, would accomplish his holy
+will. Her father then retired inconsolable.
+"The judge, continues Perpetua, advised me to
+reverence the grey hairs of my father, and to
+pity the tender age, and the innocence of my
+
+280
+HISTORY OF THE CHURCH.
+son. Be not insensible he said, to the cries of
+your unhappy infant, and to the tears of your
+afflicted father. What will it cost you to throw
+a few grains of incense on the fire, in honor of
+the gods and for the safety of our emperor.
+"Never, I replied; no human inducement shall
+ever separate me from the Lord, and the socie-
+ty of the saints. "You are a Christian then, he
+rejoined. "Yes, I again replied, I am. My
+companions made the same confession: and we
+were all condemned to be devoured by wild
+beasts: St. Perpetua then relates two visions,
+which animated her to consummate her sacrifice
+with courage. (1) The martyr Satur, likewise
+mentions in his own acts, the history of a vision
+with which he himself was favored.
+The day of combat at length arrived: and
+the martyrs, with the exception of Secundulus,
+who had died in prison, went joyfully from their
+dungeon to the amphitheatre. When they
+reached the gate, the sentinels offered them su-
+perstitious dresses: to the men a red mantle
+(1) Tertull de anima S. S. S. Aug. de anim 18. et lib. 3. c.
+9. Id. de temp. barb. c. 10. c.
+
+HISTORY OF THE CHURCH.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15260459</edition_id>
+<title>The history of Dodge County, Wisconsin</title>
+<authors>(Authors Unavailable)</authors>
+<publisher>Western Historical Co.,</publisher>
+<date>1880-01-01</date>
+<subjects>Wisconsin, Biographies, Dodge County (Wis.) -- History, Dodge County (Wis.), History, Dodge County (Wis.) -- Genealogy, Biography, Wisconsin--Dodge County</subjects>
+<language>English</language>
+<chunks>
+
+<chunk>
+<item_id>23910328</item_id>
+<page>273-274</page>
+<text>
+or shall injure or destroy any personal property of another, shall be pun-
+ished by imprisonment in the county jail not more than six months, or by fine not exceeding
+one hundred dollars.
+Any person who shall willfully, maliciously or wantonly kill, maim, mutilate, disfigure or
+injure any horse, mule, cattle, sheep or other domestic animal of another, or administer poison
+to such animal, or expose any poison, with intent that the same may be taken or swallowed by
+such animal; and any person who shall overdrive, overwork, overload, maim, wound, torture,
+torment, cruelly beat or kill any such animal belonging to himself or another, or being the owner
+or having the care or charge thereof, shall fail to provide necessary food, water or shelter for any
+such animal, or who shall turn out and abandon, without proper care and protection, or cruelly
+work any such animal when old, diseased, disabled or unfit for work, or shall carry or confine
+any live animal, fowl or bird, in a cruel or inhuman manner, or who shall cause, procure or abet
+any cruelty above mentioned, or the fighting or baiting of bulls, dogs or cocks, shall be punished
+by imprisonment in the county jail not more than six months or by fine not exceeding one hun-
+dred dollars.
+ESTRAYS.
+No stray, except horses and mules, shall be taken up by any person not a resident of the
+town in which it is found; nor unless it is found upon land owned or occupied by him. Every
+finder for a stray must notify the owner, if he is known, within seven days, and request him to
+pay all reasonable charges and take the stray away. If the owner is not known, he must file a
+notice with the Town Clerk within ten days, who shall transmit a copy thereof to the County
+Clerk.
+If the stray is not worth five dollars, the finder shall post a copy of such notice in two pub-
+lic places in such town; if it exceed five dollars in value, he shall publish such notice four suc-
+
+280
+HISTORY OF WISCONSIN.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23910328</item_id>
+<page>362-363</page>
+<text>
+They will report only the articles entitled to premiums. Articles for which no premiums are
+offered will be entered in the class to which they naturally belong and passed upon by the committee, with such
+recommendations as may be deemed proper. No article or animal deemed unworthy shall be awarded a premium ;
+but no premium shall be withheld merely because there is no cempetition. Proper care will be taken of all articles
+or animals; but the Society will not be liable for any loss or damage. Bedding and hay for stock will be ample and
+free. No orders for premiums will be issued by the Secretary until after the expenses are paid. Due notice will
+be given by the Secretary of the time when the premiums will be paid, and all orders for premiums not called for
+within sixty days after such notice will be considered donated to the Society. No article or animal shall compete for
+more than one premium; but horses entered for premiums in the general exhibition may also compete in all the
+trials of speed. No article or animal entered for exhibition must be removed from the grounds before 4 o'clock
+P. M. of Thursday. The General Superintendent will have charge of the grounds under the officers of the Society.
+
+HISTORY OF DODGE COUNTY.
+369
+He will be assisted by the Superintendents in the several classes. The Marshal will maintain order on the fair
+grounds, and is empowered to make arrests if necessary. The General Superintendent and Marshal may appoint
+such assistants as may be deemed necessary, subject to the approval of the President and Secretary. The regular
+entry fee is $1.00, the payment of which entitles the person paying it to exhibit as many articles or animals as
+he may desire, and to a ticket, which will admit him to the grounds during the fair. No entry fee, however, will
+be charged for articles entered under Division G.
+Life Membership Tickets, admitting the lawful holder, his wife and minor children, to all the fairs of the Soci-
+ety, and a ballot in the election of officers, $10.00. Annual Membership Tickets, admitting the lawful holder, his
+wife, and children under ten years old, to the annual fair, and to a ballot in the election of officers, $1.00 Single
+Admission Tickets, 25 cents. Season Tickets for one person, good during the fair, 50 cents.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23910328</item_id>
+<page>131-132</page>
+<text>
+Total number of fish hatched, 8,000,000 - whitefish, 6,300,000; salmon trout, 1,700,000.
+They were distributed as follows, in the month of May, 1877:
+Michigan, at Racine, 1,000,000; at Milwaukee, 3,260,000; between
+1,000,000; in Green bay, 1,000,000 ; in Elkhart lake, 40,00০.
+Salmon trout were turned out as follows: Lake Michigan, near Milwaukee, 600,000;
+Brown's lake, Racine county, 40,000; Delavan lake, Walworth county, 40,000; Troy lake, Wal-
+worth county, 40,000; Pleasant lake, Walworth county, 40,000; Lansdale lake, Walworth
+county, 40,000; Ella lake, Milwaukee county, 16,000; Cedar lake, Washington county, 40,000;
+Elkhart lake, Sheboygan county, 40,000; Clear lake, Rock county, 40,000; Ripley lake,
+
+138
+HISTORY OF WISCONSIN.
+Jefferson county, 40,000; Mendota lake, Dane county, 100,000; Fox lake, Dodge county,
+40,000; Swan and Silver lakes, Columbia county, 40,000; Little Green lake, Green Lake
+county, 40,000; Big Green lake, Green Lake county, 100,000; Bass lake, St. Croix county,
+40,000; Twin lakes, St. Croix county, 40,000; Long lake, Chippewa county, 40,000; Oconomo-
+woc lake, Waukesha county, 100,000; Pine lake, Waukesha county, 40,000; Pewaukee lake,
+Waukesha county, 100,000; North lake, Waukesha county, 40,000; Nagawicka lake, Waukesha
+county, 40,000; Okanche lake, Waukesha county, 40,000.
+LARGE ANIMALS. -TIME OF THEIR DISAPPEARANCE.
+Fifty years ago, the territory now included in the state of Wisconsin, was nearly in a state
+of nature, all the large wild animals were then abundant.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23910328</item_id>
+<page>309-310</page>
+<text>
+A noticeable feature is the extent to which land originally
+occupied with scrubby oaks, known as 'oak openings,' is being covered with a dense and
+thrifty spontaneous growth of hardwood timber of different kinds. The forests left in Dodge
+County are confined to small lots on the farms for home use. Wood on the stump is worth $2
+to $3.50 per cord. Great quantities of forest products have been converted into coal for smelting
+iron in the county. Much of the land from which this timber was early cut off is now covered
+with a thick growth of young hardwoods, yielding twenty cords per acre."
+
+316
+HISTORY OF DODGE COUNTY.
+EARTH MOUNDS.
+There seems to exist a diversity of opinion upon this subject. The theories of scientists,
+while generally pointing to the belief that the earth mounds found in Dodge County, which are
+not dissimilar to those in existence throughout the Rock River Valley, are the peculiar work of
+an extinct or pre-historic race, are frequently contradictory. The explanation of the history
+of these mounds, as accepted by those prominently connected with the State Historical Society,
+is that, "so far as the valley of this stream (Rock River) is concerned, throughout its whole
+extent, in Wisconsin, are to be found interesting relics of pre-historic man. There is nothing
+to distinguish these works," they say, "from others more within the proper region, as it were,
+of the Mound-Builders. In one of the mounds, bones are said to have been obtained.
+*
+*
+.*
+*
+Some of the mounds examined were of animal shape. There is a group of earthworks
+about two and a half miles east of Beloit representing animals of different kinds."
+The same species of mounds is found in Dodge County. Near the village of Horicon,
+until within a few years back, there was to be seen a large earth protuberance, taking the form
+of an elephant lying upon its side. Others in the same locality were found representing horses
+and cattle.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23910328</item_id>
+<page>112-113</page>
+<text>
+Toward the close of the period, reefs appeared, that closely resemble the coral reefs of the
+present seas, and doubtless have a similar history. Corals form a very prominent element in the
+life of this period, and with them were associated great numbers of mollusks, one of which
+(Pentamerus oblongus) sometimes occurs in beds not unlike certain bivalves of to-day, and may
+be said to have been the oyster of the Silurian seas. At certain points, those wonderful animals,
+the stone lilies (Crinoids), grew in remarkable abundance, mounted on stems like a plant, yet
+true animals. Those unique crustaceans, the trilobites, were conspicuous in numbers and variety,
+while the gigantic cephalopods held sway over the life of the seas. In the vicinity of the reefs,
+
+TOPOGRAPHY AND GEOLOGY.
+119
+there seem to have been extensive calcareous sand flats and areas over which fine calcareous mud
+settled, the former resulting in a pure granular dolomite, the latter in a compact close-textured
+stone. The rock of the reefs is of very irregular structure. Of other portions of the formation,
+some are coarse heavy beds, some fine, even-bedded, close-grained layers, and some, again, irregu-
+lar, impure and cherty. All are highly magnesian, and some are among the purest dolomites
+known. The Niagara limestone occupies a broad belt lying adjacent to Lake Michigan.
+LOWER HELDERBERG LIMESTONE.
+On Mud creek, near Milwaukee, there is found a thin-bedded slaty limestone, that is
+believed to represent this period. It has neglected, however, to leave us an unequivocal record
+of its history, as fossils are extremely rare, and its stratigraphical relations and lithographical
+character are capable of more than one interpretation. Near the village of Waubeka in
+Ozaukee county, there is a similar formation, somewhat more fossiliferous, that seems to repre-
+sent the same period. The area which these occupy is very small and they play a most insignifi-
+cant part in the geology of the state. They close the record of the Silurian age in Wisconsin.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15278233</edition_id>
+<title>History of Greece</title>
+<authors>Grote, George, 1794-1871</authors>
+<publisher>Harper</publisher>
+<date>1856-01-01</date>
+<subjects>Greece -- History</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>24011286</item_id>
+<page>187-188</page>
+<text>
+36.
+3 Isokr. Or. xiv, (Plat.) s. 12, 13, 14, 16, 28, 33, 48.
+
+164
+HISTORY OF GREECE.
+confederacy; and they even seem to have contended, that they
+had rendered a positive service to the general Athenian confed-
+eracy of which they were members, by expelling the inhabitants
+of Platæa and dismantling Thespiæ; both towns being not merely
+devoted to Sparta, but also adjoining Kitheron, the frontier line
+whereby a Spartan army would invade Bœotia. Both in the pub-
+lic assembly of Athens, and in the general congress of the con-
+federates at that city, animated discussions were raised upon the
+whole subject; 2 discussions, wherein, as it appears, Epaminon-
+das, as the orator and representative of Thebes, was found a com-
+petent advocate against Kallistratus, the most distinguished speaker
+in Athens; sustaining the Theban cause with an ability which
+greatly enhanced his growing reputation.3
+But though the Thebans and their Athenian supporters, having
+all the prudential arguments on their side, carried the point so
+that no step was taken to restore the Platæans, nor any hostile
+declaration made against those to whom they owed their expulsion,
+- yet the general result of the debates, animated by keen sym-
+pathy with the Platæan sufferers, tended decidedly to poison the
+good feeling, and loosen the ties, between Athens and Thebes.
+This change showed itself by an increased gravitation towards
+peace with Sparta; strongly advocated by the orator Kallistratus,
+- and now promoted not merely by the announced Persian inter-
+¹ Isokrat. Or. xiv, (Plat.) s.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24011286</item_id>
+<page>193-194</page>
+<text>
+X.
+8
+
+170
+HISTORY OF GREECE.
+account of antipathy to clear off with Thebes; their own wrong-
+doing in seizing the Kadmeia, - their subsequent humiliation in
+losing it and being unable to recover it, - their recent short-com-
+ings and failures, in the last seven years of war against Athens
+and Thebes jointly. To aggravate this deep-seated train of hostile
+associations, their pride was now wounded in an unforeseen point,
+the tenderest of all. Agesilaus, full to overflowing of the national
+sentiment, which in the mind of a Spartan passed for the first of
+virtues, was stung to the quick. Had he been an Athenian orator
+like Kallistratus, his wrath would have found vent in an animated
+harangue. But a king of Sparta was anxious only to close these
+offensive discussions with scornful abruptness, thus leaving to the
+presumptuous Theban no middle ground between humble retrac-
+tion and acknowledged hostility. Indignantly starting from his
+seat, he said to Epaminondas, — "Speak plainly, - will you, or
+will you not, leave to each of the Bœotian cities its separate auto-
+nomy?" To which the other replied - "Will you leave each of
+the Laconian towns autonomous?"
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15303537</edition_id>
+<title>Dictionary catalog of the Rare Book Division</title>
+<authors>New York Public Library. Rare Book Division</authors>
+<publisher>G. K. Hall</publisher>
+<date>1971-01-01</date>
+<subjects>Bibliographies, Catalog, Livres rares Catalogues, Catalogs, catalogs (documents), New York (State) New York, New York Public Library. Rare Book Division Catalogs, Rare books -- Catalogs, Rare books New York (State) New York Bibliography Catalogs, Catalogues, Livres rares New York (État) New York Bibliographie Catalogues, Bibliography, New York Public Library. Rare Book Division, Rare books, Broadsides -- Bibliography</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>24128500</item_id>
+<page>624</page>
+<text>
+-Hist. I. Otto von St. Blasien,
+December 12, 1933
+History, General - Medieval works,
+Robert, de Saint-Marien d'Auxerre,, 1156-1212.
+KB
+1608
+Chronologia seriem temporvm, et historiam rervm in orbe
+gestarum continens ab eius origine, vse ad annum à Christi ortu
+millesimum ducentesimum. Auctore anonymo, sed cœnobij S.
+Mariani apud Altissiodorum, Regulæ Præmonstratensis monacho.
+Adiecta est ad calcem Appendix ad annum vs millesimum CC.
+XXIII. Nunc primum in lucem edita opera & studio Nicolai
+Camvzzi... Trecis: Apud Natalem Moreav, 1608. 2 p.l.,
+113 f., 3 1. incl. tables.
+4°.
+Printer's device on t.-p. and on recto of last leaf; woodcut initials.
+ms. notes on fly-leaf.
+540904A. 1. History, General,
+editor. II. Title.
+N. Y. P. L.
+HISTORY, GENERAL--
+MEDIEVAL WORKS
+Sifrid von Ballhausen, d. 1308.
+RESERVE
+1. Camusat, Nicolas, 1575-1655,
+August 14, 1931
+Write on slip only words
+underlined and classmark:
+• KB
+1569
+Siffridi Misnensis Presbyteri Epitomes Libri II. (In: Fabri-
+cius, Georg. Rerum Misnicarum Libri VII. Lipsiae 1569?
+p. 273-340.)
+52R0594. 1. History, General
+NN
+REGERVE
+Medieval works.
+HISTORY, GENERAL--15TH-CENTURY WORKS
+KB
+1491
+Basel, Nicolaus Kesler, 10 Feb.
+Antoninus, Saint, abp. of Florence, 1389-1459.
+1491,
+Chronicon. Partes I-III,
+3 pts. in 1 v. 33cm. (f.)
+Pt.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15269297</edition_id>
+<title>History of ancient civilization</title>
+<authors>Seignobos, Charles. ()</authors>
+<publisher>C. Scribner's Sons, Cole,</publisher>
+<date>1906-01-01</date>
+<subjects>Civilization, Classical, History, Histoire ancienne, History, Ancient, Civilization, Ancient, Civilization, Civilisation Histoire, Civilisation, Electronic books, Civilization History, Civilisation ancienne, Civilization -- History, Ancient</subjects>
+<language>English</language>
+<chunks>
+
+<chunk>
+<item_id>23967206</item_id>
+<page>15-16</page>
+<text>
+Egypt-The country- The Nile-Fertility of
+the soil-The accounts of Herodotus-Champollion-Egyp-
+tologists-Discoveries.
+THE EGYPTIAN EMPIRE. Antiquity of the Egyptian people-
+Memphis and the pyramids-Egyptian civilization-Thebes
+-The Pharaoh-The subjects-Despotism-Isolation of
+the Egyptians.
+RELIGION OF THE EGYPTIANS. The gods-Osiris-Ammon-ra-
+Gods with animal heads-Sacred animals-The bull Apis
+-Worship of the dead-Judgment of the soul-Mummies
+-Book of the Dead-The arts-Industry-Architecture-
+Tombs-Temples-Sculpture-Painting-Literature- Des-
+tinies of the Egyptian civilization.
+ix
+
+X
+CONTENTS
+CHAPTER IV
+THE ASSYRIANS AND BABYLONIANS. Chaldea-The land-The
+people-The cities.
+THE ASSYRIANS-Assyria-Origins-Ancient accounts-Modern
+discoveries-Inscriptions on bricks-Cuneiform writing-
+The Assyrian people-The king-Fall of the Assyrian Em-
+pire.
+THE BABYLONIANS.. The second Chaldean empire-Babylon-
+The Tower of Babylon.
+CUSTOMS AND RELIGION. Customs-Religion-The gods-As-
+trology-Sorcery-The sciences.
+THE ARTS. Architecture-Palaces-Sculpture.
+CHAPTER V
+THE ARYANS OF INDIA. The Aryans-Aryan languages-The
+Aryan people.
+PRIMITIVE RELIGION OF THE HINDOOS. The Aryans on the
+Indus-The Vedas-The gods-Indra-Agni-The cult-
+Worship of ancestors.
+BRAHMANIC SOCIETY. The Hindoos on the Ganges-Castes-
+The Impure-The Brahmans-The new religion of Brahma
+-Transmigration of souls-Character of this religion-The
+rites-Purity-Penances-The monks.
+BUDDHISM.
+Buddha-Nirvana-Charity-Fraternity-Toler-
+ance-Later history of Buddhism-Changes in Buddhism
+-Buddha transformed into a god-Mechanical prayer-
+Amelioration of manners.
+CHAPTER VI
+THE PERSIANS.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23967206</item_id>
+<page>49-50</page>
+<text>
+Ammon-râ.-Ammon-râ, god of Thebes, is repre-
+sented as traversing heaven each day in a bark ("the
+good bark of millions of years"); the shades of the
+dead propel it with long oars; the god stands at the
+prow to strike the enemy with his lance. The hymn
+which they chanted in his honor is as follows: “Hom-
+age to thee; thou watchest favoringly, thou watchest
+truly, O master of the two horizons.
+...
+Thou
+treadest the heavens on high, thine enemies are laid
+low. The heaven is glad, the earth is joyful, the gods
+
+28
+ANCIENT CIVILIZATION
+unite in festal cheer to render glory to Râ when they
+see him rising in his bark after he has overwhelmed his
+enemies. O Râ, give abounding life to Pharaoh, be-
+stow bread for his hunger (belly), water for his throat,
+perfumes for his hair."
+Animal-Headed Gods. -The Egyptians often repre-
+sented their gods with human form, but more fre-
+quently under the form of a beast. Each god has his
+animal: Phtah incarnates himself in the beetle, Horus
+in the hawk, Osiris in the bull. The two figures often
+unite in a man with the head of an animal or an animal
+with the head of a man. Every god may be figured in
+four forms: Horus, for example, as a man, a hawk, as
+man with the head of a hawk, as a hawk with the head
+of a man.
+Sacred Animals. - What did the Egyptians wish to
+designate by this symbol? One hardly knows. They,
+themselves, came to regard as sacred the animals which
+served to represent the gods to them: the bull, the
+beetle, the ibis, the hawk, the cat, the crocodile. They
+cared for them and protected them. A century before
+the Christian era a Roman citizen killed a cat at
+Alexandria; the people rose in riot, seized him, and,
+notwithstanding the entreaties of the king, murdered
+him, although at the same time they had great fear
+of the Romans.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23967206</item_id>
+<page>50-51</page>
+<text>
+There was in each temple a sacred
+animal which was adored. The traveller Strabo re-
+cords a visit to a sacred crocodile of Thebes: "The
+beast," said he, "lay on the edge of a pond, the priests
+drew near, two of them opened his mouth, a third
+thrust in cakes, grilled fish, and a drink made with
+meal."
+
+ANCIENT HISTORY OF THE EAST
+29
+The Bull Apis. Of these animal gods the most ven-
+erated was the bull Apis. It represented at once
+Osiris and Phtah and lived at Memphis in a chapel
+served by the priests. After its death it became an
+Osiris (Osar-hapi), it was embalmed, and its mummy
+deposited in a vault. The sepulchres of the "Osar-
+hapi" constituted a gigantic monument, the Serapeum,
+discovered in 1851 by Mariette.
+Cult of the Dead. -The Egyptians adored also the
+spirits of the dead. They seem to have believed at
+first that every man had a "double" (Kâ), and that
+when the man was dead his double still survived.
+Many savage peoples believe this to this day. The
+Egyptian tomb in the time of the Old Empire was
+termed "House of the Double." It was a low room
+arranged like a chamber, where for the service of the
+double there were placed all that he required, chairs,
+tables, beds, chests, linen, closets, garments, toilet uten-
+sils, weapons, sometimes a war-chariot; for the enter-
+tainment of the double, statues, paintings, books; for
+his sustenance, grain and foods. And then they set
+there a double of the dead in the form of a statue in
+wood or stone carved in his likeness. At last the open-
+ing to the vault was sealed; the double was enclosed,
+but the living still provided for him.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23967206</item_id>
+<page>78-79</page>
+<text>
+The man who breaks clods of earth,
+who cuts grass with his nails or who bites his nails is,
+like the outcast, speedily hurried to his doom." An
+animal must not be killed, for a human soul may per-
+haps be dwelling in the body; one must not eat it on
+penalty of being devoured in another life by the animals
+which one has eaten.
+All these rites have a magical virtue; he who ob-
+serves them all is a saint; he who neglects any of them
+
+THE ARYANS OF INDIA
+57
+is impious and destined to pass into the body of an
+animal.
+Purity. The principal duty is keeping one's self
+pure; for every stain is a sin and opens one to the at-
+tack of evil spirits. But the Brahmans are very scrupu-
+lous concerning purity: men outside of the castes,
+many animals, the soil, even the utensils which one
+uses are so many impure things; whoever touches these
+is polluted and must at once purify himself. Life is
+consumed in purifications.
+Penances. For every defect in the rites, a penance
+is necessary, often a terrible one. He who involun-
+tarily kills a cow must clothe himself in its skin, and
+for three months, day and night, follow and tend a
+herd of cows. Whoever has drunk of arrack¹ must
+swallow a boiling liquid which burns the internal
+organs until death results.
+The Monks. To escape so many dangers and main-
+tain purity, it is better to leave the world. Often a
+Brahman when he has attained to a considerable age
+withdraws to the desert, fasts, watches, refrains from
+speech, exposes himself naked to the rain, holds him-
+self erect between four fires under the burning sun.
+After some years, the solitary becomes "penitent"; then
+his only subsistence is from almsgiving; for whole days
+he lifts an arm in the air uttering not a word, holding
+his breath; or perchance, he gashes himself with razor-
+blades; or he may even keep his thumbs closed until the
+nails pierce the hands. By these mortifications he
+destroys passion, releases himself from this life, and by
+contemplation rises to Brahma.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+</search_results>

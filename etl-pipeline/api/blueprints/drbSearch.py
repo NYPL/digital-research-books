@@ -15,7 +15,7 @@ def query():
 
     try:
         es_client = ElasticClient(current_app.config["REDIS_CLIENT"])
-        db_client = DBClient(current_app.config["DB_CLIENT"])
+        db_client = DBClient(current_app.config["SQL_ENGINE"])
         db_client.createSession()
 
         search_params = APIUtils.normalizeQueryParams(request.args)

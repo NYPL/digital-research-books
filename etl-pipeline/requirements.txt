@@ -18,7 +18,7 @@ google-auth==2.36.0
 google-genai==1.45.0
 llama-index-core==0.14.6
 lxml==4.9.2
-newrelic==10.9.0
+newrelic==12.1.0
 numpy==1.24.2
 ocrmypdf==14.1.0
 openai-agents==0.9.1
