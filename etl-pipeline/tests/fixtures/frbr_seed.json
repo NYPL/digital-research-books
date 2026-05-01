@@ -73,6 +73,726 @@
       "languages": [],
       "date_created": "2026-01-23 14:55:40.239778",
       "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 4295530,
+      "uuid": "e849981b-129b-4020-954c-c907153a0e3d",
+      "title": "History of the first half century of the Sand Lake Baptist Church",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Fox, Albert R.",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "Baptist Church (Sand Lake, N.Y.) -- History",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [],
+      "date_created": "2026-01-23 22:53:27.869880",
+      "date_modified": "2026-01-23 22:53:27.870237"
+    },
+    {
+      "id": 4289867,
+      "uuid": "8e0034c0-16b2-4a4e-83d4-357bee8822e7",
+      "title": "Speech of the Hon. Alexander Smyth, in the House of Representatives, on the Seminole war",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Smyth, Alexander, 1765-1830",
+          "viaf": "237824605",
+          "lcnaf": "n86026490",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "Congressional addresses",
+          "authority": "rbgenr",
+          "controlNo": ""
+        },
+        {
+          "heading": "Seminole War, 1st, 1817-1818",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [
+        {
+          "iso_2": "en",
+          "iso_3": "eng",
+          "language": "English"
+        }
+      ],
+      "date_created": "2026-01-14 14:38:46.913879",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 4289131,
+      "uuid": "be39d778-0dca-4061-9afc-1549281159e2",
+      "title": "There was a time",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Larned, Anne Murray",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [],
+      "measurements": [],
+      "dates": null,
+      "languages": [
+        {
+          "iso_2": "en",
+          "iso_3": "eng",
+          "language": "English"
+        }
+      ],
+      "date_created": "2025-12-23 14:54:39.206486",
+      "date_modified": "2026-01-22 21:19:47.568864"
+    },
+    {
+      "id": 4426954,
+      "uuid": "733147f7-1987-46ad-8faf-4087013994e4",
+      "title": "Annual report",
+      "sub_title": null,
+      "alt_titles": [
+        "Annual report of the Department of Health, Buffalo, N.Y. for the year ending...",
+        "Annual report of the Department of Health and Vital Statistics of the City of Buffalo, N.Y.",
+        "[Report]"
+      ],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": " City Planning Committee.",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        },
+        {
+          "name": "Buffalo (N.Y.). Playground Commission.",
+          "viaf": "134855146",
+          "lcnaf": "n79075597",
+          "primary": "true"
+        },
+        {
+          "name": "Buffalo (N.Y.). Water Bureau.",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        },
+        {
+          "name": "Buffalo (N.Y.). Charity Eye, Ear and Throat Hospital of Erie County.",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "Vital statistics",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01423730"
+        },
+        {
+          "heading": "Boards of trade",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst00835114"
+        },
+        {
+          "heading": "Parks",
+          "authority": "1053705",
+          "controlNo": "fast"
+        },
+        {
+          "heading": "Buffalo Area Chamber of Commerce",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst00542759"
+        },
+        {
+          "heading": "City planning",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst00862177"
+        },
+        {
+          "heading": "Annual reports",
+          "authority": "aat",
+          "controlNo": "(OCoLC)fst01411641"
+        },
+        {
+          "heading": "Ethnic relations",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst00916005"
+        },
+        {
+          "heading": "Discrimination in employment",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst00895050"
+        },
+        {
+          "heading": "Public works -- New York (State)",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Pe\u0301riodiques",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "New York (State)--Buffalo",
+          "authority": "1205730",
+          "controlNo": "fast"
+        },
+        {
+          "heading": "Juvenile delinquency",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst00985320"
+        },
+        {
+          "heading": "Race relations",
+          "authority": "1086509",
+          "controlNo": "fast"
+        },
+        {
+          "heading": "Recreation",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01091739"
+        },
+        {
+          "heading": "Volunteer workers in social service",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01169103"
+        },
+        {
+          "heading": "Periodicals",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01411641"
+        },
+        {
+          "heading": "Loisirs",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "History",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01411628"
+        },
+        {
+          "heading": "Discrimination dans l'emploi",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01086509"
+        },
+        {
+          "heading": "Playgrounds",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01066996"
+        },
+        {
+          "heading": "Buffalo (N.Y.)",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01205730"
+        },
+        {
+          "heading": "Sante\u0301 publique",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Aide sociale",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Public welfare",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01083250"
+        },
+        {
+          "heading": "Public works",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01083369"
+        },
+        {
+          "heading": "Periodical",
+          "authority": "aat",
+          "controlNo": "(OCoLC)fst01411641"
+        },
+        {
+          "heading": "Public health",
+          "authority": "1082238",
+          "controlNo": "fast"
+        },
+        {
+          "heading": "Community development",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst00870818"
+        },
+        {
+          "heading": "New York (State)",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01205730"
+        },
+        {
+          "heading": "Be\u0301ne\u0301voles en service social",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "New York",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Statistics",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01423727"
+        },
+        {
+          "heading": "Water-supply -- New York (State)",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Chambres de commerce",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "De\u0301linquance juve\u0301nile",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [
+        {
+          "iso_2": "en",
+          "iso_3": "eng",
+          "language": "English"
+        }
+      ],
+      "date_created": "2021-03-22 10:00:40.921132",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 4294989,
+      "uuid": "f2652740-a374-4a96-9690-75e88e72af61",
+      "title": "A sermon occasioned by the burning of the Episcopal Church in the parish of Grand Manan, N.B",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Dunn, John, -1849",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "Church of England in Canada -- Sermons",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Anglican church buildings -- New Brunswick",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [],
+      "date_created": "2026-01-23 22:53:29.855118",
+      "date_modified": "2026-01-23 22:53:29.855603"
+    },
+    {
+      "id": 4293823,
+      "uuid": "59c5dfd9-ff60-4725-b691-6703fbcc9544",
+      "title": "The Rubaiyat of Omar Cayenne",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Burgess, Gelett, 1866-1951",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "Omar Khayyam -- Parodies, imitations, etc",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [],
+      "date_created": "2026-01-23 14:55:40.523917",
+      "date_modified": "2026-01-23 14:55:40.524274"
+    },
+    {
+      "id": 4294236,
+      "uuid": "7733d5d2-66f3-42eb-9813-31bcec0393f9",
+      "title": "Romanism and rationalism as opposed to pure Christianity",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Cairns, John, 1818-1892",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "Catholic Church -- Controversial literature",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Apologetics",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Society of Sons of United Presbyterian Ministers",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Rationalism -- Controversial literature",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [],
+      "date_created": "2026-01-23 22:53:29.718403",
+      "date_modified": "2026-01-23 22:53:29.718737"
+    },
+    {
+      "id": 4297233,
+      "uuid": "e415bab1-8a17-4039-8712-f23cf658a78c",
+      "title": "La flotte de combat",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Tournier, E.",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "France -- History, Naval",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Naval art and science -- History -- 19th century -- France",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "France -- History -- 19th century",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [
+        {
+          "iso_2": "fr",
+          "iso_3": "fra",
+          "language": "French"
+        }
+      ],
+      "date_created": "2026-01-24 16:44:53.909371",
+      "date_modified": "2026-01-24 16:44:53.909747"
+    },
+    {
+      "id": 4297529,
+      "uuid": "0e7489b3-85d7-421d-8902-ad20a482fffd",
+      "title": "Last notes on the Aberdeen printers",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Edmond, John Philip",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "Printing -- Scotland",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Printers -- Scotland",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Bibliography, Scottish -- Scotland",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [],
+      "date_created": "2026-01-24 16:44:52.776029",
+      "date_modified": "2026-01-24 16:44:52.776383"
+    },
+    {
+      "id": 4288293,
+      "uuid": "0ba22938-d26b-4e31-9942-3bdc87f63403",
+      "title": "French artists of the present day : notices of some contemporary painters",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Me\u0301nard, Rene\u0301",
+          "viaf": "",
+          "lcnaf": "",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "Artists -- France",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Artists, French",
+          "authority": "",
+          "controlNo": "Library of Congress Subject Headings"
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [
+        {
+          "iso_2": "en",
+          "iso_3": "eng",
+          "language": "English"
+        }
+      ],
+      "date_created": "2025-12-13 04:34:45.103414",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 4288743,
+      "uuid": "23c67c38-2d21-4790-bd3c-4a80b34faa3f",
+      "title": "Two forms of prayer of the time of Queen Elizabeth",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "Church of England. ",
+          "viaf": "135203514",
+          "lcnaf": "n79056234",
+          "primary": "true"
+        }
+      ],
+      "contributors": [
+        {
+          "name": "Chaplin, Ayrton",
+          "viaf": "",
+          "lcnaf": "",
+          "roles": [
+            ""
+          ]
+        },
+        {
+          "name": "Aylmer, John, 1521-1594",
+          "viaf": "",
+          "lcnaf": "",
+          "roles": [
+            ""
+          ]
+        },
+        {
+          "name": "Norden, John, active 1600",
+          "viaf": "",
+          "lcnaf": "",
+          "roles": [
+            ""
+          ]
+        }
+      ],
+      "subjects": [
+        {
+          "heading": "Elizabeth",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst00039609"
+        },
+        {
+          "heading": "Essex, Robert Devereux, Earl of, 1565-1601",
+          "authority": "14941",
+          "controlNo": "fast"
+        },
+        {
+          "heading": "Essex, Robert Devereux",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst00014941"
+        },
+        {
+          "heading": "Essex, Robert Devereux, 1566-1601",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Elizabeth I, Queen of England, 1533-1603",
+          "authority": "39609",
+          "controlNo": "fast"
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [
+        {
+          "iso_2": "en",
+          "iso_3": "eng",
+          "language": "English"
+        }
+      ],
+      "date_created": "2026-01-09 18:29:08.552159",
+      "date_modified": "2026-01-22 21:19:47.520917"
+    },
+    {
+      "id": 4289194,
+      "uuid": "9e6a33c8-eee0-498c-821c-f19e4ac70660",
+      "title": "The Missouri merchant one hundred years ago",
+      "sub_title": null,
+      "alt_titles": [],
+      "medium": null,
+      "series": null,
+      "series_position": null,
+      "authors": [
+        {
+          "name": "White, John Barber, (1847-1923.)",
+          "viaf": "46403846",
+          "lcnaf": "no99084543",
+          "primary": "true"
+        }
+      ],
+      "contributors": [],
+      "subjects": [
+        {
+          "heading": "Merchants",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst00869279"
+        },
+        {
+          "heading": "History",
+          "authority": "fast",
+          "controlNo": "(OCoLC)fst01411628"
+        },
+        {
+          "heading": "Missouri",
+          "authority": "1204724",
+          "controlNo": "fast"
+        },
+        {
+          "heading": "Missouri -- Commerce",
+          "authority": "",
+          "controlNo": ""
+        },
+        {
+          "heading": "Commerce",
+          "authority": "869279",
+          "controlNo": "fast"
+        },
+        {
+          "heading": "Merchants -- History -- Missouri",
+          "authority": "",
+          "controlNo": ""
+        }
+      ],
+      "measurements": [],
+      "dates": null,
+      "languages": [
+        {
+          "iso_2": "en",
+          "iso_3": "eng",
+          "language": "English"
+        }
+      ],
+      "date_created": "2026-01-11 17:37:44.498674",
+      "date_modified": "2026-01-22 21:19:47.484068"
     }
   ],
   "editions": [
@@ -155,6 +875,539 @@
       "work_id": 4343801,
       "date_created": "2026-02-04 22:16:17.914474",
       "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 15297541,
+      "title": "History of the first half century of the Sand Lake Baptist Church",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1883-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "9 p. ;23 cm",
+      "summary": "{}",
+      "publishers": [
+        {
+          "name": "E.E. Fagan",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1883",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [],
+      "dcdw_uuids": [
+        "753ad8a3-c355-4040-8219-43220d4a934a"
+      ],
+      "work_id": 4295530,
+      "date_created": "2026-01-23 22:53:27.869880",
+      "date_modified": "2026-01-23 22:53:27.870237"
+    },
+    {
+      "id": 15257988,
+      "title": "Speech of the Hon. Alexander Smyth, in the House of Representatives, on the Seminole War",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1819-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "36 p.20 cm",
+      "summary": "{\"Caption title\",\"Shaw-Shoemaker 49442; Sabin 85194\"}",
+      "publishers": [
+        {
+          "name": "None",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1819",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [],
+      "dcdw_uuids": [
+        "f3d055d9-db96-43dc-937d-598e71803195"
+      ],
+      "work_id": 4289867,
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 15251460,
+      "title": "There was a time",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1916-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "30 p",
+      "summary": "{\"Poems reprinted in part from various periodicals\"}",
+      "publishers": [
+        {
+          "name": "R. G. Badger",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1916",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [
+        {
+          "iso_2": "en",
+          "iso_3": "eng",
+          "language": "English"
+        }
+      ],
+      "dcdw_uuids": [
+        "0daaa27e-3dc9-42ec-9060-3603f736ca2e"
+      ],
+      "work_id": 4289131,
+      "date_created": "2026-01-22 21:19:47.568525",
+      "date_modified": "2026-01-22 21:19:47.568864"
+    },
+    {
+      "id": 16202764,
+      "title": "Annual report",
+      "sub_title": null,
+      "alt_titles": [
+        "Annual report of the Department of Health and Vital Statistics of the City of Buffalo, N.Y.",
+        "[Report]"
+      ],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": null,
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "summary": "{}",
+      "publishers": [
+        {
+          "name": "The Commission",
+          "viaf": "",
+          "lcnaf": ""
+        },
+        {
+          "name": "[The Authority.]",
+          "viaf": "",
+          "lcnaf": ""
+        },
+        {
+          "name": "[publisher not identified]",
+          "viaf": "",
+          "lcnaf": ""
+        },
+        {
+          "name": "Chamber of Commerce.",
+          "viaf": "",
+          "lcnaf": ""
+        },
+        {
+          "name": "Warren.",
+          "viaf": "",
+          "lcnaf": ""
+        },
+        {
+          "name": "City Planning Committee",
+          "viaf": "",
+          "lcnaf": ""
+        },
+        {
+          "name": "None",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "18",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [
+        {
+          "iso_2": "en",
+          "iso_3": "eng",
+          "language": "English"
+        }
+      ],
+      "dcdw_uuids": [
+        "d149eb26-35ce-40f6-9e8d-d503743d1740",
+        "d94d9b1a-461d-474b-821e-d9e9cd41c9f0",
+        "e43b8ba8-e1c3-49d2-aefa-7ae08ce7e242",
+        "b7f30399-5124-4710-b198-4dcb2fd51b22",
+        "3d3ee36f-ddf2-4a49-873a-fc5ea3c60925",
+        "a3cf07c7-d2f7-4b3b-b9ef-4c27572f629c",
+        "c2f90d68-03c0-4f8d-bbe9-0e4c9a2c3e02",
+        "e6129cfc-675d-424c-b234-f7e5bed3f930",
+        "7c9c5cfb-f286-4128-a96b-26d675a8d823",
+        "85e56112-f673-43f0-9b36-7215c2ae5aca",
+        "64396e8b-95b0-4649-ae09-c90658b349ca",
+        "c2534296-8501-4518-b136-87ecf6c47d8d",
+        "a1b1a9a2-f221-4097-b2f9-09d76e982c5b",
+        "2c845603-7df9-43ab-8f57-432851c3e290",
+        "6708c218-63a9-43ee-aaa1-377ad4e4bfb7",
+        "7212f106-cc0f-4538-b432-5a6021c272d9",
+        "e09fe6d6-60cb-4892-a316-490426cd8354",
+        "e7428a56-5d3a-41d0-9aa3-0bf8a20675da",
+        "ce2e6ab4-ea82-4b18-a8e4-08c1fb16c04c",
+        "97ff1d97-8e81-461a-953e-173ef0cc4cdf",
+        "79b6bc1a-3721-4a93-b439-b7ca1202ad84",
+        "584b7b3a-839f-41ab-a6f9-8f878c6f1481",
+        "96145daf-b7ae-4dcd-afda-c92f2439ba58",
+        "dfd2279e-1be7-47a8-bcea-cd1f48a6a664"
+      ],
+      "work_id": 4426954,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 15293189,
+      "title": "A sermon occasioned by the burning of the Episcopal Church in the parish of Grand Manan, N.B",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1841-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "15 p. ;23 cm",
+      "summary": "{\"Title from cover\"}",
+      "publishers": [
+        {
+          "name": "[s.n.]",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1841",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [],
+      "dcdw_uuids": [
+        "bdd88d3a-a90b-4c3b-92df-9256b2e90c2e"
+      ],
+      "work_id": 4294989,
+      "date_created": "2026-01-23 22:53:29.855118",
+      "date_modified": "2026-01-23 22:53:29.855603"
+    },
+    {
+      "id": 15284700,
+      "title": "The Rubaiyat of Omar Cayenne",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1904-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "31 p.19 cm",
+      "summary": "{}",
+      "publishers": [
+        {
+          "name": "Frederick A. Stokes",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1904",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [],
+      "dcdw_uuids": [
+        "99682ce9-5ebf-46c6-81e1-4d4372cc6add"
+      ],
+      "work_id": 4293823,
+      "date_created": "2026-01-23 14:55:40.523917",
+      "date_modified": "2026-01-23 14:55:40.524274"
+    },
+    {
+      "id": 15287756,
+      "title": "Romanism and rationalism as opposed to pure Christianity",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1863-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "60 p. ;18 cm",
+      "summary": "{\"Appendix (p. [53]-60) includes statements of officers, objectives, etc. of the Edinburgh and Glasgow Societies of Sons of United Presbyterian Ministers\"}",
+      "publishers": [
+        {
+          "name": "Alexander Strahan",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [
+        {
+          "name": "T. Constable)",
+          "viaf": "",
+          "lcnaf": "",
+          "roles": [
+            "manufacturer"
+          ]
+        }
+      ],
+      "dates": [
+        {
+          "date": "1863",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [],
+      "dcdw_uuids": [
+        "1519e221-8606-4880-834d-b0fda3835e73"
+      ],
+      "work_id": 4294236,
+      "date_created": "2026-01-23 22:53:29.718403",
+      "date_modified": "2026-01-23 22:53:29.718737"
+    },
+    {
+      "id": 15314880,
+      "title": "La flotte de combat",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1899-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "57 p. ;19 cm",
+      "summary": "{\"Includes bibliographical references\"}",
+      "publishers": [
+        {
+          "name": "Berger-Levrault",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1899",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [
+        {
+          "iso_2": "fr",
+          "iso_3": "fra",
+          "language": "French"
+        }
+      ],
+      "dcdw_uuids": [
+        "eb7e312b-5650-4e45-8320-b692f5116da1"
+      ],
+      "work_id": 4297233,
+      "date_created": "2026-01-24 16:44:53.909371",
+      "date_modified": "2026-01-24 16:44:53.909747"
+    },
+    {
+      "id": 15317340,
+      "title": "Last notes on the Aberdeen printers",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1888-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "36 p",
+      "summary": "{}",
+      "publishers": [
+        {
+          "name": "Privately printed",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1888",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [],
+      "dcdw_uuids": [
+        "f0ca3be7-77bf-474f-a280-0321d1394a9e"
+      ],
+      "work_id": 4297529,
+      "date_created": "2026-01-24 16:44:52.776029",
+      "date_modified": "2026-01-24 16:44:52.776383"
+    },
+    {
+      "id": 15245586,
+      "title": "French artists of the present day : notices of some contemporary painters",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1876-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": null,
+      "summary": null,
+      "publishers": [
+        {
+          "name": "Seeley",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1876",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [
+        {
+          "iso_2": "en",
+          "iso_3": "eng",
+          "language": "English"
+        }
+      ],
+      "dcdw_uuids": [
+        "41cacf8e-9e91-4013-a610-fc5f62490fca",
+        "ab5e2014-1ee0-4727-8bad-25ac2fe1a80c",
+        "94691afc-33dd-4589-8153-c4c069d24de8",
+        "d7294465-654c-43b6-a787-38e49993d8fe"
+      ],
+      "work_id": 4288293,
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 15248798,
+      "title": "Two forms of prayer of the time of Queen Elizabeth",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1876-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "16 p.22 cm",
+      "summary": "{\"With reproduction of original title-pages: (1) A prayer for the prosperovs proceedings and good successe of the Earle of Essex and his companies, in their present expedition in Irelande against Tyrone and his adherents ... By Iohn Norden ... 1599; (2) A necessarie and godly prayer appoynted by the right reuerend Father in God John, bishop of London to be vsed throughout all his dioces vpon Sondayes and Frydayes, for the turning away of Gods wrath. As well conserning this vntemperate wether and raine, lately fallen vppon the earth ... 1585\"}",
+      "publishers": [
+        {
+          "name": "At the University Press; [etc., etc.]",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1876",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [],
+      "dcdw_uuids": [
+        "ed6eb975-2b66-4735-8ee0-94a0054cac95"
+      ],
+      "work_id": 4288743,
+      "date_created": "2026-01-22 21:19:47.520582",
+      "date_modified": "2026-01-22 21:19:47.520917"
+    },
+    {
+      "id": 15251797,
+      "title": "The Missouri merchant one hundred years ago",
+      "sub_title": null,
+      "alt_titles": [],
+      "edition": null,
+      "edition_statement": null,
+      "publication_place": null,
+      "publication_date": "1919-01-01",
+      "volume": null,
+      "table_of_contents": null,
+      "extent": "23 pages ;",
+      "summary": null,
+      "publishers": [
+        {
+          "name": "State Historical Society of Missouri,",
+          "viaf": "",
+          "lcnaf": ""
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1919",
+          "type": "publication_date"
+        }
+      ],
+      "measurements": [],
+      "languages": [
+        {
+          "iso_2": "en",
+          "iso_3": "eng",
+          "language": "English"
+        }
+      ],
+      "dcdw_uuids": [
+        "5fd82846-3ad6-4bef-9c76-0caff14838ff",
+        "0cc801a6-cd14-4d9b-afa1-633ce37efba6",
+        "a7b387bb-12cc-43c7-a33d-b225cf477fe5",
+        "421b4892-f5ab-48a0-a034-1abc14c82715"
+      ],
+      "work_id": 4289194,
+      "date_created": "2026-01-22 21:19:47.483735",
+      "date_modified": "2026-01-22 21:19:47.484068"
     }
   ],
   "records": [
@@ -1032,6 +2285,1787 @@
       "coverage": null,
       "date_created": "2025-07-17 20:23:39.974176",
       "date_modified": "2026-02-04 22:16:17.914837"
+    },
+    {
+      "id": 55164087,
+      "uuid": "0cc801a6-cd14-4d9b-afa1-633ce37efba6",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "oclcCatalog",
+      "publisher_project_source": null,
+      "source_id": "682195207|oclc",
+      "title": "The Missouri merchant one hundred years ago / ",
+      "alternative": [],
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Merchants|fast|(OCoLC)fst00869279",
+        "Commerce.|fast|(OCoLC)fst01017057",
+        "Merchants.||",
+        "Missouri|fast|(OCoLC)fst01204724",
+        "Missouri.||",
+        "History.|fast|(OCoLC)fst01411628",
+        "||(OCoLC)fst01411628"
+      ],
+      "authors": [
+        "White, John Barber, (1847-1923.)||true"
+      ],
+      "contributors": [],
+      "languages": [
+        "||eng"
+      ],
+      "dates": [
+        "1919.|publication_date"
+      ],
+      "rights": null,
+      "identifiers": [
+        "682195207|oclc",
+        "oclc/1733837|hathitrust",
+        "2709856|owi"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "State Historical Society of Missouri,||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "1 online resource (23 pages)",
+      "abstract": null,
+      "has_part": [
+        "1|http://catalog.hathitrust.org/api/volumes/oclc/1733837.html|oclc|text/html|{\"download\": false, \"reader\": false, \"catalog\": false, \"embed\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2022-01-11 08:17:14.774038",
+      "date_modified": "2026-01-22 21:19:47.484075"
+    },
+    {
+      "id": 62354123,
+      "uuid": "41cacf8e-9e91-4013-a610-fc5f62490fca",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433116213889|grin",
+      "title": "French artists of the present day : notices of some contemporary painters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Artists -- France||"
+      ],
+      "authors": [
+        "Me\u0301nard, Rene\u0301|||true"
+      ],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "1876|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "13401018|grin",
+        "(WaOLN)nyp0526911|oclc",
+        "GZD|grin",
+        "307004329|owi"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "Seeley||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "40 p., 12 plates",
+      "abstract": "{}",
+      "has_part": [
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433116213889/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 04:00:30.624256",
+      "date_modified": "2026-01-22 21:19:47.327634"
+    },
+    {
+      "id": 62397330,
+      "uuid": "ed6eb975-2b66-4735-8ee0-94a0054cac95",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433081653994|grin",
+      "title": "Two forms of prayer of the time of Queen Elizabeth",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Essex, Robert Devereux, 1566-1601||"
+      ],
+      "authors": [],
+      "contributors": [
+        "Chaplin, Ayrton|||",
+        "Norden, John, active 1600|||",
+        "Aylmer, John, 1521-1594|||"
+      ],
+      "languages": [],
+      "dates": [
+        "1876|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "38177647|grin",
+        "23000668|lccn",
+        "(WaOLN)nyp3443656|oclc",
+        "DLC|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "At the University Press; [etc., etc.]||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "16 p.22 cm",
+      "abstract": "{\"With reproduction of original title-pages: (1) A prayer for the prosperovs proceedings and good successe of the Earle of Essex and his companies, in their present expedition in Irelande against Tyrone and his adherents ... By Iohn Norden ... 1599; (2) A necessarie and godly prayer appoynted by the right reuerend Father in God John, bishop of London to be vsed throughout all his dioces vpon Sondayes and Frydayes, for the turning away of Gods wrath. As well conserning this vntemperate wether and raine, lately fallen vppon the earth ... 1585\"}",
+      "has_part": [
+        "1|http://babel.hathitrust.org/cgi/pt?id=nyp.33433081653994|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433081653994/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 04:00:30.810423",
+      "date_modified": "2026-01-22 21:19:47.520924"
+    },
+    {
+      "id": 62455449,
+      "uuid": "0daaa27e-3dc9-42ec-9060-3603f736ca2e",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433066637046|grin",
+      "title": "There was a time",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [],
+      "authors": [
+        "Larned, Anne Murray|||true"
+      ],
+      "contributors": [],
+      "languages": [
+        "||eng"
+      ],
+      "dates": [
+        "1916|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "17807065|grin",
+        "BUF|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "R. G. Badger||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "30 p",
+      "abstract": "{\"Poems reprinted in part from various periodicals\"}",
+      "has_part": [
+        "1|http://babel.hathitrust.org/cgi/pt?id=nyp.33433066637046|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433066637046/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 04:00:30.705632",
+      "date_modified": "2026-01-22 21:19:47.568871"
+    },
+    {
+      "id": 62475858,
+      "uuid": "421b4892-f5ab-48a0-a034-1abc14c82715",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433023187929|grin",
+      "title": "The Missouri merchant one hundred years ago /",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Merchants -- History -- Missouri||",
+        "Missouri -- Commerce||"
+      ],
+      "authors": [
+        "White, John Barber, 1847-1923|||true"
+      ],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "1919|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "1733837|grin",
+        "75314858|lccn",
+        "(WaOLN)nyp0479387|oclc",
+        "DLC|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "State Historical Society of Missouri||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "23 p. :24 cm",
+      "abstract": "{\"\\\"Address delivered ... in celebration of the 100th anniversary of the filing with Congress of the first petition of Missourians requesting statehood.\\\"\",\"Includes bibliographical references\"}",
+      "has_part": [
+        "1|http://babel.hathitrust.org/cgi/pt?id=nyp.33433023187929|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433023187929/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 04:00:30.705632",
+      "date_modified": "2026-01-22 21:19:47.484075"
+    },
+    {
+      "id": 62583428,
+      "uuid": "f3d055d9-db96-43dc-937d-598e71803195",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433097627768|grin",
+      "title": "Speech of the Hon. Alexander Smyth, in the House of Representatives, on the Seminole War",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Seminole War, 1st, 1817-1818||"
+      ],
+      "authors": [
+        "Smyth, Alexander, 1765-1830|||true"
+      ],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "1819?]|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "7599814|grin",
+        "02016800 //r|lccn",
+        "(WaOLN)nyp2615264|oclc",
+        "DLC|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "36 p.20 cm",
+      "abstract": "{\"Caption title\",\"Shaw-Shoemaker 49442; Sabin 85194\"}",
+      "has_part": [
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433097627768/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-01-22 21:19:47.327634"
+    },
+    {
+      "id": 62601657,
+      "uuid": "e6129cfc-675d-424c-b234-f7e5bed3f930",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806294|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806294/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601660,
+      "uuid": "7c9c5cfb-f286-4128-a96b-26d675a8d823",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806260|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806260/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601661,
+      "uuid": "85e56112-f673-43f0-9b36-7215c2ae5aca",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806252|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806252/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601664,
+      "uuid": "64396e8b-95b0-4649-ae09-c90658b349ca",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806229|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806229/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601665,
+      "uuid": "c2534296-8501-4518-b136-87ecf6c47d8d",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806211|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806211/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601668,
+      "uuid": "a1b1a9a2-f221-4097-b2f9-09d76e982c5b",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806187|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806187/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601670,
+      "uuid": "2c845603-7df9-43ab-8f57-432851c3e290",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806146|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806146/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601672,
+      "uuid": "6708c218-63a9-43ee-aaa1-377ad4e4bfb7",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806104|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806104/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601673,
+      "uuid": "7212f106-cc0f-4538-b432-5a6021c272d9",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806096|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806096/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601675,
+      "uuid": "e09fe6d6-60cb-4892-a316-490426cd8354",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806062|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806062/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601676,
+      "uuid": "e7428a56-5d3a-41d0-9aa3-0bf8a20675da",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806054|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806054/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601677,
+      "uuid": "ce2e6ab4-ea82-4b18-a8e4-08c1fb16c04c",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806021|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806021/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601678,
+      "uuid": "97ff1d97-8e81-461a-953e-173ef0cc4cdf",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090806013|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090806013/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601681,
+      "uuid": "79b6bc1a-3721-4a93-b439-b7ca1202ad84",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090805981|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090805981/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601684,
+      "uuid": "584b7b3a-839f-41ab-a6f9-8f878c6f1481",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090805940|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090805940/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601685,
+      "uuid": "96145daf-b7ae-4dcd-afda-c92f2439ba58",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090805932|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090805932/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62601691,
+      "uuid": "dfd2279e-1be7-47a8-bcea-cd1f48a6a664",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433090805866|grin",
+      "title": "Annual report",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Public works -- New York (State)||"
+      ],
+      "authors": [],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "18|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33914351|grin",
+        "17588973|oclc",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "None||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "no.8vo",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433090805932|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806013|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806054|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806260|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806096|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806187|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806146|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806104|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806021|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805981|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805940|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090805866|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806211|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806294|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806229|grin|text/html|{\"embed\": true}",
+        "1|http://hdl.handle.net/2027/nyp.33433090806252|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433090805866/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-03-07 06:16:20.928947"
+    },
+    {
+      "id": 62764151,
+      "uuid": "99682ce9-5ebf-46c6-81e1-4d4372cc6add",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433074805064|grin",
+      "title": "The Rubaiyat of Omar Cayenne",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Omar Khayyam -- Parodies, imitations, etc||"
+      ],
+      "authors": [
+        "Burgess, Gelett, 1866-1951|||true"
+      ],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "[1904]|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "2307999|grin",
+        "04037037 //r|lccn",
+        "(WaOLN)nyp3097776|oclc",
+        "DLC|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "Frederick A. Stokes||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "31 p.19 cm",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433074805064|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433074805064/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-01-23 14:55:40.524282"
+    },
+    {
+      "id": 62783929,
+      "uuid": "1519e221-8606-4880-834d-b0fda3835e73",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433070297159|grin",
+      "title": "Romanism and rationalism as opposed to pure Christianity /",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Catholic Church -- Controversial literature||",
+        "Society of Sons of United Presbyterian Ministers||",
+        "Rationalism -- Controversial literature||",
+        "Apologetics||"
+      ],
+      "authors": [
+        "Cairns, John, 1818-1892|||true"
+      ],
+      "contributors": [
+        "T. Constable)|||manufacturer"
+      ],
+      "languages": [],
+      "dates": [
+        "1863|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "33055669|grin",
+        "(WaOLN)nyp3439013|oclc",
+        "NDD|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "Alexander Strahan||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "60 p. ;18 cm",
+      "abstract": "{\"Appendix (p. [53]-60) includes statements of officers, objectives, etc. of the Edinburgh and Glasgow Societies of Sons of United Presbyterian Ministers\"}",
+      "has_part": [
+        "1|http://babel.hathitrust.org/cgi/pt?id=nyp.33433070297159|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433070297159/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-01-23 22:53:29.718745"
+    },
+    {
+      "id": 62814956,
+      "uuid": "bdd88d3a-a90b-4c3b-92df-9256b2e90c2e",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433067361265|grin",
+      "title": "A sermon occasioned by the burning of the Episcopal Church in the parish of Grand Manan, N.B. /",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Church of England in Canada -- Sermons||",
+        "Anglican church buildings -- New Brunswick||"
+      ],
+      "authors": [
+        "Dunn, John, -1849|||true"
+      ],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "1841|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "14880936|grin",
+        "(WaOLN)nyp0025158|oclc",
+        "WIH|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "[s.n.]||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "15 p. ;23 cm",
+      "abstract": "{\"Title from cover\"}",
+      "has_part": [
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433067361265/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-01-23 22:53:29.855611"
+    },
+    {
+      "id": 62847961,
+      "uuid": "753ad8a3-c355-4040-8219-43220d4a934a",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433062532746|grin",
+      "title": "History of the first half century of the Sand Lake Baptist Church",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Baptist Church (Sand Lake, N.Y.) -- History||"
+      ],
+      "authors": [
+        "Fox, Albert R.|||true"
+      ],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "1883|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "36863899|grin",
+        "NYP|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "E.E. Fagan||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "9 p. ;23 cm",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://hdl.handle.net/2027/nyp.33433062532746|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433062532746/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-01-23 22:53:27.870245"
+    },
+    {
+      "id": 62945307,
+      "uuid": "eb7e312b-5650-4e45-8320-b692f5116da1",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433008500690|grin",
+      "title": "La flotte de combat /",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "France -- History -- 19th century||",
+        "Naval art and science -- History -- 19th century -- France||",
+        "France -- History, Naval||"
+      ],
+      "authors": [
+        "Tournier, E.|||true"
+      ],
+      "contributors": [],
+      "languages": [
+        "||fre"
+      ],
+      "dates": [
+        "1899|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "28439965|grin",
+        "NHC|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "Berger-Levrault||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "57 p. ;19 cm",
+      "abstract": "{\"Includes bibliographical references\"}",
+      "has_part": [
+        "1|http://babel.hathitrust.org/cgi/pt?id=nyp.33433008500690|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433008500690/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-01-24 16:44:53.909756"
+    },
+    {
+      "id": 62970117,
+      "uuid": "f0ca3be7-77bf-474f-a280-0321d1394a9e",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "grin",
+      "publisher_project_source": null,
+      "source_id": "33433006358752|grin",
+      "title": "Last notes on the Aberdeen printers",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": "{}",
+      "subjects": [
+        "Printing -- Scotland||",
+        "Printers -- Scotland||",
+        "Bibliography, Scottish -- Scotland||"
+      ],
+      "authors": [
+        "Edmond, John Philip|||true"
+      ],
+      "contributors": [],
+      "languages": [],
+      "dates": [
+        "1888|publication_date"
+      ],
+      "rights": "hathitrust|public_domain||Public Domain|",
+      "identifiers": [
+        "19950974|grin",
+        "(WaOLN)nyp3472479|oclc",
+        "VAR|grin"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "Privately printed||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": "36 p",
+      "abstract": "{}",
+      "has_part": [
+        "1|http://babel.hathitrust.org/cgi/pt?id=nyp.33433006358752|grin|text/html|{\"embed\": true}",
+        "1|https://drb-files-limited-production.s3.amazonaws.com/grin/33433006358752/00000001|grin|application/ocr|{\"reader\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2025-07-17 20:23:39.974176",
+      "date_modified": "2026-01-24 16:44:52.776389"
+    },
+    {
+      "id": 63092246,
+      "uuid": "ab5e2014-1ee0-4727-8bad-25ac2fe1a80c",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "oclcCatalog",
+      "publisher_project_source": null,
+      "source_id": "1314990834|oclc",
+      "title": "French artists of the present day : notices of some contemporary painters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": null,
+      "subjects": [
+        "Artists, French||Library of Congress Subject Headings"
+      ],
+      "authors": [
+        "Me\u0301nard, Rene\u0301.|||true"
+      ],
+      "contributors": null,
+      "languages": [
+        "||eng"
+      ],
+      "dates": [
+        "1876|publication_date"
+      ],
+      "rights": null,
+      "identifiers": [
+        "1314990834|oclc",
+        "307004329|owi",
+        "05c5d10b81f69f7472015e2c4a9433a3|oec"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "Seeley||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": null,
+      "abstract": null,
+      "has_part": [
+        "1|http://books.google.com/books?id=HArxgcq4E6oC|oclc|text/html|{\"embed\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2026-01-22 21:21:55.066507",
+      "date_modified": "2026-01-22 21:19:47.327634"
+    },
+    {
+      "id": 63092247,
+      "uuid": "94691afc-33dd-4589-8153-c4c069d24de8",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "oclcCatalog",
+      "publisher_project_source": null,
+      "source_id": "1541820068|oclc",
+      "title": "French artists of the present day : notices of some contemporary painters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": null,
+      "subjects": [
+        "Artists, French||Library of Congress Subject Headings"
+      ],
+      "authors": [
+        "Me\u0301nard, Rene\u0301.|||true"
+      ],
+      "contributors": null,
+      "languages": [
+        "||eng"
+      ],
+      "dates": [
+        "1876|publication_date"
+      ],
+      "rights": null,
+      "identifiers": [
+        "1541820068|oclc",
+        "307004329|owi",
+        "05c5d10b81f69f7472015e2c4a9433a3|oec"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "Seeley||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": null,
+      "abstract": null,
+      "has_part": [
+        "1|http://catalog.hathitrust.org/api/volumes/oclc/13401018.html|oclc|text/html|{\"embed\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2026-01-22 21:21:55.062606",
+      "date_modified": "2026-01-22 21:19:47.327634"
+    },
+    {
+      "id": 63092248,
+      "uuid": "d7294465-654c-43b6-a787-38e49993d8fe",
+      "frbr_status": "complete",
+      "cluster_status": true,
+      "state": "clustered",
+      "source": "oclcCatalog",
+      "publisher_project_source": null,
+      "source_id": "1407001104|oclc",
+      "title": "French artists of the present day : notices of some contemporary painters",
+      "alternative": null,
+      "medium": null,
+      "is_part_of": null,
+      "subjects": [
+        "Artists, French||Library of Congress Subject Headings"
+      ],
+      "authors": [
+        "Me\u0301nard, Rene\u0301.|||true"
+      ],
+      "contributors": null,
+      "languages": [
+        "||eng"
+      ],
+      "dates": [
+        "1876|publication_date"
+      ],
+      "rights": null,
+      "identifiers": [
+        "1407001104|oclc",
+        "307004329|owi",
+        "05c5d10b81f69f7472015e2c4a9433a3|oec"
+      ],
+      "date_submitted": null,
+      "requires": null,
+      "spatial": null,
+      "publisher": [
+        "Seeley||"
+      ],
+      "has_version": null,
+      "table_of_contents": null,
+      "extent": null,
+      "abstract": null,
+      "has_part": [
+        "1|http://catalog.hathitrust.org/api/volumes/oclc/13401018.html|oclc|text/html|{\"embed\": true}"
+      ],
+      "coverage": null,
+      "date_created": "2026-01-22 21:21:55.052733",
+      "date_modified": "2026-01-22 21:19:47.327634"
     }
   ],
   "items": [
@@ -1259,6 +4293,486 @@
       "record_id": 62727266,
       "date_created": "2026-02-04 22:16:17.914474",
       "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 24077978,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15297541,
+      "record_id": 62847961,
+      "date_created": "2026-01-23 22:53:27.869880",
+      "date_modified": "2026-01-23 22:53:27.870237"
+    },
+    {
+      "id": 23892024,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15257988,
+      "record_id": 62583428,
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 23865180,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15251460,
+      "record_id": 62455449,
+      "date_created": "2026-01-22 21:19:47.568525",
+      "date_modified": "2026-01-22 21:19:47.568864"
+    },
+    {
+      "id": 27811029,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601691,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811028,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601685,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811027,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601684,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811026,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601681,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811025,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601678,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811024,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601677,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811023,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601676,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811022,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601675,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811021,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601673,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811020,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601672,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811019,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601670,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811018,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601668,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811017,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601665,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811016,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601664,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811015,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601661,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811014,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601660,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 27811013,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 16202764,
+      "record_id": 62601657,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 24052336,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15293189,
+      "record_id": 62814956,
+      "date_created": "2026-01-23 22:53:29.855118",
+      "date_modified": "2026-01-23 22:53:29.855603"
+    },
+    {
+      "id": 24029775,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15284700,
+      "record_id": 62764151,
+      "date_created": "2026-01-23 14:55:40.523917",
+      "date_modified": "2026-01-23 14:55:40.524274"
+    },
+    {
+      "id": 24037887,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15287756,
+      "record_id": 62783929,
+      "date_created": "2026-01-23 22:53:29.718403",
+      "date_modified": "2026-01-23 22:53:29.718737"
+    },
+    {
+      "id": 24176229,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15314880,
+      "record_id": 62945307,
+      "date_created": "2026-01-24 16:44:53.909371",
+      "date_modified": "2026-01-24 16:44:53.909747"
+    },
+    {
+      "id": 24182725,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15317340,
+      "record_id": 62970117,
+      "date_created": "2026-01-24 16:44:52.776029",
+      "date_modified": "2026-01-24 16:44:52.776383"
+    },
+    {
+      "id": 23845771,
+      "source": "oclc",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15245586,
+      "record_id": 63092248,
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 23845770,
+      "source": "oclc",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15245586,
+      "record_id": 63092247,
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 23845769,
+      "source": "oclc",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15245586,
+      "record_id": 63092246,
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 23845768,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15245586,
+      "record_id": 62354123,
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 23857738,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15248798,
+      "record_id": 62397330,
+      "date_created": "2026-01-22 21:19:47.520582",
+      "date_modified": "2026-01-22 21:19:47.520917"
+    },
+    {
+      "id": 23866780,
+      "source": "grin",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15251797,
+      "record_id": 62475858,
+      "date_created": "2026-01-22 21:19:47.483735",
+      "date_modified": "2026-01-22 21:19:47.484068"
+    },
+    {
+      "id": 23866779,
+      "source": "oclc",
+      "publisher_project_source": null,
+      "content_type": "ebook",
+      "contributors": [],
+      "modified": null,
+      "drm": null,
+      "measurements": null,
+      "physical_location": null,
+      "edition_id": 15251797,
+      "record_id": 55164087,
+      "date_created": "2026-01-22 21:19:47.483735",
+      "date_modified": "2026-01-22 21:19:47.484068"
     }
   ],
   "links": [
@@ -1621,6 +5135,1113 @@
       },
       "date_created": "2026-02-04 06:26:05.888406",
       "date_modified": "2026-02-04 06:26:05.898820"
+    },
+    {
+      "id": 18968064,
+      "url": "hdl.handle.net/2027/nyp.33433062532746",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 22:53:27.869880",
+      "date_modified": "2026-01-23 22:53:27.870237"
+    },
+    {
+      "id": 18968063,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433062532746/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-23 22:53:27.869880",
+      "date_modified": "2026-01-23 22:53:27.870237"
+    },
+    {
+      "id": 18833293,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433097627768/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-14 14:38:46.913879",
+      "date_modified": "2026-01-14 14:38:46.914226"
+    },
+    {
+      "id": 18948323,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433066637046/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-22 21:19:47.568525",
+      "date_modified": "2026-01-22 21:19:47.568864"
+    },
+    {
+      "id": 18627763,
+      "url": "babel.hathitrust.org/cgi/pt?id=nyp.33433066637046",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2025-12-23 14:54:39.206486",
+      "date_modified": "2025-12-23 14:54:39.206995"
+    },
+    {
+      "id": 18846987,
+      "url": "hdl.handle.net/2027/nyp.33433090806187",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846980,
+      "url": "hdl.handle.net/2027/nyp.33433090805866",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846991,
+      "url": "hdl.handle.net/2027/nyp.33433090806146",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846988,
+      "url": "hdl.handle.net/2027/nyp.33433090806054",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846990,
+      "url": "hdl.handle.net/2027/nyp.33433090806096",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846989,
+      "url": "hdl.handle.net/2027/nyp.33433090806013",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846984,
+      "url": "hdl.handle.net/2027/nyp.33433090806252",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846985,
+      "url": "hdl.handle.net/2027/nyp.33433090806211",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846982,
+      "url": "hdl.handle.net/2027/nyp.33433090806021",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846981,
+      "url": "hdl.handle.net/2027/nyp.33433090806104",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846978,
+      "url": "hdl.handle.net/2027/nyp.33433090806260",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846976,
+      "url": "hdl.handle.net/2027/nyp.33433090805932",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18848460,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090805866/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846992,
+      "url": "hdl.handle.net/2027/nyp.33433090806294",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846977,
+      "url": "hdl.handle.net/2027/nyp.33433090805940",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846986,
+      "url": "hdl.handle.net/2027/nyp.33433090806229",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846979,
+      "url": "hdl.handle.net/2027/nyp.33433090805981",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18848172,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090805932/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18849342,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090805940/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:27.457614",
+      "date_modified": "2026-01-15 00:45:27.457935"
+    },
+    {
+      "id": 18851608,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090805981/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 14:29:15.211718",
+      "date_modified": "2026-01-15 14:29:15.212071"
+    },
+    {
+      "id": 18848459,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806013/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18849224,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806021/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:27.457614",
+      "date_modified": "2026-01-15 00:45:27.457935"
+    },
+    {
+      "id": 18849294,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806054/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:27.457614",
+      "date_modified": "2026-01-15 00:45:27.457935"
+    },
+    {
+      "id": 18848115,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806062/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:27.723896",
+      "date_modified": "2026-01-15 00:45:27.724253"
+    },
+    {
+      "id": 18851849,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806096/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 14:29:17.757807",
+      "date_modified": "2026-01-15 14:29:17.758161"
+    },
+    {
+      "id": 18851848,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806104/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 14:29:17.757807",
+      "date_modified": "2026-01-15 14:29:17.758161"
+    },
+    {
+      "id": 18848458,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806146/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18846983,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806187/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:26.797730",
+      "date_modified": "2026-01-15 00:45:26.798090"
+    },
+    {
+      "id": 18848132,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806211/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:27.723896",
+      "date_modified": "2026-01-15 00:45:27.724253"
+    },
+    {
+      "id": 18848213,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806229/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:27.457614",
+      "date_modified": "2026-01-15 00:45:27.457935"
+    },
+    {
+      "id": 18851743,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806252/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 14:29:16.611009",
+      "date_modified": "2026-01-15 14:29:16.611362"
+    },
+    {
+      "id": 18849126,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806260/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:27.457614",
+      "date_modified": "2026-01-15 00:45:27.457935"
+    },
+    {
+      "id": 18849229,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433090806294/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-15 00:45:27.457614",
+      "date_modified": "2026-01-15 00:45:27.457935"
+    },
+    {
+      "id": 18964595,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433067361265/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-23 22:53:29.855118",
+      "date_modified": "2026-01-23 22:53:29.855603"
+    },
+    {
+      "id": 18959336,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433074805064/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-23 14:55:40.523917",
+      "date_modified": "2026-01-23 14:55:40.524274"
+    },
+    {
+      "id": 18959335,
+      "url": "hdl.handle.net/2027/nyp.33433074805064",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-23 14:55:40.523917",
+      "date_modified": "2026-01-23 14:55:40.524274"
+    },
+    {
+      "id": 18961403,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433070297159/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-23 22:53:29.718403",
+      "date_modified": "2026-01-23 22:53:29.718737"
+    },
+    {
+      "id": 5231190,
+      "url": "babel.hathitrust.org/cgi/pt?id=nyp.33433070297159",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2021-05-01 10:00:41.320087",
+      "date_modified": "2026-01-23 22:53:29.718745"
+    },
+    {
+      "id": 18979766,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433008500690/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-24 16:44:53.909371",
+      "date_modified": "2026-01-24 16:44:53.909747"
+    },
+    {
+      "id": 6353037,
+      "url": "babel.hathitrust.org/cgi/pt?id=nyp.33433008500690",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2021-05-25 10:00:40.524821",
+      "date_modified": "2026-01-24 16:44:53.909756"
+    },
+    {
+      "id": 6424404,
+      "url": "babel.hathitrust.org/cgi/pt?id=nyp.33433006358752",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2021-06-05 10:00:15.864316",
+      "date_modified": "2026-01-24 16:44:52.776389"
+    },
+    {
+      "id": 18981605,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433006358752/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-24 16:44:52.776029",
+      "date_modified": "2026-01-24 16:44:52.776383"
+    },
+    {
+      "id": 18947734,
+      "url": "catalog.hathitrust.org/api/volumes/oclc/13401018.html",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 18947733,
+      "url": "catalog.hathitrust.org/api/volumes/oclc/13401018.html",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 18947732,
+      "url": "books.google.com/books?id=HArxgcq4E6oC",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 18603440,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433116213889/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2025-12-13 04:34:45.103414",
+      "date_modified": "2025-12-13 04:34:45.103917"
+    },
+    {
+      "id": 18707277,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433081653994/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-09 18:29:08.552159",
+      "date_modified": "2026-01-09 18:29:08.552378"
+    },
+    {
+      "id": 18707278,
+      "url": "babel.hathitrust.org/cgi/pt?id=nyp.33433081653994",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-09 18:29:08.552159",
+      "date_modified": "2026-01-09 18:29:08.552378"
+    },
+    {
+      "id": 18770613,
+      "url": "drb-files-limited-production.s3.amazonaws.com/grin/33433023187929/00000001",
+      "media_type": "application/ocr",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "reader": true
+      },
+      "date_created": "2026-01-11 17:37:44.498674",
+      "date_modified": "2026-01-11 17:37:44.499033"
+    },
+    {
+      "id": 18770612,
+      "url": "babel.hathitrust.org/cgi/pt?id=nyp.33433023187929",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true
+      },
+      "date_created": "2026-01-11 17:37:44.498674",
+      "date_modified": "2026-01-11 17:37:44.499033"
+    },
+    {
+      "id": 18770611,
+      "url": "catalog.hathitrust.org/api/volumes/oclc/1733837.html",
+      "media_type": "text/html",
+      "content": null,
+      "md5": null,
+      "flags": {
+        "embed": true,
+        "reader": false,
+        "catalog": false,
+        "download": false
+      },
+      "date_created": "2026-01-11 17:37:44.498674",
+      "date_modified": "2026-01-11 17:37:44.499033"
+    }
+  ],
+  "rights": [
+    {
+      "id": 35007349,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-22 21:19:47.822107",
+      "date_modified": "2026-01-22 21:19:47.822438"
+    },
+    {
+      "id": 36579048,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579047,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579046,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579045,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579044,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579043,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579042,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579041,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579040,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579039,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579038,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579037,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579036,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 36579035,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-02-04 22:16:17.914474",
+      "date_modified": "2026-02-04 22:16:17.914832"
+    },
+    {
+      "id": 35201152,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-23 22:53:27.869880",
+      "date_modified": "2026-01-23 22:53:27.870237"
+    },
+    {
+      "id": 35007503,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 34979676,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-22 21:19:47.568525",
+      "date_modified": "2026-01-22 21:19:47.568864"
+    },
+    {
+      "id": 38945741,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945740,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945739,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945738,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945737,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945736,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945735,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945734,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945733,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945732,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945731,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945730,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945729,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945728,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945727,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945726,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 38945725,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-03-07 06:16:20.928506",
+      "date_modified": "2026-03-07 06:16:20.928939"
+    },
+    {
+      "id": 35172018,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-23 22:53:29.855118",
+      "date_modified": "2026-01-23 22:53:29.855603"
+    },
+    {
+      "id": 35146198,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-23 14:55:40.523917",
+      "date_modified": "2026-01-23 14:55:40.524274"
+    },
+    {
+      "id": 35153485,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-23 22:53:29.718403",
+      "date_modified": "2026-01-23 22:53:29.718737"
+    },
+    {
+      "id": 35307104,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-24 16:44:53.909371",
+      "date_modified": "2026-01-24 16:44:53.909747"
+    },
+    {
+      "id": 35313277,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-24 16:44:52.776029",
+      "date_modified": "2026-01-24 16:44:52.776383"
+    },
+    {
+      "id": 34957101,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-22 21:19:47.327313",
+      "date_modified": "2026-01-22 21:19:47.327628"
+    },
+    {
+      "id": 34969282,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-22 21:19:47.520582",
+      "date_modified": "2026-01-22 21:19:47.520917"
+    },
+    {
+      "id": 34981192,
+      "source": "hathitrust",
+      "license": "public_domain",
+      "rights_statement": "Public Domain",
+      "rights_reason": null,
+      "rights_date": null,
+      "date_created": "2026-01-22 21:19:47.483735",
+      "date_modified": "2026-01-22 21:19:47.484068"
     }
   ],
   "item_links": [
@@ -2471,158 +7092,1254 @@
     {
       "item_id": 25467432,
       "link_id": 19096446
-    }
-  ],
-  "rights": [
-    {
-      "id": 35007349,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-01-22 21:19:47.822107",
-      "date_modified": "2026-01-22 21:19:47.822438"
     },
     {
-      "id": 36579048,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23845768,
+      "link_id": 18603440
     },
     {
-      "id": 36579047,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23845769,
+      "link_id": 18947732
     },
     {
-      "id": 36579046,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23845770,
+      "link_id": 18947733
     },
     {
-      "id": 36579045,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23845771,
+      "link_id": 18947734
     },
     {
-      "id": 36579044,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23857738,
+      "link_id": 18707277
     },
     {
-      "id": 36579043,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23857738,
+      "link_id": 18707278
     },
     {
-      "id": 36579042,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23865180,
+      "link_id": 18627763
     },
     {
-      "id": 36579041,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23865180,
+      "link_id": 18948323
     },
     {
-      "id": 36579040,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23866779,
+      "link_id": 18770611
     },
     {
-      "id": 36579039,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23866780,
+      "link_id": 18770612
     },
     {
-      "id": 36579038,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23866780,
+      "link_id": 18770613
     },
     {
-      "id": 36579037,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 23892024,
+      "link_id": 18833293
     },
     {
-      "id": 36579036,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 24029775,
+      "link_id": 18959335
     },
     {
-      "id": 36579035,
-      "source": "hathitrust",
-      "license": "public_domain",
-      "rights_statement": "Public Domain",
-      "rights_reason": null,
-      "rights_date": null,
-      "date_created": "2026-02-04 22:16:17.914474",
-      "date_modified": "2026-02-04 22:16:17.914832"
+      "item_id": 24029775,
+      "link_id": 18959336
+    },
+    {
+      "item_id": 24037887,
+      "link_id": 5231190
+    },
+    {
+      "item_id": 24037887,
+      "link_id": 18961403
+    },
+    {
+      "item_id": 24052336,
+      "link_id": 18964595
+    },
+    {
+      "item_id": 24077978,
+      "link_id": 18968063
+    },
+    {
+      "item_id": 24077978,
+      "link_id": 18968064
+    },
+    {
+      "item_id": 24176229,
+      "link_id": 6353037
+    },
+    {
+      "item_id": 24176229,
+      "link_id": 18979766
+    },
+    {
+      "item_id": 24182725,
+      "link_id": 6424404
+    },
+    {
+      "item_id": 24182725,
+      "link_id": 18981605
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811013,
+      "link_id": 18849229
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811014,
+      "link_id": 18849126
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811015,
+      "link_id": 18851743
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811016,
+      "link_id": 18848213
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811017,
+      "link_id": 18848132
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846983
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811018,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811019,
+      "link_id": 18848458
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811020,
+      "link_id": 18851848
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811021,
+      "link_id": 18851849
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811022,
+      "link_id": 18848115
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811023,
+      "link_id": 18849294
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811024,
+      "link_id": 18849224
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811025,
+      "link_id": 18848459
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811026,
+      "link_id": 18851608
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811027,
+      "link_id": 18849342
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811028,
+      "link_id": 18848172
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846976
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846977
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846978
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846979
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846980
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846981
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846982
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846984
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846985
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846986
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846987
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846988
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846989
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846990
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846991
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18846992
+    },
+    {
+      "item_id": 27811029,
+      "link_id": 18848460
     }
   ],
   "item_rights": [
@@ -2685,6 +8402,118 @@
     {
       "item_id": 25467432,
       "rights_id": 36579048
+    },
+    {
+      "item_id": 23845768,
+      "rights_id": 34957101
+    },
+    {
+      "item_id": 23857738,
+      "rights_id": 34969282
+    },
+    {
+      "item_id": 23865180,
+      "rights_id": 34979676
+    },
+    {
+      "item_id": 23866780,
+      "rights_id": 34981192
+    },
+    {
+      "item_id": 23892024,
+      "rights_id": 35007503
+    },
+    {
+      "item_id": 24029775,
+      "rights_id": 35146198
+    },
+    {
+      "item_id": 24037887,
+      "rights_id": 35153485
+    },
+    {
+      "item_id": 24052336,
+      "rights_id": 35172018
+    },
+    {
+      "item_id": 24077978,
+      "rights_id": 35201152
+    },
+    {
+      "item_id": 24176229,
+      "rights_id": 35307104
+    },
+    {
+      "item_id": 24182725,
+      "rights_id": 35313277
+    },
+    {
+      "item_id": 27811013,
+      "rights_id": 38945725
+    },
+    {
+      "item_id": 27811014,
+      "rights_id": 38945726
+    },
+    {
+      "item_id": 27811015,
+      "rights_id": 38945727
+    },
+    {
+      "item_id": 27811016,
+      "rights_id": 38945728
+    },
+    {
+      "item_id": 27811017,
+      "rights_id": 38945729
+    },
+    {
+      "item_id": 27811018,
+      "rights_id": 38945730
+    },
+    {
+      "item_id": 27811019,
+      "rights_id": 38945731
+    },
+    {
+      "item_id": 27811020,
+      "rights_id": 38945732
+    },
+    {
+      "item_id": 27811021,
+      "rights_id": 38945733
+    },
+    {
+      "item_id": 27811022,
+      "rights_id": 38945734
+    },
+    {
+      "item_id": 27811023,
+      "rights_id": 38945735
+    },
+    {
+      "item_id": 27811024,
+      "rights_id": 38945736
+    },
+    {
+      "item_id": 27811025,
+      "rights_id": 38945737
+    },
+    {
+      "item_id": 27811026,
+      "rights_id": 38945738
+    },
+    {
+      "item_id": 27811027,
+      "rights_id": 38945739
+    },
+    {
+      "item_id": 27811028,
+      "rights_id": 38945740
+    },
+    {
+      "item_id": 27811029,
+      "rights_id": 38945741
     }
   ]
 }

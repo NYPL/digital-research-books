@@ -62,7 +62,7 @@ logger = create_log(__name__)
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
 
-INDEX_NAME = os.getenv("TURBOPUFFER_NAMESPACE") or "vra-dev"
+INDEX_NAME = os.getenv("TURBOPUFFER_NAMESPACE")
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 

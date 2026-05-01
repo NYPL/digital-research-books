@@ -47,13 +47,18 @@ class RecordClusterer:
                 auto_release_time=self.CLUSTER_TIMEOUT,
             )
 
+            # NOTE: lock is checked in candidate_record_finder
             with record_lock:
+                # Create new ORM objects
                 work, stale_work_ids, records = self._get_clustered_work_and_records(
                     record
                 )
+                # Sync new orm objs with DB
                 self._commit_changes()
 
+                # Delete old ORM objs
                 self._delete_stale_works(stale_work_ids)
+                # Sync deletion to DB
                 self._commit_changes()
 
                 logger.info(f"Clustered record: {record}")
@@ -72,6 +77,8 @@ class RecordClusterer:
             raise e
 
     def _get_clustered_work_and_records(self, record: Record):
+        # Collect records which will become associated with the
+        # post-edition-clustering work
         records = self.candidate_finder.find_candidate_records(record)
         record_ids = [r.id for r in records]
 
@@ -135,6 +142,7 @@ class RecordClusterer:
     def _create_work_from_editions(
         self, editions: list, records: list[Record]
     ) -> tuple[Work, set[str]]:
+        """Create and fill Work/Editions/Items ORM objs from edition clustered records."""
         record_manager = SFRRecordManager(
             self.db_manager.session, self.constants["iso639"]
         )
