@@ -17,6 +17,7 @@ on:
       - "etl-pipeline/main.py"
       - "etl-pipeline/Makefile"
       - "etl-pipeline/Dockerfile"
+      - "etl-pipeline/pyproject.toml"
       - ".github/workflows/etl-pipeline-tests.yaml"
 
 permissions:
