@@ -13,21 +13,23 @@ TOP_LEVEL_FIELDS = {
     "data": dict,
 }
 
-TEST_CASES = [  # Defined as tuples of (conversation_type, message)
-    # Smoke test for a catalog search
-    ("catalogSearch", "Find something on fire."),
-    # TODO: Smoke test for a content search (SCHOL-384)
+TEST_CASES = [  # Defined as tuples of (conversation_type, message, edition_id)
+    ("catalogSearch", "Find something on fire.", None),
+    ("contentSearch", "What are the main topics discussed in this text?", 15649870),
 ]
 
 
-@pytest.mark.parametrize("conversation_type, message", TEST_CASES)
-def test_chat(conversation_type, message, vra_test_user):
-    # Set up the request then make an authenticated API call
+@pytest.mark.parametrize("conversation_type, message, edition_id", TEST_CASES)
+def test_chat(conversation_type, message, edition_id, vra_test_user):
     url = require_env("DRB_API_URL") + ENDPOINT_PATH
     payload = {
         "conversationType": conversation_type,
         "message": message,
     }
+
+    if edition_id is not None:
+        payload["editionId"] = edition_id
+
     response = requests.post(url, json=payload, headers=get_vra_auth_headers())
 
     # Verify HTTP status code is returned and is 200 OK
