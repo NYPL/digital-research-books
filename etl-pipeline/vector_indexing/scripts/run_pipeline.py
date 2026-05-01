@@ -23,6 +23,8 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
+from vector_indexing.pipeline.orchestrator import BatchResult
+
 # Add project root to path if running directly
 if __name__ == "__main__":
     project_root = Path(__file__).parent.parent.parent
@@ -91,7 +93,7 @@ def run_pipeline(
     metadata_provider=None,
     backend=None,
     on_progress=_default_on_progress,
-):
+) -> BatchResult:
     """Run Pipeline with defaults"""
     # Q: better to bring the print logging into the run_pipeline() scope rather
     # than main() so its available where ever run_pipeline is called?

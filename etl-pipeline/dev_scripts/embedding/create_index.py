@@ -53,6 +53,25 @@ def list_10k_barcodes(start_from: str | None = None):
     return barcodes
 
 
+# TODO: query limit 1 per barcode and get the batch_size-th largest barcode to \
+# accommodate that last successful batch given fail-fast indexing
+def get_last_indexed_barcode(index_name: str) -> str | None:
+    """Return the lexicographically largest barcode already indexed in the given
+    turbopuffer namespace, matching the ascending sort order used in list_10k_barcodes.
+    Returns None if the namespace is empty or has no indexed documents.
+    """
+    backend = TurbopufferBackend(index_name=index_name)
+    results = backend.query(
+        rank_by=("barcode", "desc"),
+        top_k=1,
+        include_attributes=["barcode"],
+    )
+    if not results:
+        return None
+    chunk, _ = results[0]
+    return chunk.barcode
+
+
 def rerun_indexing(results_dir: Path) -> Iterator[str]:
     """Generate failed barcodes from saved batch results in an indexing
     run results directory
@@ -66,6 +85,7 @@ def rerun_indexing(results_dir: Path) -> Iterator[str]:
 
 
 INDEXING_RESULTS_DIR = Path(__file__, "..", "indexing_results").resolve()
+FAIL_FAST = True
 
 
 # ============================================================================
@@ -79,6 +99,9 @@ INDEX_NAME = "vra_test-10k-harrier_oss_v1_.6b"
 # ============================================================================
 # Books config
 # ============================================================================
+# start_from = get_last_indexed_barcode(INDEX_NAME)
+# print(f"Resuming from barcode: {start_from!r}" if start_from else "Starting from beginning")
+# barcodes = list_10k_barcodes(start_from=start_from)
 barcodes = list_10k_barcodes(start_from="33433066574009")
 # barcodes = list_10k_barcodes()
 # barcodes = ["33433062509165"] # sketches_of_the_north_river
@@ -89,15 +112,15 @@ barcodes = list_10k_barcodes(start_from="33433066574009")
 # TODO: per step and per book timings (wait for orchestration?)
 # TODO: run progress percent
 # TODO: option abort run on first non-100% batch and save last successful barcode to re-start with start_from=
-
+# TODO: index name and loader type CLI
 
 index_config = get_index_config(INDEX_NAME)
 
 # Define directories
 run_timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 out_dir = INDEXING_RESULTS_DIR / run_timestamp
+print(f"Indexing Run Results Dir: {out_dir}")
 
-# for i, batch in enumerate(batched(barcodes, 100)):
 for i, batch in enumerate(batched(barcodes, 100)):
     print(f"\nBatch {i + 1}: barcodes {batch[0]!r} .. {batch[-1]!r}")
     batch_result = run_pipeline(
@@ -108,6 +131,10 @@ for i, batch in enumerate(batched(barcodes, 100)):
         embedder=index_config["embedder"],
         backend=index_config["backend"],
     )
-    # TODO: add index config + book config  metadata save
+
+    # TODO: add index config + book config  metadata save + aggregates
     saved_path = batch_result.save(out_dir)
-    # print(f"Saved: {saved_path}")
+
+    if FAIL_FAST:
+        if batch_result.failed > 0:
+            sys.exit(1)
