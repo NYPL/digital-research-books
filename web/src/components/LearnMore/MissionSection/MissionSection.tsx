@@ -1,6 +1,8 @@
 import { Heading, Text } from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
-import SectionContainer from "../ResearchAssistantLanding/SectionContainer";
+import SectionContainer from "../SectionContainer";
+import MissionDiagram from "./MissionDiagram";
+import NumberCircle from "./NumberCircle";
 
 interface FeaturesSectionProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
@@ -16,36 +18,45 @@ const MissionSection: React.ForwardRefExoticComponent<
         borderTop="1px solid"
         borderColor="section.research.primary-10"
         color="ui.typography.body"
+        display="flex"
+        flexDirection="column"
+        margin="0 auto"
+        width="100%"
         tabIndex={-1}
         ref={ref}
       >
         <Heading
           level="h2"
-          size="heading3"
+          size="heading2"
           fontFamily="Domine"
           fontWeight="bold"
-          marginBottom="xs"
+          marginBottom="xxl"
         >
           Our mission
         </Heading>
+        <NumberCircle number={1} />
         <Text
           fontSize="desktop.heading.heading5"
           color="ui.gray.dark"
           fontWeight="semibold"
-          marginBottom="s"
+          marginBottom="l"
         >
           To make Digitized Research Books available to anyone, anywhere, for
           free
         </Text>
+        <NumberCircle number={2} />
+
         <Text
           fontSize="desktop.heading.heading5"
           color="ui.gray.dark"
           fontWeight="semibold"
-          marginBottom="s"
+          marginBottom="l"
         >
           To make this collection highly discoverable and accessible by
           leveraging AI
         </Text>
+        <NumberCircle number={3} />
+
         <Text
           fontSize="desktop.heading.heading5"
           color="ui.gray.dark"
@@ -54,9 +65,10 @@ const MissionSection: React.ForwardRefExoticComponent<
         >
           To steward this project as ethically and responsibly as possible
         </Text>
-        <Text color="ui.gray.x-dark" marginBottom="m">
-          Our collection of Digitized Research Books as of 1 July 2026
-          accessible through Enhanced Search
+        <MissionDiagram />
+        <Text color="ui.gray.x-dark" isItalic={true}>
+          Enhanced Search uses AI to make Digitized Research Books accessible to
+          all
         </Text>
       </SectionContainer>
     );

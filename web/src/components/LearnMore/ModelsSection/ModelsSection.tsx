@@ -6,7 +6,6 @@ import SectionContainer from "../../ResearchAssistantLanding/SectionContainer";
 import LandingButtons from "../LandingButtons";
 
 // remove this later !
-import LightbulbIcon from "../../ResearchAssistantLanding/HelpSection/LightbulbIcon";
 
 interface HelpSectionProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
@@ -28,11 +27,11 @@ const ModelsSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
     >
       <Box maxWidth="55rem" margin="0 auto">
         <Heading
-          level="h3"
-          size="heading3"
+          level="h2"
+          size="heading2"
           fontFamily="Domine"
           fontWeight="bold"
-          marginBottom="m"
+          marginBottom="xs"
         >
           Our AI models
         </Heading>
@@ -40,14 +39,19 @@ const ModelsSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
           fontSize="desktop.heading.heading5"
           color="ui.gray.dark"
           fontWeight="semibold"
-          marginBottom="l"
         >
           Chosen to balance speed, cost, performance, and environmental impact.
         </Text>
-        <Flex gap="l">
+        <Flex gap="l" marginTop="xxl" marginBottom="xxl">
           <LandingCard
             gap="l"
-            icon={<LightbulbIcon />}
+            icon={
+              <img
+                src="/images/GeminiFlashIcon.png"
+                alt="Gemini Flash icon"
+                width="48px"
+              />
+            }
             heading={
               <Heading level="h3" size="heading4">
                 Google Gemini Flash
@@ -80,7 +84,13 @@ const ModelsSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
           />
           <LandingCard
             gap="l"
-            icon={<LightbulbIcon />}
+            icon={
+              <img
+                src="/images/GeminiFlashIcon.png"
+                alt="Gemini Embeddings icon"
+                width="48px"
+              />
+            }
             heading={
               <Heading level="h3" size="heading4">
                 Google Gemini Embeddings

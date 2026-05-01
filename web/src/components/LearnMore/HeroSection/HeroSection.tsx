@@ -6,7 +6,7 @@ import {
 } from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
 import ArrowIcon from "../../ResearchAssistant/icons/ArrowIcon";
-import SectionContainer from "../../ResearchAssistantLanding/SectionContainer";
+import SectionContainer from "../SectionContainer";
 import StatisticCard from "./StatisticCard";
 
 interface HeroSectionProps {
@@ -33,29 +33,36 @@ const HeroSection: React.ForwardRefExoticComponent<
         display="flex"
         flexDir="column"
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
+        paddingTop="5.25rem"
+        paddingBottom="l"
         ref={ref}
       >
-        <Box maxWidth="55rem" margin="0 auto">
+        {/* used maxWidth here */}
+        <Box maxWidth="821px" margin="0 auto">
           <Box display="flex" flexDir="column" alignItems="center">
             <Heading
               level="h1"
               fontWeight="bold"
-              marginBottom="xl"
-              size="heading2"
+              marginBottom="87.5px"
+              size="heading1"
+              fontFamily="Domine"
             >
-              <Box display="flex" alignItems="center" fontFamily="Domine">
-                <span>
-                  AI is more{" "}
-                  <Text as="span" color="section.research.secondary">
-                    meaningful
-                  </Text>{" "}
-                  when it helps unlock access to knowledge
-                </span>
-              </Box>
+              AI is more{" "}
+              <Text as="span" color="section.research.secondary">
+                meaningful
+              </Text>{" "}
+              <br />
+              when it helps unlock access to knowledge
             </Heading>
           </Box>
           <StatisticCard />
-          <Text color="ui.gray.x-dark" marginBottom="m">
+          <Text
+            fontSize="md"
+            color="ui.gray.x-dark"
+            marginBottom="l"
+            lineHeight="150%"
+            isItalic={true}
+          >
             Our collection of Digitized Research Books as of 1 July 2026
             accessible through Enhanced Search
           </Text>
