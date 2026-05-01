@@ -228,6 +228,8 @@ class TurbopufferBackend(IndexBackend):
     ) -> InsertResult:
         """Insert ChunkDocuments into the namespace.
 
+        Schema is enforced in each write.
+
         Args:
             chunks: Documents to insert.
             batch_size: Optional batch size. If None, inserts all at once.

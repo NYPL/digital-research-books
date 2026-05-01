@@ -169,9 +169,11 @@ def chat(user, session_id):
     if edition_id is not None:
         log_context["edition_id"] = edition_id
 
-    # Add custom attributes to transaction in New Relic
+    # New Relic custom attributes and AI monitoring conversation grouping
     for k, v in log_context.items():
         newrelic.agent.add_custom_attribute(k, v)
+    if session_id:
+        newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
 
     with LogContextVars(get_app_logger(), context=log_context):
         return _chat_handler(user, session_id, conversation_type, message, edition_id)
