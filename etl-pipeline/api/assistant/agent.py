@@ -296,7 +296,7 @@ class LLMLoggingHooks(RunHooks):
     def record_newrelic_llm_events(self, agent: Agent) -> None:
         """
         Custom instrumentation for New Relic AI monitoring.
-        
+
         Logs a series of New Relic LLM events during an agent run, including:
         - Message events to describe the content, role, sequence, etc. of each turn:
             - System prompt
@@ -304,7 +304,7 @@ class LLMLoggingHooks(RunHooks):
             - Assistant decisions and tool calls
             - Assistant response seen by user
         - Summary event to report key metrics like duration and token usage.
-       
+
         For dashboard compatibility, the vendor is set to "openai" for all events.
         """
         if os.getenv("NEW_RELIC_CUSTOM_LLM_EVENT_LOGGING_ENABLED") != "true":
