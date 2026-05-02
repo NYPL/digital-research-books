@@ -102,7 +102,7 @@ INDEX_NAME = "vra_test-10k-harrier_oss_v1_.6b"
 # start_from = get_last_indexed_barcode(INDEX_NAME)
 # print(f"Resuming from barcode: {start_from!r}" if start_from else "Starting from beginning")
 # barcodes = list_10k_barcodes(start_from=start_from)
-barcodes = list_10k_barcodes(start_from="33433066574009")
+barcodes = list_10k_barcodes(start_from="33433066608948")
 # barcodes = list_10k_barcodes()
 # barcodes = ["33433062509165"] # sketches_of_the_north_river
 # barcodes = rerun_indexing(INDEXING_RESULTS_DIR / "20260427T015457Z")
