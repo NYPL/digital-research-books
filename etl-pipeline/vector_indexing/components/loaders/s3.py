@@ -21,6 +21,7 @@ from typing import Optional, TYPE_CHECKING
 
 import boto3
 import gnupg
+from botocore.config import Config
 
 from logger import create_log
 from vector_indexing.core.types import Book
@@ -65,7 +66,10 @@ class S3BookLoader(BookLoader):
         bucket: S3 bucket name. Defaults to config.s3_bucket.
         prefix: S3 key prefix for book data. Defaults to config.s3_prefix.
         cache: Optional BookCache for local caching.
-        max_workers: Max parallel download threads. Default 10.
+        max_workers: Max parallel download threads. It is recommended that
+            smax_pool_connections == max_workers.
+        max_pool_connections: Max open connections in the boto3 connection pool.
+            It is recommended that max_pool_connections == max_workers.
         s3_client: Optional boto3 S3 client.
         config: Optional GlobalConfig.
         grin_access_key: Key for decrypting GRIN archives.
@@ -85,7 +89,8 @@ class S3BookLoader(BookLoader):
         bucket: Optional[str] = None,
         prefix: Optional[str] = None,
         cache: Optional[BookCache] = None,
-        max_workers: int = 10,
+        max_workers: int = 30,
+        max_pool_connections: int = 30,
         s3_client: Optional[S3Client] = None,
         config: Optional[GlobalConfig] = None,
         grin_access_key: Optional[str] = None,
@@ -95,6 +100,7 @@ class S3BookLoader(BookLoader):
         self._prefix = prefix or self._config.s3_prefix
         self._cache = cache
         self._max_workers = max_workers
+        self._max_pool_connections = max_pool_connections
         self._s3_client = s3_client
         self._grin_access_key = grin_access_key or self._config.grin_access_key
         self._gpg = gnupg.GPG()
@@ -104,7 +110,11 @@ class S3BookLoader(BookLoader):
         """Lazily initialize S3 client."""
         if self._s3_client is not None:
             return self._s3_client
-        return boto3.client("s3")
+        config = Config(
+            max_pool_connections=self._max_pool_connections,
+            retries={"max_attempts": 3, "mode": "adaptive"},
+        )
+        return boto3.client("s3", config=config)
 
     @property
     def bucket(self) -> str:

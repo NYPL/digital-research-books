@@ -108,10 +108,9 @@ barcodes = list_10k_barcodes(start_from="33433066574009")
 # barcodes = rerun_indexing(INDEXING_RESULTS_DIR / "20260427T015457Z")
 
 
-# TODO: batched run function
 # TODO: per step and per book timings (wait for orchestration?)
 # TODO: run progress percent
-# TODO: option abort run on first non-100% batch and save last successful barcode to re-start with start_from=
+# TODO: on fail-fast, save last successful barcode to re-start with start_from=
 # TODO: index name and loader type CLI
 
 index_config = get_index_config(INDEX_NAME)
