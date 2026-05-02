@@ -379,6 +379,22 @@ class LLMLoggingHooks(RunHooks):
                 }
 
                 content_val = msg.get("content")
+                tool_calls = msg.get("tool_calls")
+
+                # On tool calls, clarify assistant role by appending the tool name
+                # Otherwise the NR dashboard will show the tool call in Responses table
+                # Because the table looks for the first assistant message with content
+                if not content_val and tool_calls:
+                    content_val = json.dumps(tool_calls)
+
+                    try:
+                        tool_name = (
+                            tool_calls[0].get("function", {}).get("name", "tool call")
+                        )
+                        msg_payload["role"] += f" ({tool_name})"
+                    except (IndexError, AttributeError, TypeError):
+                        msg_payload["role"] += " (tool call)"
+
                 if content_val:
                     if (
                         role == "user"
