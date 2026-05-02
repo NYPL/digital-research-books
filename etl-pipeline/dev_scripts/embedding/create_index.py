@@ -121,7 +121,7 @@ out_dir = INDEXING_RESULTS_DIR / run_timestamp
 print(f"Indexing Run Results Dir: {out_dir}")
 
 for i, batch in enumerate(batched(barcodes, 100)):
-    print(f"\nBatch {i + 1}: barcodes {batch[0]!r} .. {batch[-1]!r}")
+    print(f"\nStarted Batch {i + 1}: barcodes {batch[0]!r} .. {batch[-1]!r}")
     batch_result = run_pipeline(
         batch,
         # loader=LocalBookLoader(
@@ -130,6 +130,7 @@ for i, batch in enumerate(batched(barcodes, 100)):
         embedder=index_config["embedder"],
         backend=index_config["backend"],
     )
+    print(f"\nCompleted Batch {i + 1}: barcodes {batch[0]!r} .. {batch[-1]!r}")
 
     # TODO: add index config + book config  metadata save + aggregates
     saved_path = batch_result.save(out_dir)
