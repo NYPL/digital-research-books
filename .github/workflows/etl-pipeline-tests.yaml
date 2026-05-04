@@ -17,6 +17,7 @@ on:
       - "etl-pipeline/main.py"
       - "etl-pipeline/Makefile"
       - "etl-pipeline/Dockerfile"
+      - "etl-pipeline/pyproject.toml"
       - ".github/workflows/etl-pipeline-tests.yaml"
 
 permissions:
@@ -28,7 +29,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IS_CI: "true"
-      TURBOPUFFER_NAMESPACE: "vra-test"
       DOCKER_BUILDKIT: 1
       COMPOSE_DOCKER_CLI_BUILD: 1
 
