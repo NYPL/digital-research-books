@@ -119,27 +119,16 @@ const VRAPopupSurvey: React.FC = () => {
       {!isConfirmation && (
         <>
           <Flex justifyContent="space-between" alignItems="flex-start">
-            <Box>
-              <Heading
-                ref={headingRef}
-                id="survey-heading"
-                level="h2"
-                size="heading6"
-                tabIndex={-1}
-                style={{ outline: "none" }}
-              >
-                Enhanced Search Survey
-              </Heading>
-              <Text size="caption" color="ui.gray.dark">
-                <HiddenAria>
-                  Question {currentQuestionIndex + 1} of{" "}
-                  {SURVEY_QUESTIONS.length}
-                </HiddenAria>
-                <span aria-hidden="true">
-                  {currentQuestionIndex + 1} of {SURVEY_QUESTIONS.length}
-                </span>
-              </Text>
-            </Box>
+            <Heading
+              ref={headingRef}
+              id="survey-heading"
+              level="h2"
+              size="heading6"
+              tabIndex={-1}
+              style={{ outline: "none" }}
+            >
+              Enhanced Search Survey
+            </Heading>
             <Button
               variant="iconOnly"
               aria-label="Close survey"
@@ -153,6 +142,14 @@ const VRAPopupSurvey: React.FC = () => {
               <Icon name="close" size="large" />
             </Button>
           </Flex>
+          <Text size="caption" color="ui.gray.dark">
+            <HiddenAria>
+              Question {currentQuestionIndex + 1} of {SURVEY_QUESTIONS.length}
+            </HiddenAria>
+            <span aria-hidden="true">
+              {currentQuestionIndex + 1} of {SURVEY_QUESTIONS.length}
+            </span>
+          </Text>
           <Box marginTop="xs">
             <Flex flexDir="column" gap="xs">
               {!isLastQuestion && (
@@ -303,23 +300,38 @@ const VRAPopupSurvey: React.FC = () => {
         </>
       )}
       {isConfirmation && (
-        <Box
-          ref={confirmationRef}
-          display={isConfirmation ? "block" : "none"}
-          fontSize="desktop.body.body2"
-          paddingBottom="l"
-          textAlign="center"
-          tabIndex={-1}
-          sx={{ "&:focus": { outline: "none" } }}
-        >
-          <Icon
-            color="ui.success.primary"
-            name="actionCheckCircleFilled"
-            size="large"
-          />
-          <Text fontWeight="medium">Thank you for your feedback.</Text>
-          <Text>We look forward to improving your experience.</Text>
-        </Box>
+        <>
+          <Button
+            variant="iconOnly"
+            aria-label="Close survey"
+            border="none"
+            color="ui.black"
+            height="fit-content"
+            minWidth="24px"
+            width="24px"
+            marginLeft="auto"
+            padding="0"
+            onClick={closeSurvey}
+          >
+            <Icon name="close" size="large" />
+          </Button>
+          <Box
+            ref={confirmationRef}
+            fontSize="desktop.body.body2"
+            paddingBottom="l"
+            textAlign="center"
+            tabIndex={-1}
+            sx={{ "&:focus": { outline: "none" } }}
+          >
+            <Icon
+              color="ui.success.primary"
+              name="actionCheckCircleFilled"
+              size="large"
+            />
+            <Text fontWeight="medium">Thank you for your feedback.</Text>
+            <Text>We look forward to improving your experience.</Text>
+          </Box>
+        </>
       )}
     </Form>
   );
