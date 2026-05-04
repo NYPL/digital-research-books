@@ -111,6 +111,7 @@ class S3BookLoader(BookLoader):
         if self._s3_client is not None:
             return self._s3_client
         config = Config(
+            # TODO: maybe just set max_pool_connections directly from max_workers
             max_pool_connections=self._max_pool_connections,
             retries={"max_attempts": 3, "mode": "adaptive"},
         )
@@ -337,6 +338,8 @@ class S3BookLoader(BookLoader):
             return None
         return self._load_from_archive(barcode, archive_key)
 
+    # TODO: look for speed ups in downloading books in parallel and maybe
+    # multi-process decrypting
     def load(self, barcode: str) -> Book:
         """Load a book, trying sources in order: cache -> pages -> archive.
 

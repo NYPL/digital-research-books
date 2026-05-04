@@ -20,7 +20,7 @@ def get_boto3_session_with_assumed_role(
     Args:
         role_arn: ARN of the IAM role to assume.
         session_name: Identifier attached to the STS session ([\w+=,.@-], 2-64 chars).
-                      Defaults to "AssumedRoleSession-<uuid4_hex>".
+                      Defaults to "AssumedRoleSession-<unix_time>".
         region_name: AWS region for the STS call and the returned session.
                      Falls back to the environment / config default when None.
         duration_seconds: Lifetime of each set of temporary credentials (900-43200).
