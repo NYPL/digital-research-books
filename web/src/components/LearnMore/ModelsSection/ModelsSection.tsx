@@ -9,15 +9,13 @@ import Link from "../../Link/Link";
 import ArrowIcon from "../../ResearchAssistant/icons/ArrowIcon";
 import LandingCard from "../../ResearchAssistantLanding/LandingCard";
 import SectionContainer from "../../ResearchAssistantLanding/SectionContainer";
-import LandingButtons from "../LandingButtons";
+import LearnMoreButtons from "../LearnMoreButtons";
 
-// remove this later !
-
-interface HelpSectionProps {
+interface ModelSectionProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
 }
 
-const ModelsSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
+const ModelsSection: React.FC<ModelSectionProps> = ({ heroSectionRef }) => {
   return (
     <SectionContainer
       borderTop="1px solid"
@@ -129,7 +127,7 @@ const ModelsSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
             }
           />
         </Flex>
-        <LandingButtons heroSectionRef={heroSectionRef} />
+        <LearnMoreButtons heroSectionRef={heroSectionRef} />
       </Box>
     </SectionContainer>
   );

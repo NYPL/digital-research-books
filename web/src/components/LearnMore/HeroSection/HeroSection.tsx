@@ -6,8 +6,8 @@ import {
 } from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
 import ArrowIcon from "../../ResearchAssistant/icons/ArrowIcon";
-import SectionContainer from "../SectionContainer";
-import StatisticCard from "./StatisticCard";
+import SectionContainer from "../../ResearchAssistantLanding/SectionContainer";
+import StatisticRow from "./StatisticRow";
 
 interface HeroSectionProps {
   missionSectionRef: React.RefObject<HTMLDivElement>;
@@ -55,14 +55,8 @@ const HeroSection: React.ForwardRefExoticComponent<
             </Text>{" "}
             when it helps unlock access to knowledge
           </Heading>
-          <StatisticCard />
-          <Text
-            fontSize="md"
-            color="ui.gray.x-dark"
-            marginBottom="l"
-            lineHeight="150%"
-            isItalic={true}
-          >
+          <StatisticRow />
+          <Text fontSize="md" color="ui.gray.x-dark" marginBottom="l" isItalic>
             Our collection of Digitized Research Books as of 1 July 2026
             accessible through Enhanced Search
           </Text>

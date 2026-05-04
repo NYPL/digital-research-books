@@ -1,9 +1,9 @@
 import {
   Button,
   Flex,
-  Link,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
+import Link from "../Link/Link";
 import ArrowIcon from "../ResearchAssistant/icons/ArrowIcon";
 
 interface LandingButtonsProps {
@@ -38,23 +38,26 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({
       >
         Try it out <ArrowIcon direction="up" color="#FFF" />
       </Button>
-      <Link href="/learn-more">
-        <Button
-          id="learn-more-button"
-          variant="secondary"
-          aria-label="Learn more about the project"
-          backgroundColor="ui.white"
-          borderColor="section.research.secondary"
-          borderRadius="8px"
-          color="section.research.secondary"
-          fontWeight="medium"
-          margin="0 auto"
-          _hover={{
-            backgroundColor: "section.research.primary-05",
-          }}
-        >
-          Learn more
-        </Button>
+      <Link
+        to="/learn-more"
+        width="auto"
+        id="learn-more-button"
+        variant="buttonSecondary"
+        aria-label="Learn more about the project"
+        backgroundColor="ui.white"
+        borderColor="section.research.secondary"
+        borderRadius="8px"
+        color="section.research.secondary"
+        fontWeight="medium"
+        margin="0 auto"
+        _hover={{
+          backgroundColor: "section.research.primary-05",
+        }}
+        _visited={{
+          color: "section.research.secondary",
+        }}
+      >
+        Learn more
       </Link>
     </Flex>
   );

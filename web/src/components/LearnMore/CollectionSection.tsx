@@ -3,6 +3,7 @@ import {
   Flex,
   Heading,
   Image,
+  Link,
   Text,
 } from "@nypl/design-system-react-components";
 import SectionContainer from "../ResearchAssistantLanding/SectionContainer";
@@ -40,17 +41,19 @@ const CollectionSection: React.FC = () => {
               sources - the New York Public Library&apos;s own collections
               digitized through the Google Books project, and the public corpus
               of the{" "}
-              <Text
-                as="a"
+              <Link
                 color="section.research.secondary"
                 textDecoration="underline"
                 textDecorationStyle="dotted"
                 href="https://institutional.org/"
                 target="_blank"
                 rel="noopener noreferrer"
+                _visited={{
+                  color: "section.research.secondary",
+                }}
               >
                 Harvard Institutional Data Initiative
-              </Text>
+              </Link>
               .
             </Text>
             <Text
@@ -87,7 +90,6 @@ const CollectionSection: React.FC = () => {
             color="ui.gray.dark"
             marginBottom="s"
             paddingBottom="l"
-            fontWeight="regular"
           >
             The collection currently contains 136 unique languages. English and
             other Western European languages make up the bulk of the material.
@@ -117,21 +119,22 @@ const CollectionSection: React.FC = () => {
             color="ui.gray.dark"
             marginBottom="s"
             paddingBottom="l"
-            fontWeight="regular"
           >
             The collection currently contains 82 subjects classified using the
             first level of{" "}
-            <Text
-              as="a"
+            <Link
               color="section.research.secondary"
               textDecoration="underline"
               textDecorationStyle="dotted"
               href="https://www.loc.gov/catdir/cpso/lcco/"
               target="_blank"
               rel="noopener noreferrer"
+              _visited={{
+                color: "section.research.secondary",
+              }}
             >
               Library of Congress&apos; Classification Outline
-            </Text>
+            </Link>
             . The table below shows the top ten subjects.
           </Text>
           <Image
@@ -159,7 +162,6 @@ const CollectionSection: React.FC = () => {
             color="ui.gray.dark"
             marginBottom="s"
             paddingBottom="l"
-            fontWeight="regular"
           >
             72% of books in the current collection have a precise date of
             publication. Most books were published prior to 1930.

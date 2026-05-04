@@ -6,7 +6,7 @@ import LookupIcon from "./LookupIcon";
 import RAGIcon from "./RAGIcon";
 
 const AiWorkflow = () => {
-  const pipelineSteps = [
+  const workflowSteps = [
     {
       icon: <InputIcon />,
       title: "USER INPUT",
@@ -41,7 +41,7 @@ const AiWorkflow = () => {
   return (
     <Box display="flex" flexDir="row" gap="58px" margin="0 auto" marginTop="xl">
       <Flex flexDir="column">
-        {pipelineSteps.map((stage, index) => (
+        {workflowSteps.map((stage, index) => (
           <Box key={index}>
             <Box
               background="ui.white"
@@ -53,7 +53,7 @@ const AiWorkflow = () => {
             >
               {stage.icon}
             </Box>
-            {index < pipelineSteps.length - 1 && (
+            {index < workflowSteps.length - 1 && (
               <Flex justifyContent="center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -73,9 +73,9 @@ const AiWorkflow = () => {
         ))}
       </Flex>
       <Flex flexDir="column" gap="xl">
-        {pipelineSteps.map((stage, index) => (
+        {workflowSteps.map((stage, index) => (
           <Box key={index} width="395px">
-            <Heading size="heading8" fontWeight="700">
+            <Heading size="heading8" fontWeight="bold">
               {stage.title}
             </Heading>
             <Text fontSize="lg">{stage.description}</Text>

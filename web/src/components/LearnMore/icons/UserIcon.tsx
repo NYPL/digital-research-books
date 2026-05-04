@@ -37,7 +37,7 @@ const UserIcon: React.FC<UserIconProps> = ({
         // @ts-expect-error: Override color value type
         color={color}
         size={size}
-        id="research-assistant-icon"
+        id="user-icon"
       >
         {svgIcon}
       </Icon>

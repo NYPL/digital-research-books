@@ -37,7 +37,7 @@ const BookIcon: React.FC<BookIconProps> = ({
         // @ts-expect-error: Override color value type
         color={color}
         size={size}
-        id="research-assistant-icon"
+        id="digitized-research-books-icon"
       >
         {svgIcon}
       </Icon>

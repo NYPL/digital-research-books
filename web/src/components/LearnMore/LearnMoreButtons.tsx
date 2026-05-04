@@ -1,4 +1,5 @@
-import { Button, Flex, Link } from "@nypl/design-system-react-components";
+import { Button, Flex } from "@nypl/design-system-react-components";
+import Link from "../Link/Link";
 import ArrowIcon from "../ResearchAssistant/icons/ArrowIcon";
 
 interface LandingButtonsProps {
@@ -6,7 +7,7 @@ interface LandingButtonsProps {
 }
 
 const LandingButtons: React.FC<LandingButtonsProps> = ({ heroSectionRef }) => {
-  const handleTryItClick = () => {
+  const handleBackToTopClick = () => {
     if (heroSectionRef.current) {
       heroSectionRef.current.scrollIntoView({ behavior: "smooth" });
     } else {
@@ -16,32 +17,31 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({ heroSectionRef }) => {
 
   return (
     <Flex marginTop="xxl" width="fit-content" gap="s" marginX="auto">
-      <Link href="/research-assistant-landing">
-        <Button
-          id="try-it-button"
-          variant="primary"
-          backgroundColor="section.research.secondary"
-          margin="0 auto"
-          borderRadius="8px"
-          fontWeight="medium"
-          _hover={{
-            backgroundColor: "section.research.primary",
-          }}
-        >
-          Try Enhanced Search
-        </Button>
+      <Link
+        to="/research-assistant-landing"
+        variant="buttonPrimary"
+        aria-label="Try out the project"
+        id="try-it-button"
+        width="auto"
+        backgroundColor="section.research.secondary"
+        borderRadius="8px"
+        fontWeight="medium"
+        color="ui.white"
+        _hover={{
+          backgroundColor: "section.research.primary",
+        }}
+      >
+        Try Enhanced Search
       </Link>
       <Button
-        id="learn-more-button"
+        id="back-to-top-button"
         variant="secondary"
-        aria-label="Learn more about the project"
         backgroundColor="ui.white"
         borderColor="section.research.secondary"
         borderRadius="8px"
         color="section.research.secondary"
         fontWeight="medium"
-        onClick={handleTryItClick}
-        margin="0 auto"
+        onClick={handleBackToTopClick}
         _hover={{
           backgroundColor: "section.research.primary-05",
         }}

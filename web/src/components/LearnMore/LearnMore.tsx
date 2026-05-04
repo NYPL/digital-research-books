@@ -32,9 +32,9 @@ const LearnMore: React.FC = () => {
           ref={missionSectionRef}
           heroSectionRef={heroSectionRef}
         ></MissionSection>
-        <CollectionSection></CollectionSection>
-        <TechnologySection></TechnologySection>
-        <ModelsSection heroSectionRef={heroSectionRef}></ModelsSection>
+        <CollectionSection />
+        <TechnologySection />
+        <ModelsSection heroSectionRef={heroSectionRef} />
       </Box>
     </>
   );

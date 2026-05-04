@@ -29,7 +29,7 @@ const TechnologySection: React.FC = () => {
         >
           The technology
         </Heading>
-        <Flex flexDir="column" gap="m">
+        <Flex flexDir="column" gap="s">
           <Text
             fontSize="desktop.heading.heading5"
             color="ui.gray.dark"
@@ -70,11 +70,9 @@ const TechnologySection: React.FC = () => {
               level="h3"
               marginBottom="s"
               size="heading3"
-              fontWeight="400"
+              fontFamily="Domine"
             >
-              <Box display="flex" fontFamily="Domine">
-                <span>Book ingestion pipeline</span>
-              </Box>
+              Book ingestion pipeline
             </Heading>
             <Text fontSize="lg" color="ui.gray.dark">
               Our ingestion pipeline downloads, refines, embeds, and stores data
@@ -95,11 +93,9 @@ const TechnologySection: React.FC = () => {
               level="h3"
               marginBottom="s"
               size="heading3"
-              fontWeight="400"
+              fontFamily="Domine"
             >
-              <Box display="flex" fontFamily="Domine">
-                <span>Agentic AI workflow</span>
-              </Box>
+              Agentic AI workflow
             </Heading>
             <Text fontSize="lg" color="ui.gray.dark">
               Enhanced Search is enabled by an agentic AI workflow. Comprised of

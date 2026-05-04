@@ -14,56 +14,72 @@ const StatisticCard: React.FC = () => {
     >
       <Flex flexDir="column" alignItems="center" width="181px">
         <Text
-          fontSize="54px"
-          fontWeight="590"
+          fontSize="desktop.heading.heading1"
+          fontWeight="semibold"
           lineHeight="120%"
           color="section.research.secondary"
         >
           1m
         </Text>
-        <Text fontSize="1.375rem" fontWeight="590" lineHeight="135%">
+        <Text
+          fontSize="desktop.heading.heading5"
+          fontWeight="semibold"
+          lineHeight="135%"
+        >
           books
         </Text>
       </Flex>
       <Divider orientation="vertical" color="section.research.secondary" />
       <Flex flexDir="column" alignItems="center" width="181px">
         <Text
-          fontSize="54px"
-          fontWeight="590"
+          fontSize="desktop.heading.heading1"
+          fontWeight="semibold"
           lineHeight="120%"
           color="section.research.secondary"
         >
           352m
         </Text>
-        <Text fontSize="1.375rem" fontWeight="590" lineHeight="135%">
+        <Text
+          fontSize="desktop.heading.heading5"
+          fontWeight="semibold"
+          lineHeight="135%"
+        >
           pages
         </Text>
       </Flex>
       <Divider orientation="vertical" color="section.research.secondary" />
       <Flex flexDir="column" alignItems="center" width="181px">
         <Text
-          fontSize="54px"
-          fontWeight="590"
+          fontSize="desktop.heading.heading1"
+          fontWeight="semibold"
           lineHeight="120%"
           color="section.research.secondary"
         >
           136
         </Text>
-        <Text fontSize="1.375rem" fontWeight="590" lineHeight="135%">
+        <Text
+          fontSize="desktop.heading.heading5"
+          fontWeight="semibold"
+          lineHeight="135%"
+        >
           languages
         </Text>
       </Flex>
       <Divider orientation="vertical" color="section.research.secondary" />
       <Flex flexDir="column" alignItems="center" width="181px">
         <Text
-          fontSize="54px"
-          fontWeight="590"
+          fontSize="desktop.heading.heading1"
+          fontWeight="semibold"
           lineHeight="120%"
           color="section.research.secondary"
         >
           82
         </Text>
-        <Text fontSize="1.375rem" fontWeight="590" lineHeight="135%">
+        <Text
+          fontSize="desktop.heading.heading5"
+          fontWeight="semibold"
+          lineHeight="135%"
+        >
           subject
         </Text>
       </Flex>

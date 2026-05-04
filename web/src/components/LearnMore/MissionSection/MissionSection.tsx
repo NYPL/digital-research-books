@@ -1,6 +1,6 @@
 import { Heading, Text } from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
-import SectionContainer from "../SectionContainer";
+import SectionContainer from "../../ResearchAssistantLanding/SectionContainer";
 import MissionDiagram from "./MissionDiagram";
 import NumberCircle from "./NumberCircle";
 
@@ -52,8 +52,8 @@ const MissionSection: React.ForwardRefExoticComponent<
           fontWeight="semibold"
           marginBottom="l"
         >
-          To make this collection highly discoverable and accessible by
-          leveraging AI
+          To leverage AI in making this collection highly discoverable and
+          accessible
         </Text>
         <NumberCircle number={3} />
 
@@ -66,7 +66,7 @@ const MissionSection: React.ForwardRefExoticComponent<
           To steward this project as ethically and responsibly as possible
         </Text>
         <MissionDiagram />
-        <Text color="ui.gray.x-dark" isItalic={true}>
+        <Text color="ui.gray.x-dark" isItalic>
           Enhanced Search uses AI to make Digitized Research Books accessible to
           all
         </Text>

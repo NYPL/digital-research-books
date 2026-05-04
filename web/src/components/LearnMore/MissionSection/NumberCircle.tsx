@@ -15,8 +15,8 @@ const NumberCircle = ({ number }: NumberCircleProps) => {
       display="flex"
       alignItems="center"
       justifyContent="center"
-      fontWeight="700"
-      fontSize="1.125rem"
+      fontWeight="bold"
+      fontSize="lg"
       margin="0 auto"
       marginBottom="xs"
     >
