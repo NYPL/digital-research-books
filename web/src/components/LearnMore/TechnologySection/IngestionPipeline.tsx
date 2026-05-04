@@ -49,9 +49,8 @@ const IngestionPipeline = () => {
     >
       <Flex flexDir="column">
         {pipelineSteps.map((stage, index) => (
-          <>
+          <Box key={index}>
             <Box
-              key={index}
               background="ui.white"
               border="2px solid"
               borderColor="section.research.secondary"
@@ -77,7 +76,7 @@ const IngestionPipeline = () => {
                 </svg>
               </Flex>
             )}
-          </>
+          </Box>
         ))}
       </Flex>
       <Flex flexDir="column" gap="xl">

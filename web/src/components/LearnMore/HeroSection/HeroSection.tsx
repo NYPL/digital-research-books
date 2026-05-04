@@ -31,7 +31,7 @@ const HeroSection: React.ForwardRefExoticComponent<
     return (
       <SectionContainer
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
-        paddingTop="5.25rem"
+        paddingTop="74px"
         paddingBottom="l"
         ref={ref}
       >
@@ -45,7 +45,7 @@ const HeroSection: React.ForwardRefExoticComponent<
             level="h1"
             fontWeight="bold"
             maxWidth="740px"
-            marginBottom="87.5px"
+            marginBottom="76.5px"
             size="heading1"
             fontFamily="Domine"
           >
