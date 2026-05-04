@@ -150,7 +150,7 @@ If no version number is returned, install Playwright manually:
 npm install playwright
 ```
 
-ℹ️&nbsp;&nbsp;Manual installation may be required if only production dependencies are installed (as in [playwright.yml](https://github.com/NYPL/digital-research-books/blob/main/.github/workflows/playwright.yml)).
+ℹ️&nbsp;&nbsp;Manual installation may be required if only production dependencies are installed.
 
 
 #### 2. Install Playwright browsers

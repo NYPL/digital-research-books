@@ -195,7 +195,7 @@ const TECHNOLOGY_ACCORDION_DATA = [
             variant="ul"
             sx={{
               "li::before": {
-                content: '"+"',
+                content: '"+" / ""',
                 fontWeight: "medium",
                 color: "ui.black",
               },

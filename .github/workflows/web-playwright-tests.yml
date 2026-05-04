@@ -1,0 +1,186 @@
+name: Playwright Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL for environment"
+        default: "https://drb-qa.nypl.org"
+        required: false
+        type: string
+      api_url:
+        description: "API URL for environment"
+        default: "https://drb-api-qa.nypl.org"
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      base_url:
+        description: "Base URL for environment"
+        default: "http://local.nypl.org:3000/"
+        required: false
+        type: string
+      api_url:
+        description: "API URL for environment"
+        default: "https://drb-api-qa.nypl.org"
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright_tests:
+    name: Run Playwright Tests
+
+    # Configure use of self-hosted GHA runner
+    runs-on: self-hosted
+
+    env:
+      AWS_REGION: us-east-1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "web/.nvmrc"
+          cache: npm
+          cache-dependency-path: "web/package-lock.json"
+
+      - name: Get AWS credentials for IAM role in primary NYPL account
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::491147561046:role/GithubActionsRunnerRole
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GHAPrimarySession-${{ github.run_id }}
+          audience: sts.amazonaws.com
+
+      - name: Get AWS credentials for IAM role in nypl-digital-dev account
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::946183545209:role/GHACrossAccountRole
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GHASecondarySession-${{ github.run_id }}
+          role-chaining: true
+          role-duration-seconds: 1800 # 30 mins
+          audience: sts.amazonaws.com
+
+      - name: Fetch API key and test user credentials from SSM
+        shell: bash
+        run: |
+          set -euo pipefail
+          API_KEY=$(aws ssm get-parameter --name '/drb/qa/api-key' --with-decryption --query 'Parameter.Value' --output text)
+          CATALOG_USERNAME=$(aws ssm get-parameter --name '/drb/qa/catalog-test-user/user' --with-decryption --query 'Parameter.Value' --output text)
+          CATALOG_USER_PIN=$(aws ssm get-parameter --name '/drb/qa/catalog-test-user/pswd' --with-decryption --query 'Parameter.Value' --output text)
+          VRA_USERNAME=$(aws ssm get-parameter --name '/drb/qa/vra-test-user/user' --with-decryption --query 'Parameter.Value' --output text)
+          VRA_PASSWORD=$(aws ssm get-parameter --name '/drb/qa/vra-test-user/pswd' --with-decryption --query 'Parameter.Value' --output text)
+
+          echo "::add-mask::$API_KEY"
+          echo "::add-mask::$CATALOG_USERNAME"
+          echo "::add-mask::$CATALOG_USER_PIN"
+          echo "::add-mask::$VRA_USERNAME"
+          echo "::add-mask::$VRA_PASSWORD"
+
+          echo "API_KEY=$API_KEY" >> "$GITHUB_ENV"
+          echo "CATALOG_USERNAME=$CATALOG_USERNAME" >> "$GITHUB_ENV"
+          echo "CATALOG_USER_PIN=$CATALOG_USER_PIN" >> "$GITHUB_ENV"
+          echo "VRA_USERNAME=$VRA_USERNAME" >> "$GITHUB_ENV"
+          echo "VRA_PASSWORD=$VRA_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Add hosts to /etc/hosts
+        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        run: |
+          echo "127.0.0.1 local.nypl.org" | sudo tee -a /etc/hosts
+
+      - name: Download Docker image artifact
+        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        uses: actions/download-artifact@v7
+        with:
+          name: web-image
+          path: /tmp
+
+      - name: Load Docker image
+        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        run: docker load --input /tmp/web.tar
+
+      - name: Install Test Dependencies
+        working-directory: ./web
+        run: npm i @playwright/test@1.59.0
+
+      - name: Install headless Chromium
+        working-directory: ./web
+        run: npx playwright install chromium --with-deps --only-shell
+
+      - name: Start the dockerized app
+        if: inputs.base_url == 'http://local.nypl.org:3000/'
+        run: |
+          # Prevent exposure of API_KEY in runner instance by setting it in an env file and
+          # mounting as a volume instead of passing it directly as a command line arg.
+          cat <<EOF > .env.local
+          API_KEY=$API_KEY
+          EOF
+
+          docker run --name web -d \
+            -v $(pwd)/.env.local:/app/.env.local \
+            -e BASE_URL="${{ inputs.base_url }}" \
+            -e API_URL="${{ inputs.api_url }}" \
+            -e NEW_RELIC_APP_NAME="Playwright Tests" \
+            -e NEW_RELIC_ENABLED="false" \
+            -e NEW_RELIC_LOG="stdout" \
+            -p 3000:3000 web:test
+
+          echo "Starting the app..."
+          for i in {1..30}; do
+            curl -s http://localhost:3000 > /dev/null && echo "App is ready" && exit 0
+            sleep 2
+          done
+
+          echo "App failed to start after 1 minute. Exiting."
+          exit 1
+        shell: bash
+
+      - name: Run Playwright tests (DRB)
+        id: drb_tests
+        working-directory: ./web
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          API_URL: ${{ inputs.api_url }}
+          CATALOG_USERNAME: ${{ env.CATALOG_USERNAME }}
+          CATALOG_USER_PIN: ${{ env.CATALOG_USER_PIN }}
+        run: npm run playwright:drb
+
+      - name: Run Playwright tests (VRA)
+        id: vra_tests
+        if: success() || steps.drb_tests.outcome == 'failure'
+        working-directory: ./web
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          API_URL: ${{ inputs.api_url }}
+          VRA_USERNAME: ${{ env.VRA_USERNAME }}
+          VRA_PASSWORD: ${{ env.VRA_PASSWORD }}
+        run: npm run playwright:vra
+
+      - name: Upload error context (if any)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-error-context
+          path: web/test-results/*/error-context.md
+
+      - name: Dump app logs
+        if: always() && inputs.base_url == 'http://local.nypl.org:3000/'
+        run: docker logs web || echo "No container logs found."
+
+      - name: Clean up app container and env file
+        if: always() && inputs.base_url == 'http://local.nypl.org:3000/'
+        run: |
+          docker rm -f web || true
+          rm -f .env.local

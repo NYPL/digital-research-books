@@ -60,7 +60,7 @@ logger = create_log(__name__)
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
 
-INDEX_NAME = os.getenv("TURBOPUFFER_NAMESPACE") or "vra-dev"
+INDEX_NAME = os.getenv("TURBOPUFFER_NAMESPACE")
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
@@ -197,7 +197,6 @@ def recurse_filters(filter_: Any, processing_func: Callable) -> Any:
 
     operator = filter_[0]
 
-    print(filter_)
     if operator in META_OPERATORS:
         if operator == "Not":
             # ["Not", child_filter]
@@ -558,6 +557,18 @@ async def update_chat(
     return run_result
 
 
+def get_session_messages(session_id):
+    """Read message data for session ID as ND-JSON"""
+    engine = get_engine()
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text("SELECT * FROM agent_messages WHERE session_id = :sid ORDER BY id"),
+            {"sid": session_id},
+        ).fetchall()
+    messages = [json.loads(row.message_data) for row in rows]
+    return messages
+
+
 def delete_session_data(session_id: str) -> None:
     """Delete all rows in agent_messages and agent_sessions for the given session_id."""
     engine = get_engine()
@@ -714,6 +725,8 @@ def search_catalog(
             # TODO: handle paginating or providing more edition hits
 
         # Fetch FRBR data (from DB)
+        # TODO: remove fetch of DB data everything the LLM needs is in TP \
+        # (right?) and the FE fetches other metadata in a separate request.
         edition_ids = [h["edition_id"] for h in edition_hits]
         logger.info(
             f"Fetching FRBR metadata for the following edition_ids: {edition_ids}"
@@ -859,40 +872,30 @@ def format_frbr_fields(orm_work, orm_edition):
     """
     Format ORM work and edition attributes for printing.
     """
-    # Format work metadata
     title = orm_work.title or "(Title Unavailable)"
 
     authors = orm_work.authors or []
-    author_names = (
+    authors_concat = (
         ", ".join([a.get("name", "") for a in authors if isinstance(a, dict)])
         if authors
         else "(Authors Unavailable)"
     )
 
     subjects = orm_work.subjects or []
-    subject_list = (
+    subjects_concat = (
         ", ".join([s.get("heading", "") for s in subjects if isinstance(s, dict)])
         if subjects
         else "(Subjects Unavailable)"
     )
 
-    # Format edition metadata
     pub_date = (
         str(orm_edition.publication_date)
         if orm_edition.publication_date
         else "(Publication Date Unavailable)"
     )
 
-    publishers = orm_edition.publishers or []
-    publisher_names = (
-        ", ".join([p.get("name", "") for p in publishers if isinstance(p, dict)])
-        if publishers
-        else "(Publishers Unavailable)"
-    )
-
-    # Format language metadata
     languages = orm_edition.languages or []
-    language_list = (
+    languages_concat = (
         ", ".join(
             [
                 lang.get("language", "") if isinstance(lang, dict) else str(lang)
@@ -903,13 +906,21 @@ def format_frbr_fields(orm_work, orm_edition):
         else "(Languages Unavailable)"
     )
 
+    # NOTE: publisher is the only field not indexed in TP (only in DB)
+    publishers = orm_edition.publishers or []
+    publishers_concat = (
+        ", ".join([p.get("name", "") for p in publishers if isinstance(p, dict)])
+        if publishers
+        else "(Publishers Unavailable)"
+    )
+
     return {
         "title": title,
-        "author_names": author_names,
-        "subject_list": subject_list,
+        "author_names": authors_concat,
+        "subject_list": subjects_concat,
         "pub_date": pub_date,
-        "publisher_names": publisher_names,
-        "language_list": language_list,
+        "publisher_names": publishers_concat,
+        "language_list": languages_concat,
     }
 
 

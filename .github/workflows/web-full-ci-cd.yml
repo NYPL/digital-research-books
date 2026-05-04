@@ -16,7 +16,7 @@ jobs:
   # Job to run e2e tests on the QA environment after deployment
   run_e2e_tests:
     needs: deploy_to_qa
-    uses: ./.github/workflows/playwright.yml
+    uses: ./.github/workflows/web-playwright-tests.yml
     with:
       base_url: "https://drb-qa.nypl.org/"
     secrets: inherit

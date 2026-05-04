@@ -79,14 +79,14 @@ class GRINIngestProcess:
 
             record = self._map_record(barcode, mets_file)
             if self._is_in_public_domain(record):
-                skip_next = False
+                queue_etl = True
             else:
-                skip_next = (
-                    self.params.options.get("skip_next", "false").lower() == "true"
+                queue_etl = (
+                    self.params.options.get("queue_etl", "true").lower() == "true"
                 )
             self.record_ingestor.ingest(
                 [record],
-                skip_next=skip_next,
+                queue_etl=queue_etl,
             )
         except Exception:
             logger.exception(f"Failed to process barcode: {barcode}")
