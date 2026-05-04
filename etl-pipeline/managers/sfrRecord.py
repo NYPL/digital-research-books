@@ -67,6 +67,8 @@ class SFRRecordManager:
 
         matchedWorks = []
         for matchedWork in (
+            # NOTE: dcdw_uuids are record uuids
+            # Find works that are not the new work, that contain overlapping records
             self.session.query(Work)
             .join(Edition)
             .filter(Work.uuid != self.work.uuid)
@@ -177,6 +179,8 @@ class SFRRecordManager:
         return editionRecs, workRecs
 
     def buildWork(self, records, editions):
+        """Collect work/edition/item data in a dict from records"""
+
         editionRecs, workRecs = self.buildEditionStructure(records, editions)
 
         workData = SFRRecordManager.createEmptyWorkRecord()
@@ -201,6 +205,8 @@ class SFRRecordManager:
             workData["subjects"].update(rec.subjects)
 
     def buildEdition(self, workData, pubYear, instances):
+        """Collect single edition + items data in a dict from records"""
+
         editionData = SFRRecordManager.createEmptyEditionRecord()
 
         # Publication Year
@@ -212,6 +218,7 @@ class SFRRecordManager:
         workData["editions"].append(editionData)
 
     def parseInstance(self, workData, editionData, rec):
+        """Insert data from single record into a single work and single edition data dict"""
         # Title Fields
         workData["title"][rec.title] += 1
         editionData["title"][rec.title] += 1
@@ -298,6 +305,7 @@ class SFRRecordManager:
         editionData["dcdw_uuids"].append(rec.uuid.hex)
 
     def buildItems(self, editionData, rec: Record, itemContributors):
+        """Insert data from a single record into a single edition + items dict"""
         number_of_parts = max(
             max(
                 (
@@ -314,6 +322,7 @@ class SFRRecordManager:
         editionData["items"].extend([None] * number_of_parts)
 
         for item in rec.parts:
+            # Update Edition.links
             try:
                 linkFlags = json.loads(item.flags)
                 linkFlags = linkFlags if isinstance(linkFlags, dict) else {}
@@ -326,6 +335,7 @@ class SFRRecordManager:
                 )
                 continue
 
+            # Update Item
             itemPos = startPos + int(item.index)
             if editionData["items"][itemPos] is None:
                 editionData["items"][itemPos] = {
@@ -345,6 +355,8 @@ class SFRRecordManager:
                 },
             }
 
+            # Q: why is this append() rather than direct assignment? The logic \
+            # never visits this itemPos again, right?
             editionData["items"][itemPos]["links"].append(
                 "{}|{}|{}".format(item.url, item.file_type, item.flags)
             )
@@ -376,6 +388,7 @@ class SFRRecordManager:
                         break
 
     def saveWork(self, workData):
+        """Insert data from work dict into work ORM obj (with some parsing applied)"""
         # Set Titles
         try:
             self.work.title = workData["title"].most_common(1)[0][0].strip(" .:/")

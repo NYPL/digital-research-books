@@ -4,8 +4,8 @@ from model import Record, FRBRStatus
 
 class RecordBuffer:
     """
-    Handles upsert of records into the "records" table with efficient bulk writes.
-    Record.source_id is the unique identifier for Record entities.
+    Handles upsert of rows to the "records" table with efficient bulk writes.
+    Upsert matches on the Record.source_id field, not Record.id (which is primary key).
     """
 
     def __init__(self, db_manager: DBManager, batch_size: int = 500):
