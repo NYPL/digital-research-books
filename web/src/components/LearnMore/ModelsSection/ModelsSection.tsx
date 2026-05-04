@@ -1,4 +1,10 @@
-import { Box, Flex, Heading, Text } from "@nypl/design-system-react-components";
+import {
+  Box,
+  Flex,
+  Heading,
+  Image,
+  Text,
+} from "@nypl/design-system-react-components";
 import Link from "../../Link/Link";
 import ArrowIcon from "../../ResearchAssistant/icons/ArrowIcon";
 import LandingCard from "../../ResearchAssistantLanding/LandingCard";
@@ -14,10 +20,6 @@ interface HelpSectionProps {
 const ModelsSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
   return (
     <SectionContainer
-      backgroundImage={`
-        radial-gradient(circle, rgba(0, 131, 138, 0.025) 2px, transparent 2px)`}
-      backgroundSize="16px 16px"
-      backgroundPosition="center"
       borderTop="1px solid"
       borderColor="section.research.primary-10"
       color="ui.typography.body"
@@ -44,12 +46,14 @@ const ModelsSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
         </Text>
         <Flex gap="l" marginTop="xxl" marginBottom="xxl">
           <LandingCard
-            gap="l"
+            gap="s"
             icon={
-              <img
-                src="/images/GeminiFlashIcon.png"
-                alt="Gemini Flash icon"
+              <Image
+                src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/GeminiFlashIcon.png"
+                alt="Google Gemini Flash icon depicting a rainbow four tipped star on a white background."
                 width="48px"
+                flexShrink="0"
+                backgroundColor="transparent"
               />
             }
             heading={
@@ -83,12 +87,14 @@ const ModelsSection: React.FC<HelpSectionProps> = ({ heroSectionRef }) => {
             }
           />
           <LandingCard
-            gap="l"
+            gap="s"
             icon={
-              <img
-                src="/images/GeminiFlashIcon.png"
-                alt="Gemini Embeddings icon"
+              <Image
+                src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/GeminiEmbeddingsIcon.png"
+                alt="Google Gemini Embeddings icon depicting a blue four tipped star on a white background."
                 width="48px"
+                flexShrink="0"
+                backgroundColor="transparent"
               />
             }
             heading={

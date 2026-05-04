@@ -1,4 +1,10 @@
-import { Box, Heading, Text } from "@nypl/design-system-react-components";
+import {
+  Box,
+  Flex,
+  Heading,
+  Image,
+  Text,
+} from "@nypl/design-system-react-components";
 import SectionContainer from "../../ResearchAssistantLanding/SectionContainer";
 import AiWorkflow from "./AIWorkflow";
 import IngestionPipeline from "./IngestionPipeline";
@@ -23,7 +29,7 @@ const TechnologySection: React.FC = () => {
         >
           The technology
         </Heading>
-        <Box display="flex" flexDir="column" gap="m">
+        <Flex flexDir="column" gap="m">
           <Text
             fontSize="desktop.heading.heading5"
             color="ui.gray.dark"
@@ -43,21 +49,16 @@ const TechnologySection: React.FC = () => {
             It has been designed to help users quickly and deeply engage with
             trusted scholarly sources.
           </Text>
-        </Box>
-        <Box
-          margin="0 auto"
-          display="flex"
-          justifyContent="center"
-          marginY="xxl"
-        >
-          {/* change these to be stored online and use link */}
-          <img
-            src="/images/diagram.png"
-            alt="Diagram of Enhanced Search flow"
+        </Flex>
+        <Flex margin="0 auto" justifyContent="center" marginY="xxl">
+          <Image
+            src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/technologyDiagram.png"
+            alt=""
             width="608px"
-            height="auto"
+            flexShrink="0"
+            backgroundColor="transparent"
           />
-        </Box>
+        </Flex>
         <Box
           display="flex"
           flexDir="column"

@@ -1,4 +1,4 @@
-import { Box, Heading, Text } from "@nypl/design-system-react-components";
+import { Box, Flex, Heading, Text } from "@nypl/design-system-react-components";
 import ChunkIcon from "./ChunkIcon";
 import ClusterIcon from "./ClusterIcon";
 import EmbedIcon from "./EmbedIcon";
@@ -47,7 +47,7 @@ const IngestionPipeline = () => {
       marginTop="xl"
       marginBottom="xxl"
     >
-      <Box display="flex" flexDir="column">
+      <Flex flexDir="column">
         {pipelineSteps.map((stage, index) => (
           <>
             <Box
@@ -62,18 +62,25 @@ const IngestionPipeline = () => {
               {stage.icon}
             </Box>
             {index < pipelineSteps.length - 1 && (
-              <Box
-                width="0"
-                height="8rem"
-                borderColor="section.research.secondary"
-                borderWidth="1px"
-                margin="0 auto"
-              ></Box>
+              <Flex justifyContent="center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="129"
+                  viewBox="0 0 15 129"
+                  fill="none"
+                >
+                  <path
+                    d="M6.65667 128.707C7.04719 129.098 7.68036 129.098 8.07088 128.707L14.4348 122.343C14.8254 121.953 14.8254 121.319 14.4348 120.929C14.0443 120.538 13.4112 120.538 13.0206 120.929L7.36378 126.586L1.70692 120.929C1.3164 120.538 0.683231 120.538 0.292707 120.929C-0.0978174 121.319 -0.0978173 121.953 0.292707 122.343L6.65667 128.707ZM7.36377 0L6.36377 4.37114e-08L6.36378 128L7.36378 128L8.36378 128L8.36377 -4.37114e-08L7.36377 0Z"
+                    fill="#006166"
+                  />
+                </svg>
+              </Flex>
             )}
           </>
         ))}
-      </Box>
-      <Box display="flex" flexDir="column" gap="xl">
+      </Flex>
+      <Flex flexDir="column" gap="xl">
         {pipelineSteps.map((stage, index) => (
           <Box key={index} width="395px">
             <Heading size="heading8" fontWeight="700">
@@ -82,7 +89,7 @@ const IngestionPipeline = () => {
             <Text fontSize="lg">{stage.description}</Text>
           </Box>
         ))}
-      </Box>
+      </Flex>
     </Box>
   );
 };

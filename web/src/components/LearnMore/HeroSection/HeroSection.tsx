@@ -1,6 +1,6 @@
 import {
-  Box,
   Button,
+  Flex,
   Heading,
   Text,
 } from "@nypl/design-system-react-components";
@@ -30,31 +30,31 @@ const HeroSection: React.ForwardRefExoticComponent<
 
     return (
       <SectionContainer
-        display="flex"
-        flexDir="column"
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
         paddingTop="5.25rem"
         paddingBottom="l"
         ref={ref}
       >
-        {/* used maxWidth here */}
-        <Box maxWidth="821px" margin="0 auto">
-          <Box display="flex" flexDir="column" alignItems="center">
-            <Heading
-              level="h1"
-              fontWeight="bold"
-              marginBottom="87.5px"
-              size="heading1"
-              fontFamily="Domine"
-            >
-              AI is more{" "}
-              <Text as="span" color="section.research.secondary">
-                meaningful
-              </Text>{" "}
-              <br />
-              when it helps unlock access to knowledge
-            </Heading>
-          </Box>
+        <Flex
+          flexDir="column"
+          margin="0 auto"
+          alignItems="center"
+          textAlign="center"
+        >
+          <Heading
+            level="h1"
+            fontWeight="bold"
+            maxWidth="740px"
+            marginBottom="87.5px"
+            size="heading1"
+            fontFamily="Domine"
+          >
+            AI is more{" "}
+            <Text as="span" color="section.research.secondary">
+              meaningful
+            </Text>{" "}
+            when it helps unlock access to knowledge
+          </Heading>
           <StatisticCard />
           <Text
             fontSize="md"
@@ -83,7 +83,7 @@ const HeroSection: React.ForwardRefExoticComponent<
           >
             Read More? <ArrowIcon direction="down" color="#006166" />
           </Button>
-        </Box>
+        </Flex>
       </SectionContainer>
     );
   }

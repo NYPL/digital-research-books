@@ -1,4 +1,4 @@
-import { Box, Text } from "@nypl/design-system-react-components";
+import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import Divider from "../Divider";
 
 const StatisticCard: React.FC = () => {
@@ -12,7 +12,7 @@ const StatisticCard: React.FC = () => {
       gap="1rem"
       marginBottom="63.5px"
     >
-      <Box display="flex" flexDir="column" alignItems="center" width="181px">
+      <Flex flexDir="column" alignItems="center" width="181px">
         <Text
           fontSize="54px"
           fontWeight="590"
@@ -24,9 +24,9 @@ const StatisticCard: React.FC = () => {
         <Text fontSize="1.375rem" fontWeight="590" lineHeight="135%">
           books
         </Text>
-      </Box>
+      </Flex>
       <Divider orientation="vertical" color="section.research.secondary" />
-      <Box display="flex" flexDir="column" alignItems="center" width="181px">
+      <Flex flexDir="column" alignItems="center" width="181px">
         <Text
           fontSize="54px"
           fontWeight="590"
@@ -38,9 +38,9 @@ const StatisticCard: React.FC = () => {
         <Text fontSize="1.375rem" fontWeight="590" lineHeight="135%">
           pages
         </Text>
-      </Box>
+      </Flex>
       <Divider orientation="vertical" color="section.research.secondary" />
-      <Box display="flex" flexDir="column" alignItems="center" width="181px">
+      <Flex flexDir="column" alignItems="center" width="181px">
         <Text
           fontSize="54px"
           fontWeight="590"
@@ -52,9 +52,9 @@ const StatisticCard: React.FC = () => {
         <Text fontSize="1.375rem" fontWeight="590" lineHeight="135%">
           languages
         </Text>
-      </Box>
+      </Flex>
       <Divider orientation="vertical" color="section.research.secondary" />
-      <Box display="flex" flexDir="column" alignItems="center" width="181px">
+      <Flex flexDir="column" alignItems="center" width="181px">
         <Text
           fontSize="54px"
           fontWeight="590"
@@ -66,7 +66,7 @@ const StatisticCard: React.FC = () => {
         <Text fontSize="1.375rem" fontWeight="590" lineHeight="135%">
           subject
         </Text>
-      </Box>
+      </Flex>
     </Box>
   );
 };

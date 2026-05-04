@@ -1,4 +1,10 @@
-import { Box, Heading, Text } from "@nypl/design-system-react-components";
+import {
+  Box,
+  Flex,
+  Heading,
+  Image,
+  Text,
+} from "@nypl/design-system-react-components";
 import SectionContainer from "../ResearchAssistantLanding/SectionContainer";
 import Divider from "./Divider";
 
@@ -7,28 +13,23 @@ const CollectionSection: React.FC = () => {
     <SectionContainer
       borderTop="1px solid"
       borderColor="section.research.primary-10"
-      backgroundImage={`
-        radial-gradient(circle, rgba(0, 131, 138, 0.025) 2px, transparent 2px)`}
-      backgroundSize="16px 16px"
-      backgroundPosition="center"
       color="ui.typography.body"
       display="flex"
       flexDir="column"
       textAlign="left"
     >
       <Box maxWidth="55rem" margin="0 auto">
-        <Box display="flex" flexDir="column" marginBottom="xxl">
+        <Flex flexDir="column" marginBottom="xxl">
           <Heading
             level="h2"
             fontWeight="bold"
             marginBottom="l"
             size="heading2"
+            fontFamily="Domine"
           >
-            <Box display="flex" fontFamily="Domine">
-              <span>The collection</span>
-            </Box>
+            The collection
           </Heading>
-          <Box display="flex" flexDir="column" gap="s">
+          <Flex flexDir="column" gap="s">
             <Text
               fontSize="desktop.heading.heading5"
               color="ui.gray.dark"
@@ -68,14 +69,18 @@ const CollectionSection: React.FC = () => {
             >
               More books are added to the collection every month.
             </Text>
-          </Box>
-        </Box>
+          </Flex>
+        </Flex>
         <Divider orientation="horizontal" color="#006166" />
-        <Box display="flex" flexDir="column" marginY="l">
-          <Heading level="h3" marginBottom="s" size="heading3" fontWeight="400">
-            <Box display="flex" fontFamily="Domine">
-              <span>Languages</span>
-            </Box>
+        <Flex flexDir="column" marginY="l">
+          <Heading
+            level="h3"
+            marginBottom="s"
+            size="heading3"
+            fontWeight="400"
+            fontFamily="Domine"
+          >
+            Languages
           </Heading>
           <Text
             fontSize="lg"
@@ -87,19 +92,25 @@ const CollectionSection: React.FC = () => {
             The collection currently contains 136 unique languages. English and
             other Western European languages make up the bulk of the material.
           </Text>
-          {/* change these to be stored online and use link */}
-          <img
-            src="/images/chart.png"
-            alt="Languages in the collection"
-            width="822px"
+          <Image
+            src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/languagesGraph.png"
+            alt=""
+            width="820px"
+            backgroundColor="transparent"
+            flexShrink="0"
+            margin="0 auto"
           />
-        </Box>
+        </Flex>
         <Divider orientation="horizontal" color="#006166" />
-        <Box display="flex" flexDir="column" marginY="l">
-          <Heading level="h3" marginBottom="s" size="heading3" fontWeight="400">
-            <Box display="flex" fontFamily="Domine">
-              <span>Subjects</span>
-            </Box>
+        <Flex flexDir="column" marginY="l">
+          <Heading
+            level="h3"
+            marginBottom="s"
+            size="heading3"
+            fontWeight="400"
+            fontFamily="Domine"
+          >
+            Subjects
           </Heading>
           <Text
             fontSize="lg"
@@ -123,19 +134,25 @@ const CollectionSection: React.FC = () => {
             </Text>
             . The table below shows the top ten subjects.
           </Text>
-          {/* change these to be stored online and use link */}
-          <img
-            src="/images/bar.png"
-            alt="Subjects in the collection"
-            width="822px"
+          <Image
+            src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/subjectsGraph.png"
+            alt=""
+            width="820px"
+            flexShrink="0"
+            backgroundColor="transparent"
+            margin="0 auto"
           />
-        </Box>
+        </Flex>
         <Divider orientation="horizontal" color="#006166" />
-        <Box display="flex" flexDir="column" marginY="l">
-          <Heading level="h3" marginBottom="s" size="heading3" fontWeight="400">
-            <Box display="flex" fontFamily="Domine">
-              <span>Dates</span>
-            </Box>
+        <Flex flexDir="column" marginY="l">
+          <Heading
+            level="h3"
+            marginBottom="s"
+            size="heading3"
+            fontWeight="400"
+            fontFamily="Domine"
+          >
+            Dates
           </Heading>
           <Text
             fontSize="lg"
@@ -147,13 +164,15 @@ const CollectionSection: React.FC = () => {
             72% of books in the current collection have a precise date of
             publication. Most books were published prior to 1930.
           </Text>
-          {/* change these to be stored online and use link */}
-          <img
-            src="/images/line.png"
-            alt="Dates in the collection"
-            width="822px"
+          <Image
+            src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/languagesGraph.png"
+            alt=""
+            width="820px"
+            flexShrink="0"
+            backgroundColor="transparent"
+            margin="0 auto"
           />
-        </Box>
+        </Flex>
       </Box>
     </SectionContainer>
   );
