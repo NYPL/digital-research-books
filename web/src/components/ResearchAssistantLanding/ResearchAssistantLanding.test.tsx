@@ -1,17 +1,18 @@
 import { DSProvider } from "@nypl/design-system-react-components";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import mockRouter from "next-router-mock";
 import React from "react";
+import { render } from "~/src/__tests__/testUtils/render";
 import ResearchAssistantLanding from "./ResearchAssistantLanding";
 
 describe("ResearchAssistantLanding", () => {
-  const renderWithProvider = (ui: React.ReactElement) => {
+  const renderWithDSProvider = (ui: React.ReactElement) => {
     return render(<DSProvider>{ui}</DSProvider>);
   };
 
   beforeEach(() => {
     mockRouter.setCurrentUrl("/research-assistant-landing");
-    renderWithProvider(<ResearchAssistantLanding />);
+    renderWithDSProvider(<ResearchAssistantLanding />);
   });
 
   test("renders the ResearchAssistantLanding component", () => {

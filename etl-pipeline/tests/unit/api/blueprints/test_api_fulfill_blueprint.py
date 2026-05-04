@@ -18,7 +18,7 @@ class TestSearchBlueprint:
     @pytest.fixture
     def test_app(self):
         flask_app = Flask("test")
-        flask_app.config["DB_CLIENT"] = "testDBClient"
+        flask_app.config["SQL_ENGINE"] = "testDBClient"
         flask_app.config["READER_VERSION"] = "test"
         flask_app.register_blueprint(fulfill)
 

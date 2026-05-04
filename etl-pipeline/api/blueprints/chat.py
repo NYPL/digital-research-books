@@ -7,7 +7,7 @@ from flask import Blueprint, current_app, request
 import newrelic.agent
 
 # shared code
-from logger import create_log
+from logger import create_log, LogContextVars, get_app_logger
 from model.postgres.edition import Edition
 from model.postgres.item import Item
 from model.postgres.link import Link
@@ -20,7 +20,7 @@ from ..utils import APIUtils, orm_to_dict
 from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
-from ..decorators import require_basic_authentication
+from ..decorators import require_basic_authentication, require_session_jwt
 from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
 from ..assistant.snippets import get_relevant_snippets
 
@@ -158,23 +158,37 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 @chat_blueprint.route("", methods=["POST"])
 @require_api_key
 @require_basic_authentication
+@require_session_jwt
 @timer(logger)
-def chat(user=None):
+def chat(user, session_id):
     conversation_type = request.json.get("conversationType")
-    conversation = request.json.get("messages")
+    message = request.json.get("message")
     edition_id = request.json.get("editionId")
 
-    # Add custom attributes to transaction in New Relic
-    if conversation_type is not None:
-        newrelic.agent.add_custom_attribute("conversationType", conversation_type)
+    log_context = {"session_id": session_id, "conversation_type": conversation_type}
     if edition_id is not None:
-        newrelic.agent.add_custom_attribute("editionId", edition_id)
+        log_context["edition_id"] = edition_id
 
-    logger.info(
-        f"Chat request received: conversation_type={conversation_type}, edition_id={edition_id}, messages_count={len(conversation) if conversation else 0}"
-    )
+    # New Relic custom attributes and AI monitoring conversation grouping
+    for k, v in log_context.items():
+        newrelic.agent.add_custom_attribute(k, v)
+    if session_id:
+        newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
 
-    # Input parameter validation
+    with LogContextVars(get_app_logger(), context=log_context):
+        return _chat_handler(user, session_id, conversation_type, message, edition_id)
+
+
+def _chat_handler(user, session_id, conversation_type, message, edition_id):
+    """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
+
+    logger.info(f"Chat request received: {message[:20]}...")
+
+    if not message:
+        return APIUtils.formatResponseObject(
+            400, RESPONSE_TYPE, {"message": "message is required"}
+        )
+
     if not conversation_type:
         return APIUtils.formatResponseObject(
             400, RESPONSE_TYPE, {"message": "conversationType is required"}
@@ -197,12 +211,12 @@ def chat(user=None):
         )
 
     # get LLM response + search results
-    run_result = asyncio.run(
-        update_chat(conversation, conversation_type, edition_id=edition_id)
-    )
     # TODO: inside update_chat make sure than any errors are handled by a polite \
     # llm generated response (except no connectivity to LLM) (just handle the \
     # high level openai agents sdk errors)
+    run_result = asyncio.run(
+        update_chat(message, conversation_type, session_id, edition_id=edition_id)
+    )
 
     # Add relevant snippets to search result, if search was executed in this agent turn
     # snippets updated in run_result in place
@@ -223,5 +237,6 @@ def chat(user=None):
         "messages": messages,
         "result_type": result_type,
         "result": formatted_search_result,
+        "session_id": session_id,
     }
     return APIUtils.formatResponseObject(200, RESPONSE_TYPE, response_data)

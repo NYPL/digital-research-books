@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { render } from "~/src/__tests__/testUtils/render";
 import { Item, ItemType, MessageRole } from "~/src/types/ResearchAssistant";
 import ResearchAssistantWindow from "../ResearchAssistantWindow";
 

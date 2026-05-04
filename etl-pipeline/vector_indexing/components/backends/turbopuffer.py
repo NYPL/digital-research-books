@@ -7,12 +7,12 @@ Provides a thin wrapper around the turbopuffer SDK.
 from __future__ import annotations
 
 import json
-import logging
 from pathlib import Path
 from typing import Iterator, Optional, TYPE_CHECKING
 
 import turbopuffer as tpuf
 
+from logger import create_log
 from vector_indexing.core.utils import format_bytes, TimerSet
 from vector_indexing.core.types import BookMetadata, ChunkDocument, InsertResult
 from vector_indexing.core.config import get_config, GlobalConfig, VECTOR_INDEXING_ROOT
@@ -21,7 +21,7 @@ from vector_indexing.components.backends.base import IndexBackend
 if TYPE_CHECKING:
     pass
 
-logger = logging.getLogger(__name__)
+logger = create_log(__name__)
 
 
 def _load_schema() -> dict:
@@ -139,15 +139,11 @@ class TurbopufferBackend(IndexBackend):
         self._config = config or get_config()
         self._index_name = index_name
 
-        if (
-            hasattr(self._config, "turbopuffer_api_key")
-            and self._config.turbopuffer_api_key
-        ):
-            tpuf.api_key = self._config.turbopuffer_api_key
-
         self._client = tpuf.Turbopuffer(
-            timeout=600
-        )  # 10 minute timeout for large uploads
+            api_key=self._config.turbopuffer_api_key or None,
+            region=self._config.turbopuffer_region or None,
+            timeout=600,  # 10 minute timeout for large uploads
+        )
         self._ns = self._client.namespace(index_name)
 
         self._timers = TimerSet()
@@ -231,6 +227,8 @@ class TurbopufferBackend(IndexBackend):
         self, chunks: list[ChunkDocument], batch_size: Optional[int] = None
     ) -> InsertResult:
         """Insert ChunkDocuments into the namespace.
+
+        Schema is enforced in each write.
 
         Args:
             chunks: Documents to insert.
@@ -563,10 +561,12 @@ def delete_test_namespace(
         )
 
     config = config or get_config()
-    if hasattr(config, "turbopuffer_api_key") and config.turbopuffer_api_key:
-        tpuf.api_key = config.turbopuffer_api_key
 
-    client = tpuf.Turbopuffer(timeout=60)
+    client = tpuf.Turbopuffer(
+        api_key=config.turbopuffer_api_key or None,
+        region=config.turbopuffer_region or None,
+        timeout=60,
+    )
     ns = client.namespace(namespace_name)
 
     try:

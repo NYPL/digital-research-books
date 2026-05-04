@@ -1,8 +1,6 @@
 """
-Unit tests for agent filter post-processing functions.
-
-Tests the filter transformation pipeline including datetime conversion
-and null-matching for incomplete attributes.
+Unit tests for functions relating to post-processing of turbopuffer filter
+queries constructed by the LLM agent.
 """
 
 import pytest
@@ -180,7 +178,8 @@ class TestAddNullMatch:
 
 # Isolated stub used by TestProcessFiltersRecursively so tests are not coupled
 # to the behaviour of any real processing function.
-# Matches only ["TARGET", "Eq", "value"] and returns the sentinel ["PROCESSED"].
+# Matches only filters wher attr name is TARGET (e.g. ["TARGET", "Eq", "value"])
+# and returns the sentinel ["PROCESSED"].
 def _stub_processing_func(filter_array):
     if (
         isinstance(filter_array, list)

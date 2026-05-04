@@ -91,7 +91,7 @@ class TestOPDSBlueprint:
 
     def test_newPublicationsEndpoint(self, mockUtils, opdsMocks, mocker):
         testFlask = Flask("test")
-        testFlask.config["DB_CLIENT"] = "testDBClient"
+        testFlask.config["SQL_ENGINE"] = "testDBClient"
 
         mockUtils["normalizeQueryParams"].return_value = {}
 
@@ -125,7 +125,7 @@ class TestOPDSBlueprint:
 
     def test_opdsSearch(self, mockUtils, opdsMocks, mockHits, mocker):
         flaskApp = Flask("test")
-        flaskApp.config["DB_CLIENT"] = "testDBClient"
+        flaskApp.config["SQL_ENGINE"] = "testDBClient"
         flaskApp.config["REDIS_CLIENT"] = "testRedisClient"
 
         mockES = mocker.MagicMock()
@@ -212,7 +212,7 @@ class TestOPDSBlueprint:
 
     def test_singlePublicationEndpoint_success(self, mockUtils, opdsMocks, mocker):
         testFlask = Flask("test")
-        testFlask.config["DB_CLIENT"] = "testDBClient"
+        testFlask.config["SQL_ENGINE"] = "testDBClient"
 
         mockDB = mocker.MagicMock()
         mockDBClient = mocker.patch("api.blueprints.drbOPDS2.DBClient")
@@ -247,7 +247,7 @@ class TestOPDSBlueprint:
 
     def test_singlePublicationEndpoint_missing(self, mockUtils, opdsMocks, mocker):
         testFlask = Flask("test")
-        testFlask.config["DB_CLIENT"] = "testDBClient"
+        testFlask.config["SQL_ENGINE"] = "testDBClient"
 
         mockDB = mocker.MagicMock()
         mockDBClient = mocker.patch("api.blueprints.drbOPDS2.DBClient")

@@ -30,8 +30,15 @@ from sqlalchemy import delete, text
 from utils.load_env import load_env
 
 from tests.fixtures.generate_test_data import generate_test_data
+from vector_indexing.core.utils import Timer
 
 logger = create_log(__name__)
+
+
+# NOTE: use of pytest-xdist to run tests in parallel processes results in all \
+# session scoped fixtures being run once in each process. Make sure to prevent \
+# race conditions on external data modified in session fixtures.
+
 
 TEST_SOURCE = "test_source"
 
@@ -133,26 +140,33 @@ def pytest_sessionstart(session):
 
 
 def create_or_update_record(record_data: dict, db_manager: DBManager) -> Record:
-    existing_record = (
+    """Update fields of record identified by source_id"""
+    existing_records = (
         db_manager.session.query(Record)
         .filter(Record.source_id == record_data.get("source_id"))
-        .first()
+        .all()
     )
+    if len(existing_records) > 1:
+        raise ValueError(
+            f"Multiple records found with source_id '{record_data.get('source_id')}'. Expected at most one."
+        )
+    existing_record = existing_records[0] if existing_records else None
 
     if existing_record:
         for key, value in record_data.items():
             if key != "uuid" and hasattr(existing_record, key):
                 setattr(existing_record, key, value)
-
         existing_record.date_modified = datetime.now(timezone.utc).replace(tzinfo=None)
+
+        # Q: this line appears pointless?
         record_data["uuid"] = existing_record.uuid
 
+        # update DB to match current in-memory values of the Record ORM obj
         db_manager.session.commit()
 
         return existing_record
 
     new_record = Record(**record_data)
-
     db_manager.session.add(new_record)
     db_manager.session.commit()
 
@@ -271,16 +285,26 @@ def frbrized_record_data(
     )
     record_clusterer.cluster_record(frbrized_record)
 
-    frbrized_model = (
-        db_manager.session.query(Item, Edition, Work)
-        .join(Edition, Edition.id == Item.edition_id)
-        .join(Work, Work.id == Edition.work_id)
-        .filter(Item.record_id == frbrized_record.id)
-        .first()
-    )
+    with Timer(
+        None,
+        on_exit=lambda _, elapsed: print(
+            f"Reading frbrized_model from DB took {elapsed:.2f}"
+        ),
+    ):
+        # collect frbrized record by source_id (joining records slows this down slightly)
+        frbrized_model = (
+            db_manager.session.query(Item, Edition, Work)
+            .join(Edition, Edition.id == Item.edition_id)
+            .join(Work, Work.id == Edition.work_id)
+            .join(Record, Record.id == Item.record_id)
+            .filter(Record.source_id == frbrized_record.source_id)
+            .first()
+        )
 
     if not frbrized_model:
-        raise Exception("No test FRBR data after an attempt to create it.")
+        raise Exception(
+            f"No test FRBR data with source id {frbrized_record.source_id} after an attempt to create it."
+        )
 
     item, edition, work = frbrized_model
 
@@ -295,6 +319,10 @@ def frbrized_record_data(
         raise Exception("No link data available after attempt to create it.")
 
     # DIAGNOSTIC: print all available FRBR records after test record creation
+    print("DIAGNOSTIC: frbrized_record_data fixture selected ids:")
+    print(
+        f"{frbrized_record.id=} {frbrized_record.source_id=} {item.id=}, {edition.id=}, {work.id=} {links[0].id=}"
+    )
     all_frbr_records = (
         db_manager.session.query(Item, Edition, Work)
         .join(Edition, Edition.id == Item.edition_id)
@@ -304,7 +332,7 @@ def frbrized_record_data(
     print("DIAGNOSTIC: FRBR items after test FRBR record creation")
     for row in all_frbr_records:
         print(
-            f"{row.Work.title=} {row.Work.id=} {row.Edition.id=} {row.Item.id=} {row.Edition.title=}"
+            f"{row.Work.title=} {row.Work.id=} {row.Edition.id=} {row.Edition.title=} {row.Item.id=} {row.Item.record_id=} "  # TODO: load the identifiers relationship
         )
     all_item_links = (
         db_manager.session.query(Link)
@@ -626,3 +654,30 @@ def expected_barcodes_statuses():
         "Not allowed to be downloaded",
         "Other error",
     ]
+
+
+TEST_SESSION_ID = "test"
+
+
+@pytest.fixture
+def test_session_id():
+    """
+    Provides a fixed session_id="test" for update_chat() with cleanup.
+
+    Setup: deletes any stale data for the session_id.
+    Teardown: prints the raw conversation (captured by pytest; shown on failure),
+              then always deletes session data.
+    """
+    from api.assistant.agent import delete_session_data, get_session_messages
+
+    delete_session_data(TEST_SESSION_ID)
+
+    yield TEST_SESSION_ID
+
+    # Print convo history to logs
+    print(f"\n--- Raw agent_messages for session '{TEST_SESSION_ID}' ---")
+    messages = get_session_messages(TEST_SESSION_ID)
+    print(json.dumps(messages, indent=2))
+    print("--- End of conversation ---\n")
+
+    delete_session_data(TEST_SESSION_ID)

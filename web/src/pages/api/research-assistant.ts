@@ -26,18 +26,19 @@ export default async function handler(
       return res.status(500).json({ error: "Server configuration error." });
     }
 
-    const { messages, conversationType, editionId } = req.body;
+    const { message, conversationType, editionId } = req.body;
 
-    if (!messages || !Array.isArray(messages)) {
+    if (!message || typeof message !== "string") {
       return res.status(400).json({
-        error: 'Request body must contain a "messages" array.',
+        error: 'Request body must contain a "message" string.',
       });
     }
 
     const authorization = req.headers.authorization || undefined;
+    const cookieHeader = req.headers.cookie || undefined;
 
     const payload: any = {
-      messages,
+      message,
       conversationType,
     };
 
@@ -48,12 +49,18 @@ export default async function handler(
       "X-API-KEY": apiKey,
     };
     if (authorization) headers.Authorization = authorization;
+    if (cookieHeader) headers["cookie"] = cookieHeader;
 
     const chatResponse = await fetch(chatUrl, {
       method: "POST",
       headers,
       body: JSON.stringify(payload),
     });
+
+    const setCookie = chatResponse.headers.get("set-cookie");
+    if (setCookie) {
+      res.setHeader("Set-Cookie", setCookie);
+    }
 
     if (!chatResponse.ok && chatResponse.status !== 201) {
       const errorData = await chatResponse.json();
@@ -70,6 +77,7 @@ export default async function handler(
       results: chatData.result,
       messages: chatData.messages,
       resultType: chatData.result_type,
+      sessionId: chatData.session_id,
     });
   } catch (error) {
     console.error("Error in Next.js Research Assistant API route:", error);

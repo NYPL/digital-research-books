@@ -10,10 +10,15 @@ from hashlib import scrypt
 from getpass import getpass
 
 from managers import DBManager
+from logger import create_log
+
 from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError, StatementError
+
+logger = create_log(__file__)
 
 
-def create_user(*args):
+def create_user_interactive(*args):
     """
     Create a new user in the database with interactive input.
 
@@ -52,6 +57,25 @@ def create_user(*args):
     print(f"Password Hex: {password_hash.hex()}")
     print(f"Salt Hex: {salt.hex()}")
 
+    create_user(username, password_input)
+    print(f"\nUser '{username}' created successfully!")
+
+
+def create_user(username: str, password: str):
+    """
+    Hash the given password and insert the user into the database.
+
+    Extracted from create_user() to allow programmatic use (e.g. in test fixtures)
+    without requiring interactive input.
+
+    Args:
+        username: The username to create.
+        password: The plaintext password to hash and store.
+    """
+    logger.info(f'Inserting username "{username}" and password into user table.')
+    salt = os.urandom(16)
+    password_hash = scrypt(password.encode("utf-8"), salt=salt, n=2**14, r=8, p=1)
+
     # Insert user into database
     engine = DBManager().generate_engine()
 
@@ -86,7 +110,12 @@ def create_user(*args):
                 },
             )
             cursor.commit()
-        print(f"\nUser '{username}' created successfully!")
+        logger.info(
+            f'Succeeded at inserting username "{username}" and password into user table.'
+        )
     except Exception as e:
-        print(f"\nError creating user: {e}")
+        # Disable display of password_hex in traceback
+        if isinstance(e, (DBAPIError, StatementError)):
+            e.hide_parameters = True
+        logger.exception(f"\nError creating user: {e}")
         raise e

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, date, timezone
 from typing import List
 from sqlalchemy import Integer
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import (
     joinedload,
     sessionmaker,
@@ -9,6 +10,7 @@ from sqlalchemy.orm import (
     scoped_session,
     selectinload,
 )
+from sqlalchemy.pool import NullPool
 from sqlalchemy.sql import column, func, select, text, values
 from uuid import uuid4
 
@@ -35,11 +37,34 @@ from .utils import APIUtils
 # - https://flask.palletsprojects.com/en/stable/patterns/sqlalchemy/
 # - https://docs.sqlalchemy.org/en/20/orm/session_basics.html#using-a-sessionmaker
 _engine = None
-_Session = None
+_readonly_engine = None
+_readonly_Session = None
+
+_async_engine = None
 
 
-def get_session():
-    """Retrieve singleton scoped session factory.
+def get_readonly_engine():
+    """Retrieve singleton read-only engine connected to POSTGRES_READ_HOST."""
+    global _readonly_engine
+    if _readonly_engine is None:
+        _readonly_engine = DBManager(
+            host=require_env("POSTGRES_READ_HOST")
+        ).generate_engine()  # TODO: just create with sqlalchemy create_engine()
+    return _readonly_engine
+
+
+def get_engine():
+    """Retrieve singleton read/write engine connected to POSTGRES_HOST."""
+    global _engine
+    if _engine is None:
+        _engine = (
+            DBManager().generate_engine()
+        )  # TODO: just create with sqlalchemy create_engine()
+    return _engine
+
+
+def get_readonly_session():
+    """Retrieve singleton scoped session factory backed by the read-only host.
 
     Defers database connection until first access, allowing this module to be
     imported as a library without requiring environment variables to be set.
@@ -47,12 +72,43 @@ def get_session():
     Returns:
         scoped_session: A thread-local session factory that can be called to get a session.
     """
-    global _engine, _Session
-    if _Session is None:
-        _engine = DBManager(host=require_env("POSTGRES_READ_HOST")).generate_engine()
-        _Session = scoped_session(sessionmaker(bind=_engine))
+    global _readonly_Session
+    if _readonly_Session is None:
+        _readonly_Session = scoped_session(sessionmaker(bind=get_readonly_engine()))
         # Consider autocommit=False, autoflush=False see: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#flushing
-    return _Session
+    return _readonly_Session
+
+
+def get_async_engine():
+    """Retrieve singleton async engine using the read/write host.
+
+    The get() function defers database connection until first access, allowing
+    this module to be imported as a library without requiring environment
+    variables to be set.
+
+    Uses NullPool because each asyncpg db connection is bound to the loop that
+    created it, each call asyncio.run() creates a fresh event loop, and using the
+    same engine, and thus the same connection pool, in multiple asyncio.run()
+    calls would cause cross-loop errors. NullPool ensures each db connection is
+    used only once, opened and closed, never entering a connection pool.
+    See: https://docs.sqlalchemy.org/en/21/orm/extensions/asyncio.html#using-multiple-asyncio-event-loops
+
+    The POSTGRES_USER/PSWD/HOST/PORT/NAME env vars point to the write-capable host,
+    separate from the read-only POSTGRES_READ_HOST used by get_readonly_session().
+    """
+    global _async_engine
+    if _async_engine is None:
+        _async_engine = create_async_engine(
+            "postgresql+asyncpg://{user}:{pswd}@{host}:{port}/{db}".format(
+                user=require_env("POSTGRES_USER"),
+                pswd=require_env("POSTGRES_PSWD"),
+                host=require_env("POSTGRES_HOST"),
+                port=require_env("POSTGRES_PORT"),
+                db=require_env("POSTGRES_NAME"),
+            ),
+            poolclass=NullPool,
+        )
+    return _async_engine
 
 
 def get_frbr_data_by_edition(edition_ids: List):
@@ -70,7 +126,7 @@ def get_frbr_data_by_edition(edition_ids: List):
 
     Row = namedtuple("Row", ["Work", "Edition"])
 
-    Session = get_session()
+    Session = get_readonly_session()
     with Session() as session:
         editions = (
             session.query(Edition)

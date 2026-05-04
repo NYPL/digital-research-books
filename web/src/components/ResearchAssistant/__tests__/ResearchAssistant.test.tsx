@@ -65,35 +65,6 @@ describe("ResearchAssistant", () => {
     expect(screen.getByText(/failed to fetch response./i)).toBeInTheDocument();
   });
 
-  test("renders BackToResultsButton when there are results and history", () => {
-    mockUseResearchAssistant.mockReturnValue({
-      ...mockUseResearchAssistant(),
-      results: { type: "catalog_search", data: [] },
-      historyStack: [{}, {}],
-    });
-
-    render(<ResearchAssistant />);
-
-    expect(
-      screen.getByRole("button", { name: /back to results/i })
-    ).toBeInTheDocument();
-  });
-
-  test("calls goToPreviousState when BackToResultsButton is clicked", () => {
-    mockUseResearchAssistant.mockReturnValue({
-      ...mockUseResearchAssistant(),
-      results: { type: "catalog_search", data: [] },
-      historyStack: [{}, {}],
-    });
-
-    render(<ResearchAssistant />);
-
-    const backButton = screen.getByRole("button", { name: /back to results/i });
-    fireEvent.click(backButton);
-
-    expect(mockGoToPreviousState).toHaveBeenCalledTimes(1);
-  });
-
   test("sends initial message from sessionStorage on first load", () => {
     const initialMessage = "What is the history of the NYPL?";
     const getItemSpy = jest

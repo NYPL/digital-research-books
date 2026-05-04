@@ -1,17 +1,12 @@
-# Digital Research Books 
+# Digital Research Books
 
 <!-- ![ETL_Pipeline_Tests](https://github.com/NYPL/drb-etl-pipeline/workflows/ETL_Pipeline_Tests/badge.svg) -->
 
-This directory contains the ETL pipeline, API server, and other deployable processes related to the DRB project (including GRIN books ingestion).
+This directory contains a containerized python application for importing data from multiple source projects and transforming this data into a unified format that can be accessed via an API. The curated data and API powers the [Virtual Research Assistant](http://digital-research-books-beta.nypl.org/research-assistant) and the legacy [Digital Research Books Beta](http://digital-research-books-beta.nypl.org/).
 
+## ETL Pipeline
 
-## ETL Pipeline 
-
-A containerized python application for importing data from multiple source projects and transforming this data into a unified format that can be accessed via an API (which powers [Digital Research Books Beta](http://digital-research-books-beta.nypl.org/)).
-
-### Process Overview
-
-This ETL pipeline transforms data from various sources into a unified "FRBRized" format where:
+The ETL pipeline transforms data from various sources into a unified "FRBRized" format where:
 
 - `Item`: Something that can be read online (e.g. a specific digital copy)
 - `Edition`: A specific published version (e.g. the 1917 edition)
@@ -26,18 +21,18 @@ The pipeline:
 3. Groups records into editions and works using machine learning (clustering)
 4. Makes the data available through an API
 
-## API Endpoints
+## API Server
 
-The DRB API is available at:
+The API is available at:
 
 - Production: [https://digital-research-books-api.nypl.org/](https://digital-research-books-api.nypl.org/)
-- QA: [https://drb-api-qa.nypl.org/](https://drb-api-qa.nypl.org/)
+- QA: [https://drb-api-qa.nypl.org/](https://drb-api-qa.nypl.org/) (Note: only available on private NYPL sub-net)
 
-Both endpoints provide Swagger documentation at `/apidocs/`.
+Both hosts provide Swagger documentation at `/apidocs/` for DRB-related public endpoints.
 
 ## Quickstart Guide
 
-This guide provides step-by-step instructions to set up local development and start the DRB API server running locally in a docker container. 
+This guide provides step-by-step instructions to set up local development and start the DRB API server running locally in a docker container.
 
 ### Prerequisites
 
@@ -49,14 +44,10 @@ This guide provides step-by-step instructions to set up local development and st
    - Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
    - Sign into AWS console at http://awsconsole.nypl.org/.
    - Choose account:`nypl-digital-dev`
-   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure . 
+   - Configure the local AWS credentials for CLI and SDK authentication during local dev. Run `aws configure sso`. Follow the steps in the tutorial here: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html#cli-configure-sso-configure .
       - When asked, set profile name to "default". This allows AWS SDKs and CLI to authenticate to this profile without any extra arguments.
       - This authorization is temporary, to re-authenticate with SSO, run `aws sso login`.
-
-
-### Setup Steps
-
-1. Clone the repository:
+- Clone the repository:
 
    ```bash
    git clone git@github.com:NYPL/drb-etl-pipeline.git
@@ -64,17 +55,37 @@ This guide provides step-by-step instructions to set up local development and st
    ```
 
 
+### Run API Server Locally
 
-2. Seed data in the local dockerized DB instance (one-time only):
+#### (Option A) Run in docker compose
+
+
+1. Seed data in the local dockerized DB instance (one-time only):
 
    ```bash
    # Run the database seeding process
    docker compose -f docker-compose.setup.yml up --abort-on-container-exit
    ```
 
-   Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
+   Or to instead seed known books using a local fixture file:
 
-3. Startup Docker Services:
+   ```bash
+   # Run dockerized local development setup
+   docker compose run --rm --entrypoint python devsetup main.py \
+      -p LocalDevelopmentSetupProcess \
+      -e docker-compose
+
+   # Run seeding script
+   docker compose run --rm --entrypoint python devsetup \
+      -m tests.integration.api.assistant.support.seed_frbr_data
+   ```
+   Note: Any semantic search hits from the vector database must be accompanied with FRBR graph data in the Postgres database in order to be returned by the /chat endpoint.
+   - The first method seeds the Postgres database with brand new records from HathiTrust (making it highly non-deterministic) but they are not indexed in the vector database and hence cannot be returned as results from /chat.
+   - The second method seeds the Postgres database with records known to exist in at least the following vector database namespaces, allowing them to be returned by /chat:
+     - vra-dev
+     - vra-test
+
+2. Startup Docker Services:
 
    ```bash
    docker compose up
@@ -87,13 +98,69 @@ This guide provides step-by-step instructions to set up local development and st
    - Redis
    - LocalStack (S3 and SQS)
    - API service
-  
+
    Note: if the Dockerfile or requirements.txt changed since you last ran docker compose you must add the `--build` option to rebuild the application docker image.
 
-4. Verify the setup:
+#### (Option B) Run directly on local machine
+
+1. Set up local python env:
+
+   **Create a virtual environment**
+
+   *Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).*
+
+   ```sh
+   python -m venv venv
+   ```
+
+   **Activate the virtual environment.**
+   The following steps assume the virtual environment is active.
+   You will need to do this for every terminal session.
+
+   ```sh
+   source venv/bin/activate
+   ```
+
+   Make sure `wheel` is upgraded to avoid installation errors later
+
+   ```sh
+   pip install --upgrade wheel
+   ```
+
+   Or
+
+   ```sh
+   pip3 install --upgrade pip setuptools wheel
+   ```
+
+   **Install requirements**
+
+   ```sh
+   pip install -r requirements.txt
+   pip install -r dev-requirements.txt
+   ```
+
+   **Install pre-commit hooks**
+   `pre-commit install`
+
+
+2. Install GPG
+
+   The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
+   `gpg` is pre-installed on most linux distributions but must be installed on MacOs.
+
+   Ensure that it is available by installing it via `brew install gnupg` (if on a Mac) or the appropriate tool for your OS.
+
+3. Start localhost server
+
+   `STAGE="development" LOG_LEVEL="debug" DRB_API_HOST=localhost python main.py -p APIProcess --env production`
+   - to point at different cloud resources, use a different env file, e.g. `--env qa` or `--env local`
+
+
+#### Verify the setup
 
    - Check the API server is up. Navigate to http://127.0.0.1:5050/apidocs/ in your browser.
-   - Check the local, dockerized DB instance is available. Connect to the local DB using PGAdmin4 or your preferred PostgreSQL client, with the following config:
+   - (option A only) Check the local, dockerized DB instance is available. Connect to the local DB using PGAdmin4 or your preferred PostgreSQL client, with the following config:
      ```
      Host: localhost
      Port: 5432
@@ -101,71 +168,30 @@ This guide provides step-by-step instructions to set up local development and st
      Username: postgres
      Password: localpsql
      ```
- 
-5. Set up local python env:
-
-**Create a virtual environment**
-
-*Ensure your virtual Python environment's version matches the project's python version (downgrade if newer).* 
-
-```sh
-python -m venv venv
-```
-
-**Activate the virtual environment.**
-The following steps assume the virtual environment is active. 
-You will need to do this for every terminal session.
-
-```sh
-source venv/bin/activate
-```
-
-Make sure `wheel` is upgraded to avoid installation errors later
-
-```sh
-pip install --upgrade wheel
-```
-
-Or
-
-```sh
-pip3 install --upgrade pip setuptools wheel
-```
-
-**Install requirements**
-
-```sh
-pip install -r requirements.txt
-pip install -r dev-requirements.txt
-```
-
-
-**Install pre-commit hooks**
-`pre-commit install`
-
-
-6. Install GPG
-
-The process for working with books downloaded from Google's GRIN interface requires a decryption step via `gpg`.
-`gpg` is pre-installed on most linux distributions but must be installed on MacOs.
-
-Ensure that it is available by installing it via `brew install gnupg` (if on a Mac) or the appropriate tool for your OS
 
 
 ## Available Processes
 
+Processes are classes that initialize with arguments in `args_parser.py` and execute with a `.run()` method and thus can be invoked via `main.py`.
+
 The main processes available in this pipeline are:
 
-- `LocalDevelopmentSetupProcess`: Initialize development database
-- `SeedLocalDataProcess`: Import sample data
+
+#### API Server
 - `APIProcess`: Run the DRB API server
+#### Book Ingest
 - `IngestProcess`: This process imports data from various sources like HathiTrust, NYPL Catalog, Project Gutenberg, and more.
-- `GRINConversion`: update our DB and ingest queues with the current status of books sent to Google for digitization.
+- `GRINIngestProcess`: (a) loads data from GRIN hosting to internal s3 (b) ingests the metadata into the Records table (like the `IngestProcess` does for other sources.)
+- `GRINConversion`: update our DB with the current status of books sent to Google for digitization and sends books ready for ingest to GRIN Ingest SQS queue.
+#### ETL
 - `RecordPipelineProcess`: The DRB ETL pipeline. A meta-process that calls the below stand alone processes:
    - `RecordClusterer`: Using KMeans clustering to create our work/edition/item data structure. Indexes "Works" into elastic search for keyword search.
    - `LinkFulfiller`: Ensure that the work record has displayable links via WebPub Manifests.
    - `RecordFileSaver`: Store any associated content files (PDFs, etc) in our s3 bucket (this is a more supporting step).
    - `RecordEmbellisher`: Using any standard numbers (ISBNs, etc) fetch additional metadata from 3rd parties and add it to the record being processed.
+#### Local Dev Setup
+- `LocalDevelopmentSetupProcess`: Initialize development database
+- `SeedLocalDataProcess`: Import sample data
 
 Source code for each process can be found from "[processes/\_\_init\_\_.py](processes/__init__.py)"
 
@@ -185,14 +211,12 @@ python main.py -p IngestProcess -e local -i daily --source hathitrust
 python main.py -p RecordPipelineProcess -e local
 ```
 
-See `python main.py --help` for all available options.  
+See `python main.py --help` for all available options.
 
 
 
 ## Formatting
-We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files. 
-
-
+We use ruff as our formatter. Ensure you have installed the dev requirements.  Run `make format` or `ruff format` to format the python files.
 
 We also check formatting before committing. If you followed to the set up steps to install the pre-commit hooks, formatting of changed files will be performed at each commit.
 
@@ -227,7 +251,7 @@ The deployment process:
 
    - Builds Docker image
    - Pushes to ECR
-   - Deploys to QA environment at [https://drb-api-qa.nypl.org/](https://drb-api-qa.nypl.org/)
+   - Deploys to QA environment at [https://drb-api-qa.nypl.org/](https://drb-api-qa.nypl.org/) (Note: only available on private NYPL sub-net)
 
 2. **Run CI Tests**
 
@@ -253,14 +277,3 @@ Analytics projects are in the [analytics](analytics) folder:
   python3 analytics/upress_reporting/runner.py --start 2024-03-01 --end 2024-03-30
   python3 analytics/upress_reporting/runner.py --year 2025 --quarter Q1
   ```
-
-## Link Flags
-
-Boolean flags used in the API:
-
-- `reader`: Book has Read Online function
-- `embed`: Uses third party web reader
-- `download`: Book is downloadable
-- `catalog`: Book is requestable but not readable online
-- `nypl_login`: Requestable by NYPL patrons
-- `fulfill_limited_access`: Limited Access book for NYPL patrons

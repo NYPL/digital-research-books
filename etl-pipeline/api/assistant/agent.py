@@ -20,9 +20,14 @@ from agents import (
     RunContextWrapper,
     ModelSettings,
     RunResult,
+    RunErrorHandlerInput,
+    RunErrorHandlerResult,
 )
+from agents.run_config import DEFAULT_MAX_TURNS
 from agents.items import ModelResponse
 from agents.tool_context import ToolContext
+from agents.extensions.memory import SQLAlchemySession
+from agents.models.chatcmpl_converter import Converter
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 from sqlalchemy import text
@@ -30,10 +35,15 @@ from jinja2 import Template
 
 
 # api code
-from ..utils import APIUtils, remove_markdown_comments, shorten
-from ..db import get_frbr_data_by_edition, get_session
+from ..utils import remove_markdown_comments
+from ..db import (
+    get_frbr_data_by_edition,
+    get_readonly_session,
+    get_async_engine,
+    get_engine,
+)
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
-from .types import Snippet, CatalogSearchResult, ContentSearchResult
+from .types import CatalogSearchResult, ContentSearchResult
 
 # shared code
 from vector_indexing.components.embedders.google import GoogleEmbedder
@@ -50,7 +60,7 @@ logger = create_log(__name__)
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
 
-INDEX_NAME = "vra-dev"
+INDEX_NAME = os.getenv("TURBOPUFFER_NAMESPACE")
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
@@ -153,10 +163,10 @@ def transform_incomplete(filter_array: Any) -> List:
     ]
 
 
-def recurse_filters(filters: Any, processing_func: Callable) -> Any:
+def recurse_filters(filter_: Any, processing_func: Callable) -> Any:
     """
-    Generic recursive post-processor for TurboPuffer style filters that applies
-    a processing function to every simple (leaf) filter.
+    Generic recursive post-processor for TurboPuffer style (nestable) filters
+    that applies a processing function to every simple (leaf) filter.
 
     Recursion is driven by filter structure:
     - Meta-operators (And, Or, Not) → recurse into child filters
@@ -166,41 +176,41 @@ def recurse_filters(filters: Any, processing_func: Callable) -> Any:
     are not met.
 
     Args:
-        filters: A complete filter specification (list/tuple). Scalars are invalid
+        filter_: A complete filter specification (list/tuple). Scalars are invalid
                  and will raise ValueError.
         processing_func: Function that takes a simple filter and returns either
                          a transformed filter or the original filter unchanged.
 
     Returns:
-        Processed filters with transformations applied where applicable
+        Processed filter with transformations applied where applicable
 
     Raises:
         ValueError: If filters is not a list or tuple
     """
-    if not isinstance(filters, (list, tuple)):
+    if not isinstance(filter_, (list, tuple)):
         raise ValueError(
-            f"Expected filter to be a list or tuple, got {type(filters).__name__}: {filters!r}"
+            f"Expected filter to be a list or tuple, got {type(filter_).__name__}: {filter_!r}"
         )
 
-    if len(filters) == 0:
+    if len(filter_) == 0:
         raise ValueError("Filter cannot be an empty list or tuple")
 
-    operator = filters[0]
+    operator = filter_[0]
 
     if operator in META_OPERATORS:
         if operator == "Not":
             # ["Not", child_filter]
-            return [operator, recurse_filters(filters[1], processing_func)]
+            return [operator, recurse_filters(filter_[1], processing_func)]
         else:
             # ["And"/"Or", [child_filter, ...]]
             return [
                 operator,
-                [recurse_filters(child, processing_func) for child in filters[1]],
+                [recurse_filters(child, processing_func) for child in filter_[1]],
             ]
 
     # Simple filter: [attribute, operator, value] — pass whole filter to processing_func.
     # processing_func returns the filter unchanged if its conditions are not met.
-    return processing_func(filters)
+    return processing_func(filter_)
 
 
 def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> Any:
@@ -365,7 +375,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
             ORDER BY e.id
         """)
 
-    Session = get_session()
+    Session = get_readonly_session()
     with Session() as session:
         result = session.execute(query, {"ids": list(ids)})
         df = pd.DataFrame(result.fetchall(), columns=result.keys())
@@ -378,17 +388,76 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
     return df.set_index(source_col).to_dict(orient="index")
 
 
+_MAX_TURNS_SYSTEM_PROMPT = """\
+You are a research library assistant. You have reached the maximum number of \
+allowed agent turns in the agent loop. 
+
+Here is the original system prompt:
+```
+{agent_system_prompt}
+```
+
+Given the conversation context, deliver a polite response according to your \
+system prompt with the partially available information if possible or an \
+appropriate apology otherwise — If the search tool returned an error acknowledge \
+that the search was not fully complete. \
+"""
+
+
+async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
+    """Handles assistant response if max agent turns are exceeded."""
+    client: AsyncOpenAI = data.run_data.last_agent.model._client
+    model_name: str = data.run_data.last_agent.model.model
+    agent_system_prompt = await data.run_data.last_agent.get_system_prompt(data.context)
+
+    messages = [
+        {
+            "role": "system",
+            "content": _MAX_TURNS_SYSTEM_PROMPT.format(
+                agent_system_prompt=agent_system_prompt
+            ),
+        },
+        *Converter.items_to_messages(data.run_data.history, model=model_name),
+    ]
+
+    response = await client.chat.completions.create(
+        model=model_name,
+        messages=messages,
+        temperature=0.0,
+        reasoning_effort=None,
+    )
+
+    logger.warning("update_chat: MaxTurnsExceeded — graceful final response generated.")
+
+    return RunErrorHandlerResult(
+        final_output=response.choices[0].message.content,
+        include_in_history=True,
+    )
+
+
 @timer(logger)
-async def update_chat(conversation, conversation_type, edition_id=None) -> RunResult:
+async def update_chat(
+    message: str,
+    conversation_type: str,
+    session_id: str,
+    edition_id=None,
+    max_turns: int = DEFAULT_MAX_TURNS,
+) -> RunResult:
     """
     Send a message to the conversation and get the agent's response.
+
+    Conversation history is managed server-side via SQLAlchemySession keyed on
+    session_id. The caller sends only the new user message; the SDK loads prior
+    turns from the database automatically.
 
     The raw search results will be available in self.context.search_data
     for any post-processing or enrichment needed.
 
     Args:
-        conversation: The list of openai Responses API items representing the conversation history.
+        message: The new user message text.
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
+        session_id: Client-supplied session ID. History is persisted to and loaded
+                    from the database using this key.
         edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
 
     Returns:
@@ -418,6 +487,10 @@ async def update_chat(conversation, conversation_type, edition_id=None) -> RunRe
         ),
     )
 
+    system_prompt_template = Template(
+        (PROMPTS_DIR / "system" / "1.jinja.md").read_text()
+    )
+
     # Search within single book
     if conversation_type == "contentSearch":
         # Fetch FRBR data for the book
@@ -441,8 +514,7 @@ async def update_chat(conversation, conversation_type, edition_id=None) -> RunRe
             frbr_fields=frbr_fields,
         )
 
-        template = Template((PROMPTS_DIR / "system" / "1.jinja.md").read_text())
-        system_prompt = template.render(
+        system_prompt = system_prompt_template.render(
             conversation_type="contentSearch", frbr_fields=frbr_fields
         )
         tools = [search_book]
@@ -450,9 +522,8 @@ async def update_chat(conversation, conversation_type, edition_id=None) -> RunRe
     # Search for books in catalog
     else:  # conversation_type == "catalogSearch":
         exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
-        template = Template((PROMPTS_DIR / "system" / "1.jinja.md").read_text())
         system_prompt = remove_markdown_comments(
-            template.render(conversation_type="catalogSearch")
+            system_prompt_template.render(conversation_type="catalogSearch")
         )
         tools = [search_catalog]
 
@@ -463,11 +534,16 @@ async def update_chat(conversation, conversation_type, edition_id=None) -> RunRe
         tools=tools,
     )
 
+    session = SQLAlchemySession(session_id, engine=get_async_engine())
+
     run_result = await Runner.run(
-        agent,
-        conversation,
+        starting_agent=agent,
+        input=message,
         context=exec_context,
         hooks=LLMLoggingHooks(),
+        max_turns=max_turns,
+        error_handlers={"max_turns": _on_max_turns},
+        session=session,
         run_config=RunConfig(
             tracing_disabled=True,
             model_settings=ModelSettings(
@@ -479,6 +555,33 @@ async def update_chat(conversation, conversation_type, edition_id=None) -> RunRe
     )
 
     return run_result
+
+
+def get_session_messages(session_id):
+    """Read message data for session ID as ND-JSON"""
+    engine = get_engine()
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text("SELECT * FROM agent_messages WHERE session_id = :sid ORDER BY id"),
+            {"sid": session_id},
+        ).fetchall()
+    messages = [json.loads(row.message_data) for row in rows]
+    return messages
+
+
+def delete_session_data(session_id: str) -> None:
+    """Delete all rows in agent_messages and agent_sessions for the given session_id."""
+    engine = get_engine()
+    with engine.connect() as conn:
+        with conn.begin():
+            conn.execute(
+                text("DELETE FROM agent_messages WHERE session_id = :sid"),
+                {"sid": session_id},
+            )
+            conn.execute(
+                text("DELETE FROM agent_sessions WHERE session_id = :sid"),
+                {"sid": session_id},
+            )
 
 
 def max_chunk_score(chunk_hits):
@@ -507,7 +610,7 @@ def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
 
     missing_item_ids = []
     try:
-        # Retrieve map of record_id->item_id from DB
+        # map record_id->item_id to add to chunk metadata
         # book_id = record_id
         record_ids = set(cd.book_id for cd, _ in results)
         mapper = map_editions_and_records(record_ids=record_ids)
@@ -622,6 +725,8 @@ def search_catalog(
             # TODO: handle paginating or providing more edition hits
 
         # Fetch FRBR data (from DB)
+        # TODO: remove fetch of DB data everything the LLM needs is in TP \
+        # (right?) and the FE fetches other metadata in a separate request.
         edition_ids = [h["edition_id"] for h in edition_hits]
         logger.info(
             f"Fetching FRBR metadata for the following edition_ids: {edition_ids}"
@@ -767,40 +872,30 @@ def format_frbr_fields(orm_work, orm_edition):
     """
     Format ORM work and edition attributes for printing.
     """
-    # Format work metadata
     title = orm_work.title or "(Title Unavailable)"
 
     authors = orm_work.authors or []
-    author_names = (
+    authors_concat = (
         ", ".join([a.get("name", "") for a in authors if isinstance(a, dict)])
         if authors
         else "(Authors Unavailable)"
     )
 
     subjects = orm_work.subjects or []
-    subject_list = (
+    subjects_concat = (
         ", ".join([s.get("heading", "") for s in subjects if isinstance(s, dict)])
         if subjects
         else "(Subjects Unavailable)"
     )
 
-    # Format edition metadata
     pub_date = (
         str(orm_edition.publication_date)
         if orm_edition.publication_date
         else "(Publication Date Unavailable)"
     )
 
-    publishers = orm_edition.publishers or []
-    publisher_names = (
-        ", ".join([p.get("name", "") for p in publishers if isinstance(p, dict)])
-        if publishers
-        else "(Publishers Unavailable)"
-    )
-
-    # Format language metadata
     languages = orm_edition.languages or []
-    language_list = (
+    languages_concat = (
         ", ".join(
             [
                 lang.get("language", "") if isinstance(lang, dict) else str(lang)
@@ -811,13 +906,21 @@ def format_frbr_fields(orm_work, orm_edition):
         else "(Languages Unavailable)"
     )
 
+    # NOTE: publisher is the only field not indexed in TP (only in DB)
+    publishers = orm_edition.publishers or []
+    publishers_concat = (
+        ", ".join([p.get("name", "") for p in publishers if isinstance(p, dict)])
+        if publishers
+        else "(Publishers Unavailable)"
+    )
+
     return {
         "title": title,
-        "author_names": author_names,
-        "subject_list": subject_list,
+        "author_names": authors_concat,
+        "subject_list": subjects_concat,
         "pub_date": pub_date,
-        "publisher_names": publisher_names,
-        "language_list": language_list,
+        "publisher_names": publishers_concat,
+        "language_list": languages_concat,
     }
 
 

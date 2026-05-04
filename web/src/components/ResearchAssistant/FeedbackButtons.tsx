@@ -1,15 +1,14 @@
-import { Button, Flex } from "@nypl/design-system-react-components";
-import { useState } from "react";
+import { Button, Flex, Tooltip } from "@nypl/design-system-react-components";
+import { useContext, useState } from "react";
+import { THUMB_DESCIPTION_TEXT } from "~/src/constants/feedback";
+import { FeedbackContext } from "~/src/context/FeedbackContext";
 import { FeedbackState } from "~/src/types/ResearchAssistant";
 import ThumbsDownIcon from "./icons/ThumbsDownIcon";
 import ThumbsUpIcon from "./icons/ThumbsUpIcon";
 
 const feedbackButtonStyles = {
   "&:hover:not(:disabled)": {
-    bgColor: "transparent",
-    svg: {
-      fill: "section.research.primary-10",
-    },
+    bgColor: "section.research.primary-10",
   },
   "&[aria-pressed='true']": {
     svg: {
@@ -19,44 +18,73 @@ const feedbackButtonStyles = {
 };
 
 const FeedbackButtons = () => {
-  const [feedbackState, setFeedbackState] = useState<FeedbackState>(null);
+  const [thumbValue, setThumbValueState] = useState<FeedbackState>(null);
+  const { setThumbValue, onOpen, setDescriptionText } = useContext(
+    FeedbackContext
+  );
 
   const handleThumbsUp = () => {
-    setFeedbackState(feedbackState === "up" ? null : "up");
+    const newThumbValue = thumbValue === "up" ? null : "up";
+
+    if (thumbValue === null) {
+      onOpen();
+      setDescriptionText(THUMB_DESCIPTION_TEXT);
+    }
+
+    setThumbValueState(newThumbValue);
+    setThumbValue(newThumbValue);
   };
 
   const handleThumbsDown = () => {
-    setFeedbackState(feedbackState === "down" ? null : "down");
+    const newThumbValue = thumbValue === "down" ? null : "down";
+
+    if (thumbValue === null) {
+      onOpen();
+      setDescriptionText(THUMB_DESCIPTION_TEXT);
+    }
+
+    setThumbValueState(newThumbValue);
+    setThumbValue(newThumbValue);
   };
 
   return (
     <Flex>
-      <Button
-        id="thumbs-up-button"
-        variant="text"
-        aria-label="Thumbs up"
-        aria-pressed={feedbackState === "up"}
-        padding="xs"
-        minWidth="18px"
-        onClick={handleThumbsUp}
-        isDisabled={feedbackState === "down"}
-        sx={feedbackButtonStyles}
-      >
-        <ThumbsUpIcon isDisabled={feedbackState === "down"} />
-      </Button>
-      <Button
-        id="thumbs-down-button"
-        variant="text"
-        aria-label="Thumbs down"
-        aria-pressed={feedbackState === "down"}
-        padding="xs"
-        minWidth="18px"
-        onClick={handleThumbsDown}
-        isDisabled={feedbackState === "up"}
-        sx={feedbackButtonStyles}
-      >
-        <ThumbsDownIcon isDisabled={feedbackState === "up"} />
-      </Button>
+      <Tooltip content="Good response">
+        <Button
+          id="thumbs-up-button"
+          variant="text"
+          aria-pressed={thumbValue === "up"}
+          padding="xs"
+          borderRadius="100px"
+          height="32px"
+          width="32px"
+          minHeight="32px"
+          minWidth="32px"
+          onClick={handleThumbsUp}
+          isDisabled={thumbValue === "down"}
+          sx={feedbackButtonStyles}
+        >
+          <ThumbsUpIcon isDisabled={thumbValue === "down"} />
+        </Button>
+      </Tooltip>
+      <Tooltip content="Bad response">
+        <Button
+          id="thumbs-down-button"
+          variant="text"
+          aria-pressed={thumbValue === "down"}
+          padding="xs"
+          borderRadius="100px"
+          height="32px"
+          width="32px"
+          minHeight="32px"
+          minWidth="32px"
+          onClick={handleThumbsDown}
+          isDisabled={thumbValue === "up"}
+          sx={feedbackButtonStyles}
+        >
+          <ThumbsDownIcon isDisabled={thumbValue === "up"} />
+        </Button>
+      </Tooltip>
     </Flex>
   );
 };

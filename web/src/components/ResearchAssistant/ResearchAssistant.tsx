@@ -1,5 +1,5 @@
 import { Box, Flex } from "@nypl/design-system-react-components";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   HEADER_HEIGHT,
   MARGIN_BLEED,
@@ -44,10 +44,18 @@ const ResearchAssistant: React.FC = () => {
     ? "1fr 640px 640px 1fr"
     : "1fr 1152px 128px 1fr";
 
-  const latestResults =
-    messages && results && results[messages.length]
-      ? results[messages.length]
-      : null;
+  const latestResults = useMemo(() => {
+    if (!results) return null;
+
+    const exactMatch = results[messages.length];
+    if (exactMatch) return exactMatch;
+
+    const latest = Object.entries(results)
+      .filter(([, value]) => value)
+      .sort(([a], [b]) => Number(b) - Number(a))[0]?.[1];
+
+    return latest || null;
+  }, [messages.length, results]);
 
   return (
     <ResultPageProvider
@@ -76,7 +84,7 @@ const ResearchAssistant: React.FC = () => {
             alignItems="flex-end"
           >
             <Flex flexDirection="column" flex="1" width="100%">
-              {results && historyStack.length > 1 && (
+              {latestResults && historyStack.length > 1 && (
                 <Box
                   padding="s"
                   borderBottom="1px solid"
@@ -90,7 +98,7 @@ const ResearchAssistant: React.FC = () => {
                   />
                 </Box>
               )}
-              {!results && !isLoading && (
+              {!latestResults && !isLoading && (
                 <Box
                   padding="s"
                   borderBottom="1px solid"
@@ -103,7 +111,7 @@ const ResearchAssistant: React.FC = () => {
               <Box paddingLeft="s" paddingRight="l" paddingBottom="l" flex="1">
                 {isLoading ? (
                   <CatalogResultsSkeleton />
-                ) : results && Object.keys(results).length > 0 ? (
+                ) : latestResults && Object.keys(latestResults).length > 0 ? (
                   <>
                     {resultType === ConversationType.Catalog &&
                       isCatalogResults(latestResults) && (
@@ -113,7 +121,13 @@ const ResearchAssistant: React.FC = () => {
                 ) : (
                   <Box width="100%" marginTop="s">
                     <ResultsBanner />
-                    <EmptySearchPrompt />
+                    <EmptySearchPrompt
+                      message={
+                        messages.length > 1
+                          ? "No results found. Try a different topic."
+                          : undefined
+                      }
+                    />
                   </Box>
                 )}
               </Box>

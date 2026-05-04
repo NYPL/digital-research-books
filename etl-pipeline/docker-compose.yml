@@ -1,4 +1,13 @@
+# NOTE on inheriting AWS authentication from host machine:
+# - `aws sso login` sets credentials in host ~/.aws/sso/cache which are 
+# made available in the service docker container via the read only bind mount.
+# - ~/.aws/sso/cache is mounted read/write (overlaying the read-only ~/.aws mount)
+# so botocore can write refreshed SSO token cache entries inside the container.
+# - "aws-actions/configure-aws-credentials" sets environment variables for 
+# aws auth which are read into the docker service via the `environment` inheritance
+
 services:
+
   database:
     container_name: drb_local_db
     volumes:
@@ -7,6 +16,9 @@ services:
     ports:
       - 5432:5432
     environment:
+      # NOTE: DB server will not start unless the postgres superuser passoword is set via env var. \
+      # however the non-superuser POSTGRES_USER/PSWD is created by the devsetup service in  \
+      # LocalDevelopmentSetupProcess.create_database_user() using env vars from the .env file
       POSTGRES_PASSWORD: localpsql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"] # pg_ready never needs a password, postgres user simply prevents log message telling us default root user does not exist
@@ -61,16 +73,34 @@ services:
         condition: service_completed_successfully
     build:
       context: .
-    command: -e local-compose -p APIProcess
+    command: -e docker-compose -p APIProcess
     ports:
-      # TODO: this port spec should read from the local env files
+      # TODO: this port spec should be read from an env file
       - 5050:5050
+    environment:
+      # Read from host environment (used in GHA IAM assume role auth)
+      - AWS_PROFILE
+      - AWS_REGION
+      - AWS_DEFAULT_REGION
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
     volumes:
-      # Overrides Docker container /src with host machine /src
+      # this overrides `ADD . /src` in the DockerFile, mapping the \
+      # current local filesystem to "/src" in the docker container.
       - type: bind
         source: .
         target: /src
         read_only: true
+      # Expose host machine AWS creds to the container (for laptop sso AWS auth)
+      - type: bind
+        source: ${HOME}/.aws
+        target: /root/.aws
+        read_only: true
+      - type: bind
+        source: ${HOME}/.aws/sso/cache
+        target: /root/.aws/sso/cache
+        read_only: false
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5050/apidocs/ || exit 1"]
       interval: 10s
@@ -110,7 +140,15 @@ services:
         condition: service_healthy
     build:
       context: .
-    command: -e local-compose -p LocalDevelopmentSetupProcess
+    command: -e docker-compose -p LocalDevelopmentSetupProcess
+    environment:
+      # Read from host environment (used in GHA IAM assume role auth)
+      - AWS_PROFILE
+      - AWS_REGION
+      - AWS_DEFAULT_REGION
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
     volumes:
       # this overrides `ADD . /src` in the DockerFile, mapping the \
       # current local filesystem to "/src" in the docker image.
@@ -118,6 +156,15 @@ services:
         source: .
         target: /src
         read_only: true
+      # Expose host machine AWS creds to the container (for laptop sso AWS auth)
+      - type: bind
+        source: ${HOME}/.aws
+        target: /root/.aws
+        read_only: true
+      - type: bind
+        source: ${HOME}/.aws/sso/cache
+        target: /root/.aws/sso/cache
+        read_only: false
 
 volumes:
   drb_local_dbdata:

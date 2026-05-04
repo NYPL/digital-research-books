@@ -13,6 +13,8 @@ logger = create_log(__name__)
 
 
 class RecordFileSaver:
+    """Store manifest files from ingested Record.part into NYPL S3"""
+
     WEBPUB_CONVERSION_BASE_URL = "https://epub-to-webpub.vercel.app"
 
     def __init__(self, db_manager: DBManager, storage_manager: S3Manager):

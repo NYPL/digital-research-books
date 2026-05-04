@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
-import { submitFeedback } from "~/src/lib/api/FeedbackApi";
 import { FeedbackBoxViewType } from "@nypl/design-system-react-components";
+import React, { useContext, useEffect, useState } from "react";
 import { FeedbackContext } from "~/src/context/FeedbackContext";
+import { submitDRBFeedback } from "~/src/lib/api/FeedbackApi";
 
 const DEFAULT_DESCRIPTION_TEXT = "Please share your question or feedback.";
 const ERROR_DESCRIPTION_TEXT = "We are here to help!";
@@ -43,7 +43,7 @@ const Feedback: React.FC<any> = ({ location }) => {
   const handleFeedbackSubmit = (
     values: React.ComponentProps<typeof FeedbackBox>["onSubmit"]
   ) => {
-    submitFeedback({
+    submitDRBFeedback({
       feedback: isError
         ? `Error Code: ${statusCode ?? "Unknown"} - ${values.comment}`
         : values.comment,
