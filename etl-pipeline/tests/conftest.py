@@ -2,11 +2,11 @@ import json
 import os
 import random
 import re
+import traceback
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
-import traceback
 
 import pytest
 import requests_mock
@@ -76,11 +76,20 @@ def setup_env(pytestconfig, request):
     if (not only_unit_tests) and (environment == "local"):
         import subprocess
 
-        script_path = Path(__file__).parent.parent / "docker-compose-healthcheck.sh"
         result = subprocess.run(
-            [str(script_path), "--timeout", "1", "--poll-interval", "1"],
+            # Timeout prevents start up of not running services
+            [
+                "docker",
+                "compose",
+                "up",
+                "--no-recreate",
+                "--wait",
+                "--wait-timeout",
+                "10",
+            ],
             capture_output=True,
             text=True,
+            cwd=str(Path(__file__).parent.parent),  # etl-pipeline/
         )
         if result.returncode != 0:
             output = (result.stdout or "") + (result.stderr or "")

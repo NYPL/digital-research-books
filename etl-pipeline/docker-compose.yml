@@ -66,6 +66,7 @@ services:
       # TODO: this port spec should read from the local env files
       - 5050:5050
     volumes:
+      # Overrides Docker container /src with host machine /src
       - type: bind
         source: .
         target: /src
@@ -123,3 +124,6 @@ volumes:
   drb_local_esdata:
   drb_local_mqdata:
   drb_local_rsdata:
+
+
+# ALT: add a dependency tree on all services so only one final one needs a healthcheck
