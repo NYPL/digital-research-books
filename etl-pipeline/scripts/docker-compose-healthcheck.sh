@@ -5,6 +5,7 @@
 # if no services are running, exits status 1
 # if docker is not running, exits status 1
 # if all services are not healthy before TIMEOUT, exits status 1
+# MUST be executed with etl-pipeline/ as CWD
 # Usage: ./docker-compose-healthcheck.sh
 
 set -e
