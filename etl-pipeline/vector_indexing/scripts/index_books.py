@@ -3,22 +3,22 @@
 
 Usage:
     # With env vars loaded (from project root):
-    python -m vector_indexing.scripts.run_pipeline --barcodes 33433001234567 33433009876543
+    python -m vector_indexing.scripts.index_books --barcodes 33433001234567 33433009876543
 
     # Or with a file of barcodes (one per line):
-    python -m vector_indexing.scripts.run_pipeline --file barcodes.txt
+    python -m vector_indexing.scripts.index_books --file barcodes.txt
 
     # Auto-mode: resume from latest failed barcode for index
-    python -m vector_indexing.scripts.run_pipeline --auto --index-name vra_test-10k-harrier_oss_v1_.6b
+    python -m vector_indexing.scripts.index_books --auto --index-name vra_test-10k-harrier_oss_v1_.6b
 
     # Dry run (no actual indexing):
-    python -m vector_indexing.scripts.run_pipeline --barcodes 33433001234567 --dry-run
+    python -m vector_indexing.scripts.index_books --barcodes 33433001234567 --dry-run
 
     # Use local files:
-    python -m vector_indexing.scripts.run_pipeline --barcodes 33433001234567 --loader LocalBookLoader
+    python -m vector_indexing.scripts.index_books --barcodes 33433001234567 --loader LocalBookLoader
 
     # Use mock embedder (for testing):
-    python -m vector_indexing.scripts.run_pipeline --barcodes 33433001234567 --mock-embedder
+    python -m vector_indexing.scripts.index_books --barcodes 33433001234567 --mock-embedder
 """
 
 import argparse
@@ -27,7 +27,9 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from vector_indexing.pipeline.orchestrator import BatchResult, Pipeline
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
+
 
 # Add project root to path if running directly
 if __name__ == "__main__":
@@ -36,16 +38,14 @@ if __name__ == "__main__":
         sys.path.insert(0, str(project_root))
 
 from vector_indexing import SentenceSplitterChunker
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session
-
-from model.postgres.grin_public_domain_10k import GrinPublicDomain10k
+from vector_indexing.pipeline.orchestrator import BatchResult, Pipeline
 from vector_indexing.components import loaders
 from vector_indexing.core.config import (
     get_index_config,
     get_index_config_dict,
     load_from_module,
 )
+from model.postgres.grin_public_domain_10k import GrinPublicDomain10k
 from utils.common import batched
 
 TURBOPUFFER_INDEX_NAME = "vra-dev"
@@ -82,14 +82,6 @@ class MockMetadataProvider:
             )
             for barcode in barcodes
         }
-
-
-def _default_on_progress(result):
-    status = "y" if result.success else "n"
-    print(
-        f"  {status} {result.barcode}: {result.chunks_inserted} chunks"
-        + (f" ({result.error})" if result.error else "")
-    )
 
 
 def _iso_utc_now() -> str:
@@ -195,7 +187,7 @@ def load_barcodes_from_file(file_path: Path) -> list[str]:
     ]
 
 
-# TODO: make more generic parse json object
+# NOTE: purely for pretty/readable errors
 def parse_loader_args(raw: str) -> dict:
     try:
         parsed = json.loads(raw)
@@ -386,13 +378,14 @@ def main():
     # Create pipeline with optional component overrides
     pipeline = Pipeline(**kwargs)
 
-    # Run Indexing with batching and fail_fast logic
     batch_iter = [barcodes] if batch_size is None else batched(barcodes, batch_size)
     total_results = BatchResult()
 
+    # Run indexing with batching and fail-fast logic
     for barcode_batch in batch_iter:
         result = pipeline.index_books(barcode_batch)
         # TODO: maybe put the batching logic inside Pipeline for easier programmatic only access.
+
         total_results.results.extend(result.results)
         if total_results.total_time is None:
             total_results.total_time = 0.0

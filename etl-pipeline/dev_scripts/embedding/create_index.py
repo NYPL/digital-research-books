@@ -26,7 +26,7 @@ from vector_indexing.components.backends.turbopuffer import (
 )
 from vector_indexing.components.embedders.sagemaker import SageMakerEmbedder
 from vector_indexing.components.loaders import CachedS3BookLoader, LocalBookLoader
-from vector_indexing.scripts.run_pipeline import run_pipeline
+from vector_indexing.scripts.index_books import run_pipeline
 from logger import configure_loggers
 from utils.common import batched
 
