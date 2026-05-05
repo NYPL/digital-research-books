@@ -379,25 +379,16 @@ def main(barcodes: list[str] | None = None) -> BatchResult:
     from vector_indexing.components.embedders.google import GoogleEmbedder
     from vector_indexing.components.loaders.s3 import CachedS3BookLoader
     from vector_indexing.components.metadata.provider import MetadataProvider
-    from vector_indexing.core.config import GlobalConfig
 
     if barcodes is None:
         return
 
-    config = GlobalConfig.for_environment()
-
     pipeline = Pipeline(
-        loader=CachedS3BookLoader(config=config),
-        chunker=SentenceSplitterChunker(config=config),
-        embedder=GoogleEmbedder(
-            model=config.embedding_model,
-            dimensions=config.embedding_dimensions,
-            batch_size=config.embedding_batch_size,
-        ),
-        metadata_provider=MetadataProvider(config=config),
-        backend=TurbopufferBackend.from_config(
-            index_name="vra-dev-test", config=config
-        ),
+        loader=CachedS3BookLoader(),
+        chunker=SentenceSplitterChunker(),
+        embedder=GoogleEmbedder(),
+        metadata_provider=MetadataProvider(),
+        backend=TurbopufferBackend(index_name="vra-dev-test"),
     )
 
     def on_progress(result: IndexingResult) -> None:

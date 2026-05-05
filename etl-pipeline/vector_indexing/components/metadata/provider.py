@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import create_engine, text
 
+from vector_indexing.core.config import PostgresConfig
 from vector_indexing.core.types import BookMetadata
-from vector_indexing.core.config import get_config, GlobalConfig
 
 if TYPE_CHECKING:
     from sqlalchemy.engine import Engine
@@ -22,17 +22,18 @@ class MetadataProvider:
 
     Takes in:
         engine: Optional SQLAlchemy engine. If not provided, creates one
-            using config settings (which fall back to POSTGRES_* env vars).
-        config: Optional GlobalConfig. If not provided, uses get_config().
+            using PostgresConfig (which reads from POSTGRES_* env vars).
+        pg_config: Optional PostgresConfig override.
     """
 
     def __init__(
         self,
         engine: "Engine | None" = None,
-        config: Optional[GlobalConfig] = None,
+        pg_config: PostgresConfig | None = None,
     ):
-        self._config = config or get_config()
-        self._engine = engine or create_engine(self._config.pg_connection_url)
+        self._engine = engine or create_engine(
+            (pg_config or PostgresConfig()).connection_url
+        )
 
     def get_metadata(self, barcodes: list[str]) -> dict[str, BookMetadata]:
         """Fetch metadata for a batch of barcodes.
