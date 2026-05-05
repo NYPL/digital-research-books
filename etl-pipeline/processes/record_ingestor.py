@@ -29,16 +29,16 @@ class RecordIngestor:
         sqs_records_queue = os.environ["RECORD_PIPELINE_SQS_QUEUE"]
         self.sqs_manager = SQSManager(queue_name=sqs_records_queue)
 
-    def ingest(self, records: Iterator[Record], skip_next: bool = False) -> int:
+    def ingest(self, records: Iterator[Record], queue_etl: bool = True) -> int:
         """
-        (a) Writes records to DB and, (b) if skip_next=False, adds records to
+        (a) Writes records to DB and, (b) if queue_etl=True, adds records to
         the processing queue for the DRB ETL pipeline (RecordsPipeline).
         """
         try:
             for record in self._persisted_records(records):
                 message = {"source_id": record.source_id, "source": record.source}
 
-                if not skip_next:
+                if queue_etl:
                     self.sqs_manager.send_message_to_queue(message)
         except Exception:
             logger.exception(f"Failed to ingest {self.source} records")

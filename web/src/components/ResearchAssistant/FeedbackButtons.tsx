@@ -17,7 +17,11 @@ const feedbackButtonStyles = {
   },
 };
 
-const FeedbackButtons = () => {
+interface FeedbackButtonsProps {
+  label: string;
+}
+
+const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({ label }) => {
   const [thumbValue, setThumbValueState] = useState<FeedbackState>(null);
   const { setThumbValue, onOpen, setDescriptionText } = useContext(
     FeedbackContext
@@ -30,7 +34,6 @@ const FeedbackButtons = () => {
       onOpen();
       setDescriptionText(THUMB_DESCIPTION_TEXT);
     }
-
     setThumbValueState(newThumbValue);
     setThumbValue(newThumbValue);
   };
@@ -53,6 +56,7 @@ const FeedbackButtons = () => {
         <Button
           id="thumbs-up-button"
           variant="text"
+          aria-label={`${label} Good response`}
           aria-pressed={thumbValue === "up"}
           padding="xs"
           borderRadius="100px"
@@ -71,6 +75,7 @@ const FeedbackButtons = () => {
         <Button
           id="thumbs-down-button"
           variant="text"
+          aria-label={`${label} Bad response`}
           aria-pressed={thumbValue === "down"}
           padding="xs"
           borderRadius="100px"

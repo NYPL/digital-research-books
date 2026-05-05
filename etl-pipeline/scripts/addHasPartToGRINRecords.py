@@ -1,8 +1,10 @@
 """
 Backfill script that does the following for ingested public domain GRIN books:
-(a) adds read link data (for pdf generation of the
-first page of the Book from the OCR image+text) to the records table record
-if it is missing, and (b) adds the book to the ETL Pipeline SQS processing queue
+(a) adds the book to the ETL Pipeline SQS processing queue
+(b) if missing, adds a url link folder containing  OCR image+text of the first page
+
+Used to drive the backlog of GRIN books ingested before new GRIN books were
+auto-queued to the RecordsPipeline starting ~Sept 2025.
 """
 
 import os
@@ -104,6 +106,8 @@ def main(stmt=None):
                     mets_file = get_mets_file_from_s3(s3_client, barcode)
                     if mets_file:
                         first_page_part = create_first_page_part(barcode, mets_file)
+
+                        # update record ORM object
                         record.has_part.append(str(first_page_part))
 
                         db_manager.session.add(record)
