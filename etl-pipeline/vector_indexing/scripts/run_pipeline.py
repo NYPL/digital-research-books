@@ -20,7 +20,6 @@ Usage:
 
 import argparse
 import sys
-from dataclasses import replace
 from pathlib import Path
 
 from vector_indexing.pipeline.orchestrator import BatchResult
@@ -32,14 +31,13 @@ if __name__ == "__main__":
         sys.path.insert(0, str(project_root))
 
 from vector_indexing import (
-    get_config,
     SentenceSplitterChunker,
 )
 from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
-from vector_indexing.pipeline import Pipeline
-from vector_indexing.components.loaders import S3BookLoader, LocalBookLoader
 from vector_indexing.components.embedders import GoogleEmbedder
+from vector_indexing.components.loaders import LocalBookLoader, S3BookLoader
 from vector_indexing.components.metadata import MetadataProvider
+from vector_indexing.pipeline import Pipeline
 
 TURBOPUFFER_INDEX_NAME = "vra-dev"
 
@@ -48,7 +46,7 @@ class MockEmbedder:
     """Mock embedder for testing - returns random vectors."""
 
     def __init__(self, dimensions: int | None = None):
-        self.dimensions = dimensions or get_config().embedding_dimensions
+        self.dimensions = dimensions or 768
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         import random
@@ -86,7 +84,6 @@ def _default_on_progress(result):
 def run_pipeline(
     barcodes: list[str],
     *,
-    config_overrides: dict | None = None,
     loader=None,
     chunker=None,
     embedder=None,
@@ -95,29 +92,12 @@ def run_pipeline(
     on_progress=_default_on_progress,
 ) -> BatchResult:
     """Run Pipeline with defaults"""
-    # Q: better to bring the print logging into the run_pipeline() scope rather
-    # than main() so its available where ever run_pipeline is called?
 
-    config = get_config()
-    if config_overrides:
-        config = replace(config, **config_overrides)
-        # FUTURE: remove config_overrides and just pass non-default pipeline
-        # step objects when non-default config is desired.
-
-    if loader is None:
-        loader = S3BookLoader(config=config)
-    if chunker is None:
-        chunker = SentenceSplitterChunker(config=config)
-    if embedder is None:
-        embedder = GoogleEmbedder()
-    if metadata_provider is None:
-        metadata_provider = MetadataProvider(config=config)
-    if backend is None:
-        backend = TurbopufferBackend.from_config(
-            index_name=TURBOPUFFER_INDEX_NAME,
-            config=config,
-            # TODO: set default index name in env config files
-        )
+    loader = loader or S3BookLoader()
+    chunker = chunker or SentenceSplitterChunker()
+    embedder = embedder or GoogleEmbedder()
+    metadata_provider = metadata_provider or MetadataProvider()
+    backend = backend or TurbopufferBackend(index_name=TURBOPUFFER_INDEX_NAME)
 
     pipeline = Pipeline(
         loader=loader,

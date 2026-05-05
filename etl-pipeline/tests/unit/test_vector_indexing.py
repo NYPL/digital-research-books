@@ -4,24 +4,25 @@ Focuses on behavior rather than individual property checks.
 """
 
 import os
-import pytest
 from unittest.mock import Mock, patch
 
+import pytest
+from vector_indexing.components.backends.elasticsearch import (
+    ElasticsearchBackend,
+    chunk_from_es_hit,
+    chunk_to_es_action,
+)
+from vector_indexing.components.chunkers import SentenceSplitterChunker
 from vector_indexing.core import (
     Book,
     BookMetadata,
     ChunkDocument,
+    ElasticsearchConfig,
     InsertResult,
-    GlobalConfig,
-)
-from vector_indexing.components.chunkers import SentenceSplitterChunker
-from vector_indexing.components.backends.elasticsearch import (
-    ElasticsearchBackend,
-    chunk_to_es_action,
-    chunk_from_es_hit,
+    PostgresConfig,
+    QwenConfig,
 )
 from vector_indexing.pipeline.orchestrator import Pipeline
-
 
 # Fixtures
 
@@ -125,37 +126,48 @@ class TestCoreTypes:
 class TestConfig:
     """Test configuration loading."""
 
-    def test_config_defaults(self):
-        """GlobalConfig has sensible defaults."""
-        cfg = GlobalConfig()
-        assert cfg.es_host == "localhost"
-        assert cfg.chunk_size == 512
-        assert cfg.es_url == "http://localhost:9200"
-
-    def test_config_from_env(self):
-        """Config reads from environment variables."""
+    def test_postgres_config_defaults(self):
+        """PostgresConfig reads from POSTGRES_* env vars."""
         with patch.dict(
             os.environ,
             {
-                "ELASTICSEARCH_HOST": "prod-es.example.com",
-                "ELASTICSEARCH_PORT": "9243",
-                "S3_BUCKET": "my-bucket",
+                "POSTGRES_HOST": "pg.example.com",
+                "POSTGRES_PORT": "5432",
+                "POSTGRES_USER": "user",
+                "POSTGRES_PSWD": "pass",
+                "POSTGRES_NAME": "mydb",
             },
         ):
-            cfg = GlobalConfig.from_env()
+            cfg = PostgresConfig()
+            assert cfg.host == "pg.example.com"
+            assert cfg.port == 5432
+            assert cfg.connection_url == "postgresql://user:pass@pg.example.com:5432/mydb"
 
-            assert cfg.es_host == "prod-es.example.com"
-            assert cfg.es_port == 9243
-            assert cfg.s3_bucket == "my-bucket"
+    def test_elasticsearch_config_defaults(self):
+        """ElasticsearchConfig reads from VRA_ELASTICSEARCH_* env vars."""
+        with patch.dict(
+            os.environ,
+            {
+                "VRA_ELASTICSEARCH_HOST": "es.example.com",
+                "VRA_ELASTICSEARCH_PORT": "9200",
+            },
+            clear=False,
+        ):
+            # Remove optional vars if present
+            for key in ("VRA_ELASTICSEARCH_USER", "VRA_ELASTICSEARCH_PSWD", "VRA_ELASTICSEARCH_SCHEME"):
+                os.environ.pop(key, None)
+            cfg = ElasticsearchConfig()
+            assert cfg.host == "es.example.com"
+            assert cfg.port == 9200
+            assert cfg.url == "http://es.example.com:9200"
 
-    def test_config_sensitive_fields_masked(self):
-        """Passwords don't appear in repr/str."""
-        cfg = GlobalConfig(es_password="secret123", pg_password="dbpass")
-        repr_str = repr(cfg)
-
-        assert "secret123" not in repr_str
-        assert "dbpass" not in repr_str
-        assert "***" in repr_str
+    def test_qwen_config_defaults(self):
+        """QwenConfig has hardcoded defaults."""
+        cfg = QwenConfig()
+        assert cfg.host == "localhost"
+        assert cfg.port == 1234
+        assert cfg.url == "http://localhost:1234"
+        assert cfg.model == "qwen3-embedding-8b-fp16"
 
 
 # Chunking

@@ -1,7 +1,11 @@
 import asyncio
 import os
-import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+from agents import Agent, RunConfig, Runner, function_tool
+from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
+from api.assistant.agent import _MAX_TURNS_SYSTEM_PROMPT, _on_max_turns, update_chat
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
@@ -9,9 +13,6 @@ from openai.types.chat.chat_completion_message_tool_call import (
     ChatCompletionMessageToolCall,
     Function,
 )
-from agents import Agent, Runner, RunConfig, function_tool
-from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
-from api.assistant.agent import update_chat, _on_max_turns, _MAX_TURNS_SYSTEM_PROMPT
 
 
 class TestAgent:
@@ -20,7 +21,6 @@ class TestAgent:
 
         # Mock external resource dependencies
         mocker.patch("api.assistant.agent.TurbopufferBackend")
-        mocker.patch("api.assistant.agent.get_config")
         mocker.patch("api.assistant.agent.get_async_engine")
         mocker.patch("api.assistant.agent.SQLAlchemySession")
         mocker.patch.dict(os.environ, {"GOOGLE_API_KEY": "fake-key"})

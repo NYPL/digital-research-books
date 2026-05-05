@@ -3,13 +3,14 @@
 from typing import Iterator, Optional
 
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk, scan as es_scan
-
-from vector_indexing.core.types import BookMetadata, ChunkDocument, InsertResult
-from vector_indexing.core.config import get_config, GlobalConfig
-from vector_indexing.core.utils import format_bytes
+from elasticsearch.helpers import bulk
+from elasticsearch.helpers import scan as es_scan
 from logger import create_log
+
 from vector_indexing.components.backends.base import IndexBackend
+from vector_indexing.core.config import ElasticsearchConfig
+from vector_indexing.core.types import BookMetadata, ChunkDocument, InsertResult
+from vector_indexing.core.utils import format_bytes
 
 logger = create_log(__name__)
 
@@ -114,12 +115,12 @@ def chunk_from_es_hit(hit: dict) -> ChunkDocument:
 class ElasticsearchBackend(IndexBackend):
     """Elasticsearch implementation of IndexBackend.
     Examples:
-        # Using default config
+        # Using default config (reads VRA_ELASTICSEARCH_* env vars)
         backend = ElasticsearchBackend("index-name")
 
         # Using explicit config
-        config = GlobalConfig(es_host=<host>, es_port=<port>)
-        backend = ElasticsearchBackend("index-name", config=config)
+        es_config = ElasticsearchConfig(host="prod-es.example.com", port=9243)
+        backend = ElasticsearchBackend("index-name", es_config=es_config)
 
         # Using existing client
         client = Elasticsearch(<host>)
@@ -130,29 +131,22 @@ class ElasticsearchBackend(IndexBackend):
         self,
         index_name: str,
         client: Optional[Elasticsearch] = None,
-        config: Optional[GlobalConfig] = None,
+        es_config: ElasticsearchConfig | None = None,
     ):
         self._index_name = index_name
-        self._config = config or get_config()
 
         if client is not None:
             self._client = client
         else:
+            self._es_config = es_config or ElasticsearchConfig()
             self._client = self._create_client()
 
     def _create_client(self) -> Elasticsearch:
         """Create Elasticsearch client from config."""
-        cfg = self._config
-
-        # Build host URL
-        if cfg.es_user and cfg.es_password:
-            host = f"{cfg.es_scheme}://{cfg.es_user}:{cfg.es_password}@{cfg.es_host}:{cfg.es_port}"
-        else:
-            host = f"{cfg.es_scheme}://{cfg.es_host}:{cfg.es_port}"
-
+        cfg = self._es_config
         return Elasticsearch(
-            hosts=[host],
-            request_timeout=cfg.es_timeout,
+            hosts=[cfg.url],
+            request_timeout=cfg.timeout,
         )
 
     @property
@@ -177,8 +171,8 @@ class ElasticsearchBackend(IndexBackend):
         self._client.indices.create(index=self._index_name, body=body)
         logger.info(f"Created index '{self._index_name}'")
 
-    def create_from_config(self, settings: Optional[dict] = None) -> None:
-        mappings = build_index_mapping(vector_dims=self._config.embedding_dimensions)
+    def create_from_config(self, vector_dims: int = 768, settings: Optional[dict] = None) -> None:
+        mappings = build_index_mapping(vector_dims=vector_dims)
         self.create(mappings, settings)
 
     def delete(self) -> None:
@@ -447,18 +441,3 @@ class ElasticsearchBackend(IndexBackend):
             logger.warning(f"Failed to get index stats: {e}")
 
         return base_stats
-
-    # Class Methods
-
-    @classmethod
-    def from_config(
-        cls,
-        index_name: Optional[str] = None,
-        config: Optional[GlobalConfig] = None,
-    ) -> "ElasticsearchBackend":
-        """Create backend from config. Use index name if provided, if not derive from config.
-        If config is not provided, uses get_config().
-        """
-        cfg = config or get_config()
-        name = index_name or cfg.es_index
-        return cls(index_name=name, config=cfg)

@@ -2,6 +2,7 @@ import os
 import sys
 from collections.abc import Iterator
 from pathlib import Path
+
 from dotenv import find_dotenv
 
 PROJ_ROOT = Path(find_dotenv("requirements.txt")).parent
@@ -15,20 +16,19 @@ load_env("config/.env.production")
 from datetime import datetime, timezone
 
 import turbopuffer
+from logger import configure_loggers
+from model.postgres.grin_public_domain_10k import GrinPublicDomain10k
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
-
-from model.postgres.grin_public_domain_10k import GrinPublicDomain10k
-from vector_indexing.core.config import PROJECT_ROOT, get_config, get_index_config
+from utils.common import batched
 from vector_indexing.components.backends.turbopuffer import (
     TurbopufferBackend,
     load_default_schema,
 )
 from vector_indexing.components.embedders.sagemaker import SageMakerEmbedder
 from vector_indexing.components.loaders import CachedS3BookLoader, LocalBookLoader
+from vector_indexing.core.config import PROJECT_ROOT, PostgresConfig, get_index_config
 from vector_indexing.scripts.run_pipeline import run_pipeline
-from logger import configure_loggers
-from utils.common import batched
 
 configure_loggers(log_level="info", stage="development")
 
@@ -38,8 +38,7 @@ def list_10k_barcodes(start_from: str | None = None):
 
     If start_from is provided, only barcodes >= start_from are returned.
     """
-    config = get_config()
-    engine = create_engine(config.pg_connection_url)
+    engine = create_engine(PostgresConfig().connection_url)
     with Session(engine) as db_session:
         query = select(GrinPublicDomain10k.barcode).order_by(
             GrinPublicDomain10k.barcode

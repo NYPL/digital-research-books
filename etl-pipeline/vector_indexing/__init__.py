@@ -7,49 +7,45 @@ This package provides a source/transform/sink architecture for:
 - Indexing to Elasticsearch (or other backends)
 
 Example:
-    from lib.v2 import (
-        GlobalConfig, get_config,
+    from vector_indexing import (
+        PostgresConfig, ElasticsearchConfig, QwenConfig,
         Book, BookMetadata, ChunkDocument,
         ElasticsearchBackend,
         SentenceSplitterChunker,
     )
 
-    # Configuration is automatic (reads VRA_ENV)
-    cfg = get_config()
+    # Create a backend using env-var defaults
+    backend = ElasticsearchBackend("my-index")
 
-    # Or explicit
-    cfg = GlobalConfig(s3_bucket="my-bucket", es_index="my-index")
-
-    # Create a backend
-    backend = ElasticsearchBackend.from_config()
+    # Or with explicit config
+    es_config = ElasticsearchConfig(host="prod-es.example.com", port=9243)
+    backend = ElasticsearchBackend("my-index", es_config=es_config)
 """
 
+from vector_indexing.components import (
+    DEFAULT_VECTOR_MAPPING,
+    ElasticsearchBackend,
+    # Backends
+    IndexBackend,
+)
+from vector_indexing.components.chunkers import (
+    SentenceSplitterChunker,
+    TextChunker,
+)
 from vector_indexing.core import (
+    CONFIG_DIR,
+    DATA_DIR,
+    PROJECT_ROOT,
     # Types
     Book,
     BookMetadata,
     ChunkDocument,
+    ElasticsearchConfig,
     InsertResult,
     # Config
-    GlobalConfig,
-    get_config,
-    set_config,
-    reset_config,
-    PROJECT_ROOT,
-    CONFIG_DIR,
-    DATA_DIR,
-)
-
-from vector_indexing.components import (
-    # Backends
-    IndexBackend,
-    ElasticsearchBackend,
-    DEFAULT_VECTOR_MAPPING,
-)
-
-from vector_indexing.components.chunkers import (
-    TextChunker,
-    SentenceSplitterChunker,
+    PostgresConfig,
+    QwenConfig,
+    resolve_path,
 )
 
 __all__ = [
@@ -59,10 +55,10 @@ __all__ = [
     "ChunkDocument",
     "InsertResult",
     # Config
-    "GlobalConfig",
-    "get_config",
-    "set_config",
-    "reset_config",
+    "PostgresConfig",
+    "ElasticsearchConfig",
+    "QwenConfig",
+    "resolve_path",
     "PROJECT_ROOT",
     "CONFIG_DIR",
     "DATA_DIR",

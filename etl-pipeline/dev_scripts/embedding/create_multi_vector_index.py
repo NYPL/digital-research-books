@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+
 from dotenv import find_dotenv
 
 PROJ_ROOT = Path(find_dotenv("requirements.txt")).parent
@@ -14,13 +15,11 @@ os.environ["STAGE"] = "development"
 os.environ["LOG_LEVEL"] = "debug"
 
 import turbopuffer
-from vector_indexing.core.config import get_config
+from utils.common import require_env
 
-
-config = get_config()
 client = turbopuffer.Turbopuffer(
-    api_key=config.turbopuffer_api_key,
-    region=config.turbopuffer_region,
+    api_key=require_env("TURBOPUFFER_API_KEY"),
+    region=os.environ.get("TURBOPUFFER_REGION", "aws-us-east-1"),
 )
 
 # New vector columns to add alongside the existing "vector" field copied from vra-dev
