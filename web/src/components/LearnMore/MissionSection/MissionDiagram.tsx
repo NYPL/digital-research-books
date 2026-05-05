@@ -52,7 +52,6 @@ const MissionDiagram = () => {
         width="239px"
         zIndex={1}
       >
-        {" "}
         <Box display="flex" flexDir="column" alignItems="center">
           <Box
             boxSizing="content-box"
@@ -82,7 +81,6 @@ const MissionDiagram = () => {
         width="239px"
         zIndex={1}
       >
-        {" "}
         <Box
           boxSizing="content-box"
           width="2.25rem"

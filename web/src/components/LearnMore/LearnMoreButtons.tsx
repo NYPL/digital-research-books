@@ -2,11 +2,13 @@ import { Button, Flex } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
 import ArrowIcon from "../ResearchAssistant/icons/ArrowIcon";
 
-interface LandingButtonsProps {
+interface LearnMoreButtonsProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
 }
 
-const LandingButtons: React.FC<LandingButtonsProps> = ({ heroSectionRef }) => {
+const LearnMoreButtons: React.FC<LearnMoreButtonsProps> = ({
+  heroSectionRef,
+}) => {
   const handleBackToTopClick = () => {
     if (heroSectionRef.current) {
       heroSectionRef.current.scrollIntoView({ behavior: "smooth" });
@@ -52,4 +54,4 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({ heroSectionRef }) => {
   );
 };
 
-export default LandingButtons;
+export default LearnMoreButtons;

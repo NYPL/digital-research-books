@@ -27,11 +27,11 @@ const LearnMore: React.FC = () => {
         <HeroSection
           ref={heroSectionRef}
           missionSectionRef={missionSectionRef}
-        ></HeroSection>
+        />
         <MissionSection
           ref={missionSectionRef}
           heroSectionRef={heroSectionRef}
-        ></MissionSection>
+        />
         <CollectionSection />
         <TechnologySection />
         <ModelsSection heroSectionRef={heroSectionRef} />

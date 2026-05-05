@@ -53,7 +53,7 @@ const TechnologySection: React.FC = () => {
         <Flex margin="0 auto" justifyContent="center" marginY="xxl">
           <Image
             src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/technologyDiagram.png"
-            alt=""
+            alt="Flow diagram showing an Agentic AI system. A question enters the Agentic AI box, which flows through three stages: Question Processed, Information Retrieved, and Response Generated (linked to a Book Ingestion Pipeline), finally exiting as a Response."
             width="608px"
             flexShrink="0"
             backgroundColor="transparent"

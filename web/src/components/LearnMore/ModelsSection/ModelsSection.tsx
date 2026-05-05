@@ -11,11 +11,11 @@ import LandingCard from "../../ResearchAssistantLanding/LandingCard";
 import SectionContainer from "../../ResearchAssistantLanding/SectionContainer";
 import LearnMoreButtons from "../LearnMoreButtons";
 
-interface ModelSectionProps {
+interface ModelsSectionProps {
   heroSectionRef: React.RefObject<HTMLDivElement>;
 }
 
-const ModelsSection: React.FC<ModelSectionProps> = ({ heroSectionRef }) => {
+const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
   return (
     <SectionContainer
       borderTop="1px solid"
@@ -48,7 +48,7 @@ const ModelsSection: React.FC<ModelSectionProps> = ({ heroSectionRef }) => {
             icon={
               <Image
                 src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/GeminiFlashIcon.png"
-                alt="Google Gemini Flash icon depicting a rainbow four tipped star on a white background."
+                alt=""
                 width="48px"
                 flexShrink="0"
                 backgroundColor="transparent"
@@ -89,7 +89,7 @@ const ModelsSection: React.FC<ModelSectionProps> = ({ heroSectionRef }) => {
             icon={
               <Image
                 src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/GeminiEmbeddingsIcon.png"
-                alt="Google Gemini Embeddings icon depicting a blue four tipped star on a white background."
+                alt=""
                 width="48px"
                 flexShrink="0"
                 backgroundColor="transparent"

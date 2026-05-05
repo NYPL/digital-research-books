@@ -1,7 +1,7 @@
 import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import Divider from "../Divider";
 
-const StatisticCard: React.FC = () => {
+const StatisticRow: React.FC = () => {
   return (
     <Box
       color="ui.typography.body"
@@ -87,4 +87,4 @@ const StatisticCard: React.FC = () => {
   );
 };
 
-export default StatisticCard;
+export default StatisticRow;
