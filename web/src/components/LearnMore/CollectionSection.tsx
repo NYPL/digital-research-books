@@ -42,6 +42,7 @@ const CollectionSection: React.FC = () => {
               digitized through the Google Books project, and the public corpus
               of the{" "}
               <Link
+                color="section.research.secondary"
                 to="https://institutional.org/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -120,6 +121,7 @@ const CollectionSection: React.FC = () => {
             The collection currently contains 82 subjects classified using the
             first level of{" "}
             <Link
+              color="section.research.secondary"
               to="https://www.loc.gov/catdir/cpso/lcco/"
               target="_blank"
               rel="noopener noreferrer"
