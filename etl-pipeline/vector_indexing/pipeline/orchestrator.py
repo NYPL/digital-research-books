@@ -190,10 +190,11 @@ class Pipeline:
             )
         )
 
-    @classmethod
-    def builder(cls) -> "PipelineBuilder":
-        """Create a new PipelineBuilder."""
-        return PipelineBuilder()
+    # TODO: not implemented... what was the vision here?
+    # @classmethod
+    # def builder(cls) -> "PipelineBuilder":
+    #     """Create a new PipelineBuilder."""
+    #     return PipelineBuilder()
 
     def index_book(self, barcode: str) -> IndexingResult:
         """Index a single book through the full pipeline. Returns an IndexingResult with success/failure details."""
