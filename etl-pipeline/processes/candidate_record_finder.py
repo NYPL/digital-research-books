@@ -1,12 +1,15 @@
 import re
 from typing import List, Set, Tuple
+
 from sqlalchemy.exc import DataError
 from sqlalchemy import or_
+
 from managers import DBManager, RedisManager
 import services.monitor as monitor
-from .constants import CLUSTER_LOCK_KEY_PREFIX
 from model import Record, RecordState
 from logger import create_log
+
+from .constants import CLUSTER_LOCK_KEY_PREFIX
 
 logger = create_log(__name__)
 
