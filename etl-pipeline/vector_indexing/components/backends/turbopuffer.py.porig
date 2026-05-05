@@ -8,18 +8,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Iterator, Optional, TYPE_CHECKING
+from typing import Iterator, Optional, TYPE_CHECKING
 
 import turbopuffer as tpuf
 
 from logger import create_log
 from vector_indexing.core.utils import format_bytes, TimerSet
-from vector_indexing.core.types import (
-    BookMetadata,
-    ChunkDocument,
-    InsertResult,
-    PatchResult,
-)
+from vector_indexing.core.types import BookMetadata, ChunkDocument, InsertResult
 from vector_indexing.core.config import get_config, GlobalConfig, VECTOR_INDEXING_ROOT
 from vector_indexing.components.backends.base import IndexBackend
 
@@ -29,7 +24,7 @@ if TYPE_CHECKING:
 logger = create_log(__name__)
 
 
-def load_default_schema() -> dict:
+def _load_schema() -> dict:
     """Load turbopuffer schema from config/schemas/turbopuffer.json."""
     schema_path = VECTOR_INDEXING_ROOT / "config" / "schemas" / "turbopuffer.json"
     with open(schema_path) as f:
@@ -38,7 +33,7 @@ def load_default_schema() -> dict:
     return schema
 
 
-DEFAULT_TURBOPUFFER_SCHEMA = load_default_schema()
+TPUF_SCHEMA = _load_schema()
 
 
 def _is_size_error(e: Exception) -> bool:
@@ -158,12 +153,10 @@ class TurbopufferBackend(IndexBackend):
     def __init__(
         self,
         index_name: str,
-        schema: Dict[str, Any] | None = None,
         config: Optional[GlobalConfig] = None,
     ):
         self._config = config or get_config()
         self._index_name = index_name
-        self._schema = schema or DEFAULT_TURBOPUFFER_SCHEMA
 
         self._client = tpuf.Turbopuffer(
             api_key=self._config.turbopuffer_api_key or None,
@@ -241,14 +234,7 @@ class TurbopufferBackend(IndexBackend):
 
         Returns:
             True if the document was patched, False if not found.
-
-        Raises:
-            ValueError: If 'vector' is in fields. Use insert() to update vectors.
         """
-        if "vector" in fields:
-            raise ValueError(
-                "Cannot patch 'vector' field; use insert() to replace the document instead."
-            )
         try:
             with self._timers.time("write"):
                 response = self._ns.write(patch_rows=[{"id": doc_id, **fields}])
@@ -272,21 +258,9 @@ class TurbopufferBackend(IndexBackend):
 
         Returns:
             PatchResult with counts of patched/skipped documents.
-
-        Raises:
-            ValueError: If any patch contains 'vector'. Use insert() instead.
-            Exception: Re-raises size errors (HTTP 413/408) so callers (e.g.
-                TurbopufferPatchBuffer) can split the batch and retry. Other
-                exceptions are caught and reported via PatchResult.failed.
         """
         if not patches:
             return PatchResult()
-
-        for p in patches:
-            if "vector" in p:
-                raise ValueError(
-                    "Cannot patch 'vector' field; use insert() to replace the document instead."
-                )
 
         try:
             with self._timers.time("write"):
@@ -301,9 +275,6 @@ class TurbopufferBackend(IndexBackend):
 
             return PatchResult(patched=rows_patched, skipped=skipped)
         except Exception as e:
-            # Let size/timeout errors propagate so the buffer can split & retry.
-            if _is_size_error(e):
-                raise
             logger.error(f"Failed to patch documents: {e}")
             return PatchResult(failed=len(patches), errors=[{"error": str(e)}])
 
@@ -328,14 +299,7 @@ class TurbopufferBackend(IndexBackend):
 
         Returns:
             PatchResult with count of patched documents and rows_remaining flag.
-
-        Raises:
-            ValueError: If patch contains 'vector'. Use insert() instead.
         """
-        if "vector" in patch:
-            raise ValueError(
-                "Cannot patch 'vector' field; use insert() to replace the document instead."
-            )
         try:
             write_kwargs = {
                 "patch_by_filter": {
@@ -409,17 +373,14 @@ class TurbopufferBackend(IndexBackend):
             write_kwargs = {
                 "upsert_rows": rows,
                 "distance_metric": "cosine_distance",
-                "schema": self._schema,
+                "schema": TPUF_SCHEMA,
             }
-            # NOTE: vector dims match btw schema and insert rows are enforced with error
 
             with self._timers.time("write"):
                 response = self._ns.write(**write_kwargs)
 
             billing = getattr(response, "billing", None)
-            written_bytes = (
-                getattr(billing, "billable_logical_bytes_written", 0) if billing else 0
-            )
+            written_bytes = getattr(billing, "written_bytes", 0) if billing else 0
             total_written_bytes += written_bytes
 
             logger.info(
@@ -744,7 +705,7 @@ class TurbopufferPatchBuffer:
         self._buffer.append(patch)
         self._current_bytes += size
 
-        if self._current_bytes > self._max_bytes:
+        if self._current_bytes >= self._max_bytes:
             logger.info(
                 f"Patch buffer {format_bytes(self._current_bytes)} exceeded max, flushing {len(self._buffer)} patches..."
             )
@@ -765,9 +726,8 @@ class TurbopufferPatchBuffer:
         self.total_skipped += result.skipped
         self.total_failed += result.failed
 
-        # Scale back up by 1% only on a clean flush (capped at ceiling)
-        if result.failed == 0:
-            self._max_bytes = min(self._ceiling, int(self._max_bytes * 1.01))
+        # Scale back up by 1% after success (capped at ceiling)
+        self._max_bytes = min(self._ceiling, int(self._max_bytes * 1.01))
 
         return result
 
