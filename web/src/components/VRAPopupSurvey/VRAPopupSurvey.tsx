@@ -41,9 +41,11 @@ const VRAPopupSurvey: React.FC = () => {
   const questionRef = useRef<HTMLDivElement>(null);
   const confirmationRef = useRef<HTMLDivElement>(null);
   const announcedThresholdsRef = useRef<Set<number>>(new Set());
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (isSurveyVisible && headingRef.current) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
       headingRef.current.focus();
     }
   }, [isSurveyVisible]);
@@ -78,6 +80,8 @@ const VRAPopupSurvey: React.FC = () => {
     setResponses(Array(SURVEY_QUESTIONS.length).fill(""));
     setCharCountAnnouncement("");
     announcedThresholdsRef.current.clear();
+    previousFocusRef.current?.focus();
+    previousFocusRef.current = null;
   }, [markSurveyHandled]);
 
   const onSubmit = () => {
@@ -123,7 +127,7 @@ const VRAPopupSurvey: React.FC = () => {
               ref={headingRef}
               id="survey-heading"
               level="h2"
-              size="heading6"
+              size="heading7"
               tabIndex={-1}
               style={{ outline: "none" }}
             >
