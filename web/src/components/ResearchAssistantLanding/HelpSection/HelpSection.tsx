@@ -95,7 +95,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                 here.
               </Text>
               <Link
-                to="#"
+                to="/learn-more"
                 aria-label="Learn more about the project"
                 hasVisitedState={false}
                 isUnderlined={false}

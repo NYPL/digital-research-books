@@ -8,6 +8,8 @@ interface SectionContainerProps {
   textAlign?: "left" | "center" | "right";
   borderColor?: string;
   borderTop?: string;
+  paddingTop?: string;
+  paddingBottom?: string;
   [key: string]: any; // for additional Box props
 }
 
@@ -22,6 +24,8 @@ const SectionContainer: React.ForwardRefExoticComponent<
       textAlign = "center",
       borderColor,
       borderTop,
+      paddingTop = "xxl",
+      paddingBottom = "xxl",
       ...rest
     },
     ref
@@ -35,7 +39,8 @@ const SectionContainer: React.ForwardRefExoticComponent<
       {...rest}
     >
       <Box
-        paddingY="xxl"
+        paddingTop={paddingTop}
+        paddingBottom={paddingBottom}
         color={color}
         textAlign={textAlign}
         margin="0 auto"
