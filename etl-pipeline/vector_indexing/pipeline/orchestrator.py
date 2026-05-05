@@ -200,6 +200,9 @@ class Pipeline:
         results = self.index_books([barcode])
         return results.results[0]
 
+    # TODO: create Pipeline.batch_index_books() as a convenience wrapper for \
+    # programmatic access to batching
+
     def index_books(
         self,
         barcodes: list[str],
