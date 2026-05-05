@@ -554,11 +554,7 @@ def _index_config_entries():
 
 
 def get_index_config_dict(index_name):
-    """Return the raw index config dictionary for index_name.
-
-    The returned structure mirrors the module's INDEX_CONFIG entry, with
-    string class names (not loaded yet).
-    """
+    """Return the raw index config dictionary for index_name."""
     entry = next((e for e in _index_config_entries() if index_name in e["names"]), None)
     if entry is None:
         raise ValueError(f"No index config found for index name: {index_name!r}")

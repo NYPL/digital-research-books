@@ -23,6 +23,13 @@ if TYPE_CHECKING:
     from vector_indexing.components.loaders.base import BookLoader
     from vector_indexing.components.metadata.provider import MetadataProvider
 
+# These are imported at runtime for default initialization
+from vector_indexing import get_config, SentenceSplitterChunker
+from vector_indexing.components.loaders import S3BookLoader
+from vector_indexing.components.embedders import GoogleEmbedder
+from vector_indexing.components.metadata import MetadataProvider as MetadataProviderImpl
+from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
+
 
 @dataclass
 class IndexingResult:
@@ -113,6 +120,15 @@ class BatchResult:
 ProgressCallback = Callable[[IndexingResult], None]
 
 
+def _default_on_progress(result: IndexingResult) -> None:
+    """Default progress callback that prints indexing results."""
+    status = "y" if result.success else "n"
+    print(
+        f"  {status} {result.barcode}: {result.chunks_inserted} chunks"
+        + (f" ({result.error})" if result.error else "")
+    )
+
+
 class Pipeline:
     """Orchestrates the full book indexing pipeline.
 
@@ -146,17 +162,33 @@ class Pipeline:
 
     def __init__(
         self,
-        loader: "BookLoader",
-        chunker: "TextChunker",
-        embedder: "Embedder",
-        metadata_provider: "MetadataProvider",
-        backend: "IndexBackend",
+        loader: "BookLoader" | None = None,
+        chunker: "TextChunker" | None = None,
+        embedder: "Embedder" | None = None,
+        metadata_provider: "MetadataProvider" | None = None,
+        backend: "IndexBackend" | None = None,
     ):
-        self._loader = loader
-        self._chunker = chunker
-        self._embedder = embedder
-        self._metadata_provider = metadata_provider
-        self._backend = backend
+        # Q: is there compelling reason to define these defaults elsewhere?
+        config = get_config()
+
+        self._loader = loader if loader is not None else S3BookLoader(config=config)
+        self._chunker = (
+            chunker if chunker is not None else SentenceSplitterChunker(config=config)
+        )
+        self._embedder = embedder if embedder is not None else GoogleEmbedder()
+        self._metadata_provider = (
+            metadata_provider
+            if metadata_provider is not None
+            else MetadataProviderImpl(config=config)
+        )
+        self._backend = (
+            backend
+            if backend is not None
+            else TurbopufferBackend.from_config(
+                index_name="vra-dev",
+                config=config,
+            )
+        )
 
     @classmethod
     def builder(cls) -> "PipelineBuilder":
@@ -171,7 +203,7 @@ class Pipeline:
     def index_books(
         self,
         barcodes: list[str],
-        on_progress: ProgressCallback | None = None,
+        on_progress: ProgressCallback | None = _default_on_progress,
     ) -> BatchResult:
         """Index multiple books with batched operations.
         Attempts to optimize performance by:

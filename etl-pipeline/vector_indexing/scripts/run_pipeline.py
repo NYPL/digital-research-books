@@ -22,14 +22,12 @@ Usage:
 """
 
 import argparse
-import dataclasses
 import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from collections.abc import Iterator
 
-from vector_indexing.pipeline.orchestrator import BatchResult
+from vector_indexing.pipeline.orchestrator import BatchResult, Pipeline
 
 # Add project root to path if running directly
 if __name__ == "__main__":
@@ -37,20 +35,12 @@ if __name__ == "__main__":
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
-from vector_indexing import (
-    get_config,
-    SentenceSplitterChunker,
-)
+from vector_indexing import SentenceSplitterChunker
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from model.postgres.grin_public_domain_10k import GrinPublicDomain10k
-from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
 from vector_indexing.components import loaders
-from vector_indexing.pipeline import Pipeline
-from vector_indexing.components.loaders import S3BookLoader
-from vector_indexing.components.embedders import GoogleEmbedder
-from vector_indexing.components.metadata import MetadataProvider
 from vector_indexing.core.config import (
     get_index_config,
     get_index_config_dict,
@@ -60,14 +50,7 @@ from utils.common import batched
 
 TURBOPUFFER_INDEX_NAME = "vra-dev"
 DEFAULT_RESULTS_DIR = Path(__file__).resolve().parent / "indexing_results"
-INDEX_CONFIG_FILE_NAME = "index_config.json"
-
-
-# ALT: return tuple
-@dataclasses.dataclass
-class StartFromJobResult:
-    barcode: str | None
-    all_succeeded: bool
+JOB_METADATA_FILE = "index_config.json"
 
 
 class MockEmbedder:
@@ -109,57 +92,6 @@ def _default_on_progress(result):
     )
 
 
-def run_pipeline(
-    barcodes: list[str],
-    *,
-    batch_size: int | None = 100,
-    fail_fast: bool = False,
-    loader=None,
-    chunker=None,
-    embedder=None,
-    metadata_provider=None,
-    backend=None,
-    on_progress=_default_on_progress,
-) -> Iterator[BatchResult]:
-    """Index books, optionally overriding defaults, and yield BatchResult's"""
-
-    config = get_config()
-
-    if loader is None:
-        loader = S3BookLoader(config=config)
-    if chunker is None:
-        chunker = SentenceSplitterChunker(config=config)
-    if embedder is None:
-        embedder = GoogleEmbedder()
-    if metadata_provider is None:
-        metadata_provider = MetadataProvider(config=config)
-    if backend is None:
-        backend = TurbopufferBackend.from_config(
-            index_name=TURBOPUFFER_INDEX_NAME,
-            config=config,
-            # TODO: set default index name in env config files
-        )
-
-    pipeline = Pipeline(
-        loader=loader,
-        chunker=chunker,
-        embedder=embedder,
-        metadata_provider=metadata_provider,
-        backend=backend,
-    )
-
-    if batch_size is not None and batch_size <= 0:
-        raise ValueError("batch_size must be positive or None")
-
-    batch_iter = [barcodes] if batch_size is None else batched(barcodes, batch_size)
-
-    for barcode_batch in batch_iter:
-        result = pipeline.index_books(barcode_batch, on_progress=on_progress)
-        yield result
-        if fail_fast and result.failed > 0:
-            return
-
-
 def _iso_utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
@@ -174,17 +106,15 @@ def compare_index_configs(config1: dict, config2: dict) -> bool:
     return c1_json == c2_json
 
 
-# TODO: pointless
 def write_job_index_config(job_dir: Path, config_dict: dict) -> Path:
-    path = job_dir / INDEX_CONFIG_FILE_NAME
+    path = job_dir / JOB_METADATA_FILE
     json_str = json.dumps(config_dict, sort_keys=True, indent=2, default=str)
     path.write_text(json_str)
     return path
 
 
-# TODO: pointless
 def read_job_index_config(job_dir: Path) -> dict:
-    path = job_dir / INDEX_CONFIG_FILE_NAME
+    path = job_dir / JOB_METADATA_FILE
     return json.loads(path.read_text())
 
 
@@ -214,10 +144,15 @@ def find_latest_job(results_dir: Path, index_name: str) -> Path | None:
     return candidates[-1][1]
 
 
-def start_from_job(job_dir: Path) -> StartFromJobResult:
+def start_from_job(job_dir: Path) -> tuple[str | None, bool]:
+    """Return restart state from saved batch results in a job directory.
+
+    Returns the first failed barcode in chronological batch order. If batches exist
+    and all records succeeded, returns ``(None, True)``.
+    """
     batch_dirs = sorted(p for p in job_dir.glob("batch_*") if p.is_dir())
     if not batch_dirs:
-        return StartFromJobResult(barcode=None, all_succeeded=False)
+        return None, False
 
     found_any_batch_result = False
     for batch_dir in batch_dirs:
@@ -226,13 +161,11 @@ def start_from_job(job_dir: Path) -> StartFromJobResult:
             batch_result = BatchResult.load(path)
             for result in batch_result.results:
                 if not result.success:
-                    return StartFromJobResult(
-                        barcode=result.barcode, all_succeeded=False
-                    )
+                    return result.barcode, False
 
     if not found_any_batch_result:
-        return StartFromJobResult(barcode=None, all_succeeded=False)
-    return StartFromJobResult(barcode=None, all_succeeded=True)
+        return None, False
+    return None, True
 
 
 def list_10k_barcodes(start_from: str | None = None):
@@ -387,11 +320,10 @@ def main():
                     )
                 write_job_index_config(job_dir, index_config_dict)
 
-            resume = start_from_job(job_dir)
-            if resume.all_succeeded:
+            start_from, all_succeeded = start_from_job(job_dir)
+            if all_succeeded:
                 print("No failed barcodes found in latest job. All done already.")
                 return
-            start_from = resume.barcode
 
         barcodes = list_10k_barcodes(start_from=start_from)
     elif args.barcodes:
@@ -422,7 +354,7 @@ def main():
     kwargs["loader"] = loader_cls(**loader_args)
     print(f"Using {args.loader} with loader args: {loader_args}")
 
-    # Only build and pass components that differ from run_pipeline()'s defaults
+    # Only build and pass components that differ from Pipeline's defaults
     if args.chunk_size:
         kwargs["chunker"] = SentenceSplitterChunker(chunk_size=args.chunk_size)
         print(f"Using SentenceSplitterChunker with chunk_size={args.chunk_size}")
@@ -448,16 +380,19 @@ def main():
     print(f"\nIndexing {len(barcodes)} books...")
 
     batch_size = None if args.batch_size == 0 else args.batch_size
+    if batch_size is not None and batch_size <= 0:
+        raise ValueError("batch_size must be positive or None")
 
-    # Run Indexing
+    # Create pipeline with optional component overrides
+    pipeline = Pipeline(**kwargs)
+
+    # Run Indexing with batching and fail_fast logic
+    batch_iter = [barcodes] if batch_size is None else batched(barcodes, batch_size)
     total_results = BatchResult()
-    for result in run_pipeline(
-        barcodes,
-        batch_size=batch_size,
-        fail_fast=True,
-        **kwargs,
-    ):
-        # TODO: make this less awkward
+
+    for barcode_batch in batch_iter:
+        result = pipeline.index_books(barcode_batch)
+        # TODO: maybe put the batching logic inside Pipeline for easier programmatic only access.
         total_results.results.extend(result.results)
         if total_results.total_time is None:
             total_results.total_time = 0.0
