@@ -9,6 +9,7 @@ Priority level:
 from __future__ import annotations
 
 import os
+from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -465,6 +466,25 @@ def reset_config() -> None:
 ####### Index Config ########
 
 
+def load_from_module(class_name: str, module) -> type:
+    """Load a class by name from a module.
+
+    Args:
+        class_name: The name of the class to load
+        module: The module object to search in
+
+    Returns:
+        The class object
+
+    Raises:
+        ValueError: If the class is not found in the module
+    """
+    cls = getattr(module, class_name, None)
+    if cls is None:
+        raise ValueError(f"Unknown class: {class_name!r} in module {module.__name__}")
+    return cls
+
+
 def get_default_schema_with_dims(dims: str):
     from vector_indexing.components.backends.turbopuffer import load_default_schema
 
@@ -478,22 +498,19 @@ HARRIER_OSS_V1_DIMENSIONS = 1024
 QWEN3_EMBEDDING_8B_DIMENSIONS = 1024
 
 
-def get_index_config(index_name):
+def _index_config_entries():
     from vector_indexing.components.backends.turbopuffer import (
-        TurbopufferBackend,
         load_default_schema,
     )
-    from vector_indexing.components.embedders.google import GoogleEmbedder
-    from vector_indexing.components.embedders.sagemaker import SageMakerEmbedder
 
-    INDEX_CONFIG = [
+    return [
         {  # Google
             "names": [
                 "vra-dev",
                 "vra_test-sketches_of_the_north_river-gemini-001",
             ],
             "embedder": {
-                "class": GoogleEmbedder,
+                "class": "GoogleEmbedder",
                 "params": {
                     # All are default and unnecessary
                     "model": "gemini-embedding-001",
@@ -509,7 +526,7 @@ def get_index_config(index_name):
                 "vra_test-10k-harrier_oss_v1_.6b",
             ],
             "embedder": {
-                "class": SageMakerEmbedder,
+                "class": "SageMakerEmbedder",
                 "params": {
                     "endpoint_name": "hf-tei-harrier-oss-v1-0-6b-ml-g6-2xlarge-20260424-011130",  # pragma: allowlist secret
                     "aws_profile": "sandbox",
@@ -523,7 +540,7 @@ def get_index_config(index_name):
                 "vra_test-sketches_of_the_north-qwen3_embedding_8b"  # pragma: allowlist secret
             ],
             "embedder": {
-                "class": SageMakerEmbedder,
+                "class": "SageMakerEmbedder",
                 "params": {
                     "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6e-xlarge-20260428-235752",  # pragma: allowlist secret
                     "aws_profile": "sandbox",
@@ -535,10 +552,27 @@ def get_index_config(index_name):
         },
     ]
 
-    entry = next((e for e in INDEX_CONFIG if index_name in e["names"]), None)
+
+def get_index_config_dict(index_name):
+    """Return the raw index config dictionary for index_name.
+
+    The returned structure mirrors the module's INDEX_CONFIG entry, with
+    string class names (not loaded yet).
+    """
+    entry = next((e for e in _index_config_entries() if index_name in e["names"]), None)
     if entry is None:
         raise ValueError(f"No index config found for index name: {index_name!r}")
+    return deepcopy(entry)
 
-    embedder = entry["embedder"]["class"](**entry["embedder"]["params"])
+
+def get_index_config(index_name):
+    from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
+    from vector_indexing.components import embedders as embedders_module
+
+    entry = get_index_config_dict(index_name)
+
+    embedder_class_name = entry["embedder"]["class"]
+    embedder_class = load_from_module(embedder_class_name, embedders_module)
+    embedder = embedder_class(**entry["embedder"]["params"])
     backend = TurbopufferBackend(index_name=index_name, schema=entry["schema"])
     return {"embedder": embedder, "backend": backend}
