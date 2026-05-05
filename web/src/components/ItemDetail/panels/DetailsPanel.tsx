@@ -1,4 +1,4 @@
-import { Box, Text, VStack } from "@nypl/design-system-react-components";
+import { Box, List, Text, VStack } from "@nypl/design-system-react-components";
 import { ApiItem, WorkEdition } from "~/src/types/DataModel";
 import { ApiWork } from "~/src/types/WorkQuery";
 import AuthorsList from "../../AuthorsList/AuthorsList";
@@ -47,22 +47,23 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
     <Box>
       <Text fontWeight="bold">Subjects</Text>
       {work.subjects && work.subjects.length > 0 ? (
-        <VStack alignItems="left" gap="xxs">
+        <List alignItems="left" gap="xxs" variant="ul" noStyling>
           {work.subjects
             .filter((subject) => subject.heading)
             .map((subject, i) => (
-              <Link
-                key={`subject-link-${i}`}
-                to={{
-                  pathname: "/keyword-search",
-                  query: { query: `subject:${subject.heading}` },
-                }}
-                isUnderlined={false}
-              >
-                {subject.heading}
-              </Link>
+              <li key={`subject-link-${i}`}>
+                <Link
+                  to={{
+                    pathname: "/keyword-search",
+                    query: { query: `subject:${subject.heading}` },
+                  }}
+                  isUnderlined={false}
+                >
+                  {subject.heading}
+                </Link>
+              </li>
             ))}
-        </VStack>
+        </List>
       ) : (
         <Text>Unknown</Text>
       )}

@@ -84,14 +84,10 @@ jobs:
             --build-arg BUILDKIT_INLINE_CACHE=1
 
       - name: Start services
+      # services have healthchecks to insure they are healthy
         working-directory: ./etl-pipeline
         run: |
-          docker compose up -d
-
-      - name: Wait for services to be healthy
-        working-directory: ./etl-pipeline
-        run: |
-          ./docker-compose-healthcheck.sh
+          docker compose up -d --wait --wait-timeout 180
 
       - name: Run integration tests (DRB)
         env:

@@ -10,7 +10,7 @@ const RelatedBooksPanel: React.FC = () => (
     <BookCard />
     <Flex alignItems="center" justifyContent="space-between" height="1.125rem">
       <AiGeneratedText />
-      <FeedbackButtons />
+      <FeedbackButtons label="related books feedback" />
     </Flex>
   </Flex>
 );
