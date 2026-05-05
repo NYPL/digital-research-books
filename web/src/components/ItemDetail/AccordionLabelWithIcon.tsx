@@ -1,4 +1,4 @@
-import { Box } from "@nypl/design-system-react-components";
+import { Box, Heading } from "@nypl/design-system-react-components";
 import React from "react";
 import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 
@@ -16,7 +16,9 @@ const AccordionLabelWithIcon: React.FC<AccordionLabelWithIconProps> = ({
     __css={{ svg: { marginInlineStart: "0 !important" } }}
   >
     <ResearchAssistantIcon inCircle />
-    <span>{text}</span>
+    <Heading size="heading8" fontWeight="medium" level="h2">
+      {text}
+    </Heading>
   </Box>
 );
 

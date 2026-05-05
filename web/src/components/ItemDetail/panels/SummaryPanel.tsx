@@ -17,7 +17,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ previewEdition }) => {
         height="1.125rem"
       >
         <AiGeneratedText />
-        <FeedbackButtons />
+        <FeedbackButtons label="summary feedback" />
       </Flex>
     </VStack>
   );
