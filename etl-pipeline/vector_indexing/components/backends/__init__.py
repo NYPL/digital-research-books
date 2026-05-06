@@ -11,7 +11,6 @@ from vector_indexing.components.backends.elasticsearch import (
 from vector_indexing.components.backends.turbopuffer import (
     TurbopufferBackend,
     TurbopufferBuffer,
-    DEFAULT_TURBOPUFFER_SCHEMA,
     chunk_to_tpuf_row,
     chunk_from_tpuf_row,
 )
@@ -25,7 +24,6 @@ __all__ = [
     "chunk_from_es_hit",
     "TurbopufferBackend",
     "TurbopufferBuffer",
-    "DEFAULT_TURBOPUFFER_SCHEMA",
     "chunk_to_tpuf_row",
     "chunk_from_tpuf_row",
 ]
