@@ -503,6 +503,7 @@ async def update_chat(
             logger.error(
                 f"FRBR data missing for content search in edition {edition_id}"
             )
+            raise ValueError(f"No edition found with id {edition_id}")
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
         exec_context = ContentSearchExecutionContext(
