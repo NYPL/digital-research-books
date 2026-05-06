@@ -31,6 +31,7 @@ from vector_indexing.components.loaders.base import (
     BookNotFoundError,
 )
 from vector_indexing.components.loaders.local import BOOK_CACHE_DIR, DiskBookCache
+from vector_indexing.core.config import resolve_path
 from vector_indexing.core.types import Book
 
 if TYPE_CHECKING:
@@ -388,7 +389,11 @@ class S3BookLoader(BookLoader):
 
 
 class CachedS3BookLoader(S3BookLoader):
-    """S3 book loader with built-in disk caching. Convenience class that creates a DiskBookCache automatically."""
+    """S3 book loader with built-in disk caching.
+
+    Convenience class that creates a DiskBookCache automatically.
+    If cache_dir is relative, it is resolved against project root.
+    """
 
     def __init__(
         self,
@@ -399,9 +404,7 @@ class CachedS3BookLoader(S3BookLoader):
         s3_client: Optional[S3Client] = None,
         grin_access_key: Optional[str] = None,
     ):
-        from pathlib import Path
-
-        cache_path = Path(cache_dir) if cache_dir else BOOK_CACHE_DIR
+        cache_path = resolve_path(cache_dir) if cache_dir else BOOK_CACHE_DIR
         disk_cache = DiskBookCache(cache_dir=cache_path)
 
         super().__init__(

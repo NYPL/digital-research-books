@@ -15,7 +15,7 @@ from vector_indexing.core.utils import format_bytes
 logger = create_log(__name__)
 
 
-def build_index_mapping(
+def load_default_index_mapping(
     vector_dims: int = 768,
     vector_index_type: str = "bbq_hnsw",
 ) -> dict[str, dict]:
@@ -42,7 +42,7 @@ def build_index_mapping(
     }
 
 
-DEFAULT_VECTOR_MAPPING = build_index_mapping(vector_dims=768)
+DEFAULT_VECTOR_MAPPING = load_default_index_mapping(vector_dims=768)
 
 
 # ES-specific serialization helpers
@@ -171,8 +171,10 @@ class ElasticsearchBackend(IndexBackend):
         self._client.indices.create(index=self._index_name, body=body)
         logger.info(f"Created index '{self._index_name}'")
 
-    def create_from_config(self, vector_dims: int = 768, settings: Optional[dict] = None) -> None:
-        mappings = build_index_mapping(vector_dims=vector_dims)
+    def create_from_defaults(
+        self, vector_dims: int = 768, settings: Optional[dict] = None
+    ) -> None:
+        mappings = load_default_index_mapping(vector_dims=vector_dims)
         self.create(mappings, settings)
 
     def delete(self) -> None:

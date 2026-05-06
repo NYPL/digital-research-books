@@ -58,12 +58,14 @@ from vector_indexing.core.config import (
     get_index_config,
     get_index_config_dict,
     load_from_module,
+    PostgresConfig,
+    resolve_path,
 )
 from model.postgres.grin_public_domain_10k import GrinPublicDomain10k
 from utils.common import batched
 
 
-TURBOPUFFER_INDEX_NAME = "vra-dev"
+DEFAULT_INDEX_NAME = "vra-dev"
 DEFAULT_RESULTS_DIR = Path(__file__).resolve().parent / "indexing_results"
 JOB_METADATA_FILE = "job_metadata.json"
 JOB_STATE_FILE = "job_state.json"
@@ -73,7 +75,8 @@ class MockEmbedder:
     """Mock embedder for testing - returns random vectors."""
 
     def __init__(self, dimensions: int | None = None):
-        self.dimensions = dimensions or get_config().embedding_dimensions
+        self.dimensions = dimensions or 768
+        # TODO: think about how to mock for index with different dims
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         import random
@@ -238,8 +241,7 @@ def list_10k_barcodes(start_from: str | None = None):
 
     If start_from is provided, only barcodes >= start_from are returned.
     """
-    config = get_config()
-    engine = create_engine(config.pg_connection_url)
+    engine = create_engine(PostgresConfig().connection_url)
     with Session(engine) as db_session:
         query = select(GrinPublicDomain10k.barcode).order_by(
             GrinPublicDomain10k.barcode
@@ -384,7 +386,7 @@ def parse_args():
     # Config overrides
     parser.add_argument(
         "--index-name",
-        default=TURBOPUFFER_INDEX_NAME,  # ALT: import INDEX_NAME from api.assistant.agent
+        default=DEFAULT_INDEX_NAME,  # ALT: import INDEX_NAME from api.assistant.agent
         type=str,
         help="Override IndexBackend index_name",
     )
@@ -399,12 +401,12 @@ def parse_args():
         default=100,
         help="Batch size for pipeline runs. Use 0 for a single batch.",
     )
-    # TODO: resolve relative paths to __file__
+
     parser.add_argument(
         "--results-dir",
         type=Path,
         default=DEFAULT_RESULTS_DIR,
-        help="Base directory for indexing job artifacts",
+        help="Base directory for indexing job artifacts. Relative paths resolve to project_root.",
     )
     parser.add_argument(
         "--force",
@@ -433,7 +435,7 @@ def main():
 
     configure_loggers(log_level="info", stage="development")
 
-    results_dir = args.results_dir
+    results_dir = resolve_path(args.results_dir)
     results_dir.mkdir(parents=True, exist_ok=True)
 
     current_job_metadata = build_job_metadata(args)

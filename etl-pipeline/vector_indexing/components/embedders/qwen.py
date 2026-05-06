@@ -1,4 +1,7 @@
-"""Qwen local embedding implementation via LM Studio or similar."""
+"""Local embedding inference via LM Studio"""
+
+# TODO: rename everything to LMStudio because nothing here is specific to Qwen as
+# served on LMStudio
 
 from __future__ import annotations
 

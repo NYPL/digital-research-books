@@ -125,7 +125,7 @@ HARRIER_OSS_V1_DIMENSIONS = 1024
 QWEN3_EMBEDDING_8B_DIMENSIONS = 1024
 
 
-def _index_config_entries():
+def _index_config_data():
     from vector_indexing.components.backends.turbopuffer import (
         load_default_schema,
     )
@@ -182,7 +182,7 @@ def _index_config_entries():
 
 def get_index_config_dict(index_name):
     """Return the raw index config dictionary for index_name."""
-    entry = next((e for e in _index_config_entries() if index_name in e["names"]), None)
+    entry = next((e for e in _index_config_data() if index_name in e["names"]), None)
     if entry is None:
         raise ValueError(f"No index config found for index name: {index_name!r}")
     return deepcopy(entry)

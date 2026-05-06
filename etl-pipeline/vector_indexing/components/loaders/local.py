@@ -34,13 +34,14 @@ class LocalBookLoader(BookLoader):
                 ...
 
     Note: By default data_dir is BOOK_CACHE_DIR (data/books).
+    If data_dir is relative, it is resolved against project root.
     """
 
     def __init__(
         self,
         data_dir: Optional[Path] = None,
     ):
-        self._data_dir = Path(data_dir) if data_dir else BOOK_CACHE_DIR
+        self._data_dir = resolve_path(data_dir) if data_dir else BOOK_CACHE_DIR
 
     @property
     def data_dir(self) -> Path:
@@ -107,13 +108,17 @@ class LocalBookLoader(BookLoader):
 
 
 class DiskBookCache(BookCache):
-    """Cache books on local filesystem. Default cache directory is BOOK_CACHE_DIR."""
+    """Cache books on local filesystem.
+
+    Default cache directory is BOOK_CACHE_DIR. If cache_dir is relative,
+    it is resolved against project root.
+    """
 
     def __init__(
         self,
         cache_dir: Optional[Path] = None,
     ):
-        self._cache_dir = Path(cache_dir) if cache_dir else BOOK_CACHE_DIR
+        self._cache_dir = resolve_path(cache_dir) if cache_dir else BOOK_CACHE_DIR
 
     @property
     def cache_dir(self) -> Path:
