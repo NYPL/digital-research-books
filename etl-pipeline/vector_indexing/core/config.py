@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 
 from utils.common import require_env
@@ -39,17 +39,39 @@ def resolve_path(p) -> Path:
     return path.resolve()
 
 
+def masked_dataclass_repr(instance: object) -> str:
+    """Return repr for a dataclass instance with secret fields masked.
+
+    To mask a field, set field(<value>, metadata={"secret": True})
+    """
+    reprs = []
+    for f in fields(instance):
+        value = getattr(instance, f.name)
+        if f.metadata.get("secret") and value is not None:
+            reprs.append(f"{f.name}='***'")
+        else:
+            reprs.append(f"{f.name}={value!r}")
+    return f"{instance.__class__.__name__}({', '.join(reprs)})"
+
+
 @dataclass
 class PostgresConfig:
     host: str = field(default_factory=lambda: require_env("POSTGRES_HOST"))
     port: int = field(default_factory=lambda: int(require_env("POSTGRES_PORT")))
-    user: str = field(default_factory=lambda: require_env("POSTGRES_USER"))
-    password: str = field(default_factory=lambda: require_env("POSTGRES_PSWD"))
+    user: str = field(
+        default_factory=lambda: require_env("POSTGRES_USER"), metadata={"secret": True}
+    )
+    password: str = field(
+        default_factory=lambda: require_env("POSTGRES_PSWD"), metadata={"secret": True}
+    )
     database: str = field(default_factory=lambda: require_env("POSTGRES_NAME"))
 
     @property
     def connection_url(self) -> str:
         return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
+
+    def __repr__(self) -> str:
+        return masked_dataclass_repr(self)
 
 
 @dataclass
@@ -59,10 +81,12 @@ class ElasticsearchConfig:
         default_factory=lambda: int(require_env("VRA_ELASTICSEARCH_PORT"))
     )
     user: str | None = field(
-        default_factory=lambda: os.environ.get("VRA_ELASTICSEARCH_USER")
+        default_factory=lambda: os.environ.get("VRA_ELASTICSEARCH_USER"),
+        metadata={"secret": True},
     )
     password: str | None = field(
-        default_factory=lambda: os.environ.get("VRA_ELASTICSEARCH_PSWD")
+        default_factory=lambda: os.environ.get("VRA_ELASTICSEARCH_PSWD"),
+        metadata={"secret": True},
     )
     scheme: str = field(
         default_factory=lambda: os.environ.get("VRA_ELASTICSEARCH_SCHEME", "http")
@@ -77,6 +101,9 @@ class ElasticsearchConfig:
             )
         return f"{self.scheme}://{self.host}:{self.port}"
 
+    def __repr__(self) -> str:
+        return masked_dataclass_repr(self)
+
 
 @dataclass
 class QwenConfig:
@@ -88,6 +115,9 @@ class QwenConfig:
     @property
     def url(self) -> str:
         return f"{self.scheme}://{self.host}:{self.port}"
+
+    def __repr__(self) -> str:
+        return masked_dataclass_repr(self)
 
 
 ####### Index Config ########
