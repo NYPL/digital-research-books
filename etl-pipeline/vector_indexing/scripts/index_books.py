@@ -71,6 +71,7 @@ DEFAULT_INDEX_NAME = "vra-dev"
 DEFAULT_RESULTS_DIR = Path(__file__).resolve().parent / "indexing_results"
 JOB_METADATA_FILE = "job_metadata.json"
 JOB_STATE_FILE = "job_state.json"
+BATCHES_DIR = "batches"
 
 
 class MockEmbedder:
@@ -184,6 +185,7 @@ def create_job_dir(results_dir: Path, index_name: str) -> Path:
     timestamp = _iso_utc_now()
     job_dir = results_dir / f"{index_name}_job_{timestamp}"
     job_dir.mkdir(parents=True, exist_ok=False)
+    (job_dir / BATCHES_DIR).mkdir(parents=True, exist_ok=False)
     return job_dir
 
 
@@ -220,18 +222,19 @@ def start_from_job(job_dir: Path) -> tuple[str | None, bool]:
     Returns the first failed barcode in chronological batch order. If batches exist
     and all records succeeded, returns ``(None, True)``.
     """
-    batch_dirs = sorted(p for p in job_dir.glob("batch_*") if p.is_dir())
-    if not batch_dirs:
+    batches_dir = job_dir / BATCHES_DIR
+    batch_result_paths = sorted(batches_dir.glob("batch_result_*.json"))
+
+    if not batch_result_paths:
         return None, False
 
     found_any_batch_result = False
-    for batch_dir in batch_dirs:
-        for path in sorted(batch_dir.glob("batch_result_*.json")):
-            found_any_batch_result = True
-            batch_result = BatchResult.load(path)
-            for result in batch_result.results:
-                if not result.success:
-                    return result.barcode, False
+    for path in batch_result_paths:
+        found_any_batch_result = True
+        batch_result = BatchResult.load(path)
+        for result in batch_result.results:
+            if not result.success:
+                return result.barcode, False
 
     if not found_any_batch_result:
         return None, False
@@ -541,6 +544,7 @@ def main():
     this_run_failed = 0
 
     # Run indexing (with batching and fail-fast logic)
+    batches_dir = job_dir / BATCHES_DIR
     for batch_index, barcode_batch in enumerate(batch_iter, start=1):
         result = pipeline.index_books(barcode_batch)
         # TODO: per step and per book timings (wait for orchestration?)
@@ -556,14 +560,10 @@ def main():
         write_job_state(job_dir, cumulative_succeeded, cumulative_elapsed)
 
         # Save batch result
-        batch_dir = job_dir / f"batch_{_iso_utc_now()}"
-        batch_dir.mkdir(parents=True, exist_ok=False)
-        saved_path = result.save(batch_dir)
+        result.save(batches_dir)
 
         batch_pct = 100.0 * batch_index / total_batches
-        print(
-            f"[Batch {batch_index}/{total_batches} | {batch_pct:.0f}%] Saved batch result: {saved_path}"
-        )
+        print(f"[Batch {batch_index}/{total_batches} | {batch_pct:.0f}%]")
 
         if result.failed > 0:
             print("Fail-fast: encountered failed records, stopping.")
