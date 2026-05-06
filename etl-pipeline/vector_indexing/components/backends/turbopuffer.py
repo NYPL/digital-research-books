@@ -35,7 +35,11 @@ def load_default_schema() -> dict:
     return schema
 
 
-DEFAULT_TURBOPUFFER_SCHEMA = load_default_schema()
+def get_default_schema_with_dims(dims: str):
+    schema = load_default_schema()
+    schema["vector"]["type"] = f"[{dims}]f16"
+    return schema
+
 
 # Conversion utilities between ChunkDocument and turbopuffer row format
 
@@ -139,7 +143,7 @@ class TurbopufferBackend(IndexBackend):
         schema: Dict[str, Any] | None = None,
     ):
         self._index_name = index_name
-        self._schema = schema or DEFAULT_TURBOPUFFER_SCHEMA
+        self._schema = schema or load_default_schema()
 
         self._client = tpuf.Turbopuffer(
             api_key=require_env("TURBOPUFFER_API_KEY"),

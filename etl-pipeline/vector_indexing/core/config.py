@@ -123,31 +123,16 @@ class QwenConfig:
 ####### Index Config ########
 
 
-def load_from_module(class_name: str, module) -> type:
-    """Load a class by name from a module.
-
-    Args:
-        class_name: The name of the class to load
-        module: The module object to search in
-
-    Returns:
-        The class object
+def load_from_module(obj_name: str, module) -> type:
+    """Load an object from a module by str name.
 
     Raises:
         ValueError: If the class is not found in the module
     """
-    cls = getattr(module, class_name, None)
+    cls = getattr(module, obj_name, None)
     if cls is None:
-        raise ValueError(f"Unknown class: {class_name!r} in module {module.__name__}")
+        raise ValueError(f"Unknown class: {obj_name!r} in module {module.__name__}")
     return cls
-
-
-def get_default_schema_with_dims(dims: str):
-    from vector_indexing.components.backends.turbopuffer import load_default_schema
-
-    schema = load_default_schema()
-    schema["vector"]["type"] = f"[{dims}]f16"
-    return schema
 
 
 HARRIER_OSS_V1_DIMENSIONS = 1024
@@ -158,6 +143,7 @@ QWEN3_EMBEDDING_8B_DIMENSIONS = 1024
 def _index_config_data():
     from vector_indexing.components.backends.turbopuffer import (
         load_default_schema,
+        get_default_schema_with_dims,
     )
 
     return [
@@ -211,7 +197,10 @@ def _index_config_data():
 
 
 def get_index_config_dict(index_name):
-    """Return the raw index config dictionary for index_name."""
+    """Return the raw index config dictionary for index_name.
+
+    If name associated with multiple entries, returns first.
+    """
     entry = next((e for e in _index_config_data() if index_name in e["names"]), None)
     if entry is None:
         raise ValueError(f"No index config found for index name: {index_name!r}")
