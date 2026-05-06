@@ -3,6 +3,7 @@
 Focuses on behavior rather than individual property checks.
 """
 
+from dataclasses import field, dataclass
 import os
 from unittest.mock import Mock, patch
 
@@ -23,6 +24,7 @@ from vector_indexing.core import (
     QwenConfig,
 )
 from vector_indexing.pipeline.orchestrator import Pipeline
+from vector_indexing.core.config import masked_dataclass_repr
 
 # Fixtures
 
@@ -175,6 +177,24 @@ class TestConfig:
         assert cfg.port == 1234
         assert cfg.url == "http://localhost:1234"
         assert cfg.model == "qwen3-embedding-8b-fp16"
+
+    def test_config_sensitive_fields_masked(self):
+        """Passwords don't appear in repr/str."""
+
+        @dataclass
+        class TestConfig:
+            non_secret: str
+            secret: str = field(metadata={"secret": True})
+
+            def __repr__(self):
+                return masked_dataclass_repr(self)
+
+        cfg = TestConfig(secret="secret123", non_secret="hello")
+        repr_str = repr(cfg)
+
+        assert "secret123" not in repr_str
+        assert "hello" in repr_str
+        assert "***" in repr_str
 
 
 # Chunking
