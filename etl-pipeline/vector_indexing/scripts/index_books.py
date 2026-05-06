@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """Run the vector indexing pipeline on a list of barcodes.
 
+An error will be raised if --index-name not already configured in vector_indexing/core/config.py
+
 Indexing is run in batches. Results are saved in a Job>Batches hierarchy in --results-dir.
 By default, each invocation creates a new job. Use --resume-latest to resume the most
 recent matching job for a given --index-name + barcode input.
