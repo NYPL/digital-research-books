@@ -1,4 +1,4 @@
 [pytest]
-addopts = "-rA"
+addopts = ["-rA"]
 asyncio_mode = "strict"
 pythonpath = "."
