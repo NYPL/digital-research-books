@@ -216,12 +216,12 @@ class OCLCCatalogManager:
         return f"ti:{title} au:{author}"
 
     def _get_error_detail(self, oclc_response) -> str | None:
-        default_error_detail = "unknown"
-
         try:
-            return oclc_response.json().get("detail", default_error_detail)
-        except Exception:
-            return default_error_detail
+            response_json = oclc_response.json()
+        except requests.exceptions.JSONDecodeError:
+            return "unknown"
+
+        return response_json.get("detail", response_json)
 
 
 class OCLCCatalogError(Exception):
