@@ -180,7 +180,8 @@ def _index_config_data():
         },
         {  # Qwen
             "names": [
-                "vra_test-sketches_of_the_north-qwen3_embedding_8b"  # pragma: allowlist secret
+                "vra_test-sketches_of_the_north-qwen3_embedding_8b",  # pragma: allowlist secret
+                "vra_test-10k-qwen3_embedding_8b",  # pragma: allowlist secret
             ],
             "embedder": {
                 "class": "SageMakerEmbedder",
