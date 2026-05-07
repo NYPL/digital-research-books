@@ -45,10 +45,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session
-
-
 # Add project root to path if running directly
 if __name__ == "__main__":
     from dotenv import find_dotenv
@@ -68,8 +64,7 @@ from vector_indexing.core.config import (
     get_index_config_dict,
     load_from_module,
 )
-from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
-from model.postgres.grin_public_domain_10k import GrinPublicDomain10k
+from vector_indexing.utils.barcodes import list_10k_barcodes
 from utils.common import batched
 
 
@@ -219,15 +214,14 @@ def find_latest_job(results_dir: Path, index_name: str) -> Path | None:
 ##############################
 
 
-#### Barcode Discovery Helpers ####
-
-
 def start_from_job(job_dir: Path) -> tuple[str | None, bool]:
     """Return first failed barcode in a indexing job folder, distinguishing
     between no barcodes attempted and all barcodes succeeded.
 
-    Returns the first failed barcode in chronological batch order. If batches exist
-    and all records succeeded, returns ``(None, True)``.
+    Returns (<barcode>, <all_succeeded>).
+        <barcode> is the first failed barcode in chronological batch order.
+        If batch results exist and all records succeeded, returns ``(None, True)``.
+        If no batch results exist, returns ``(None, False)``.
     """
     batch_dirs = sorted(p for p in job_dir.glob("batch_*") if p.is_dir())
     if not batch_dirs:
@@ -247,45 +241,7 @@ def start_from_job(job_dir: Path) -> tuple[str | None, bool]:
     return None, True
 
 
-def list_10k_barcodes(start_from: str | None = None):
-    """Return all barcodes from grin_public_domain_10k, sorted ascending.
-
-    If start_from is provided, only barcodes >= start_from are returned.
-    """
-    config = get_config()
-    engine = create_engine(config.pg_connection_url)
-    with Session(engine) as db_session:
-        query = select(GrinPublicDomain10k.barcode).order_by(
-            GrinPublicDomain10k.barcode
-        )
-        if start_from is not None:
-            query = query.where(GrinPublicDomain10k.barcode >= start_from)
-        rows = db_session.execute(query).scalars().all()
-    barcodes = list(rows)
-    print(f"Fetched {len(barcodes)} barcodes from grin_public_domain_10k")
-    return barcodes
-
-
-# TODO: query limit 1 per barcode and get the batch_size-th largest barcode to \
-# accommodate that last successful batch given fail-fast indexing
-def get_last_indexed_barcode(index_name: str) -> str | None:
-    """Return the lexicographically largest barcode already indexed in the given
-    turbopuffer namespace, matching the ascending sort order used in list_10k_barcodes.
-    Returns None if the namespace is empty or has no indexed documents.
-    """
-    backend = TurbopufferBackend(index_name=index_name)
-    results = backend.query(
-        rank_by=("barcode", "desc"),
-        top_k=1,
-        include_attributes=["barcode"],
-    )
-    if not results:
-        return None
-    chunk, _ = results[0]
-    return chunk.barcode
-
-
-def rerun_indexing(results_dir: Path) -> Iterator[str]:
+def failed_from_job(results_dir: Path) -> Iterator[str]:
     """Generate failed barcodes from saved batch results in an indexing
     run results directory
     """
@@ -295,9 +251,6 @@ def rerun_indexing(results_dir: Path) -> Iterator[str]:
     for path in sorted(results_dir.glob("batch_result_*.json")):
         batch_result = BatchResult.load(path)
         yield from (r.barcode for r in batch_result.results if not r.success)
-
-
-###################################
 
 
 def _apply_start_from(barcodes: list[str], start_from: str | None) -> list[str]:
@@ -329,7 +282,6 @@ def load_barcodes_from_file(file_path: Path) -> list[str]:
     ]
 
 
-# NOTE: purely for pretty/readable errors
 def parse_json_object_arg(raw: str, arg_name: str) -> dict[str, Any]:
     try:
         parsed = json.loads(raw)
