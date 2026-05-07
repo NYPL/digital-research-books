@@ -297,7 +297,9 @@ async def main() -> List[BatchResult]:
 
     # Serialize results to JSON
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = Path(__file__).parent / "results" / f"benchmark_{timestamp}.json"
+    output_file = (
+        Path(__file__).parent / "thruput_results" / f"benchmark_{timestamp}.json"
+    )
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output = {
         "endpoint": ENDPOINT_NAME,
