@@ -94,10 +94,10 @@ class VRAUser(PlaywrightUser):
         search_results = page.get_by_test_id("search-result")
         chat_input = page.get_by_role("textbox", name="Ask your question...")
         send_button = page.get_by_role("button", name="Send").first
-        
+
         page.set_default_timeout(TIMEOUT_MS)
         page.set_default_navigation_timeout(TIMEOUT_MS)
-        
+
         # 0. Authorize by setting token in localStorage to bypass login
         user_auth_token = os.environ["VRA_USER_AUTH_TOKEN"]
         await page.context.add_init_script(
