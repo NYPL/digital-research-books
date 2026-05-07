@@ -63,10 +63,12 @@ from vector_indexing import SentenceSplitterChunker
 from vector_indexing.pipeline.orchestrator import BatchResult, Pipeline
 from vector_indexing.components import loaders
 from vector_indexing.core.config import (
+    get_config,
     get_index_config,
     get_index_config_dict,
     load_from_module,
 )
+from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
 from model.postgres.grin_public_domain_10k import GrinPublicDomain10k
 from utils.common import batched
 
