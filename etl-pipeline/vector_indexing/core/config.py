@@ -528,8 +528,8 @@ def _index_config_entries():
             "embedder": {
                 "class": "SageMakerEmbedder",
                 "params": {
-                    "endpoint_name": "hf-tei-harrier-oss-v1-0-6b-ml-g6-2xlarge-20260424-011130",  # pragma: allowlist secret
-                    "aws_profile": "sandbox",
+                    "endpoint_name": "hf-tei-harrier-oss-v1-0-6b-ml-g6-2xlarge-20260427-153815",  # pragma: allowlist secret
+                    "aws_profile": "vra-sandbox",
                     "concurrency": 41,
                 },
             },
@@ -542,8 +542,8 @@ def _index_config_entries():
             "embedder": {
                 "class": "SageMakerEmbedder",
                 "params": {
-                    "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6e-xlarge-20260428-235752",  # pragma: allowlist secret
-                    "aws_profile": "sandbox",
+                    "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6e-xlarge-20260506-111822",  # pragma: allowlist secret
+                    "aws_profile": "vra-sandbox",
                     "concurrency": 14,
                     "dimensions": QWEN3_EMBEDDING_8B_DIMENSIONS,
                 },
