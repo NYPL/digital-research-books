@@ -139,7 +139,7 @@ class VRAUser(PlaywrightUser):
             ) from e
 
         await asyncio.sleep(random.uniform(8, 20))  # Look through results list
-        
+
         # NOTE: Omitted (SCHOL-593)
         # 4. Optionally submit a follow-up prompt on results page
         # if random.random() > 0.5:
