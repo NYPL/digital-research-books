@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from glom import assign
+from glom import assign, delete
 
 if TYPE_CHECKING:
     from typing import Self
@@ -468,6 +468,16 @@ def reset_config() -> None:
 ####### Index Config ########
 
 
+class _DeleteSentinel:
+    """Sentinel value used in index config overrides to delete a path."""
+
+    def __repr__(self):
+        return "DELETE"
+
+
+DELETE = _DeleteSentinel()
+
+
 def load_from_module(class_name: str, module) -> type:
     """Load a class by name from a module.
 
@@ -563,7 +573,12 @@ def _index_config_entries():
 def _apply_index_config_overrides(
     entry: dict, overrides: dict[str, object] | None = None
 ) -> dict:
-    """Apply dotted-path overrides to an index config entry in-place."""
+    """Apply dotted-path overrides to an index config entry in-place.
+
+    To delete a path, use the DELETE sentinel as the value::
+
+        overrides={"embedder.params.task_type": DELETE}
+    """
     if not overrides:
         return entry
     for path, value in overrides.items():
@@ -571,7 +586,10 @@ def _apply_index_config_overrides(
             raise ValueError(
                 f"Invalid override path {path!r}; expected a non-empty dotted path string"
             )
-        assign(entry, path, value, missing=dict)
+        if isinstance(value, _DeleteSentinel):
+            delete(entry, path)
+        else:
+            assign(entry, path, value)
     return entry
 
 

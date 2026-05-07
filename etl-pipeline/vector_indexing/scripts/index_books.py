@@ -59,6 +59,7 @@ from vector_indexing import SentenceSplitterChunker
 from vector_indexing.pipeline.orchestrator import BatchResult, Pipeline
 from vector_indexing.components import loaders
 from vector_indexing.core.config import (
+    DELETE,
     get_config,
     get_index_config,
     get_index_config_dict,
@@ -292,6 +293,12 @@ def parse_json_object_arg(raw: str, arg_name: str) -> dict[str, Any]:
     return parsed
 
 
+def parse_config_overrides(raw: str) -> dict[str, Any]:
+    """Parse --config-overrides JSON, mapping the string "DELETE" to the DELETE sentinel."""
+    parsed = parse_json_object_arg(raw, "config-overrides")
+    return {k: DELETE if v == "DELETE" else v for k, v in parsed.items()}
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Run the vector indexing pipeline",
@@ -327,6 +334,60 @@ def parse_args():
         help="Print what would be done without actually indexing",
     )
     parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Ignore index-config mismatch with latest job and overwrite saved index_config. Does not override barcode_input mismatch.",
+    )
+    parser.add_argument(
+        "--resume-latest",
+        action="store_true",
+        help="Resume the latest matching job for this --index-name and barcode input. If omitted, always start a new job.",
+    )
+    parser.add_argument(
+        "--env",
+        default="production",
+        help="Environment name used to load config/.env.<env> (default: production)",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=100,
+        help="Batch size for pipeline runs. Use 0 for a single batch.",
+    )
+    # TODO: resolve relative paths to __file__
+    parser.add_argument(
+        "--results-dir",
+        type=Path,
+        default=DEFAULT_RESULTS_DIR,
+        help="Base directory for indexing job artifacts",
+    )
+
+    # Index Config
+    parser.add_argument(
+        "--index-name",
+        default=TURBOPUFFER_INDEX_NAME,  # ALT: import INDEX_NAME from api.assistant.agent
+        type=str,
+        help="Override IndexBackend index_name",
+    )
+    parser.add_argument(
+        "--config-overrides",
+        type=parse_config_overrides,
+        default={},
+        help=(
+            "JSON object of dotted-path overrides applied to index config before pipeline "
+            'construction, e.g. {"embedder.params.endpoint_name": "new-endpoint-name"}. '
+            'Use the string "DELETE" as a value to remove that path from the config, '
+            'e.g. {"embedder.params.task_type": "DELETE"}'
+        ),
+    )
+
+    # Pipeline steps not covered by INDEX_CONFIG
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        help="Override chunk size",
+    )
+    parser.add_argument(
         "--loader",
         default="S3BookLoader",
         help="Loader class name from vector_indexing.components.loaders",
@@ -346,59 +407,6 @@ def parse_args():
         "--mock-metadata",
         action="store_true",
         help="Use mock metadata instead of querying Postgres",
-    )
-
-    # Config overrides
-    parser.add_argument(
-        "--index-name",
-        default=TURBOPUFFER_INDEX_NAME,  # ALT: import INDEX_NAME from api.assistant.agent
-        type=str,
-        help="Override IndexBackend index_name",
-    )
-    parser.add_argument(
-        "--config-overrides",
-        type=lambda raw: parse_json_object_arg(
-            raw,
-            "config-overrides",
-        ),
-        default={},
-        help=(
-            "JSON object of dotted-path overrides applied to index config before pipeline "
-            'construction, e.g. {"embedder.params.endpoint_name": "new-endpoint-name"}'
-        ),
-    )
-    parser.add_argument(
-        "--chunk-size",
-        type=int,
-        help="Override chunk size",
-    )
-    parser.add_argument(
-        "--batch-size",
-        type=int,
-        default=100,
-        help="Batch size for pipeline runs. Use 0 for a single batch.",
-    )
-    # TODO: resolve relative paths to __file__
-    parser.add_argument(
-        "--results-dir",
-        type=Path,
-        default=DEFAULT_RESULTS_DIR,
-        help="Base directory for indexing job artifacts",
-    )
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Ignore index-config mismatch with latest job and overwrite saved index_config. Does not override barcode_input mismatch.",
-    )
-    parser.add_argument(
-        "--resume-latest",
-        action="store_true",
-        help="Resume the latest matching job for this --index-name and barcode input. If omitted, always start a new job.",
-    )
-    parser.add_argument(
-        "--env",
-        default="production",
-        help="Environment name used to load config/.env.<env> (default: production)",
     )
 
     return parser.parse_args()
