@@ -1,5 +1,7 @@
 """
 Benchmark throughput of the SageMaker deployment of HF TEI container.
+Works for HF created images as well as custom sagemaker inference endpoint
+image wrappers of HF TEI.
 """
 
 import asyncio
@@ -14,7 +16,8 @@ import boto3
 import numpy as np
 import sagemaker
 
-# from sagemaker.predictor import Predictor # requires manual passing of JSONSerializer
+# from sagemaker.predictor import Predictor # requires manual passing of \
+# JSONSerializer, otherwise would be preferable for generic-ness
 # from sagemaker.deserializers import JSONDeserializer
 # from sagemaker.serializers import JSONSerializer
 from sagemaker.huggingface import HuggingFacePredictor
@@ -24,12 +27,14 @@ from transformers import AutoTokenizer
 # Configuration
 # ---------------------------------------------------------------------------
 
-ENDPOINT_NAME = "hf-tei-20260423-142720"  # Qwen, g6e
-AWS_PROFILE = "sandbox"
+ENDPOINT_NAME = (
+    "tei-pplx-embed-v1-4b-ml-g6e-xlarge-20260506233640"  # pragma: allowlist secret
+)
+AWS_PROFILE = "vra-sandbox"
 
 TOTAL_REQUESTS = 200  # requests at each concurrency level
-CONCURRENCY_LEVELS = [1, 16, 32, 64]
-# CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
+# CONCURRENCY_LEVELS = [1, 16, 32, 64]
+CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
 
 # TODO: for higher thruput. try  {inputs: [<str>, <str>]} (this works!),  batch_transform, async inference endpoint
 

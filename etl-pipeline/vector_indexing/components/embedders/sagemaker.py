@@ -94,7 +94,7 @@ class SageMakerEmbedder(Embedder):
             extra_args["dimensions"] = self._dimensions
 
         # NOTE: The HF TEI endpoint accepts requests in the form {"inputs": "text"} and returns a list of floats.
-        # NOTE: L2 normalization is applied by default regardless of `dimensions`
+        # NOTE: L2 normalization is applied post-hoc by default regardless of `dimensions`
         embeddings = self._predictor.predict({"inputs": text, **extra_args})
         return embeddings[0]
 
