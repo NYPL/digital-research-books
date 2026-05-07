@@ -5,11 +5,12 @@ import {
   MessageItem,
   MessageRole,
 } from "~/src/types/ResearchAssistant";
+import { scrollToEdition } from "~/src/util/EditionLinkParser";
+import { renderMarkdownContent } from "~/src/util/MarkdownParser";
 import {
-  parseEditionLinks,
-  scrollToEdition,
-} from "~/src/util/EditionLinkParser";
-import { isContentSearchResults } from "~/src/util/ResearchAssistantUtils";
+  isCatalogResults,
+  isContentSearchResults,
+} from "~/src/util/ResearchAssistantUtils";
 import styles from "../../../styles/components/MessageBubble.module.scss";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import SnippetList from "../ResultCard/SnippetList";
@@ -34,6 +35,28 @@ const MessageBubble = memo(
 
     const handleEditionClick = (editionId: string) => {
       scrollToEdition(editionId);
+    };
+
+    const getWorkAndItemIds = (
+      editionId: string
+    ): { workId?: string; itemId?: string } | undefined => {
+      if (!isCatalogResults(messageResults)) return undefined;
+
+      const matchedEdition = messageResults.editions.find(
+        (edition) => String(edition.id) === editionId
+      );
+      if (!matchedEdition) return undefined;
+
+      const matchedItem = matchedEdition.items.find(
+        (item) => item.edition_id === matchedEdition.id
+      );
+
+      return {
+        workId: matchedEdition.work_id
+          ? String(matchedEdition.work_id)
+          : undefined,
+        itemId: matchedItem ? String(matchedItem.id) : undefined,
+      };
     };
 
     return (
@@ -69,14 +92,14 @@ const MessageBubble = memo(
                         isBold
                         display="inline"
                       >
-                        VRA:{" "}
+                        Enhanced Search:{" "}
                       </Text>
                     )}
-                    {parseEditionLinks(contentItem.text, handleEditionClick)}
-                    {isContentSearchResults(messageResults) &&
-                      messageResults.snippets && (
-                        <SnippetList snippets={messageResults.snippets} />
-                      )}
+                    {renderMarkdownContent(
+                      contentItem.text,
+                      handleEditionClick,
+                      getWorkAndItemIds
+                    )}
                   </Box>
                   {!isLoading &&
                     (index === 0 ? (
@@ -87,6 +110,10 @@ const MessageBubble = memo(
                         <FeedbackButtons />
                       </Flex>
                     ))}
+                  {isContentSearchResults(messageResults) &&
+                    messageResults.snippets && (
+                      <SnippetList snippets={messageResults.snippets} />
+                    )}
                 </Flex>
               </Flex>
             ))

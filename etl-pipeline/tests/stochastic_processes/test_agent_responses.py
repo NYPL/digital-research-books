@@ -284,8 +284,8 @@ the irrelevant results as if they are relevant to the query.""",
 
     async def test_no_markdown_in_response(self, test_session_id):
         """
-        Verify that the agent response does not contain markdown formatting.
-        This checks the final output for common markdown elements using regex patterns.
+        Verify that the agent response does not contain forbidden markdown formatting.
+        Headings, bold, italics, and lists are permitted.
         """
 
         with stub_search_catalog("No results found for your query."):
@@ -298,8 +298,6 @@ the irrelevant results as if they are relevant to the query.""",
         response_text = run_result.final_output
 
         markdown_patterns = {
-            "heading": r"^#{1,6}\s",
-            "bold": r"\*\*[^*]+\*\*|__[^_]+__",
             "inline_code": r"`[^`]+`",
             "code_block": r"```",
             "link": r"\[.+?\]\(.+?\)",

@@ -1,6 +1,51 @@
 import React from "react";
 import Link from "../components/Link/Link";
 
+export const EXPLICIT_EDITION_PAGE_REGEX = /\(edition_(\d+),\s*page\s+(\d+)\)/gi;
+export const IMPLICIT_PAGE_REGEX = /\(page\s+(\d+)\)/gi;
+
+const EDITION_IN_TEXT_REGEX = /<edition id="(\d+)">[^<]+<\/edition>|edition_(\d+)/gi;
+
+const formatPreviewPage = (page: string): string => page.padStart(8, "0");
+
+export const getLastEditionIdBeforeIndex = (
+  text: string,
+  endIndex: number,
+  fallbackEditionId?: string
+): string | undefined => {
+  const beforeText = text.slice(0, endIndex);
+  EDITION_IN_TEXT_REGEX.lastIndex = 0;
+
+  let match: RegExpExecArray | null;
+  let latestEditionId: string | undefined;
+  while ((match = EDITION_IN_TEXT_REGEX.exec(beforeText)) !== null) {
+    latestEditionId = match[1] || match[2];
+  }
+
+  return latestEditionId || fallbackEditionId;
+};
+
+export const getLastReferencedEditionId = (
+  text: string,
+  fallbackEditionId?: string
+): string | undefined => {
+  return getLastEditionIdBeforeIndex(text, text.length, fallbackEditionId);
+};
+
+export const getItemPageLink = (
+  page: string,
+  workId: string,
+  itemId: string
+) => {
+  return {
+    pathname: `/item/${workId}`,
+    query: {
+      previewItemId: itemId,
+      previewPage: formatPreviewPage(page),
+    },
+  };
+};
+
 export const parseEditionLinks = (
   text: string,
   onEditionClick: (editionId: string) => void
