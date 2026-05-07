@@ -7,7 +7,6 @@ import {
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
-import { ConversationType } from "~/src/types/ResearchAssistant";
 import { isCatalogResults } from "~/src/util/ResearchAssistantUtils";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
@@ -21,7 +20,6 @@ const ResearchAssistant: React.FC = () => {
     messages,
     sendMessage,
     results,
-    resultType,
     historyStack,
     goToPreviousState,
     showChat,
@@ -50,11 +48,15 @@ const ResearchAssistant: React.FC = () => {
     const exactMatch = results[messages.length];
     if (exactMatch) return exactMatch;
 
-    const latest = Object.entries(results)
-      .filter(([, value]) => value)
-      .sort(([a], [b]) => Number(b) - Number(a))[0]?.[1];
+    const sortedResults = Object.entries(results)
+      .filter(([, value]) => value && Object.keys(value).length > 0)
+      .sort(([a], [b]) => Number(b) - Number(a));
 
-    return latest || null;
+    if (sortedResults.length > 0) {
+      return sortedResults[0][1];
+    }
+
+    return null;
   }, [messages.length, results]);
 
   return (
@@ -115,10 +117,9 @@ const ResearchAssistant: React.FC = () => {
                   <CatalogResultsSkeleton />
                 ) : latestResults && Object.keys(latestResults).length > 0 ? (
                   <>
-                    {resultType === ConversationType.Catalog &&
-                      isCatalogResults(latestResults) && (
-                        <CatalogResults results={latestResults} />
-                      )}
+                    {isCatalogResults(latestResults) && (
+                      <CatalogResults results={latestResults} />
+                    )}
                   </>
                 ) : (
                   <Box width="100%" marginTop="s">
