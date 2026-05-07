@@ -29,6 +29,9 @@ Usage:
 
     # Use mock embedder (for testing):
     python -m vector_indexing.scripts.index_books --barcodes 33433001234567 --mock-embedder
+
+    # Use qa environment config:
+    python -m vector_indexing.scripts.index_books --10k --index-name vra_test-10k-harrier_oss_v1_.6b --env qa
 """
 
 import argparse
