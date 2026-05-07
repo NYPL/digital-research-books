@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from glom import assign
+
 if TYPE_CHECKING:
     from typing import Self
 
@@ -553,19 +555,40 @@ def _index_config_entries():
     ]
 
 
-def get_index_config_dict(index_name):
+# TODO: make this more strict in validating that the override conforms to \
+# expected index config structure (e.g. names, embedder, schema top level keys, \
+# and embedder.params) (probably static path checks glom.assign can be removed \
+# but might be nice for target schema changes). Maybe even make the index config \
+# entry a nested dataclass to enforce/communicate structure
+def _apply_index_config_overrides(
+    entry: dict, overrides: dict[str, object] | None = None
+) -> dict:
+    """Apply dotted-path overrides to an index config entry in-place."""
+    if not overrides:
+        return entry
+    for path, value in overrides.items():
+        if not isinstance(path, str) or not path:
+            raise ValueError(
+                f"Invalid override path {path!r}; expected a non-empty dotted path string"
+            )
+        assign(entry, path, value, missing=dict)
+    return entry
+
+
+def get_index_config_dict(index_name, overrides: dict[str, object] | None = None):
     """Return the raw index config dictionary for index_name."""
     entry = next((e for e in _index_config_entries() if index_name in e["names"]), None)
     if entry is None:
         raise ValueError(f"No index config found for index name: {index_name!r}")
-    return deepcopy(entry)
+    copied = deepcopy(entry)
+    return _apply_index_config_overrides(copied, overrides=overrides)
 
 
-def get_index_config(index_name):
+def get_index_config(index_name, overrides: dict[str, object] | None = None):
     from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
     from vector_indexing.components import embedders as embedders_module
 
-    entry = get_index_config_dict(index_name)
+    entry = get_index_config_dict(index_name, overrides=overrides)
 
     embedder_class_name = entry["embedder"]["class"]
     embedder_class = load_from_module(embedder_class_name, embedders_module)

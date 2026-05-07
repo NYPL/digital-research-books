@@ -32,6 +32,9 @@ Usage:
 
     # Use qa environment config:
     python -m vector_indexing.scripts.index_books --10k --index-name vra_test-10k-harrier_oss_v1_.6b --env qa
+
+    # Override nested index config values at runtime:
+    python -m vector_indexing.scripts.index_books --10k --index-name vra_test-10k-harrier_oss_v1_.6b --config-overrides '{"embedder.params.endpoint_name": "new-endpoint-name"}'
 """
 
 import argparse
@@ -114,8 +117,12 @@ def _iso_utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
-def build_job_metadata(args: argparse.Namespace) -> dict[str, Any]:
-    index_config_dict = get_index_config_dict(args.index_name)
+def build_job_metadata(
+    args: argparse.Namespace, config_overrides: dict[str, Any]
+) -> dict[str, Any]:
+    index_config_dict = get_index_config_dict(
+        args.index_name, overrides=config_overrides
+    )
     index_config = {k: v for k, v in index_config_dict.items() if k != "names"}
     if args.ten_k:
         barcode_input = {"type": "10k", "value": "grin_public_domain_10k"}
@@ -321,13 +328,13 @@ def load_barcodes_from_file(file_path: Path) -> list[str]:
 
 
 # NOTE: purely for pretty/readable errors
-def parse_loader_args(raw: str) -> dict:
+def parse_json_object_arg(raw: str, arg_name: str) -> dict[str, Any]:
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError as exc:
-        raise ValueError(f"Invalid JSON for --loader-args: {exc}") from exc
+        raise ValueError(f"Invalid JSON for --{arg_name}:  {exc}") from exc
     if not isinstance(parsed, dict):
-        raise ValueError("--loader-args must deserialize to a JSON object")
+        raise ValueError(f"--{arg_name} must deserialize to a JSON object")
     return parsed
 
 
@@ -372,7 +379,8 @@ def parse_args():
     )
     parser.add_argument(
         "--loader-args",
-        default="{}",
+        type=lambda raw: parse_json_object_arg(raw, "loader-args"),
+        default={},
         help="JSON object with constructor kwargs for the selected loader",
     )
     parser.add_argument(
@@ -392,6 +400,18 @@ def parse_args():
         default=TURBOPUFFER_INDEX_NAME,  # ALT: import INDEX_NAME from api.assistant.agent
         type=str,
         help="Override IndexBackend index_name",
+    )
+    parser.add_argument(
+        "--config-overrides",
+        type=lambda raw: parse_json_object_arg(
+            raw,
+            "config-overrides",
+        ),
+        default={},
+        help=(
+            "JSON object of dotted-path overrides applied to index config before pipeline "
+            'construction, e.g. {"embedder.params.endpoint_name": "new-endpoint-name"}'
+        ),
     )
     parser.add_argument(
         "--chunk-size",
@@ -445,8 +465,7 @@ def main():
 
     results_dir = args.results_dir
     results_dir.mkdir(parents=True, exist_ok=True)
-
-    current_job_metadata = build_job_metadata(args)
+    current_job_metadata = build_job_metadata(args, args.config_overrides)
     job_dir = None
     if args.resume_latest:
         job_dir = find_latest_job(results_dir, args.index_name)
@@ -497,12 +516,12 @@ def main():
             print(f"  {barcode}")
         return
 
-    index_config = get_index_config(args.index_name)
+    index_config = get_index_config(args.index_name, overrides=args.config_overrides)
 
     # Build pipeline kwargs
     kwargs: dict = {}
 
-    loader_args = parse_loader_args(args.loader_args)
+    loader_args = args.loader_args
     loader_cls = load_from_module(args.loader, loaders)
     kwargs["loader"] = loader_cls(**loader_args)
     print(f"Using {args.loader} with loader args: {loader_args}")
@@ -579,7 +598,7 @@ def main():
             break
 
     prior_succeeded = cumulative_succeeded - this_run_succeeded
-    print(f"\nDone:")
+    print("\nDone:")
     print(f"  This run:  {this_run_succeeded}/{this_run_processed} books succeeded")
     if prior_succeeded > 0:
         print(
