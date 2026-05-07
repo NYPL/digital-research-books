@@ -418,6 +418,11 @@ def parse_args():
         action="store_true",
         help="Resume the latest matching job for this --index-name and barcode input. If omitted, always start a new job.",
     )
+    parser.add_argument(
+        "--env",
+        default="production",
+        help="Environment name used to load config/.env.<env> (default: production)",
+    )
 
     return parser.parse_args()
 
@@ -428,7 +433,7 @@ def main():
     # Load env vars
     from utils.load_env import load_env
 
-    load_env("config/.env.production")
+    load_env(f"config/.env.{args.env}")
 
     # configure project loggers
     from logger import configure_loggers
