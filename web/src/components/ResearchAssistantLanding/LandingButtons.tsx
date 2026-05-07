@@ -3,6 +3,7 @@ import {
   Flex,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
+import Link from "../Link/Link";
 import ArrowIcon from "../ResearchAssistant/icons/ArrowIcon";
 
 interface LandingButtonsProps {
@@ -37,9 +38,11 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({
       >
         Try it out <ArrowIcon direction="up" color="#FFF" />
       </Button>
-      <Button
+      <Link
+        to="/learn-more"
+        width="auto"
         id="learn-more-button"
-        variant="secondary"
+        variant="buttonSecondary"
         aria-label="Learn more about the project"
         backgroundColor="ui.white"
         borderColor="section.research.secondary"
@@ -50,10 +53,12 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({
         _hover={{
           backgroundColor: "section.research.primary-05",
         }}
-        isDisabled
+        _visited={{
+          color: "section.research.secondary",
+        }}
       >
         Learn more
-      </Button>
+      </Link>
     </Flex>
   );
 };

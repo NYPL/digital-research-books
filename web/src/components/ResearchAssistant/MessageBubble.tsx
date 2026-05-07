@@ -107,7 +107,7 @@ const MessageBubble = memo(
                     ) : (
                       <Flex alignItems="center" justifyContent="space-between">
                         <AiGeneratedText />
-                        <FeedbackButtons />
+                        <FeedbackButtons label="message feedback" />
                       </Flex>
                     ))}
                   {isContentSearchResults(messageResults) &&

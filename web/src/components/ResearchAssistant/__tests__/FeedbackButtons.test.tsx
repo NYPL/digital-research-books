@@ -48,7 +48,7 @@ describe("FeedbackButtons", () => {
 
     render(
       <FeedbackContext.Provider value={contextValue as any}>
-        <FeedbackButtons />
+        <FeedbackButtons label="test feedback" />
       </FeedbackContext.Provider>
     );
 
@@ -71,7 +71,7 @@ describe("FeedbackButtons", () => {
 
     render(
       <FeedbackContext.Provider value={contextValue as any}>
-        <FeedbackButtons />
+        <FeedbackButtons label="test feedback" />
       </FeedbackContext.Provider>
     );
 
@@ -92,8 +92,8 @@ describe("FeedbackButtons", () => {
 
     render(
       <FeedbackContext.Provider value={contextValue as any}>
-        <FeedbackButtons />
-        <FeedbackButtons />
+        <FeedbackButtons label="test feedback" />
+        <FeedbackButtons label="test 2 feedback" />
       </FeedbackContext.Provider>
     );
 

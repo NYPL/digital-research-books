@@ -69,8 +69,8 @@ services:
   api:
     container_name: drb_local_api
     depends_on:
-      - database
-      - elasticsearch
+      devsetup:
+        condition: service_completed_successfully
     build:
       context: .
     command: -e docker-compose -p APIProcess
@@ -87,7 +87,7 @@ services:
       - AWS_SESSION_TOKEN
     volumes:
       # this overrides `ADD . /src` in the DockerFile, mapping the \
-      # current local filesystem to "/src" in the docker image.
+      # current local filesystem to "/src" in the docker container.
       - type: bind
         source: .
         target: /src
@@ -171,3 +171,6 @@ volumes:
   drb_local_esdata:
   drb_local_mqdata:
   drb_local_rsdata:
+
+
+# ALT: add a dependency tree on all services so only one final one needs a healthcheck
