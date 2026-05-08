@@ -547,14 +547,29 @@ def _index_config_entries():
             },
             "schema": get_default_schema_with_dims(HARRIER_OSS_V1_DIMENSIONS),
         },
-        {  # Qwen
+        {  # Qwen 8b
             "names": [
                 "vra_test-sketches_of_the_north-qwen3_embedding_8b"  # pragma: allowlist secret
             ],
             "embedder": {
                 "class": "SageMakerEmbedder",
                 "params": {
-                    "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6e-xlarge-20260506-111822",  # pragma: allowlist secret
+                    "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6-2xlarge-20260507-231343",  # pragma: allowlist secret
+                    "aws_profile": "vra-sandbox",
+                    "concurrency": 14,
+                    "dimensions": QWEN3_EMBEDDING_8B_DIMENSIONS,
+                },
+            },
+            "schema": get_default_schema_with_dims(QWEN3_EMBEDDING_8B_DIMENSIONS),
+        },
+        {  # Qwen 4b
+            "names": [
+                # "vra_test-sketches_of_the_north-qwen3_embedding_4b"  # pragma: allowlist secret
+            ],
+            "embedder": {
+                "class": "SageMakerEmbedder",
+                "params": {
+                    "endpoint_name": "hf-tei-qwen3-embedding-4b-ml-g5-2xlarge-20260507-181318",  # pragma: allowlist secret
                     "aws_profile": "vra-sandbox",
                     "concurrency": 14,
                     "dimensions": QWEN3_EMBEDDING_8B_DIMENSIONS,
