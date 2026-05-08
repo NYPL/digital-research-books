@@ -66,10 +66,10 @@ class VRAUser(PlaywrightUser):
     @pw
     async def enhanced_search_full_journey(self, page: Page):
         """Simulates a complete user journey from landing page through item page."""
-        vra_chat_bubbles = page.get_by_text("VRA:", exact=True)
+        chat_input = page.locator("#chat-input")
         search_results = page.get_by_test_id("search-result")
-        chat_input = page.get_by_role("textbox", name="Ask your question...")
         send_button = page.get_by_role("button", name="Send").first
+        vra_chat_bubbles = page.get_by_text("VRA:", exact=True)
 
         page.set_default_timeout(TIMEOUT_MS)
         page.set_default_navigation_timeout(TIMEOUT_MS)
@@ -92,7 +92,7 @@ class VRAUser(PlaywrightUser):
         # 2. Submit prompt via textbox or suggestion button (no events)
         if random.random() > 0.5:
             prompt = random.choice(CATALOG_SEARCH_PROMPTS)
-            await page.get_by_placeholder("What research topic").fill(prompt)
+            await chat_input.fill(prompt)
             await send_button.click()
         else:
             prompt = random.choice(SUGGESTION_PROMPTS)
@@ -167,11 +167,11 @@ class VRAUser(PlaywrightUser):
         logger.info("[content search] submitting prompt='%s'", book_prompt)
         async with event(self, "item page: chat response"):
             try:
-                vra_chat_bubble_count_before = await vra_chat_bubbles.count()
+                await vra_chat_bubbles.nth(0).wait_for()
                 await chat_input.wait_for(state="visible")
                 await chat_input.fill(book_prompt)
                 await send_button.click()
-                await vra_chat_bubbles.nth(vra_chat_bubble_count_before).wait_for()
+                await vra_chat_bubbles.nth(1).wait_for()
             except Exception as e:
                 raise Exception(
                     f"[{book_prompt}] edition_id={edition_id} {type(e).__name__}: {e}"
