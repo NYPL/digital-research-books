@@ -3,6 +3,7 @@ import {
   Flex,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import Link from "../Link/Link";
 import ArrowIcon from "../ResearchAssistant/icons/ArrowIcon";
 
@@ -31,7 +32,16 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({
         margin="0 auto"
         borderRadius="8px"
         fontWeight="medium"
-        onClick={handleTryItClick}
+        onClick={() => {
+          handleTryItClick();
+
+          // GTM Tagging: conversion_cta_click
+          trackEvent({
+            event: "conversion_cta_click",
+            interaction: "Click",
+            element_id: "try-it-button",
+          });
+        }}
         _hover={{
           backgroundColor: "section.research.primary",
         }}
@@ -42,6 +52,14 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({
         to="/learn-more"
         width="auto"
         id="learn-more-button"
+        onClick={() => {
+          // GTM Tagging: learn_content_click
+          trackEvent({
+            event: "learn_content_click",
+            interaction: "Click",
+            element_id: "learn-more-button",
+          });
+        }}
         variant="buttonSecondary"
         aria-label="Learn more about the project"
         backgroundColor="ui.white"

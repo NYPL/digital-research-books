@@ -1,5 +1,6 @@
 import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import { memo } from "react";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import {
   ChatResults,
   MessageItem,
@@ -33,6 +34,13 @@ const MessageBubble = memo(
       : `${styles.messageBubble} ${styles.assistantBubble}`;
 
     const handleEditionClick = (editionId: string) => {
+      // GTM Tagging: result_chatbot_click
+      trackEvent({
+        event: "result_chatbot_click",
+        interaction: "Click",
+        metadata_field: "Edition id",
+        metadata_value: editionId,
+      });
       scrollToEdition(editionId);
     };
 

@@ -9,6 +9,7 @@ import {
 } from "@nypl/design-system-react-components";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import ResearchAssistantIcon from "../ResearchAssistant/icons/ResearchAssistantIcon";
 import ResearchAssistantSendIcon from "../ResearchAssistant/icons/ResearchAssistantSendIcon";
 
@@ -28,8 +29,17 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
   };
 
   const handleLocalSearchSubmit = () => {
-    if (searchInput.trim()) {
-      onSubmit(searchInput.trim());
+    const query = searchInput.trim();
+
+    if (query) {
+      // GTM Tagging: search_query_submit
+      trackEvent({
+        event: "search_query_submit",
+        interaction: "User Input",
+        location: "Landing",
+      });
+
+      onSubmit(query);
     }
   };
 
@@ -145,7 +155,15 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
         {featuredSuggestions.map((suggestion, index) => (
           <Button
             key={index}
-            onClick={() => handleSuggestionClick(suggestion)}
+            onClick={() => {
+              handleSuggestionClick(suggestion);
+              // GTM Tagging: prompt_suggestion_click
+              trackEvent({
+                event: "prompt_suggestion_click",
+                interaction: "Click",
+                element_id: `suggestion-${index}`,
+              });
+            }}
             id={`suggestion-${index}`}
             variant="secondary"
             color="section.research.secondary"

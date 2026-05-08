@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "~/src/components/Link/Link";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { Agent } from "~/src/types/DataModel";
 import { ApiSearchQuery } from "~/src/types/SearchQuery";
 
@@ -26,6 +27,15 @@ const AuthorsList: React.FC<{ authors: Agent[] }> = ({ authors }) => {
               to={{
                 pathname: "/search",
                 query: query,
+              }}
+              onClick={() => {
+                // GTM Tagging: sidebar_source_click, author
+                trackEvent({
+                  event: "sidebar_source_click",
+                  interaction: "Click",
+                  location: "Results",
+                  metadata_field: "Author",
+                });
               }}
             >
               {authorLinkText}

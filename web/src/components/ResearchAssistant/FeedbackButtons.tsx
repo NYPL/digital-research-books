@@ -2,6 +2,7 @@ import { Button, Flex, Tooltip } from "@nypl/design-system-react-components";
 import { useContext, useState } from "react";
 import { THUMB_DESCIPTION_TEXT } from "~/src/constants/feedback";
 import { FeedbackContext } from "~/src/context/FeedbackContext";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { FeedbackState } from "~/src/types/ResearchAssistant";
 import ThumbsDownIcon from "./icons/ThumbsDownIcon";
 import ThumbsUpIcon from "./icons/ThumbsUpIcon";
@@ -31,6 +32,12 @@ const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({ label }) => {
     const newThumbValue = thumbValue === "up" ? null : "up";
 
     if (thumbValue === null) {
+      // GTM Tagging: feedback_collection_click, thumbs_up_button
+      trackEvent({
+        event: "feedback_collection_click",
+        interaction: "Click",
+        element_id: "thumbs-up-button",
+      });
       onOpen();
       setDescriptionText(THUMB_DESCIPTION_TEXT);
     }
@@ -42,6 +49,12 @@ const FeedbackButtons: React.FC<FeedbackButtonsProps> = ({ label }) => {
     const newThumbValue = thumbValue === "down" ? null : "down";
 
     if (thumbValue === null) {
+      // GTM Tagging: feedback_collection_click, thumbs_down_button
+      trackEvent({
+        event: "feedback_collection_click",
+        interaction: "Click",
+        element_id: "thumbs-down-button",
+      });
       onOpen();
       setDescriptionText(THUMB_DESCIPTION_TEXT);
     }

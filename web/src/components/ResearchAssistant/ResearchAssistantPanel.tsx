@@ -9,6 +9,7 @@ import React, { useEffect, useRef } from "react";
 import { getPanelLayout } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import ArrowIcon from "./icons/ArrowIcon";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 import RewindIcon from "./icons/RewindIcon";
@@ -72,7 +73,15 @@ const ResearchAssistantPanel: React.FC = () => {
             </Heading>
             <Flex gap="xxs">
               <Button
-                onClick={() => clearHistory(page, true)}
+                onClick={() => {
+                  clearHistory(page, true);
+                  // GTM Tagging: chat_ui_control
+                  trackEvent({
+                    event: "chat_ui_control",
+                    interaction: "Click",
+                    element_id: "clear-history-button",
+                  });
+                }}
                 variant="text"
                 size="small"
                 color="ui.white"
@@ -98,7 +107,15 @@ const ResearchAssistantPanel: React.FC = () => {
               </Button>
               <Button
                 ref={hideChatButtonRef}
-                onClick={toggleChat}
+                onClick={() => {
+                  toggleChat();
+                  // GTM Tagging: chat_ui_control
+                  trackEvent({
+                    event: "chat_ui_control",
+                    interaction: "Click",
+                    element_id: "hide-chat-button",
+                  });
+                }}
                 variant="text"
                 size="small"
                 color="ui.white"

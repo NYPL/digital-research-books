@@ -8,6 +8,7 @@ import {
 } from "@nypl/design-system-react-components";
 import React, { useContext, useEffect, useState } from "react";
 import { FeedbackContext } from "~/src/context/FeedbackContext";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { PageType } from "~/src/types/ResearchAssistant";
 import KeywordSearchIcon from "./icons/KeywordSearchIcon";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
@@ -73,7 +74,18 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
       secondaryActions={
         <>
           {/* TODO: add real links to help and account pages */}
-          <SubNavButton onClick={onOpen} id="subnav-contact-us">
+          <SubNavButton
+            id="subnav-contact-us"
+            onClick={() => {
+              onOpen();
+              // GTM Tagging: support_interaction
+              trackEvent({
+                event: "support_interaction",
+                interaction: "Click",
+                element_id: "subnav-contact-us",
+              });
+            }}
+          >
             Contact us
           </SubNavButton>
           <SubNavLink

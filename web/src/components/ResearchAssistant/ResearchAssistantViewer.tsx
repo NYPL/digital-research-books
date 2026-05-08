@@ -1,6 +1,7 @@
 import { Box } from "@nypl/design-system-react-components";
 import dynamic from "next/dynamic";
 import React from "react";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 const WebReader = dynamic(() => import("@nypl/web-reader"), { ssr: false });
 
 const origin =
@@ -45,6 +46,25 @@ const ResearchAssistantViewer: React.FC<{
     );
   }
 
+  const handleReaderClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const button = target.closest("button");
+
+    if (button) {
+      const actionName =
+        button.getAttribute("aria-label") || button.title || button.innerText;
+      // GTM Tagging: ereader_function_click
+      trackEvent({
+        event: "ereader_function_click",
+        interaction: "Click",
+        element_id: itemId,
+        location: "Web Reader",
+        metadata_field: "Button",
+        metadata_value: actionName,
+      });
+    }
+  };
+
   return (
     <Box
       margin="0 auto"
@@ -54,6 +74,7 @@ const ResearchAssistantViewer: React.FC<{
       top={isFullViewport ? 0 : undefined}
       left={isFullViewport ? 0 : undefined}
       zIndex={isFullViewport ? 9999 : undefined}
+      onClick={handleReaderClick}
     >
       {manifestApiUrl && (
         <WebReader

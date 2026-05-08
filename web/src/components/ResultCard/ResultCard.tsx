@@ -19,6 +19,7 @@ import {
   RESULT_TITLE_TEST_ID,
 } from "~/src/constants/testIds";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { Agent, WorkEdition } from "~/src/types/DataModel";
 import { CatalogEdition } from "~/src/types/ResearchAssistant";
 import { ApiWork } from "~/src/types/WorkQuery";
@@ -206,6 +207,15 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                 ...(previewItem && {
                   query: { featured: editionId },
                 }),
+              }}
+              onClick={() => {
+                // GTM Tagging: sidebar_source_click, title
+                trackEvent({
+                  event: "sidebar_source_click",
+                  interaction: "Click",
+                  location: "Results",
+                  metadata_field: "Title",
+                });
               }}
               isUnderlined={false}
             >

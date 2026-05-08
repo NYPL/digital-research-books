@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import React, { useRef, useState } from "react";
 import { SNIPPETS_PER_PAGE } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { Snippet } from "~/src/types/ResearchAssistant";
 import Link from "../Link/Link";
 
@@ -31,6 +32,12 @@ const SnippetList: React.FC<SnippetListProps> = ({ snippets, workId }) => {
     e: React.MouseEvent<HTMLAnchorElement>,
     snippet: Snippet
   ) => {
+    // GTM Tagging: itemcard_excerpt_click
+    trackEvent({
+      event: "itemcard_excerpt_click",
+      interaction: "Click",
+    });
+
     if (!workId) {
       e.preventDefault();
       const url = `/item/${snippet.item_id}/page/${String(

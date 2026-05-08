@@ -1,6 +1,7 @@
 import { Box } from "@nypl/design-system-react-components";
 import React from "react";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { ItemLink } from "~/src/types/DataModel";
 import Link from "../../Link/Link";
 
@@ -25,12 +26,23 @@ const PreviewLink: React.FC<PreviewLinkProps> = ({
       }
     : "#";
 
+  const handleClick = () => {
+    // GTM Tagging: itemcard_read_click
+    trackEvent({
+      event: "itemcard_read_click",
+      interaction: "Click",
+      metadata_field: "Type",
+      metadata_value: "Preview",
+    });
+  };
+
   return (
     <>
       {isResearchAssistant && previewLink && workId ? (
         <Box>
           <Link
             to={itemPageUrl}
+            onClick={handleClick}
             variant="buttonPrimary"
             width="100%"
             aria-label="Preview item"

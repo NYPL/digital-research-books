@@ -16,6 +16,7 @@ import {
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { HistoryItem } from "~/src/types/ResearchAssistant";
 import { ApiWork, WorkResult } from "~/src/types/WorkQuery";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
@@ -193,7 +194,16 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
                 <Toggle
                   isChecked={vraEnabled}
                   labelText="Use Virtual Research Assistant"
-                  onChange={() => setVraEnabled((prev) => !prev)}
+                  onChange={() => {
+                    // GTM Tagging: AI_toggle_click
+                    trackEvent({
+                      event: "AI_toggle_click",
+                      interaction: "Click",
+                      metadata_field: "vra_status",
+                      metadata_value: vraEnabled ? "off" : "on",
+                    });
+                    setVraEnabled((prev) => !prev);
+                  }}
                   size="small"
                   sx={{
                     ".chakra-switch__track[data-checked]": {

@@ -11,6 +11,7 @@ import {
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
 
 const ResearchAssistantInput: React.FC = () => {
@@ -25,11 +26,21 @@ const ResearchAssistantInput: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputText.trim() && !isDisabled) {
-      sendMessage(inputText);
+
+    const query = inputText.trim();
+
+    if (query && !isDisabled) {
+      // GTM Tagging: chatbot_query_submit
+      trackEvent({
+        event: "chatbot_query_submit",
+        interaction: "User Input",
+        // location: ""
+      });
+
+      sendMessage(query);
       setInputText("");
 
-      if (inputRef.current && inputRef.current) {
+      if (inputRef.current) {
         inputRef.current.style.height = "1.375rem";
         inputRef.current.value = "";
       }
@@ -55,6 +66,16 @@ const ResearchAssistantInput: React.FC = () => {
       e.stopPropagation();
       handleSubmit(e);
     }
+  };
+
+  const handleRelatedItem = (item) => {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "chatbot_prompt_click",
+      interaction: "Click",
+      element_id: `related-item-btn-${item}`,
+      location: "Results page",
+    });
   };
 
   useEffect(() => {
@@ -95,6 +116,9 @@ const ResearchAssistantInput: React.FC = () => {
             <Button
               variant="secondary"
               id={`related-item-btn-${item}`}
+              onClick={() => {
+                handleRelatedItem(item);
+              }}
               key={item}
               bgColor="ui.white"
               color="section.research.secondary"
