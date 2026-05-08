@@ -1,0 +1,30 @@
+{
+  "catalog_search": [
+    "What period in the last 1000 years had the most religious strife?",
+    "Theories of planetary motion before Newton",
+    "The development of calculus and the Newton-Leibniz priority dispute",
+    "Notable women writers in Victorian England",
+    "The development of polyphony in medieval church music",
+    "Theories of value and labor in 19th century economic thought",
+    "Notable women in Polynesian culture",
+    "Epistemological debates between rationalism and empiricism in the 17th century",
+    "Heretical movements within medieval Christianity",
+    "European cartographic traditions before the Age of Exploration",
+    "Symbolism in Gothic cathedral architecture"
+  ],
+  "suggestion": [
+    "Political figures of Ancient Rome",
+    "Medieval warfare in China",
+    "The science of shipbuilding"
+  ],
+  "follow_up": [
+    "Show me titles published only before 1900",
+    "Limit these to books written in English",
+    "Narrow these down to non-fiction or historical works",
+    "Which of these would be best for a graduate student?"
+  ],
+  "book": [
+    "What time period does this book focus on?",
+    "What are the main topics of this book?"
+  ]
+}

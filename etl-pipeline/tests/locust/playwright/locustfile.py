@@ -29,6 +29,7 @@ import asyncio
 import json
 import logging
 import os
+import pathlib
 import random
 import re
 
@@ -40,38 +41,13 @@ logger = logging.getLogger(__name__)
 
 TIMEOUT_MS = 120_000  # 2 min
 
-CATALOG_SEARCH_PROMPTS = [
-    "What period in the last 1000 years had the most religious strife?",
-    "Theories of planetary motion before Newton",
-    "The development of calculus and the Newton-Leibniz priority dispute",
-    "Notable women writers in Victorian England",
-    "The development of polyphony in medieval church music",
-    "Theories of value and labor in 19th century economic thought",
-    "Notable women in Polynesian culture",
-    "Epistemological debates between rationalism and empiricism in the 17th century",
-    "Heretical movements within medieval Christianity",
-    "European cartographic traditions before the Age of Exploration",
-    "Symbolism in Gothic cathedral architecture",
-]
+USER_PROMPTS_FILE = pathlib.Path(__file__).parent.parent / "user_prompts.json"
+prompts = json.loads(USER_PROMPTS_FILE.read_text())
 
-SUGGESTION_PROMPTS = [
-    "Political figures of Ancient Rome",
-    "Medieval warfare in China",
-    # "Ornithology in the nineteenth century",  # Omitted (SCHOL-588)
-    "The science of shipbuilding",
-]
-
-FOLLOW_UP_PROMPTS = [
-    "Show me titles published only before 1900",  # Date filter
-    "Limit these to books written in English",  # Language filter
-    "Narrow these down to non-fiction or historical works",  # Subject filter
-    "Which of these would be best for a graduate student?",  # Conversational
-]
-
-BOOK_PROMPTS = [
-    "What time period does this book focus on?",  # Date info
-    "What are the main topics of this book?",  # Subject info
-]
+CATALOG_SEARCH_PROMPTS: list[str] = prompts["catalog_search"]
+SUGGESTION_PROMPTS: list[str] = prompts["suggestion"]
+FOLLOW_UP_PROMPTS: list[str] = prompts["follow_up"]
+BOOK_PROMPTS: list[str] = prompts["book"]
 
 
 class VRAUser(PlaywrightUser):
