@@ -15,7 +15,7 @@ event block and embedded in failure exception messages for per-prompt attributio
 Note:
 This is a modified version of locustfile.py for running the test in LoadForge, which
 doesn't support reading an environment variable for authToken. Instead, it's read from a
-text file stored in their internal file management system (https://app.loadforge.com/tests/files).
+text file stored in their internal file management system.
 """
 
 import asyncio
