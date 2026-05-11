@@ -113,7 +113,6 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
                   to="https://ai.google.dev/gemini-api/docs/embeddings"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Learn more about the project"
                   hasVisitedState={false}
                   isUnderlined={false}
                   color="section.research.secondary"

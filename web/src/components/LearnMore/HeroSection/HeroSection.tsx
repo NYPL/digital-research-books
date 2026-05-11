@@ -35,6 +35,7 @@ const HeroSection: React.ForwardRefExoticComponent<
         paddingTop="74px"
         paddingBottom="l"
         ref={ref}
+        tabIndex={-1}
       >
         <Flex
           flexDir="column"

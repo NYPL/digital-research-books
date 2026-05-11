@@ -138,11 +138,11 @@ const CollectionSection: React.FC = () => {
             >
               Library of Congress&apos; Classification Outline
             </Link>
-            . The table below shows the top ten subjects.
+            . The bar chart below shows the top ten subjects.
           </Text>
           <Image
             src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/subjectsGraph.png"
-            alt="A horizontal bar chart showing the percentage distribution of subjects. The subjects, ranked from highest to lowest percentage, are: Law (23%), Fiction (20%), Poetry (15%), Periodicals (10%), Literature (8%), Engineering (5%), United States (4%), and History, Chemistry, and Politics each at 3%."
+            alt="A horizontal bar chart showing the percentage distribution of subjects. The subjects, ranked from highest to lowest percentage, are: Law at 23%, Fiction at 20%, Poetry at 15%, Periodicals at 10%, Literature at 8%, Engineering at 5%, United States at 4%, and History, Chemistry, and Politics each at 3%."
             width="820px"
             flexShrink="0"
             backgroundColor="transparent"

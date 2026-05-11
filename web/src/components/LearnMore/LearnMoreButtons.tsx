@@ -10,19 +10,21 @@ const LearnMoreButtons: React.FC<LearnMoreButtonsProps> = ({
   heroSectionRef,
 }) => {
   const handleBackToTopClick = () => {
-    if (heroSectionRef.current) {
-      heroSectionRef.current.scrollIntoView({ behavior: "smooth" });
+    const element = heroSectionRef.current;
+
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+
+      element.focus({ preventScroll: true });
     } else {
       console.error("Element not found");
     }
   };
-
   return (
     <Flex marginTop="xxl" width="fit-content" gap="s" marginX="auto">
       <Link
         to="/research-assistant-landing"
         variant="buttonPrimary"
-        aria-label="Try out the project"
         id="try-it-button"
         width="auto"
         backgroundColor="section.research.secondary"

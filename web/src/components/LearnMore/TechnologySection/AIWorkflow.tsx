@@ -64,7 +64,7 @@ const AiWorkflow = () => {
       </Flex>
       <Flex flexDir="column" gap="xl">
         {workflowSteps.map((stage, index) => (
-          <Box key={index} width="395px">
+          <Box key={index} maxWidth="395px">
             <Heading
               size="heading8"
               fontWeight="700"
