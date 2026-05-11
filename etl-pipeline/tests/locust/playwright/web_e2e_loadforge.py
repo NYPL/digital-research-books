@@ -17,6 +17,9 @@ there are multiple instances of it to test different environments (e.g. QA) and/
 load profiles. This is done to leverage LoadForge's historical comparison features for
 analyzing results over multiple test iterations while keeping test parameters like host,
 users, and spawn rate constant.
+
+The #disable_random_checks directive at the end of the file is needed to permit the use
+of randomization in the test while running in LoadForge.
 """
 
 import asyncio
