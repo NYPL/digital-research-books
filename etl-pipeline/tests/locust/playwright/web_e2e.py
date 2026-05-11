@@ -18,7 +18,7 @@ Example usage:
         uv run \
         --with locust \
         --with "locust-plugins[playwright]" \
-        locust -f tests/locust/playwright/locustfile.py \
+        locust -f tests/locust/playwright/web_e2e.py \
         --host https://drb-qa.nypl.org \
         --users 5 \
         --spawn-rate 0.0167 \
