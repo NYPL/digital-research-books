@@ -287,9 +287,11 @@ def parse_json_object_arg(raw: str, arg_name: str) -> dict[str, Any]:
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError as exc:
-        raise ValueError(f"Invalid JSON for --{arg_name}:  {exc}") from exc
+        raise argparse.ArgumentTypeError(
+            f"Invalid JSON object. json.JSONDecodeError: {exc}."
+        ) from exc
     if not isinstance(parsed, dict):
-        raise ValueError(f"--{arg_name} must deserialize to a JSON object")
+        raise argparse.ArgumentTypeError("Must deserialize to a JSON object.")
     return parsed
 
 
@@ -297,6 +299,10 @@ def parse_config_overrides(raw: str) -> dict[str, Any]:
     """Parse --config-overrides JSON, mapping the string "DELETE" to the DELETE sentinel."""
     parsed = parse_json_object_arg(raw, "config-overrides")
     return {k: DELETE if v == "DELETE" else v for k, v in parsed.items()}
+
+
+def parse_loader_args(raw: str) -> dict[str, Any]:
+    return parse_json_object_arg(raw, "loader-args")
 
 
 def parse_args():
@@ -394,9 +400,12 @@ def parse_args():
     )
     parser.add_argument(
         "--loader-args",
-        type=lambda raw: parse_json_object_arg(raw, "loader-args"),
+        type=parse_loader_args,
         default={},
-        help="JSON object with constructor kwargs for the selected loader",
+        help=(
+            "JSON object with constructor kwargs for the selected loader "
+            'e.g. \'{"data_dir": "/path/to/books"}\''
+        ),
     )
     parser.add_argument(
         "--mock-embedder",
