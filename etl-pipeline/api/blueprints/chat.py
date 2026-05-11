@@ -37,8 +37,9 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
     Extract final search result, prepare structure for expected chat/ response,
     and convert to serializable types.
 
-    Returns (result_type, formatted_search_result) where formatted_search_result
-    is the search results serialized for http response via flask.jsonify
+    Returns (result_type, formatted_search_result)
+    Returns (None, None) if search_results is empty (no search was executed)
+    `formatted_search_result` is the search results is consumable by flask.jsonify.
     """
 
     # Extract (single) search tool result
@@ -55,11 +56,11 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
             "No search results to return (agent did record search tool call result)"
         )
 
-    # Format search result for API response
-
+    # Build search result for API response
     result_type = None
     formatted_search_result = None
     if search_result:
+        # Extract search tool type
         result_type = (
             "catalogSearch"
             if search_result["tool_name"] == "search_catalog"
@@ -74,12 +75,14 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 
         search_params = search_result["search_params"]
 
+        # Format edition-level response data
         editions = []
         for edition_result in search_result["edition_data"]:
-            edition = {}
+            edition_response = {}
 
+            # Add snippets to edition response
             # Sort editions + convert to json serializable form
-            edition["snippets"] = [
+            edition_response["snippets"] = [
                 asdict(s)
                 for s in sorted(
                     edition_result.snippets,
@@ -89,7 +92,7 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
             ]
 
             if result_type == "catalogSearch":
-                # FRBR ORM to dict
+                # Add FRBR metadata to edition response
 
                 edition_metadata = orm_to_dict(
                     edition_result.orm_edition,
@@ -123,10 +126,11 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
                 # prepend "work_" to work fields
                 work_metadata = {f"work_{k}": v for k, v in work_metadata.items()}
 
-                edition.update({**edition_metadata, **work_metadata})
+                edition_response.update({**edition_metadata, **work_metadata})
 
-            editions.append(edition)
+            editions.append(edition_response)
 
+        # Format search result response
         if result_type == "catalogSearch":
             formatted_search_result = {
                 "editions": editions,

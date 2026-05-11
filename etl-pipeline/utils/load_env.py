@@ -11,7 +11,8 @@ from .common import batched
 # be loaded before loggers are configured in an application.
 
 # NOTE: aws region must be explicitly set when authorizing from the deployed \
-# ECS environment's credentials.
+# ECS environment's credentials. Region is set in ENV files but this code is
+# executed before env files are loaded.
 AWS_REGION = "us-east-1"
 
 
