@@ -20,18 +20,19 @@ Example usage:
     from etl-pipeline/:
         VRA_USER_AUTH_TOKEN=insert_token_here \
         uv run \
-        --with "locust" \
-        --with "locust-plugins[playwright]" \
-        locust -f tests/locust/playwright/web_e2e.py \
-        --host https://drb-qa.nypl.org \
-        --users 5 \
-        --spawn-rate 0.0167 \
-        --run-time 10m
+          --with "locust" \
+          --with "locust-plugins[playwright]" \
+          locust \
+            -f tests/locust/playwright/web_e2e.py \
+            --host https://drb-qa.nypl.org \
+            --users 5 \
+            --run-time 10m \
+            --spawn-rate 0.0167
 
 This will start a local server at http://localhost:8089. Navigate there in a browser to
-start the test and view results, logs, etc. in real-time.
-- Specifying host, users, spawn rate and run time just autofills the form in the web UI.
-- Adding --headless bypasses the web UI and runs the test immediately in the terminal,
+access the web UI for starting the test and viewing results, logs, etc. in real-time.
+- Specifying host, users, spawn rate, and run time just autofills the web UI form.
+- Adding --headless bypasses the web UI and runs the test immediately in the terminal.
   - All test run parameters must be specified on the command line in this case.
 
 NOTE:
