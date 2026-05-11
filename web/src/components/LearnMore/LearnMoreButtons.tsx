@@ -31,6 +31,7 @@ const LearnMoreButtons: React.FC<LearnMoreButtonsProps> = ({
         color="ui.white"
         _hover={{
           backgroundColor: "section.research.primary",
+          textDecor: "none",
         }}
       >
         Try Enhanced Search

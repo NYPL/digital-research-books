@@ -65,10 +65,22 @@ const AiWorkflow = () => {
       <Flex flexDir="column" gap="xl">
         {workflowSteps.map((stage, index) => (
           <Box key={index} width="395px">
-            <Heading size="heading8" fontWeight="bold" level="h4">
+            <Heading
+              size="heading8"
+              fontWeight="700"
+              level="h4"
+              marginBottom="s"
+            >
+              {" "}
               {stage.title}
             </Heading>
-            <Text fontSize="lg">{stage.description}</Text>
+            <Text
+              color="ui.gray.dark"
+              fontSize="desktop.subtitle.subtitle1"
+              lineHeight="135%;"
+            >
+              {stage.description}
+            </Text>
           </Box>
         ))}
       </Flex>

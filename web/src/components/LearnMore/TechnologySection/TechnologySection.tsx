@@ -17,6 +17,7 @@ const TechnologySection: React.FC = () => {
       borderColor="section.research.primary-10"
       color="ui.typography.body"
       textAlign="left"
+      paddingX={{ base: "0px", md: "16px" }}
       tabIndex={-1}
     >
       <Box maxWidth="55rem" margin="0 auto">
@@ -100,7 +101,7 @@ const TechnologySection: React.FC = () => {
             <Text fontSize="lg" color="ui.gray.dark">
               Enhanced Search is enabled by an agentic AI workflow. Comprised of
               a Large Language Model (LLM) and other tools, it helps users find
-              relevant through a natural language chat interface.
+              relevant resources through a natural language chat interface.
             </Text>
           </Box>
           <AiWorkflow />

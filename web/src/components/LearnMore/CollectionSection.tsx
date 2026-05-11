@@ -18,6 +18,7 @@ const CollectionSection: React.FC = () => {
       display="flex"
       flexDir="column"
       textAlign="left"
+      paddingX={{ base: "0px", md: "16px" }}
     >
       <Box maxWidth="55rem" margin="0 auto">
         <Flex flexDir="column" marginBottom="xxl">
@@ -46,6 +47,9 @@ const CollectionSection: React.FC = () => {
                 to="https://institutional.org/"
                 target="_blank"
                 rel="noopener noreferrer"
+                _hover={{
+                  color: "section.research.secondary",
+                }}
                 _visited={{
                   color: "section.research.secondary",
                 }}
@@ -125,6 +129,9 @@ const CollectionSection: React.FC = () => {
               to="https://www.loc.gov/catdir/cpso/lcco/"
               target="_blank"
               rel="noopener noreferrer"
+              _hover={{
+                color: "section.research.secondary",
+              }}
               _visited={{
                 color: "section.research.secondary",
               }}
