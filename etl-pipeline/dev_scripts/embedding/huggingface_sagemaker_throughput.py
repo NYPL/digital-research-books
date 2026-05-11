@@ -167,6 +167,8 @@ async def run_benchmark(
     """
     Send *total_requests* embedding requests capped at *concurrency* in-flight at once.
     Return summary of throughput.
+
+    Latency calculations exclude requests that raised errors.
     """
 
     semaphore = asyncio.Semaphore(concurrency)
@@ -194,6 +196,8 @@ async def run_benchmark(
         concurrency=concurrency,
         total_requests=total_requests,
         total_time_s=wall_time,
+        # BUG: `latencies` accounts for only non-error requests, but tokens_per_s \
+        # (also reqs_per_s) counts error and success requests a like.
         req_per_s=total_requests / wall_time,
         tokens_per_s=(total_requests * token_count) / wall_time,
         avg_latency_ms=float(np.mean(latencies_ms)) if latencies_ms.size else 0.0,
