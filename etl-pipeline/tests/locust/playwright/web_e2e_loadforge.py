@@ -1,21 +1,22 @@
 """
-Locust-Playwright load test that simulates a full end-user journey:
-landing page → catalog search → optional follow-up → item page → content search
+This locustfile is a slightly-modified version of /locust/playwright/web_e2e.py to run
+the test using LoadForge.
 
-The following events are reported:
-- Landing page navigation (landing page: load)
-- Chat panel response from a catalog search (results page: chat response)
-- Chat panel response from a catalog search follow-up (results page: chat response follow-up)
-- Item page navigation (item page: load)
-- Chat panel response from a content search (item page: chat response)
+LoadForge does not support environment variables. Instead, the platform has a file
+management system for securely reading in sensitive data (e.g. authToken). This file
+reads authToken from the plain text file authToken-vratestuser.txt stored in the "files"
+directory, which is only accessible to authorized users of the NYPL enterprise account.
 
-Event names are kept static for clean aggregation. The active prompt is logged before each
-event block and embedded in failure exception messages for per-prompt attribution.
+Other test data like user prompts can be read in the same way, but they're hardcoded
+here for simplicity since they're not sensitive.
 
-Note:
-This is a modified version of locustfile.py for running the test in LoadForge, which
-doesn't support reading an environment variable for authToken. Instead, it's read from a
-text file stored in their internal file management system.
+NOTE:
+This test can be found in the Browser Tests section of the LoadForge dashboard once
+logged in to the NYPL enterprise account. It's named "Enhanced Search Web E2E" and
+there are multiple instances of it to test different environments (e.g. QA) and/or
+load profiles. This is done to leverage LoadForge's historical comparison features for
+analyzing results over multiple test iterations while keeping test parameters like host,
+users, and spawn rate constant.
 """
 
 import asyncio

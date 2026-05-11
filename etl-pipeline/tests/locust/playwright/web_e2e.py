@@ -9,20 +9,37 @@ The following events are reported:
 - Item page navigation (item page: load)
 - Chat panel response from a content search (item page: chat response)
 
-Event names are kept static for clean aggregation. The active prompt is logged before each
-event block and embedded in failure exception messages for per-prompt attribution.
+Event names are kept static for clean aggregation. The active prompt is logged before
+each event block and embedded in failure exception messages for per-prompt attribution.
+
+NOTE:
+This script is designed for execution on a local machine or in CI.
+To run in LoadForge, use web_e2e_loadforge.py.
 
 Example usage:
     from etl-pipeline/:
         VRA_USER_AUTH_TOKEN=insert_token_here \
         uv run \
-        --with locust \
+        --with "locust" \
         --with "locust-plugins[playwright]" \
         locust -f tests/locust/playwright/web_e2e.py \
         --host https://drb-qa.nypl.org \
         --users 5 \
         --spawn-rate 0.0167 \
         --run-time 10m
+
+This will start a local server at http://localhost:8089. Navigate there in a browser to
+start the test and view results, logs, etc. in real-time.
+- Specifying host, users, spawn rate and run time just autofills the form in the web UI.
+- Adding --headless bypasses the web UI and runs the test immediately in the terminal,
+  - All test run parameters must be specified on the command line in this case.
+
+NOTE:
+The spawn rate above is set such that max concurrency is reached at the halfway point of
+the test run. This is a standard approach used for ramping-up users, but faster or
+slower ramp-ups may be used to meet different test criteria (e.g. DoS testing).
+- The float value is determined by dividing the number of users by half the test run
+  duration in seconds: (5 users / (600 seconds / 2)) = 0.0167 users per second
 """
 
 import asyncio
