@@ -25,35 +25,35 @@ export const renderMarkdownContent = (
             return <Text as="span">{children}</Text>;
           }
 
-          return <Text marginTop="s">{children}</Text>;
+          return <Text marginTop="xs">{children}</Text>;
         },
 
         h1: ({ children }) => (
-          <Heading level="h1" size="heading6" fontWeight="bold" marginTop="s">
+          <Heading level="h1" size="heading6" fontWeight="bold" marginTop="xs">
             {children}
           </Heading>
         ),
 
         h2: ({ children }) => (
-          <Heading level="h2" size="heading7" fontWeight="bold" marginTop="s">
+          <Heading level="h2" size="heading7" fontWeight="bold" marginTop="xs">
             {children}
           </Heading>
         ),
 
         h3: ({ children }) => (
-          <Heading level="h3" size="heading8" fontWeight="bold" marginTop="s">
+          <Heading level="h3" size="heading8" fontWeight="bold" marginTop="xs">
             {children}
           </Heading>
         ),
 
         ul: ({ children }) => (
-          <List variant="ul" marginTop="s">
+          <List variant="ul" marginTop="xs">
             {children}
           </List>
         ),
 
         ol: ({ children }) => (
-          <List variant="ol" marginTop="s">
+          <List variant="ol" marginTop="xs">
             {children}
           </List>
         ),

@@ -33,7 +33,7 @@ describe("MessageBubble", () => {
     expect(
       screen.getByText("This is an assistant response.")
     ).toBeInTheDocument();
-    expect(screen.getByText("Enhanced Search:")).toBeInTheDocument();
+    expect(screen.getByText("VRA:")).toBeInTheDocument();
   });
 
   test("renders AI generated text indicator for non-initial assistant messages", () => {
@@ -87,7 +87,7 @@ describe("MessageBubble", () => {
     render(<MessageBubble index={1} message={assistantMessage} />);
 
     const icons = screen.getAllByRole("img", { hidden: true });
-    expect(screen.getByText("Enhanced Search:")).toBeInTheDocument();
+    expect(screen.getByText("VRA:")).toBeInTheDocument();
     expect(icons.length).toBeGreaterThan(0);
   });
 

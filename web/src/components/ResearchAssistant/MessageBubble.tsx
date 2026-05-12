@@ -67,7 +67,7 @@ const MessageBubble = memo(
                         isBold
                         display="inline"
                       >
-                        Enhanced Search:{" "}
+                        VRA:{" "}
                       </Text>
                     )}
                     {renderMarkdownContent(
