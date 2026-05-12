@@ -74,17 +74,8 @@ export const renderMarkdownContent = (
             );
           }
 
-          const isSafeUrl = !href
-            ?.trim()
-            .toLowerCase()
-            .startsWith("javascript:");
-          const safeHref = isSafeUrl ? href || "#" : "#";
-
-          return (
-            <Link to={safeHref} target="_blank" rel="noopener noreferrer">
-              {children}
-            </Link>
-          );
+          // Only render text if it's not an edition link
+          return <>{children}</>;
         },
       }}
     >
