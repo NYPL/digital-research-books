@@ -71,7 +71,7 @@ const MissionDiagram = () => {
         </Box>
         <Box flex="1">
           <Text fontWeight="bold">ENHANCED SEARCH</Text>
-          <Text color="ui.gray.x-dark" isItalic>
+          <Text color="ui.gray.x-dark" fontWeight="regular" isItalic>
             The technology
           </Text>
         </Box>
@@ -100,7 +100,7 @@ const MissionDiagram = () => {
         </Box>
         <Box flex="1">
           <Text fontWeight="bold">DIGITIZED RESEARCH BOOKS</Text>
-          <Text color="ui.gray.x-dark" isItalic>
+          <Text color="ui.gray.x-dark" fontWeight="regular" isItalic>
             The collection
           </Text>
         </Box>

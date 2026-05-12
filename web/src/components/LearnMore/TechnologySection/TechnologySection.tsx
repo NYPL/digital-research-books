@@ -17,7 +17,7 @@ const TechnologySection: React.FC = () => {
       borderColor="section.research.primary-10"
       color="ui.typography.body"
       textAlign="left"
-      paddingX={{ base: "0px", md: "16px" }}
+      paddingX={{ base: "0", md: "s" }}
       tabIndex={-1}
     >
       <Box maxWidth="55rem" margin="0 auto">

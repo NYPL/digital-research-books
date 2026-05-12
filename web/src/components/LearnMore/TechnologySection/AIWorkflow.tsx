@@ -71,7 +71,6 @@ const AiWorkflow = () => {
               level="h4"
               marginBottom="s"
             >
-              {" "}
               {stage.title}
             </Heading>
             <Text

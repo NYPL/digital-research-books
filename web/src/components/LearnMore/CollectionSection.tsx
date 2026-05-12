@@ -48,7 +48,7 @@ const CollectionSection: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 _hover={{
-                  color: "section.research.secondary",
+                  color: "section.research.primary",
                 }}
                 _visited={{
                   color: "section.research.secondary",
@@ -130,7 +130,7 @@ const CollectionSection: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               _hover={{
-                color: "section.research.secondary",
+                color: "section.research.primary",
               }}
               _visited={{
                 color: "section.research.secondary",

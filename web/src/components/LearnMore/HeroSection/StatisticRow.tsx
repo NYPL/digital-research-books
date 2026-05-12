@@ -18,7 +18,7 @@ const StatisticRow: React.FC = () => {
       justifyContent="center"
       alignItems="center"
       margin="0 auto"
-      gap={{ base: "xs", md: "1rem" }}
+      gap={{ base: "xs", md: "s" }}
       marginBottom="63.5px"
       width="100%"
     >

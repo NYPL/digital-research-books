@@ -24,14 +24,7 @@ const LearnMore: React.FC = () => {
         <ResearchAssistantNav />
       </DrbBreakout>
 
-      <Box
-        as="main"
-        id="mainContent"
-        tabIndex={-1}
-        display="flex"
-        flexDir="column"
-      >
-        {" "}
+      <Box display="flex" flexDir="column">
         <HeroSection
           ref={heroSectionRef}
           missionSectionRef={missionSectionRef}

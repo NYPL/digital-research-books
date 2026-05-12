@@ -31,7 +31,7 @@ const HeroSection: React.ForwardRefExoticComponent<
     return (
       <SectionContainer
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
-        paddingX={{ base: "0px", md: "16px" }}
+        paddingX={{ base: "0", md: "s" }}
         paddingTop="74px"
         paddingBottom="l"
         ref={ref}
@@ -77,7 +77,7 @@ const HeroSection: React.ForwardRefExoticComponent<
               backgroundColor: "section.research.primary-05",
             }}
           >
-            Read More
+            Read more
             <ArrowIcon direction="down" color="#006166" />
           </Button>
         </Flex>

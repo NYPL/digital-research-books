@@ -23,7 +23,7 @@ const MissionSection: React.ForwardRefExoticComponent<
         margin="0 auto"
         width="100%"
         tabIndex={-1}
-        paddingX={{ base: "0px", md: "16px" }}
+        paddingX={{ base: "0", md: "s" }}
         ref={ref}
       >
         <Heading
