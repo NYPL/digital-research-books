@@ -308,7 +308,7 @@ class Pipeline:
             if all_chunks:
                 try:
                     texts = [c.text for c in all_chunks]
-                    vectors = self._embedder.embed_batch(texts)
+                    vectors = self._embedder.embed_document_batch(texts)
                     for chunk, vector in zip(all_chunks, vectors):
                         chunk.vector = vector
                 except Exception as e:

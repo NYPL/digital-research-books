@@ -7,6 +7,9 @@ Provides a thin wrapper around the turbopuffer SDK.
 from __future__ import annotations
 
 import json
+import re
+import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional, TYPE_CHECKING
 
@@ -34,6 +37,35 @@ def load_default_schema() -> dict:
 
 
 DEFAULT_TURBOPUFFER_SCHEMA = load_default_schema()
+
+
+def _debug_upsert_error(exc: "tpuf.UnprocessableEntityError", rows: list[dict]) -> None:
+    """Log the malformed row and dump the full payload to disk for inspection.
+
+    Parses the row index from exc.body (the decoded JSON response dict, e.g.
+    {'error': '...upsert_rows[1035]: data did not match...', 'status': 'error'})
+    and logs the offending row. Always writes the full payload to a temp file.
+    """
+    err_str = exc.body.get("error", "") if isinstance(exc.body, dict) else str(exc)
+
+    match = re.search(r"upsert_rows\[(\d+)\]", err_str)
+    if match:
+        bad_idx = int(match.group(1))
+        bad_row = rows[bad_idx] if bad_idx < len(rows) else None
+        logger.error(
+            f"[DEBUG] Malformed row at upsert_rows[{bad_idx}]:\n"
+            f"{json.dumps(bad_row, default=str, indent=2)}"
+        )
+    else:
+        logger.error(f"[DEBUG] Could not parse row index from error: {err_str}")
+
+    dump_path = (
+        Path(tempfile.gettempdir())
+        / f"tpuf_bad_payload_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
+    )
+    dump_path.write_text(json.dumps({"upsert_rows": rows}, default=str, indent=2))
+    logger.error(f"[DEBUG] Full insert payload written to: {dump_path}")
+
 
 # Conversion utilities between ChunkDocument and turbopuffer row format
 
@@ -260,8 +292,12 @@ class TurbopufferBackend(IndexBackend):
             }
             # NOTE: vector dims match btw schema and insert rows are enforced with error
 
-            with self._timers.time("write"):
-                response = self._ns.write(**write_kwargs)
+            try:
+                with self._timers.time("write"):
+                    response = self._ns.write(**write_kwargs)
+            except tpuf.UnprocessableEntityError as exc:
+                # _debug_upsert_error(exc, rows)
+                raise
 
             billing = getattr(response, "billing", None)
             written_bytes = (

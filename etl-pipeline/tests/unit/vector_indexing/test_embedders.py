@@ -2,6 +2,8 @@
 
 import pytest
 
+from vector_indexing.components.embedders.sagemaker import Qwen38BEmbedder
+
 
 # ---------------------------------------------------------------------------
 # Abstract contract base
@@ -19,13 +21,13 @@ class EmbedderContractTests:
     def embedder(self):
         raise NotImplementedError("Subclass must provide an `embedder` fixture")
 
-    # TODO: implement — embed_batch returns same number of vectors as input texts
-    def test_embed_batch_output_length_matches_input(self, embedder):
+    # TODO: implement — embed_document_batch returns same number of vectors as input texts
+    def test_embed_document_batch_output_length_matches_input(self, embedder):
         pytest.skip("TODO: implement test")
 
-    # TODO: implement — embed_batch propagates (raises) when any single
+    # TODO: implement — embed_document_batch propagates (raises) when any single
     # embedding call fails, rather than silently dropping the item
-    def test_embed_batch_fails_when_single_embedding_fails(self, embedder):
+    def test_embed_document_batch_fails_when_single_embedding_fails(self, embedder):
         pytest.skip("TODO: implement test")
 
 
@@ -84,21 +86,21 @@ class TestSageMakerEmbedderContracts(EmbedderContractTests):
 
 
 # ---------------------------------------------------------------------------
-# QwenEmbedder
+# LMStudioEmbedder
 # ---------------------------------------------------------------------------
 
 
-class TestQwenEmbedderContracts(EmbedderContractTests):
+class TestLMStudioEmbedderContracts(EmbedderContractTests):
     """
     TODO: implement fixture — patch `requests.post` to return a mock Response
     whose `.json()` returns `{"data": [{"embedding": [0.1, ...]}]}` for each
     text in the batch.
-    See: vector_indexing/components/embedders/qwen.py
+    See: vector_indexing/components/embedders/lmstudio.py
     """
 
     @pytest.fixture
     def embedder(self):
-        pytest.skip("TODO: implement QwenEmbedder fixture")
+        pytest.skip("TODO: implement LMStudioEmbedder fixture")
 
 
 # ---------------------------------------------------------------------------
@@ -116,3 +118,30 @@ class TestSentenceTransformersEmbedderContracts(EmbedderContractTests):
     @pytest.fixture
     def embedder(self):
         pytest.skip("TODO: implement SentenceTransformersEmbedder fixture")
+
+
+# ---------------------------------------------------------------------------
+# Qwen38BEmbedder
+# ---------------------------------------------------------------------------
+
+
+class TestQwen38BEmbedderImportWorkaround:
+    """Tests for the TEI FP16 NaN workaround. See: https://github.com/huggingface/text-embeddings-inference/issues/845"""
+
+    def test_prepends_space_when_text_starts_with_import(self):
+        assert Qwen38BEmbedder._fix_import_prefix("importance") == " importance"
+
+    def test_does_not_alter_text_not_starting_with_import(self):
+        assert Qwen38BEmbedder._fix_import_prefix("hello world") == "hello world"
+
+
+class TestQwen38BEmbedderContracts(EmbedderContractTests):
+    """
+    TODO: implement fixture — same shape as SageMakerEmbedder fixture but
+    instantiate Qwen38BEmbedder.
+    See: vector_indexing/components/embedders/sagemaker.py
+    """
+
+    @pytest.fixture
+    def embedder(self):
+        pytest.skip("TODO: implement Qwen38BEmbedder fixture")

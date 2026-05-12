@@ -539,7 +539,7 @@ def _index_config_entries():
                 "vra_test-eval300-harrier_oss_v1_.6b",  # pragma: allowlist secret
             ],
             "embedder": {
-                "class": "SageMakerEmbedder",
+                "class": "HarrierEmbedder",
                 "params": {
                     "endpoint_name": "hf-tei-harrier-oss-v1-0-6b-ml-g6-2xlarge-20260427-153815",  # pragma: allowlist secret
                     "aws_profile": "vra-sandbox",
@@ -554,7 +554,7 @@ def _index_config_entries():
                 "vra_test-eval300-qwen3_embedding_8b",  # pragma: allowlist secret
             ],
             "embedder": {
-                "class": "SageMakerEmbedder",
+                "class": "Qwen38BEmbedder",
                 "params": {
                     "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6-2xlarge-20260507-231343",  # pragma: allowlist secret
                     "aws_profile": "vra-sandbox",
@@ -570,7 +570,7 @@ def _index_config_entries():
                 "vra_test-eval300-qwen3_embedding_4b",  # pragma: allowlist secret
             ],
             "embedder": {
-                "class": "SageMakerEmbedder",
+                "class": "Qwen3Embedder",
                 "params": {
                     "endpoint_name": "hf-tei-qwen3-embedding-4b-ml-g5-2xlarge-20260507-181318",  # pragma: allowlist secret
                     "aws_profile": "vra-sandbox",
@@ -586,7 +586,7 @@ def _index_config_entries():
                 "vra_test-eval300-pplx_embed_v1_4b",  # pragma: allowlist secret
             ],
             "embedder": {
-                "class": "SageMakerEmbedder",
+                "class": "PplxEmbedder",
                 "params": {
                     "endpoint_name": "tei-pplx-embed-v1-4b-ml-g6e-xlarge-20260506233640",  # pragma: allowlist secret
                     "aws_profile": "vra-sandbox",

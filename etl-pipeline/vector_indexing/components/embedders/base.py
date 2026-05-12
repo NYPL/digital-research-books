@@ -24,21 +24,29 @@ class Embedder(ABC):
         """Return the name/identifier of the embedding model."""
         ...
 
-    @abstractmethod
-    def embed_one(self, text: str) -> list[float]:
-        """Embed a single text string. Returns the embedding vector."""
-        ...
+    def embed_document(self, text: str) -> list[float]:
+        """Embed a single document (indexed document for retrieval)."""
+        raise NotImplementedError
 
-    @abstractmethod
-    def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        """Embed multiple texts in a batch.
+    def embed_document_batch(self, texts: list[str]) -> list[list[float]]:
+        """Embed a batch of documents (indexed documents for retrieval).
 
-        Implementations should handle batching internally if the
-        underlying API has batch size limits.
-
-        Based on the usage pattern in Pipeline.index_books(), embed_batch
-        implementations should fail if any one embedding fails.
-
-        Returns a list of embedding vectors, one per input text.
+        Implementations should handle batching internally if the underlying
+        API has batch size limits, and should fail if any single embedding fails.
         """
-        ...
+        raise NotImplementedError
+
+    def embed_query(self, text: str) -> list[float]:
+        """Embed a single query (search-time input)."""
+        raise NotImplementedError
+
+    def embed_query_batch(self, texts: list[str]) -> list[list[float]]:
+        """Embed a batch of queries (search-time inputs).
+
+        Implementations should handle batching internally if the underlying
+        API has batch size limits, and should fail if any single embedding fails.
+        """
+        raise NotImplementedError
+
+    # NOTE: the usage pattern in Pipeline.index_books(), requires batch failure
+    # if any single embedding fails

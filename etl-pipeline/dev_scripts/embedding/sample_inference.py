@@ -13,7 +13,7 @@ import json
 
 from utils.load_env import load_env
 
-from vector_indexing.components.embedders.sagemaker import SageMakerEmbedder
+from vector_indexing.components.embedders.sagemaker import SageMakerTEIEmbedder
 
 load_env("config/.env.production")
 
@@ -25,7 +25,7 @@ DEFAULT_PROFILE = "vra-sandbox"
 TEXT = "How can libraries improve discovery for digitized collections?"
 
 
-embedder = SageMakerEmbedder(
+embedder = SageMakerTEIEmbedder(
     endpoint_name=DEFAULT_ENDPOINT,
     aws_profile=DEFAULT_PROFILE,
 )
@@ -37,3 +37,4 @@ print(f"Profile: {DEFAULT_PROFILE}")
 print(f"Vector length: {len(vector)}")
 print("Vector preview (first 8 values):")
 print(json.dumps(vector[:8], indent=2))
+print("Text preview (first 100 chars ):", TEXT[:100])

@@ -88,7 +88,7 @@ class MockEmbedder:
     def __init__(self, dimensions: int | None = None):
         self.dimensions = dimensions or get_config().embedding_dimensions
 
-    def embed_batch(self, texts: list[str]) -> list[list[float]]:
+    def embed_document_batch(self, texts: list[str]) -> list[list[float]]:
         import random
 
         return [[random.random() for _ in range(self.dimensions)] for _ in texts]
@@ -573,6 +573,7 @@ def main():
     prior_successes = cumulative_successes - this_run_succeeded
     print("\nDone:")
     print(f"  This run:  {this_run_succeeded}/{this_run_processed} books succeeded")
+    # TODO: print batch timing and per book timing
     if prior_successes > 0:
         print(
             f"  Job cumulative: {cumulative_successes} books succeed / {cumulative_attempts} books attempted"

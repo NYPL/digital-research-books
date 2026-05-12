@@ -1,4 +1,4 @@
-"""Qwen local embedding implementation via LM Studio or similar."""
+"""LM Studio (OpenAI-compatible local endpoint) embedding implementation."""
 
 from __future__ import annotations
 
@@ -15,8 +15,8 @@ DEFAULT_DIMS = 4096
 DEFAULT_BATCH_SIZE = 32
 
 
-class QwenEmbedder(Embedder):
-    """Qwen embedding model implementation.
+class LMStudioEmbedder(Embedder):
+    """Embedding model served by LM Studio (or any OpenAI-compatible local endpoint).
 
     All connection details are derived from GlobalConfig.
 

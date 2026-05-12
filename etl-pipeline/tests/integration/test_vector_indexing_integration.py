@@ -105,7 +105,9 @@ class TestLocalToElasticsearchFlow:
         mock_es_client.indices.exists.return_value = True
 
         mock_embedder = Mock()
-        mock_embedder.embed_batch.side_effect = lambda texts: [[0.1] * 768] * len(texts)
+        mock_embedder.embed_document_batch.side_effect = lambda texts: [
+            [0.1] * 768
+        ] * len(texts)
 
         mock_metadata = Mock()
         mock_metadata.get_metadata.return_value = {
@@ -149,7 +151,7 @@ class TestLocalToElasticsearchFlow:
             assert result.chunks_inserted == result.chunks_created
 
             # Verify embedder was called with chunk texts
-            mock_embedder.embed_batch.assert_called_once()
+            mock_embedder.embed_document_batch.assert_called_once()
 
             # Verify bulk was called
             mock_bulk.assert_called_once()
@@ -207,7 +209,7 @@ class TestMultiBookBatch:
         chunker.chunk.side_effect = make_chunks
 
         embedder = Mock()
-        embedder.embed_batch.return_value = [[0.1] * 768, [0.1] * 768]
+        embedder.embed_document_batch.return_value = [[0.1] * 768, [0.1] * 768]
 
         metadata_provider = Mock()
         metadata_provider.get_metadata.return_value = {

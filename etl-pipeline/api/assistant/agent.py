@@ -473,7 +473,7 @@ async def update_chat(
     # request workers/threads)
 
     backend = TurbopufferBackend(index_name=INDEX_NAME, config=get_config())
-    embedder = GoogleEmbedder(task_type="RETRIEVAL_QUERY")
+    embedder = GoogleEmbedder()
 
     # NOTE: litellm has a bug converting `list | None = None` in agents sdk @functol_tool
     # param type annotations into gemini API compatible format
@@ -671,7 +671,7 @@ def search_catalog(
         )
 
         # Embed the query for semantic search
-        query_vector = ctx.context.embedder.embed_one(ranking_query)
+        query_vector = ctx.context.embedder.embed_query(ranking_query)
 
         # Execute hybrid search (vector + BM25) with RRF
         results = hybrid_search(
@@ -827,7 +827,7 @@ def search_book(
             combined_filters = book_filter
 
         # Embed the query for semantic search
-        query_vector = ctx.context.embedder.embed_one(ranking_query)
+        query_vector = ctx.context.embedder.embed_query(ranking_query)
 
         # Execute hybrid search (vector + BM25) with RRF fusion
         results = hybrid_search(
