@@ -171,15 +171,26 @@ def read_job_metadata(job_dir: Path) -> dict[str, Any]:
 def read_job_state(job_dir: Path) -> dict[str, Any]:
     path = job_dir / JOB_STATE_FILE
     if not path.exists():
-        return {"total_succeeded": 0, "total_elapsed_seconds": 0.0}
+        return {
+            "n_barcodes": 0,
+            "total_attempts": 0,
+            "total_successes": 0,
+            "total_elapsed_seconds": 0.0,
+        }
     return json.loads(path.read_text())
 
 
 def write_job_state(
-    job_dir: Path, total_succeeded: int, total_elapsed_seconds: float
+    job_dir: Path,
+    n_barcodes: int,
+    total_attempts: int,
+    total_successes: int,
+    total_elapsed_seconds: float,
 ) -> None:
     state = {
-        "total_succeeded": total_succeeded,
+        "n_barcodes": n_barcodes,
+        "total_attempts": total_attempts,
+        "total_successes": total_successes,
         "total_elapsed_seconds": total_elapsed_seconds,
     }
     (job_dir / JOB_STATE_FILE).write_text(json.dumps(state, indent=2))
@@ -226,18 +237,6 @@ def filter_from_job(job_dir: Path, all_barcodes: list[str]) -> list[str]:
                 if result.success:
                     ever_succeeded.add(result.barcode)
     return [b for b in all_barcodes if b not in ever_succeeded]
-
-
-def failed_from_job(results_dir: Path) -> Iterator[str]:
-    """Generate failed barcodes from saved batch results in an indexing
-    run results directory
-    """
-    # TODO: add length (optional) for progress
-    from vector_indexing.pipeline.orchestrator import BatchResult
-
-    for path in sorted(results_dir.glob("batch_result_*.json")):
-        batch_result = BatchResult.load(path)
-        yield from (r.barcode for r in batch_result.results if not r.success)
 
 
 def resolve_barcodes(args: argparse.Namespace) -> list[str]:
@@ -420,8 +419,18 @@ def main():
         # Start new job (including resuming job that does not exist)
         job_dir = create_job_dir(results_dir, args.index_name)
         write_job_metadata(job_dir, current_job_metadata)
-        write_job_state(job_dir, total_succeeded=0, total_elapsed_seconds=0.0)
+        write_job_state(
+            job_dir,
+            n_barcodes=len(all_barcodes),
+            total_attempts=0,
+            total_successes=0,
+            total_elapsed_seconds=0.0,
+        )
         barcodes = all_barcodes
+        if args.resume_latest:
+            print("No job available to resume, starting new job...")
+        else:
+            print("Starting new job...")
     else:
         # Resume job: validate metadata continuity, then filter to never-succeeded
 
@@ -449,15 +458,15 @@ def main():
         if not barcodes:
             print("All barcodes already succeeded. All done.")
             return
-
-    job_state = read_job_state(job_dir)
-    cumulative_succeeded = job_state["total_succeeded"]
-    cumulative_elapsed = job_state["total_elapsed_seconds"]
-
-    if args.resume_latest:
         print(
             f"Resuming job from barcode '{barcodes[0]}': {len(barcodes)}/{len(all_barcodes)} remaining..."
         )
+
+    job_state = read_job_state(job_dir)
+    cumulative_attempts = job_state["total_attempts"]
+    cumulative_successes = job_state["total_successes"]
+    cumulative_elapsed = job_state["total_elapsed_seconds"]
+
     print(f"Processing {len(barcodes)} barcodes")
     print(f"Job directory: {job_dir}")
 
@@ -500,8 +509,6 @@ def main():
     else:
         print("Using MetadataProvider (default)")
 
-    print(f"\nIndexing {len(barcodes)} books...")
-
     batch_size = None if args.batch_size == 0 else args.batch_size
     if batch_size is not None and batch_size <= 0:
         raise ValueError("batch_size must be positive or None")
@@ -526,15 +533,23 @@ def main():
         this_run_succeeded += result.succeeded
         this_run_failed += result.failed
 
-        # Update and persist cumulative job state
-        cumulative_succeeded += result.succeeded
-        cumulative_elapsed += result.total_time or 0.0
-        write_job_state(job_dir, cumulative_succeeded, cumulative_elapsed)
-
         # Save batch result
+        # (batch results are the source of truth for resume; job state is for reporting)
         batch_dir = job_dir / f"batch_{_iso_utc_now()}"
         batch_dir.mkdir(parents=True, exist_ok=False)
         saved_path = result.save(batch_dir)
+
+        # Update and persist cumulative job state
+        cumulative_attempts += result.total
+        cumulative_successes += result.succeeded
+        cumulative_elapsed += result.total_time or 0.0
+        write_job_state(
+            job_dir,
+            n_barcodes=len(all_barcodes),
+            total_attempts=cumulative_attempts,
+            total_successes=cumulative_successes,
+            total_elapsed_seconds=cumulative_elapsed,
+        )
 
         batch_pct = 100.0 * batch_index / total_batches
         print(
@@ -545,12 +560,13 @@ def main():
             print("Fail-fast: encountered failed records, stopping.")
             break
 
-    prior_succeeded = cumulative_succeeded - this_run_succeeded
+    prior_successes = cumulative_successes - this_run_succeeded
     print("\nDone:")
-    print(f"  This run:  {this_run_succeeded}/{this_run_processed} books succeeded")
-    if prior_succeeded > 0:
+    print(f"  This run:  {this_run_succeeded}/{this_run_processed} succeeded")
+    if prior_successes > 0:
         print(
-            f"  Job total: {cumulative_succeeded} succeeded ({prior_succeeded} from prior runs)"
+            f"  Job total: {cumulative_successes} successes / {cumulative_attempts} attempts"
+            f" ({prior_successes} successes from prior runs)"
         )
 
     if this_run_failed > 0:
