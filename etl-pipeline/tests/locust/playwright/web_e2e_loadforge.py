@@ -98,6 +98,8 @@ class VRAUser(PlaywrightUser):
         if "qa" in self.host:
             with open("files/loadforge-vu-access-key-drb-qa.txt", "r") as f:
                 loadforge_vu_access_key = f.readline().strip()
+            if not loadforge_vu_access_key:
+                raise ValueError("LoadForge virtual user access key not set")
             await page.context.set_extra_http_headers(
                 {"X-LoadForge": loadforge_vu_access_key}
             )
