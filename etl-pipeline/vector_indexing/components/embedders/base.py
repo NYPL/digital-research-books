@@ -32,8 +32,13 @@ class Embedder(ABC):
     @abstractmethod
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """Embed multiple texts in a batch.
+
         Implementations should handle batching internally if the
         underlying API has batch size limits.
+
+        Based on the usage pattern in Pipeline.index_books(), embed_batch
+        implementations should fail if any one embedding fails.
+
         Returns a list of embedding vectors, one per input text.
         """
         ...

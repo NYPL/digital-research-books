@@ -8,9 +8,12 @@ document id in the index, other existing document ids are unaffected.
 An error will be raised if --index-name not already configured in vector_indexing/core/config.py
 
 Indexing is run in batches. Results are saved in a Job>Batches hierarchy in --results-dir.
-By default, each invocation creates a new job. Use --resume-latest to resume the most
-recent matching job for a given --index-name + barcode input.
-For resumed runs, later batches may rerun barcodes from previous batches if they failed.
+
+By default, each invocation creates a new job. Use --resume-latest to resume the
+most recent job for a given --index-name from the first never succeeded
+barcode in the sort order. If the barcode input from the job being resumed does
+not match the input specified on resumption, an error will occur.
+For resumed runs, later batches may rerun barcodes from previous batches.
 
 Usage:
     # From barcodes:
@@ -187,7 +190,7 @@ def read_job_state(job_dir: Path) -> dict[str, Any]:
 # TODO: move n_barcodes to job_metadata as it is fixed
 def write_job_state(
     job_dir: Path,
-    n_barcodes: int,
+    n_barcodes: int,  # TODO: since n_barcodes is set on job init, move to job_metadata
     total_attempts: int,
     total_successes: int,
     total_elapsed_seconds: float,
@@ -444,6 +447,7 @@ def main():
             saved_job_metadata, current_job_metadata
         )
         if not barcode_input_match:
+            # TODO: more error details including job_dir and the 2 barcode inputs
             raise SystemExit(
                 "Barcode input mismatch with latest job. Remove --resume-latest or use a different --results-dir or --index-name"
             )
@@ -551,6 +555,7 @@ def main():
         write_job_state(
             job_dir,
             n_barcodes=len(all_barcodes),
+            # TODO: samve cumulatove_ not total_
             total_attempts=cumulative_attempts,
             total_successes=cumulative_successes,
             total_elapsed_seconds=cumulative_elapsed,
@@ -567,11 +572,10 @@ def main():
 
     prior_successes = cumulative_successes - this_run_succeeded
     print("\nDone:")
-    print(f"  This run:  {this_run_succeeded}/{this_run_processed} succeeded")
+    print(f"  This run:  {this_run_succeeded}/{this_run_processed} books succeeded")
     if prior_successes > 0:
         print(
-            f"  Job total: {cumulative_successes} successes / {cumulative_attempts} attempts"
-            f" ({prior_successes} successes from prior runs)"
+            f"  Job cumulative: {cumulative_successes} books succeed / {cumulative_attempts} books attempted"
         )
 
     if this_run_failed > 0:
