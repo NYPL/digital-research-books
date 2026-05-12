@@ -97,9 +97,9 @@ class VRAUser(PlaywrightUser):
         # Set request header needed for LoadForge virtual user access to QA site
         if "qa" in self.host:
             with open("files/loadforge-vu-access-key-drb-qa.txt", "r") as f:
-                loadforge_access_key = f.readline().strip()
+                loadforge_vu_access_key = f.readline().strip()
             await page.context.set_extra_http_headers(
-                {"X-LoadForge": loadforge_access_key}
+                {"X-LoadForge": loadforge_vu_access_key}
             )
 
         # 0. Authorize by setting token in localStorage to bypass login
