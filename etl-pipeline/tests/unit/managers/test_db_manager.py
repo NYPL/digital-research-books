@@ -294,3 +294,16 @@ class TestDBManager:
 
         mock_rollback.assert_called_once()
         test_instance.session.commit.assert_not_called()
+
+    def test_delete_records_by_query_retries_on_deadlock(self, test_instance, mocker):
+        test_instance.session = mocker.MagicMock()
+        query = mocker.MagicMock()
+        query.delete.side_effect = [_retryable_op_error(), None]
+
+        mock_rollback = mocker.patch.object(DBManager, "rollback_changes")
+
+        test_instance.delete_records_by_query(query)
+
+        assert query.delete.call_count == 2
+        mock_rollback.assert_called_once()
+        test_instance.session.commit.assert_called_once()
