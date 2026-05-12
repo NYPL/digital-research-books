@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """Run the vector indexing pipeline on a list of barcodes.
 
+The pipeline results in the insertion of embedding + metadata ChunkDocuments
+into the specified index. Each document insertion overwrites the inserted
+document id in the index, other existing document ids are unaffected.
+
 An error will be raised if --index-name not already configured in vector_indexing/core/config.py
 
 Indexing is run in batches. Results are saved in a Job>Batches hierarchy in --results-dir.
@@ -180,6 +184,7 @@ def read_job_state(job_dir: Path) -> dict[str, Any]:
     return json.loads(path.read_text())
 
 
+# TODO: move n_barcodes to job_metadata as it is fixed
 def write_job_state(
     job_dir: Path,
     n_barcodes: int,
@@ -440,7 +445,7 @@ def main():
         )
         if not barcode_input_match:
             raise SystemExit(
-                "Barcode input mismatch with latest job. Start a new job (different --results-dir or --index-name) for a different barcode source."
+                "Barcode input mismatch with latest job. Remove --resume-latest or use a different --results-dir or --index-name"
             )
 
         if not index_config_match:
