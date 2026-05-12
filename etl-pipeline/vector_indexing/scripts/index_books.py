@@ -357,7 +357,7 @@ def parse_args():
     parser.add_argument(
         "--batch-size",
         type=int,
-        default=100,
+        default=10,
         help="Batch size for pipeline runs. Use 0 for a single batch.",
     )
     # TODO: resolve relative paths to __file__
@@ -440,10 +440,11 @@ def main():
     job_dir = None
     if args.resume_latest:
         job_dir = find_latest_job(results_dir, args.index_name)
+        print("Resuming job...")
     start_from = None
 
     if job_dir is None:
-        # Start new job
+        # Start new job (including resuming job that does not exist)
         job_dir = create_job_dir(results_dir, args.index_name)
         write_job_metadata(job_dir, current_job_metadata)
         write_job_state(job_dir, total_succeeded=0, total_elapsed_seconds=0.0)
@@ -478,6 +479,8 @@ def main():
 
     barcodes = resolve_barcodes(args, start_from)
 
+    if args.resume_latest:
+        print(f"Resuming job from {start_from or 'first barcode'}...")
     print(f"Processing {len(barcodes)} barcodes")
     print(f"Job directory: {job_dir}")
 
@@ -563,9 +566,6 @@ def main():
 
         if result.failed > 0:
             print("Fail-fast: encountered failed records, stopping.")
-            for r in result.results:
-                if not r.success:
-                    print(f"  {r.barcode}: {r.error}")
             break
 
     prior_succeeded = cumulative_succeeded - this_run_succeeded
