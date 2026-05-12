@@ -112,13 +112,34 @@ def get_async_engine():
     return _async_engine
 
 
+def _load_editions_with_frbr_data(session, edition_ids):
+    """
+    Fetch Edition rows for the given ids, eager loading Edition.work,
+    Edition.links, Edition.items.links, and Edition.items.rights.
+
+    Uses selectinload to avoid cartesian product explosion from chained outer
+    joins.
+    """
+    if not edition_ids:
+        return []
+    return (
+        session.query(Edition)
+        .filter(Edition.id.in_(edition_ids))
+        .options(
+            selectinload(Edition.work),
+            selectinload(Edition.links),
+            selectinload(Edition.items).selectinload(Item.links),
+            selectinload(Edition.items).selectinload(Item.rights),
+        )
+        .all()
+    )
+
+
 def get_frbr_data_by_edition(edition_ids: List):
     """
     Return list of (Work, Edition) tuples for each of the passed edition_ids.
     Edition includes eager loaded: Edition.items, Edition.items.links,
     Edition.items.rights, Edition.links.
-
-    Uses selectinload to avoid cartesian product explosion from chained outer joins.
     """
     if edition_ids is None or len(edition_ids) == 0:
         return []
@@ -129,17 +150,7 @@ def get_frbr_data_by_edition(edition_ids: List):
 
     Session = get_readonly_session()
     with Session() as session:
-        editions = (
-            session.query(Edition)
-            .filter(Edition.id.in_(edition_ids))
-            .options(
-                selectinload(Edition.work),
-                selectinload(Edition.links),
-                selectinload(Edition.items).selectinload(Item.links),
-                selectinload(Edition.items).selectinload(Item.rights),
-            )
-            .all()
-        )
+        editions = _load_editions_with_frbr_data(session, edition_ids)
         return [Row(Work=e.work, Edition=e) for e in editions]
 
 
@@ -192,17 +203,7 @@ def get_frbr_data_by_barcode(barcodes: List):
         }
         edition_ids = set(barcode_to_edition_id.values())
 
-        editions = (
-            session.query(Edition)
-            .filter(Edition.id.in_(edition_ids))
-            .options(
-                selectinload(Edition.work),
-                selectinload(Edition.links),
-                selectinload(Edition.items).selectinload(Item.links),
-                selectinload(Edition.items).selectinload(Item.rights),
-            )
-            .all()
-        )
+        editions = _load_editions_with_frbr_data(session, edition_ids)
         editions_by_id = {e.id: e for e in editions}
         rows = []
         for barcode, edition_id in barcode_to_edition_id.items():
