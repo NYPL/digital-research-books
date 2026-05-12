@@ -9,6 +9,19 @@ from utils.common import require_env
 
 logger = create_log(__name__)
 
+# Postgres SQLSTATE codes that indicate a transient, retryable failure.
+#   40P01: deadlock_detected
+#   40001: serialization_failure
+# Any other OperationalError (connection drops, admin shutdown, etc.) is treated
+# as terminal and propagated to the caller.
+_RETRYABLE_PG_SQLSTATES = {"40P01", "40001"}
+
+
+def _is_retryable_pg_error(exc: OperationalError) -> bool:
+    orig = getattr(exc, "orig", None)
+    pgcode = getattr(orig, "pgcode", None)
+    return pgcode in _RETRYABLE_PG_SQLSTATES
+
 
 def get_database_url(user, pswd, host, port, db):
     return "postgresql://{}:{}@{}:{}/{}".format(user, pswd, host, port, db)
@@ -56,23 +69,36 @@ class DBManager:
         self.session.begin_nested()
 
     def commit_changes(self, retry=False):
-        """
-        retry=True indicates the function is being called as a retry.
-        When retry=True, the function will NOT retry itself.
-        When retry=False, the function will retry itself once.
+        """Commit the current transaction.
+
+        On a retryable Postgres error (deadlock / serialization failure) the
+        session is rolled back and the commit is retried exactly once. Any
+        other OperationalError, or a deadlock that persists past the retry,
+        is rolled back and re-raised so callers see the failure rather than
+        silently dropping the write.
         """
         try:
             self.session.commit()
-        except OperationalError as oprErr:
-            logger.error("Deadlock in database layer, retry batch")
-            logger.debug(oprErr)
-
+        except OperationalError as exc:
             self.rollback_changes()
-
-            if retry is False:
-                self.commit_changes(retry=True)
-            else:
-                logger.warning("Already retried batch, dropping")
+            if not _is_retryable_pg_error(exc):
+                logger.error(
+                    "Non-retryable database error on commit; re-raising",
+                    exc_info=exc,
+                )
+                raise
+            if retry:
+                logger.error(
+                    "Retry exhausted for commit after deadlock/serialization "
+                    "failure; re-raising",
+                    exc_info=exc,
+                )
+                raise
+            logger.warning(
+                "Deadlock/serialization failure on commit; retrying once",
+                exc_info=exc,
+            )
+            self.commit_changes(retry=True)
 
     def rollback_changes(self):
         self.session.rollback()
@@ -89,17 +115,26 @@ class DBManager:
         try:
             self.session.bulk_save_objects(objects, update_changed_only=only_changed)
             self.session.commit()
-            self.session.flush()
-        except OperationalError as oprErr:
-            logger.error("Deadlock in database layer, retry batch")
-            logger.debug(oprErr)
-
+        except OperationalError as exc:
             self.rollback_changes()
-
-            if retry is False:
-                self.bulk_save_objects(objects, only_changed=only_changed, retry=True)
-            else:
-                logger.warning("Already retried batch, dropping")
+            if not _is_retryable_pg_error(exc):
+                logger.error(
+                    "Non-retryable database error on bulk_save_objects; re-raising",
+                    exc_info=exc,
+                )
+                raise
+            if retry:
+                logger.error(
+                    "Retry exhausted for bulk_save_objects after "
+                    "deadlock/serialization failure; re-raising",
+                    exc_info=exc,
+                )
+                raise
+            logger.warning(
+                "Deadlock/serialization failure on bulk_save_objects; retrying once",
+                exc_info=exc,
+            )
+            self.bulk_save_objects(objects, only_changed=only_changed, retry=True)
 
     def windowed_query(self, stmt, id_column, windowsize):
         """
@@ -129,8 +164,20 @@ class DBManager:
                 yield row[0]
 
     def delete_records_by_query(self, query):
+        """Execute a bulk DELETE for the given query and commit.
+
+        Previously this method neither committed nor surfaced errors, so
+        callers could believe a delete had succeeded when no rows had been
+        removed. The commit is now part of the operation, and any error
+        rolls back and re-raises.
+        """
         try:
             query.delete()
-        except OperationalError as oprErr:
-            logger.error("Deadlock in database layer, retry batch")
-            logger.debug(oprErr)
+            self.session.commit()
+        except OperationalError as exc:
+            self.rollback_changes()
+            logger.error(
+                "Database error during delete_records_by_query; re-raising",
+                exc_info=exc,
+            )
+            raise

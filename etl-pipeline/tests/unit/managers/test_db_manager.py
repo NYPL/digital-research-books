@@ -7,6 +7,19 @@ from sqlalchemy.exc import OperationalError
 from managers import DBManager
 
 
+def _retryable_op_error(pgcode="40P01"):
+    """Build an OperationalError whose wrapped orig carries a retryable pgcode."""
+    orig = type("FakeDBAPIError", (Exception,), {"pgcode": pgcode})()
+    return OperationalError("test", {}, orig)
+
+
+def _non_retryable_op_error():
+    orig = type(
+        "FakeDBAPIError", (Exception,), {"pgcode": "08006"}
+    )()  # connection_failure
+    return OperationalError("test", {}, orig)
+
+
 class TestDBManager:
     @pytest.fixture
     def test_instance(self, mocker):
@@ -116,7 +129,7 @@ class TestDBManager:
     def test_commit_changes_deadlock(self, test_instance, mocker):
         test_instance.session = mocker.MagicMock()
         test_instance.session.commit.side_effect = [
-            OperationalError("test", "test", "test"),
+            _retryable_op_error(),
             None,
         ]
 
@@ -129,16 +142,28 @@ class TestDBManager:
 
     def test_commit_changes_deadlock_repeated(self, test_instance, mocker):
         test_instance.session = mocker.MagicMock()
-        test_instance.session.commit.side_effect = OperationalError(
-            "test", "test", "test"
-        )
+        test_instance.session.commit.side_effect = _retryable_op_error()
 
         mock_rollback = mocker.patch.object(DBManager, "rollback_changes")
 
-        test_instance.commit_changes()
+        with pytest.raises(OperationalError):
+            test_instance.commit_changes()
 
         assert test_instance.session.commit.call_count == 2
         assert mock_rollback.call_count == 2
+
+    def test_commit_changes_non_retryable_raises(self, test_instance, mocker):
+        test_instance.session = mocker.MagicMock()
+        test_instance.session.commit.side_effect = _non_retryable_op_error()
+
+        mock_rollback = mocker.patch.object(DBManager, "rollback_changes")
+
+        with pytest.raises(OperationalError):
+            test_instance.commit_changes()
+
+        # No retry on non-retryable errors.
+        assert test_instance.session.commit.call_count == 1
+        mock_rollback.assert_called_once()
 
     def test_rollback_changes(self, test_instance, mocker):
         test_instance.session = mocker.MagicMock()
@@ -187,7 +212,8 @@ class TestDBManager:
             [1, 2, 3], update_changed_only=True
         )
         test_instance.session.commit.assert_called_once()
-        test_instance.session.flush.assert_called_once()
+        # flush() after commit() was a no-op/wrong-order bug and has been removed.
+        test_instance.session.flush.assert_not_called()
 
     def test_bulk_save_objects_only_changed_false(self, test_instance, mocker):
         test_instance.session = mocker.MagicMock()
@@ -201,7 +227,7 @@ class TestDBManager:
     def test_bulk_save_objects_readlock_retry(self, test_instance, mocker):
         test_instance.session = mocker.MagicMock()
         test_instance.session.bulk_save_objects.side_effect = [
-            OperationalError("test", "test", "test"),
+            _retryable_op_error(),
             None,
         ]
 
@@ -219,13 +245,12 @@ class TestDBManager:
 
     def test_bulk_save_objects_readlock_retry_fail(self, test_instance, mocker):
         test_instance.session = mocker.MagicMock()
-        test_instance.session.bulk_save_objects.side_effect = OperationalError(
-            "test", "test", "test"
-        )
+        test_instance.session.bulk_save_objects.side_effect = _retryable_op_error()
 
         mock_rollback = mocker.patch.object(DBManager, "rollback_changes")
 
-        test_instance.bulk_save_objects([1, 2, 3], only_changed=False)
+        with pytest.raises(OperationalError):
+            test_instance.bulk_save_objects([1, 2, 3], only_changed=False)
 
         test_instance.session.bulk_save_objects.assert_has_calls(
             [
@@ -234,3 +259,38 @@ class TestDBManager:
             ]
         )
         assert mock_rollback.call_count == 2
+
+    def test_bulk_save_objects_non_retryable_raises(self, test_instance, mocker):
+        test_instance.session = mocker.MagicMock()
+        test_instance.session.bulk_save_objects.side_effect = _non_retryable_op_error()
+
+        mock_rollback = mocker.patch.object(DBManager, "rollback_changes")
+
+        with pytest.raises(OperationalError):
+            test_instance.bulk_save_objects([1, 2, 3])
+
+        # No retry on non-retryable errors.
+        assert test_instance.session.bulk_save_objects.call_count == 1
+        mock_rollback.assert_called_once()
+
+    def test_delete_records_by_query_commits(self, test_instance, mocker):
+        test_instance.session = mocker.MagicMock()
+        query = mocker.MagicMock()
+
+        test_instance.delete_records_by_query(query)
+
+        query.delete.assert_called_once()
+        test_instance.session.commit.assert_called_once()
+
+    def test_delete_records_by_query_raises_on_error(self, test_instance, mocker):
+        test_instance.session = mocker.MagicMock()
+        query = mocker.MagicMock()
+        query.delete.side_effect = _non_retryable_op_error()
+
+        mock_rollback = mocker.patch.object(DBManager, "rollback_changes")
+
+        with pytest.raises(OperationalError):
+            test_instance.delete_records_by_query(query)
+
+        mock_rollback.assert_called_once()
+        test_instance.session.commit.assert_not_called()
