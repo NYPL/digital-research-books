@@ -48,6 +48,8 @@ class GoogleEmbedder(Embedder):
         dimensions: output vector dimensions (default: 768)
         batch_size: max elements per API call (default: 100)
         task_type: embedding task type (default: RETRIEVAL_DOCUMENT)
+            Use "RETRIEVAL_QUERY" for retrieval queries. More details here:
+            https://docs.cloud.google.com/vertex-ai/generative-ai/docs/embeddings/task-types
         client: optional pre-configured genai.Client instance
     """
 

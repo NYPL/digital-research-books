@@ -28,15 +28,15 @@ from transformers import AutoTokenizer
 # ---------------------------------------------------------------------------
 
 ENDPOINT_NAME = (
-    # "tei-pplx-embed-v1-4b-ml-g6e-xlarge-20260506233640"  # pragma: allowlist secret
-    "hf-tei-qwen3-embedding-4b-ml-g5-2xlarge-20260507-181318"  # pragma: allowlist secret
+    "hf-tei-qwen3-embedding-8b-ml-g6-2xlarge-20260507-231343"  # pragma: allowlist secret
+    # "hf-tei-qwen3-embedding-4b-ml-g5-2xlarge-20260507-181318"  # pragma: allowlist secret
 )
 AWS_PROFILE = "vra-sandbox"
 
 TOTAL_REQUESTS = 200  # requests at each concurrency level
 # CONCURRENCY_LEVELS = [1, 16, 32, 64]
-# CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
-CONCURRENCY_LEVELS = [15, 20, 25, 30, 35]
+CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
+# CONCURRENCY_LEVELS = [15, 20, 25, 30, 35]
 
 # TODO: for higher thruput. try  {inputs: [<str>, <str>]} (this works!),  batch_transform, async inference endpoint
 

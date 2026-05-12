@@ -215,31 +215,17 @@ def find_latest_job(results_dir: Path, index_name: str) -> Path | None:
 ##############################
 
 
-def start_from_job(job_dir: Path) -> tuple[str | None, bool]:
-    """Return first failed barcode in a indexing job folder, distinguishing
-    between no barcodes attempted and all barcodes succeeded.
-
-    Returns (<barcode>, <all_succeeded>).
-        <barcode> is the first failed barcode in chronological batch order.
-        If batch results exist and all records succeeded, returns ``(None, True)``.
-        If no batch results exist, returns ``(None, False)``.
+def filter_from_job(job_dir: Path, all_barcodes: list[str]) -> list[str]:
+    """Return barcodes from all_barcodes that have never succeeded in the given
+    job directory, preserving input order.
     """
-    batch_dirs = sorted(p for p in job_dir.glob("batch_*") if p.is_dir())
-    if not batch_dirs:
-        return None, False
-
-    found_any_batch_result = False
-    for batch_dir in batch_dirs:
+    ever_succeeded: set[str] = set()
+    for batch_dir in sorted(p for p in job_dir.glob("batch_*") if p.is_dir()):
         for path in sorted(batch_dir.glob("batch_result_*.json")):
-            found_any_batch_result = True
-            batch_result = BatchResult.load(path)
-            for result in batch_result.results:
-                if not result.success:
-                    return result.barcode, False
-
-    if not found_any_batch_result:
-        return None, False
-    return None, True
+            for result in BatchResult.load(path).results:
+                if result.success:
+                    ever_succeeded.add(result.barcode)
+    return [b for b in all_barcodes if b not in ever_succeeded]
 
 
 def failed_from_job(results_dir: Path) -> Iterator[str]:
@@ -254,25 +240,12 @@ def failed_from_job(results_dir: Path) -> Iterator[str]:
         yield from (r.barcode for r in batch_result.results if not r.success)
 
 
-def _apply_start_from(barcodes: list[str], start_from: str | None) -> list[str]:
-    if start_from is None:
-        return barcodes
-    try:
-        start_idx = barcodes.index(start_from)
-    except ValueError as exc:
-        raise SystemExit(
-            f"Cannot resume: failed barcode {start_from!r} is not present in the selected barcode input."
-        ) from exc
-    return barcodes[start_idx:]
-
-
-def resolve_barcodes(args: argparse.Namespace, start_from: str | None) -> list[str]:
+def resolve_barcodes(args: argparse.Namespace) -> list[str]:
     if args.ten_k:
-        return list_10k_barcodes(start_from=start_from)
+        return list_10k_barcodes()
     if args.barcodes:
-        return _apply_start_from(sorted(args.barcodes), start_from)
-    file_barcodes = sorted(load_barcodes_from_file(args.file))
-    return _apply_start_from(file_barcodes, start_from)
+        return sorted(args.barcodes)
+    return sorted(load_barcodes_from_file(args.file))
 
 
 def load_barcodes_from_file(file_path: Path) -> list[str]:
@@ -440,19 +413,20 @@ def main():
     job_dir = None
     if args.resume_latest:
         job_dir = find_latest_job(results_dir, args.index_name)
-        print("Resuming job...")
-    start_from = None
+
+    all_barcodes = resolve_barcodes(args)
 
     if job_dir is None:
         # Start new job (including resuming job that does not exist)
         job_dir = create_job_dir(results_dir, args.index_name)
         write_job_metadata(job_dir, current_job_metadata)
         write_job_state(job_dir, total_succeeded=0, total_elapsed_seconds=0.0)
+        barcodes = all_barcodes
     else:
-        # Resume job: find barcode to resume from + validate metadata continuity
+        # Resume job: validate metadata continuity, then filter to never-succeeded
 
         saved_job_metadata = read_job_metadata(job_dir)
-        index_match, barcode_input_match = compare_job_metadata(
+        index_config_match, barcode_input_match = compare_job_metadata(
             saved_job_metadata, current_job_metadata
         )
         if not barcode_input_match:
@@ -460,7 +434,7 @@ def main():
                 "Barcode input mismatch with latest job. Start a new job (different --results-dir or --index-name) for a different barcode source."
             )
 
-        if not index_match:
+        if not index_config_match:
             if not args.force:
                 raise SystemExit(
                     "Index config mismatch with latest job. Use --force to overwrite saved index_config."
@@ -468,19 +442,22 @@ def main():
             saved_job_metadata["index_config"] = current_job_metadata["index_config"]
             write_job_metadata(job_dir, saved_job_metadata)
 
-        start_from, all_succeeded = start_from_job(job_dir)
-        if all_succeeded:
-            print("No failed barcodes found in latest job. All done already.")
+        barcodes = filter_from_job(job_dir, all_barcodes)
+        # TODO: future: on error/complete save metadata to allow read of \
+        # start_from from job metadata (without having to read all barcodes into\
+        # memory first)
+        if not barcodes:
+            print("All barcodes already succeeded. All done.")
             return
 
     job_state = read_job_state(job_dir)
     cumulative_succeeded = job_state["total_succeeded"]
     cumulative_elapsed = job_state["total_elapsed_seconds"]
 
-    barcodes = resolve_barcodes(args, start_from)
-
     if args.resume_latest:
-        print(f"Resuming job from {start_from or 'first barcode'}...")
+        print(
+            f"Resuming job from barcode '{barcodes[0]}': {len(barcodes)}/{len(all_barcodes)} remaining..."
+        )
     print(f"Processing {len(barcodes)} barcodes")
     print(f"Job directory: {job_dir}")
 
