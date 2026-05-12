@@ -43,7 +43,7 @@ const breadcrumbUrls = {
 export const breadcrumbTitles = {
   home: "Home",
   research: "Research",
-  drb: "Digital Research Books Beta",
+  drb: "Digitized Research Books",
   advancedSearch: "Advanced Search",
 };
 
@@ -79,7 +79,7 @@ export const inputTerms = [
 ];
 
 const useQuotes = "Use quotation marks to search for an exact phrase.";
-const example = "Example: "
+const example = "Example: ";
 
 export const SEARCH_FORM_OPTIONS = {
   keyword: {
@@ -92,11 +92,12 @@ export const SEARCH_FORM_OPTIONS = {
   },
   author: {
     placeholder: `${example} Hurston, Zora Neale or New York City Ballet`,
-    searchTip: "Enter the name of an author, contributor, or organization. Use Last Name, First Name for more precise results.",
+    searchTip:
+      "Enter the name of an author, contributor, or organization. Use Last Name, First Name for more precise results.",
   },
   subject: {
     placeholder: `${example} Ornithology or Greek Architecture`,
-    searchTip: "Enter a subject keyword or phrase."
+    searchTip: "Enter a subject keyword or phrase.",
   },
 };
 

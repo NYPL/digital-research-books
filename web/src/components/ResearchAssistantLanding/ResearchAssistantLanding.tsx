@@ -20,7 +20,7 @@ const ResearchAssistantLanding: React.FC = () => {
     <>
       <DrbBreakout
         breadcrumbsData={[
-          { url: "/research-assistant", text: "Virtual Research Assistant" },
+          { url: "/research-assistant", text: "Enhanced Search (beta)" },
         ]}
       >
         <DrbHero />

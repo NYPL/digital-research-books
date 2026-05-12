@@ -9,27 +9,27 @@ export const HEADER_HEIGHT = "58px";
 export const FIND_FEATURE_IMAGE =
   "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/findFeature.png";
 export const EVALUATE_FEATURE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/evaluateFeature.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/evaluateFeatureNew.png";
 export const ACCESS_FEATURE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/accessFeature.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/accessFeatureNew.png";
 export const EXPLORE_FEATURE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/exploreFeature.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/exploreFeatureNew.png";
 
 export const FEATURES = [
   {
     featureName: "FIND",
     title: "Surface knowledge from thousands of trusted sources ",
     description:
-      "The Assistant searches over 1 million digitized research books from our corpus, connecting you with trusted materials relevant to your research.",
+      "Enhanced Search uses a natural-language chat interface to engage with over 1 million Digitized Research Books, so that you can quickly find relevant scholarly content.",
     imageSrc: FIND_FEATURE_IMAGE,
     imageAlt:
-      'Split-screen interface with search results on the left and the Virtual Research Assistant chat on the right. A patron asks about US copyright law history. The AI confirms matching items found and prompts the patron to ask follow up questions or choose from suggested options including "Digital Copyright Act," "Intellectual property law," and "Fair use doctrine."',
+      'Split-screen interface with search results on the left and the Enhanced Search chat on the right. A patron asks about US copyright law history. The AI confirms matching items found and prompts the patron to ask follow up questions or choose from suggested options including "Digital Copyright Act," "Intellectual property law," and "Fair use doctrine."',
   },
   {
     featureName: "EVALUATE",
     title: "Assess the relevance of books before reading them",
     description:
-      "The Assistant provides summaries and explains why you're seeing a particular result, so that you can quickly determine a book's usefulness upfront. ",
+      "Enhanced Search provides summaries and explains why you're seeing a particular result, so that you can determine a book's usefulness before diving into it. ",
     imageSrc: EVALUATE_FEATURE_IMAGE,
     imageAlt:
       "A search result item of an e-book titled 'Privilege and Property: Essays on the History of Copyright.' There are expandable sections for 'Read summary', 'Why am I seeing this result?', and 'Other editions'. The expanded section for 'Why am I seeing this result?' explains that chapters 7, 8, and 10 cover North American printing presses and the evolution of legal rights.",
@@ -38,7 +38,7 @@ export const FEATURES = [
     featureName: "ACCESS",
     title: "Focus on the most important parts of a book",
     description:
-      "The Assistant helps you locate specific sections in a book and cites its answers, so that you can research with efficiency and confidence.",
+      "Enhanced Search directs you to the most relevant sections of a book and cites its sources, so that you can research with trust, efficiency and confidence.",
     imageSrc: ACCESS_FEATURE_IMAGE,
     imageAlt:
       "PDF viewer showing a biography of Charles Thomas Walker. In the AI assistant on the right the patron asked if the book mentions Walker's early life and childhood and the assistant replies with confirmation and cites page 2. The document text details his 1858 birth in Hephzibah, Georgia, as the youngest of 11 children.",
@@ -47,7 +47,7 @@ export const FEATURES = [
     featureName: "EXPLORE",
     title: "Expand your research by finding related content",
     description:
-      "The Assistant provides recommendations based on your interests, so that you can discover more from our corpus and expand your research.",
+      "Enhanced Search provides recommendations based on your interests, so that you can discover more from the collection and expand your research.",
     imageSrc: EXPLORE_FEATURE_IMAGE,
     imageAlt:
       "PDF viewer showing a book cover. The AI assistant on the right suggests related content, including 'Life of Charles T. Walker, D.D.' by Silas Xavier Floyd and 'The first Colored Baptist church in North America' by James Simms.",
@@ -88,13 +88,13 @@ export const LOADING_MESSAGE: MessageItem = {
 };
 
 export const NATURAL_LANGUAGE_MESSAGE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/naturalLanguageMessage.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/naturalLanguageMsg.png";
 export const FEEDBACK_MESSAGE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/feedbackMessage.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/improveMsg.png";
 export const SOURCE_MESSAGE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/sourceMessage.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/sourcesMsg.png";
 export const CONTROL_SUBNAV_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/controlSubnav.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/privacyMsg.png";
 
 // ResearchAssistantPanel
 const CONTENT_PADDING_VALUE = "1rem";

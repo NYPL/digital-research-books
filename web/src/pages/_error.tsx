@@ -1,7 +1,3 @@
-import React, { useContext, useEffect } from "react";
-import { NextPageContext } from "next";
-import Layout from "../components/Layout/Layout";
-import Link from "../components/Link/Link";
 import {
   Box,
   Button,
@@ -10,8 +6,12 @@ import {
   Image,
   Text,
 } from "@nypl/design-system-react-components";
-import { FeedbackContext } from "../context/FeedbackContext";
+import { NextPageContext } from "next";
+import { useContext, useEffect } from "react";
+import Layout from "../components/Layout/Layout";
+import Link from "../components/Link/Link";
 import { ERROR_LAYOUT_TEST_ID } from "../constants/testIds";
+import { FeedbackContext } from "../context/FeedbackContext";
 
 const ERROR_PERSISTS = " if the error persists.";
 
@@ -35,8 +35,9 @@ const errorMap = {
 };
 
 const Error = ({ statusCode }) => {
-  const { onOpen, isError, setIsError, setStatusCode } =
-    useContext(FeedbackContext);
+  const { onOpen, isError, setIsError, setStatusCode } = useContext(
+    FeedbackContext
+  );
 
   useEffect(() => {
     if (!isError) {
@@ -68,16 +69,12 @@ const Error = ({ statusCode }) => {
           marginTop={{ base: "xl", md: "xxxl" }}
           width={100}
         />
-        <Heading marginY="s">
-          {errorValues.heading}
-        </Heading>
+        <Heading marginY="s">{errorValues.heading}</Heading>
         <Box>
           <Text display={{ base: "inline", md: "block" }}>
             {errorValues.subText}
           </Text>
-          <Text display="inline">
-            {errorValues.tryText}
-          </Text>
+          <Text display="inline">{errorValues.tryText}</Text>
           <Button
             variant="text"
             display="inline-block"
@@ -96,7 +93,7 @@ const Error = ({ statusCode }) => {
           marginBottom={{ base: "xxl", md: "xxxl" }}
         >
           <Link to="/" variant="buttonPrimary">
-            Back to Digital Research Books
+            Back to Digitized Research Books
           </Link>
         </Box>
       </Flex>

@@ -46,7 +46,7 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
                 size="small"
               />
             </Box>
-            <>Virtual Research Assistant</>
+            <>Enhanced Search</>
             <Text
               padding="2px 8px"
               bg="#F9E08E"

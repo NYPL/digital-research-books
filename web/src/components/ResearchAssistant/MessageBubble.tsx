@@ -69,7 +69,7 @@ const MessageBubble = memo(
                         isBold
                         display="inline"
                       >
-                        VRA:{" "}
+                        Enhanced Search:{" "}
                       </Text>
                     )}
                     {parseEditionLinks(contentItem.text, handleEditionClick)}

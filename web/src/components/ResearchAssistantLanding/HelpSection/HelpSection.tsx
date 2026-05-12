@@ -56,9 +56,8 @@ const HelpSection: React.FC<HelpSectionProps> = ({
           body={
             <Flex gap="l" flexDir="column">
               <Text fontSize="desktop.subtitle.subtitle1">
-                Do you need hands-on support or have other questions about using
-                the Virtual Research Assistant? Our staff will be happy to guide
-                you.
+                Do you need support or have more questions about using Enhanced
+                Search? Our staff will be happy to guide you.
               </Text>
               <Link
                 to={ASK_NYPL}
@@ -91,8 +90,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
             <Flex gap="l" flexDir="column">
               <Text fontSize="desktop.subtitle.subtitle1">
                 Are you interested in finding out more about our mission,
-                corpus, models, data pipelines, or technologies? Read about them
-                here.
+                collection, models, data pipelines, and technologies?
               </Text>
               <Link
                 to="/learn-more"

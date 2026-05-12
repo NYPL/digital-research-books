@@ -18,11 +18,11 @@ describe("ResearchAssistantLanding", () => {
   test("renders the ResearchAssistantLanding component", () => {
     expect(
       screen.getByRole("heading", {
-        name: /New! The NYPL Virtual Research Assistant/i,
+        name: /Try our new AI-enabled Enhanced Search/i,
       })
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Your AI partner in discovering content from over/i)
+      screen.getByText(/Find and discover content using natural language/i)
     ).toBeInTheDocument();
     expect(
       screen.getByPlaceholderText(

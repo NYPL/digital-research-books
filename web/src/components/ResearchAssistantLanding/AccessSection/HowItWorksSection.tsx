@@ -35,7 +35,7 @@ const HowItWorksSection: React.FC = () => {
         fontWeight="bold"
         marginBottom="xs"
       >
-        How does the Assistant work?
+        How does Enhanced Search work?
       </Heading>
       <Text
         color="ui.gray.dark"
@@ -120,7 +120,7 @@ const HowItWorksSection: React.FC = () => {
           body={
             <Image
               src={CONTROL_SUBNAV_IMAGE}
-              alt="A subnavigation bar with two options: 'Virtual Research Assistant' and 'Keyword search.' This illustrates how patrons can maintain control by opting out of the AI tool and switching back to traditional search at any time."
+              alt="A subnavigation bar with two options: 'Enhanced Search' and 'Keyword search.' This illustrates how patrons can maintain control by opting out of the AI tool and switching back to traditional search at any time."
               maxWidth="512px"
               background="transparent"
               flexShrink="0"
