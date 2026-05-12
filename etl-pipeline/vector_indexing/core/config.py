@@ -505,11 +505,10 @@ def get_default_schema_with_dims(dims: str):
     return schema
 
 
-HARRIER_OSS_V1_DIMENSIONS = 1024
-
-QWEN3_EMBEDDING_8B_DIMENSIONS = 1024
+QWEN3_EMBEDDING_DIMENSIONS = HARRIER_OSS_V1_DIMENSIONS = PPLX_V1_DIMENSIONS = 1024
 
 
+# MAYBE: add barcode source for each index name
 def _index_config_entries():
     from vector_indexing.components.backends.turbopuffer import (
         load_default_schema,
@@ -520,11 +519,12 @@ def _index_config_entries():
             "names": [
                 "vra-dev",
                 "vra_test-sketches_of_the_north_river-gemini-001",
+                "vra_test-eval300-gemini_001",  # pragma: allowlist secret
             ],
             "embedder": {
                 "class": "GoogleEmbedder",
                 "params": {
-                    # All are default and unnecessary
+                    # All are default and unnecessary to specify here
                     "model": "gemini-embedding-001",
                     "dimensions": 768,
                     "task_type": "RETRIEVAL_QUERY",
@@ -536,6 +536,7 @@ def _index_config_entries():
             "names": [
                 "vra_test-sketches_of_the_north_river-harrier_oss_v1_.6b",
                 "vra_test-10k-harrier_oss_v1_.6b",
+                "vra_test-eval300-harrier_oss_v1_.6b",  # pragma: allowlist secret
             ],
             "embedder": {
                 "class": "SageMakerEmbedder",
@@ -549,33 +550,51 @@ def _index_config_entries():
         },
         {  # Qwen 8b
             "names": [
-                "vra_test-sketches_of_the_north-qwen3_embedding_8b"  # pragma: allowlist secret
+                "vra_test-sketches_of_the_north-qwen3_embedding_8b",  # pragma: allowlist secret
+                "vra_test-eval300-qwen3_embedding_8b",  # pragma: allowlist secret
             ],
             "embedder": {
                 "class": "SageMakerEmbedder",
                 "params": {
                     "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6-2xlarge-20260507-231343",  # pragma: allowlist secret
                     "aws_profile": "vra-sandbox",
-                    "concurrency": 14,
-                    "dimensions": QWEN3_EMBEDDING_8B_DIMENSIONS,
+                    "concurrency": 10,
+                    "dimensions": QWEN3_EMBEDDING_DIMENSIONS,
                 },
             },
-            "schema": get_default_schema_with_dims(QWEN3_EMBEDDING_8B_DIMENSIONS),
+            "schema": get_default_schema_with_dims(QWEN3_EMBEDDING_DIMENSIONS),
         },
         {  # Qwen 4b
             "names": [
-                # "vra_test-sketches_of_the_north-qwen3_embedding_4b"  # pragma: allowlist secret
+                "vra_test-sketches_of_the_north-qwen3_embedding_4b",  # pragma: allowlist secret
+                "vra_test-eval300-qwen3_embedding_4b",  # pragma: allowlist secret
             ],
             "embedder": {
                 "class": "SageMakerEmbedder",
                 "params": {
                     "endpoint_name": "hf-tei-qwen3-embedding-4b-ml-g5-2xlarge-20260507-181318",  # pragma: allowlist secret
                     "aws_profile": "vra-sandbox",
-                    "concurrency": 14,
-                    "dimensions": QWEN3_EMBEDDING_8B_DIMENSIONS,
+                    "concurrency": 20,
+                    "dimensions": QWEN3_EMBEDDING_DIMENSIONS,
                 },
             },
-            "schema": get_default_schema_with_dims(QWEN3_EMBEDDING_8B_DIMENSIONS),
+            "schema": get_default_schema_with_dims(QWEN3_EMBEDDING_DIMENSIONS),
+        },
+        {  # PPLX v1 4b
+            "names": [
+                "vra_test-sketches_of_the_north-pplx_embed_v1_4b",  # pragma: allowlist secret
+                "vra_test-eval300-pplx_embed_v1_4b",  # pragma: allowlist secret
+            ],
+            "embedder": {
+                "class": "SageMakerEmbedder",
+                "params": {
+                    "endpoint_name": "tei-pplx-embed-v1-4b-ml-g6e-xlarge-20260506233640",  # pragma: allowlist secret
+                    "aws_profile": "vra-sandbox",
+                    "concurrency": 4,
+                    "dimensions": PPLX_V1_DIMENSIONS,
+                },
+            },
+            "schema": get_default_schema_with_dims(PPLX_V1_DIMENSIONS),
         },
     ]
 
