@@ -234,17 +234,23 @@ def find_latest_job(results_dir: Path, index_name: str) -> Path | None:
 ##############################
 
 
-def filter_from_job(job_dir: Path, all_barcodes: list[str]) -> list[str]:
-    """Return barcodes from all_barcodes that have never succeeded in the given
-    job directory, preserving input order.
-    """
-    ever_succeeded: set[str] = set()
+def ever_succeeded(job_dir: Path) -> set[str]:
+    """Return the set of barcodes that have ever succeeded in the given job directory."""
+    succeeded: set[str] = set()
     for batch_dir in sorted(p for p in job_dir.glob("batch_*") if p.is_dir()):
         for path in sorted(batch_dir.glob("batch_result_*.json")):
             for result in BatchResult.load(path).results:
                 if result.success:
-                    ever_succeeded.add(result.barcode)
-    return [b for b in all_barcodes if b not in ever_succeeded]
+                    succeeded.add(result.barcode)
+    return succeeded
+
+
+def filter_from_job(job_dir: Path, all_barcodes: list[str]) -> list[str]:
+    """Return barcodes from all_barcodes that have never succeeded in the given
+    job directory, preserving input order.
+    """
+    succeeded = ever_succeeded(job_dir)
+    return [b for b in all_barcodes if b not in succeeded]
 
 
 def resolve_barcodes(args: argparse.Namespace) -> list[str]:
@@ -549,13 +555,14 @@ def main():
         saved_path = result.save(batch_dir)
 
         # Update and persist cumulative job state
+        # TODO: maybe these cumulative counts are pointless, remove
         cumulative_attempts += result.total
         cumulative_successes += result.succeeded
         cumulative_elapsed += result.total_time or 0.0
         write_job_state(
             job_dir,
             n_barcodes=len(all_barcodes),
-            # TODO: samve cumulatove_ not total_
+            # TODO: save cumulatove_ not total_
             total_attempts=cumulative_attempts,
             total_successes=cumulative_successes,
             total_elapsed_seconds=cumulative_elapsed,
@@ -578,6 +585,11 @@ def main():
         print(
             f"  Job cumulative: {cumulative_successes} books succeed / {cumulative_attempts} books attempted"
         )
+    # Final report of n completed
+    n_ever_succeeded = len(ever_succeeded(job_dir))
+    print(
+        f"  Job total: {n_ever_succeeded}/{len(all_barcodes)} barcodes ever succeeded"
+    )
 
     if this_run_failed > 0:
         raise SystemExit(1)
