@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import {
   searchFormRenderTests,
   searchFormTests,
@@ -11,6 +11,7 @@ import {
   collections,
 } from "~/src/__tests__/fixtures/CollectionFixture";
 import { render } from "~/src/__tests__/testUtils/render";
+import DrbBreakout from "../DrbBreakout/DrbBreakout";
 
 describe("Renders Index Page", () => {
   beforeEach(async () => {
@@ -22,9 +23,17 @@ describe("Renders Index Page", () => {
     });
   });
   test("Current page breadcrumb doesn't have href attribute", () => {
-    expect(screen.getByText("Digitized Research Books")).not.toHaveAttribute(
-      "href"
+    render(<DrbBreakout />);
+
+    const breadcrumbNavs = screen.getAllByRole("navigation", {
+      name: /breadcrumb/i,
+    });
+
+    const breadcrumbItem = within(breadcrumbNavs[0]).getByText(
+      "Digitized Research Books"
     );
+
+    expect(breadcrumbItem).not.toHaveAttribute("href");
   });
   test("Shows Heading", () => {
     expect(
