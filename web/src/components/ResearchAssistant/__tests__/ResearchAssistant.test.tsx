@@ -34,7 +34,7 @@ describe("ResearchAssistant", () => {
     render(<ResearchAssistant />);
 
     expect(
-      screen.getByRole("heading", { name: /research assistant/i })
+      screen.getByRole("heading", { name: /enhanced search/i })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /start over/i })
