@@ -23,6 +23,7 @@ const LearnMore: React.FC = () => {
         <DrbHero />
         <ResearchAssistantNav />
       </DrbBreakout>
+
       <Box display="flex" flexDir="column">
         <HeroSection
           ref={heroSectionRef}
