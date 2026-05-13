@@ -18,17 +18,17 @@ describe("Renders Index Page", () => {
 
     // Wait for page to be loaded
     await screen.findByRole("heading", {
-      name: "Digital Research Books Beta",
+      name: "Digitized Research Books",
     });
   });
   test("Current page breadcrumb doesn't have href attribute", () => {
-    expect(screen.getByText("Digital Research Books")).not.toHaveAttribute(
+    expect(screen.getByText("Digitized Research Books")).not.toHaveAttribute(
       "href"
     );
   });
   test("Shows Heading", () => {
     expect(
-      screen.getByRole("heading", { name: "Digital Research Books Beta" })
+      screen.getByRole("heading", { name: "Digitized Research Books" })
     ).toBeInTheDocument();
   });
 
@@ -52,7 +52,7 @@ describe("Search using Landing Page Searchbar", () => {
     render(<LandingPage />);
     // Wait for page to be loaded
     await screen.findByRole("heading", {
-      name: "Digital Research Books Beta",
+      name: "Digitized Research Books",
     });
   });
   searchFormTests(mockRouter);

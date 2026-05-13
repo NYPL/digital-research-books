@@ -34,7 +34,10 @@ const provideFeedbackListItems = [
     feedback form where you can provide further details if desired.
   </>,
   <>
-    <b>By using the 'Help and feedback' button at the bottom of the page,</b>{" "}
+    <b>
+      By using the &apos;Help and feedback&apos; button at the bottom of the
+      page,
+    </b>{" "}
     which will open up the same feedback form. Being as detailed as possible and
     providing context will help us address your concerns better.{" "}
   </>,
@@ -53,9 +56,9 @@ const GENERAL_ACCORDION_DATA = [
         <Text marginBottom="s">
           Enhanced Search currently provides access to Digitized Research Books,
           a collection of over 1 million scholarly books published prior to
-          1930. These come from two sources - the New York Public Library's own
-          collections digitized through the Google Books project, and the public
-          corpus of the{" "}
+          1930. These come from two sources - the New York Public Library&apos;s
+          own collections digitized through the Google Books project, and the
+          public corpus of the{" "}
           <Link to="#" hasVisitedState={false}>
             Harvard Institutional Data Initiative
           </Link>
@@ -113,14 +116,14 @@ const GENERAL_ACCORDION_DATA = [
           results in the left sidebar. You can continue to refine your search by
           asking follow-up questions like “Show me only books published between
           1890 and 1920.” Every result also includes a “Why am I seeing this
-          result?” section to help you understand the tool's reasoning.
+          result?” section to help you understand the tool&apos;s reasoning.
         </Text>
         <Text>
-          Once you've selected a book, you can use the chat to help you locate
-          relevant content from that book. You can ask questions like “Does this
-          book mention the contributions of Copernicus to 16th century
-          astronomy?” and the tool will guide you to the parts containing that
-          information.
+          Once you&apos;ve selected a book, you can use the chat to help you
+          locate relevant content from that book. You can ask questions like
+          “Does this book mention the contributions of Copernicus to 16th
+          century astronomy?” and the tool will guide you to the parts
+          containing that information.
         </Text>
       </Box>
     ),
@@ -158,7 +161,7 @@ const securityAccordionData = [
           relevant content.
         </Text>
         <Text marginBottom="s">
-          Your questions are kept confidential. While we don't record your
+          Your questions are kept confidential. While we don&apos;t record your
           conversation history, it will be available to you until you close or
           refresh your browser, or for 30 days of leaving it open. There is no
           way for another user, your school, your employer, or NYPL to see your
@@ -182,8 +185,9 @@ const securityAccordionData = [
           Enhanced Search does not have access to any personally identifiable
           information. It cannot identify you apart from any information you
           voluntarily provide, even when you use it when logged in from your
-          NYPL account. Additionally, clicking on 'Start over' at any point
-          erases your conversation history and ensures no memory retention.
+          NYPL account. Additionally, clicking on &apos;Start over&apos; at any
+          point erases your conversation history and ensures no memory
+          retention.
         </Text>
         <Text marginBottom="s">
           Everything you type into the tool is sent to our AI models over HTTPS
@@ -263,8 +267,9 @@ const securityAccordionData = [
       <Box>
         Yes, you can opt out of using Enhanced Search and still access Digitized
         Research Books through a traditional keyword search. To do this, click
-        on the 'Keyword search' tab at the top of the search results page, or
-        turn the 'Use Enhanced Search' tool toggle off on the book page.
+        on the &apos;Keyword search&apos; tab at the top of the search results
+        page, or turn the &apos;Use Enhanced Search&apos; tool toggle off on the
+        book page.
       </Box>
     ),
   },
@@ -276,22 +281,22 @@ const TECHNOLOGY_ACCORDION_DATA = [
     panel: (
       <Box>
         <Text marginBottom="s">
-          Enhanced Search was developed in service of NYPL's mission to support
-          open access to scholarly content in a global context. Made possible
-          through the generous support of{" "}
+          Enhanced Search was developed in service of NYPL&apos;s mission to
+          support open access to scholarly content in a global context. Made
+          possible through the generous support of{" "}
           <Link to={ARCADIA_FUND_LINK} hasVisitedState={false}>
             The Arcadia Fund
           </Link>
-          , it was born out of the Library's commitment to innovation and its
-          enduring values of trust and authenticity.
+          , it was born out of the Library&apos;s commitment to innovation and
+          its enduring values of trust and authenticity.
         </Text>
         <Text>
           Currently in beta and live on Digitized Research Books, Enhanced
           Search leverages cutting-edge advances in AI to transform how users
           interact with our resources and ushers in a new paradigm of discovery
-          and access. As NYPL's first public-facing venture enabled by AI, it is
-          designed to meaningfully support researchers while adhering to the
-          high legal, ethical, and academic standards that govern our
+          and access. As NYPL&apos;s first public-facing venture enabled by AI,
+          it is designed to meaningfully support researchers while adhering to
+          the high legal, ethical, and academic standards that govern our
           institution.
         </Text>
       </Box>
@@ -428,7 +433,7 @@ const COST_ACCORDION_DATA = [
           Energy use is an important factor in our model selection. Our models
           have been chosen after careful consideration of their carbon footprint
           alongside other factors such as task suitability, cost, speed, and
-          overall performance. We continue to monitor the tool's energy
+          overall performance. We continue to monitor the tool&apos;s energy
           consumption and re-evaluate our models regularly.
         </Text>
         <Text>
