@@ -54,7 +54,7 @@ const HowItWorksSection: React.FC = () => {
               <Text as="span" color="section.research.secondary">
                 Uses natural language
               </Text>{" "}
-              so you&apos;re not worried about crafting the perfect query
+              so that it can understand your intent
             </Heading>
           }
           body={
@@ -94,7 +94,7 @@ const HowItWorksSection: React.FC = () => {
               <Text as="span" color="section.research.secondary">
                 Shows you the source
               </Text>{" "}
-              so that you can verify its responses on the spot
+              so that you can verify responses on the spot
             </Heading>
           }
           body={

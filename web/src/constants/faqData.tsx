@@ -437,8 +437,9 @@ const COST_ACCORDION_DATA = [
             color="section.research.secondary"
             hasVisitedState={false}
           >
-            Learn more about the project.
-          </Link>
+            Learn more
+          </Link>{" "}
+          about the project.
         </Text>
       </Box>
     ),

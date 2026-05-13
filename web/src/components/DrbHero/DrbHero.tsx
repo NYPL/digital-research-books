@@ -16,7 +16,7 @@ export const DrbHero: React.FC = () => {
           <Heading level="h2" fontSize="heading2" id="tertiary-hero">
             Digitized Research Books
           </Heading>
-          <Text fontSize="desktop.subtitle.subtitle1">
+          <Text fontSize="desktop.subtitle.subtitle1" lineHeight="135%">
             A collection of scholarly books published prior to 1930, all
             available digitally to read and download for free. No library card
             required.
