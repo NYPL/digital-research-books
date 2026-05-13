@@ -527,7 +527,6 @@ def _index_config_entries():
                     # All are default and unnecessary to specify here
                     "model": "gemini-embedding-001",
                     "dimensions": 768,
-                    "task_type": "RETRIEVAL_QUERY",
                 },
             },
             "schema": load_default_schema(),
