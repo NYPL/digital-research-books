@@ -1,23 +1,22 @@
-import React from "react";
 import { act, cleanup, screen, within } from "@testing-library/react";
-import { render } from "./testUtils/render";
+import userEvent from "@testing-library/user-event";
+import mockRouter from "next-router-mock";
 import SearchResults from "../components/Search/Search";
+import { PLACEHOLDER_COVER_LINK } from "../constants/editioncard";
+import filterFields from "../constants/filters";
 import { FacetItem, SearchField } from "../types/DataModel";
 import { ApiSearchResult, SearchQuery } from "../types/SearchQuery";
-import { resizeWindow } from "./testUtils/screen";
+import { findFiltersForField } from "../util/SearchQueryUtils";
+import { FilterFormatTests } from "./componentHelpers/FilterFormats";
+import { FilterLanguagesCommonTests } from "./componentHelpers/FilterLanguages";
+import { FilterYearsTests } from "./componentHelpers/FilterYears";
 import {
   searchFormRenderTests,
   searchFormTests,
 } from "./componentHelpers/SearchForm";
-import { FilterYearsTests } from "./componentHelpers/FilterYears";
-import { PLACEHOLDER_COVER_LINK } from "../constants/editioncard";
-import userEvent from "@testing-library/user-event";
-import { FilterLanguagesCommonTests } from "./componentHelpers/FilterLanguages";
-import { FilterFormatTests } from "./componentHelpers/FilterFormats";
-import { findFiltersForField } from "../util/SearchQueryUtils";
-import filterFields from "../constants/filters";
-import mockRouter from "next-router-mock";
 import { searchResults } from "./fixtures/SearchResultFixture";
+import { render } from "./testUtils/render";
+import { resizeWindow } from "./testUtils/screen";
 
 const searchQuery: SearchQuery = {
   queries: [{ field: SearchField.Keyword, query: "Animal Crossing" }],
@@ -39,7 +38,8 @@ const emptySearchResults: ApiSearchResult = {
   },
 };
 const clickFiltersButton = async () =>
-    userEvent.click(await screen.findByRole("button", { name: "Refine results" })
+  userEvent.click(
+    await screen.findByRole("button", { name: "Refine results" })
   );
 
 describe("Renders Search Results Page", () => {
@@ -53,15 +53,15 @@ describe("Renders Search Results Page", () => {
   });
   afterEach(() => cleanup());
 
-  test("Digital Research Books Beta doesn't have href attribute", () => {
-    const homepagelinks = screen.getAllByText("Digital Research Books Beta");
+  test("Digitized Research Books Beta doesn't have href attribute", () => {
+    const homepagelinks = screen.getAllByText("Digitized Research Books");
     homepagelinks.forEach((link) => {
       expect(link).not.toHaveAttribute("href");
     });
   });
   test("DRB Header is shown", () => {
     expect(
-      screen.getByRole("heading", { name: "Digital Research Books Beta" })
+      screen.getByRole("heading", { name: "Digitized Research Books" })
     ).toBeInTheDocument();
   });
   describe("Header search Functionality", () => {
