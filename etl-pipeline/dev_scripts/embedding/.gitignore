@@ -1,4 +1,5 @@
-thruput_results
+thruput_results/
 .env.execution_role
-indexing_results
+indexing_results/
 tmp/**
+llm_as_judge_results/
