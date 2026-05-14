@@ -86,21 +86,21 @@ class TestSageMakerEmbedderContracts(EmbedderContractTests):
 
 
 # ---------------------------------------------------------------------------
-# LMStudioEmbedder
+# OpenAIEmbedder
 # ---------------------------------------------------------------------------
 
 
-class TestLMStudioEmbedderContracts(EmbedderContractTests):
+class TestOpenAIEmbedderContracts(EmbedderContractTests):
     """
     TODO: implement fixture — patch `requests.post` to return a mock Response
     whose `.json()` returns `{"data": [{"embedding": [0.1, ...]}]}` for each
     text in the batch.
-    See: vector_indexing/components/embedders/lmstudio.py
+    See: vector_indexing/components/embedders/openai_compat.py
     """
 
     @pytest.fixture
     def embedder(self):
-        pytest.skip("TODO: implement LMStudioEmbedder fixture")
+        pytest.skip("TODO: implement OpenAIEmbedder fixture")
 
 
 # ---------------------------------------------------------------------------
