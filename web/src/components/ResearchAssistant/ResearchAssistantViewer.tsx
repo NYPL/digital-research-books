@@ -36,6 +36,13 @@ const ResearchAssistantViewer: React.FC<{
   const manifestApiUrl = `${origin}/api/manifest/${itemId}?pageId=${pageId}`;
 
   const toggleFullScreen = () => setIsFullViewport((v) => !v);
+  const getContent = React.useCallback(async (href: string) => {
+    const response = await fetch(href, {
+      mode: 'cors',
+      credentials: 'include',
+    });
+    return new Uint8Array(await response.arrayBuffer());
+  }, []);
 
   if (!itemId || !pageId || !manifestApiUrl) {
     return (
@@ -63,6 +70,7 @@ const ResearchAssistantViewer: React.FC<{
           injectablesFixed={injectables}
           height="70vh"
           toggleFullScreen={toggleFullScreen}
+          getContent={getContent}
         />
       )}
     </Box>
