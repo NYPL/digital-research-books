@@ -53,7 +53,7 @@ class SageMakerTEIEmbedder(Embedder):
         )
         if assume_role:
             assumed_session = get_boto3_session_with_assumed_role(
-                role_arn=assume_role, boto_session=boto_session
+                role_arn=assume_role, boto3_session=boto_session
             )
             sm_session = sagemaker.Session(boto_session=assumed_session)
         else:
