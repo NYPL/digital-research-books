@@ -1,12 +1,10 @@
 import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import React from "react";
-import Divider from "../Divider";
 
 const statisticsData = [
-  { value: "1m", label: "books" },
-  { value: "352m", label: "pages" },
   { value: "136", label: "languages" },
-  { value: "82", label: "subjects" },
+  { value: "1 million", label: "books" },
+  { value: "10,000+", label: "subjects" },
 ];
 
 const StatisticRow: React.FC = () => {
@@ -14,22 +12,36 @@ const StatisticRow: React.FC = () => {
     <Box
       color="ui.typography.body"
       display="flex"
-      flexDir="row"
+      flexDir={{ base: "column", md: "row" }}
       justifyContent="center"
       alignItems="center"
       margin="0 auto"
-      gap={{ base: "xs", md: "s" }}
-      marginBottom="63.5px"
+      marginBottom="50.5px"
       width="100%"
     >
-      {statisticsData.map((stat, index) => (
-        <React.Fragment key={stat.label}>
-          <Flex flexDir="column" alignItems="center" flex="1" maxWidth="181px">
+      {statisticsData.map((stat, index) => {
+        const isMiddle = index === 1;
+
+        return (
+          <Flex
+            key={stat.label}
+            flexDir="column"
+            alignItems="center"
+            flex="1"
+            maxWidth="274px"
+            py={{ base: isMiddle ? "20px" : "20px", md: "0" }}
+            px={{ base: "20px", md: isMiddle ? "0px" : "0" }}
+            borderLeft={{ md: isMiddle ? "1px dashed" : "none" }}
+            borderRight={{ md: isMiddle ? "1px dashed" : "none" }}
+            borderTop={{ base: isMiddle ? "1px dashed" : "none", md: "none" }}
+            borderBottom={{
+              base: isMiddle ? "1px dashed" : "none",
+              md: "none",
+            }}
+            borderColor="ui.black"
+          >
             <Text
-              fontSize={{
-                base: "desktop.heading.heading2",
-                md: "desktop.heading.heading1",
-              }}
+              fontSize="desktop.heading.heading1"
               fontWeight="semibold"
               lineHeight="120%"
               color="section.research.secondary"
@@ -37,25 +49,15 @@ const StatisticRow: React.FC = () => {
               {stat.value}
             </Text>
             <Text
-              fontSize={{
-                base: "desktop.body.body1",
-                md: "desktop.heading.heading5",
-              }}
+              fontSize="desktop.heading.heading5"
               fontWeight="semibold"
               lineHeight="135%"
             >
               {stat.label}
             </Text>
           </Flex>
-
-          {index < statisticsData.length - 1 && (
-            <Divider
-              orientation="vertical"
-              color="section.research.secondary"
-            />
-          )}
-        </React.Fragment>
-      ))}
+        );
+      })}
     </Box>
   );
 };

@@ -32,8 +32,8 @@ const HeroSection: React.ForwardRefExoticComponent<
       <SectionContainer
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
         paddingX={{ base: "0", md: "s" }}
-        paddingTop="74px"
-        paddingBottom="l"
+        paddingTop="xxl"
+        paddingBottom="20px"
         ref={ref}
         tabIndex={-1}
       >
@@ -47,7 +47,7 @@ const HeroSection: React.ForwardRefExoticComponent<
             level="h1"
             fontWeight="bold"
             maxWidth="740px"
-            marginBottom="76.5px"
+            marginBottom="63.5px"
             size="heading1"
             fontFamily="Domine"
           >
@@ -58,7 +58,7 @@ const HeroSection: React.ForwardRefExoticComponent<
             when it helps unlock access to knowledge
           </Heading>
           <StatisticRow />
-          <Text fontSize="md" color="ui.gray.x-dark" marginBottom="l" isItalic>
+          <Text fontSize="md" color="ui.gray.x-dark" marginBottom="xl" isItalic>
             Our collection of Digitized Research Books accessible through
             Enhanced Search as of June 1, 2026
           </Text>
