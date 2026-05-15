@@ -63,7 +63,7 @@ _IS_LOADFORGE_RUN = socket.gethostname().startswith("loadforge-")
 if _IS_LOADFORGE_RUN:
     try:
         with open("files/enhanced_search_user_prompts.json", "r") as f:
-            prompts = json.load(f)
+            PROMPTS = json.load(f)
     except Exception as e:
         raise FileNotFoundError(
             f"Error loading user prompts file: {type(e).__name__}: {e}"
@@ -72,12 +72,12 @@ else:
     USER_PROMPTS_FILE = (
         pathlib.Path(__file__).parent.parent / "fixtures" / "user_prompts.json"
     )
-    prompts = json.loads(USER_PROMPTS_FILE.read_text())
+    PROMPTS = json.loads(USER_PROMPTS_FILE.read_text())
 
-CATALOG_SEARCH_PROMPTS: list[str] = prompts["catalog_search"]
-SUGGESTION_PROMPTS: list[str] = prompts["suggestion"]
-FOLLOW_UP_PROMPTS: list[str] = prompts["follow_up"]
-BOOK_SEARCH_PROMPTS: list[str] = prompts["book_search"]
+CATALOG_SEARCH_PROMPTS: list[str] = PROMPTS["catalog_search"]
+SUGGESTION_PROMPTS: list[str] = PROMPTS["suggestion"]
+FOLLOW_UP_PROMPTS: list[str] = PROMPTS["follow_up"]
+BOOK_SEARCH_PROMPTS: list[str] = PROMPTS["book_search"]
 
 
 class EnhancedSearchWebUser(PlaywrightUser):
