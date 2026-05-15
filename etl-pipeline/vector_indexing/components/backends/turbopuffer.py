@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Iterator, Optional, TYPE_CHECKING
+from typing import Any, Dict, Iterator, Optional, TYPE_CHECKING
 
 import turbopuffer as tpuf
 
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 logger = create_log(__name__)
 
 
-def _load_schema() -> dict:
+def load_default_schema() -> dict:
     """Load turbopuffer schema from config/schemas/turbopuffer.json."""
     schema_path = VECTOR_INDEXING_ROOT / "config" / "schemas" / "turbopuffer.json"
     with open(schema_path) as f:
@@ -33,7 +33,7 @@ def _load_schema() -> dict:
     return schema
 
 
-TPUF_SCHEMA = _load_schema()
+DEFAULT_TURBOPUFFER_SCHEMA = load_default_schema()
 
 # Conversion utilities between ChunkDocument and turbopuffer row format
 
@@ -134,10 +134,12 @@ class TurbopufferBackend(IndexBackend):
     def __init__(
         self,
         index_name: str,
+        schema: Dict[str, Any] | None = None,
         config: Optional[GlobalConfig] = None,
     ):
         self._config = config or get_config()
         self._index_name = index_name
+        self._schema = schema or DEFAULT_TURBOPUFFER_SCHEMA
 
         self._client = tpuf.Turbopuffer(
             api_key=self._config.turbopuffer_api_key or None,
@@ -254,14 +256,17 @@ class TurbopufferBackend(IndexBackend):
             write_kwargs = {
                 "upsert_rows": rows,
                 "distance_metric": "cosine_distance",
-                "schema": TPUF_SCHEMA,
+                "schema": self._schema,
             }
+            # NOTE: vector dims match btw schema and insert rows are enforced with error
 
             with self._timers.time("write"):
                 response = self._ns.write(**write_kwargs)
 
             billing = getattr(response, "billing", None)
-            written_bytes = getattr(billing, "written_bytes", 0) if billing else 0
+            written_bytes = (
+                getattr(billing, "billable_logical_bytes_written", 0) if billing else 0
+            )
             total_written_bytes += written_bytes
 
             logger.info(

@@ -177,12 +177,15 @@ class TestMultiBookBatch:
             language=[],
         )
 
+        book1 = Book(barcode="good1", pages=["text"], book_id="rec1", metadata=meta1)
+        book2 = Book(barcode="good2", pages=["text"], book_id="rec2", metadata=meta2)
+
         # Create mocks
         loader = Mock()
         loader.load.side_effect = [
-            Book(barcode="good1", pages=["text"], book_id="rec1", metadata=meta1),
+            book1,
             None,  # Book not found
-            Book(barcode="good2", pages=["text"], book_id="rec2", metadata=meta2),
+            book2,
         ]
 
         chunker = Mock()
@@ -208,8 +211,8 @@ class TestMultiBookBatch:
 
         metadata_provider = Mock()
         metadata_provider.get_metadata.return_value = {
-            "rec1": meta1,
-            "rec2": meta2,
+            book1.barcode: meta1,
+            book2.barcode: meta2,
         }
 
         backend = Mock()
