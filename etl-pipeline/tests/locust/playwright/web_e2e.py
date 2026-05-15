@@ -52,9 +52,9 @@ import socket
 from locust import between, task
 from locust_plugins.users.playwright import PlaywrightUser, event, pw
 from playwright.async_api import Page
-
-
-TIMEOUT_MS = 120_000  # 2 min
+ 
+UI_TIMEOUT_MS = 60_000     # 60s for navigation and UI interactions
+CHAT_TIMEOUT_MS = 120_000  # 120s for chat responses
 
 _IS_LOADFORGE_RUN = socket.gethostname().startswith("loadforge-")
 
@@ -99,8 +99,8 @@ class VRAUser(PlaywrightUser):
         send_button = page.get_by_role("button", name="Send").first
         vra_chat_bubbles = page.get_by_text("VRA:", exact=True)
 
-        page.set_default_timeout(TIMEOUT_MS)
-        page.set_default_navigation_timeout(TIMEOUT_MS)
+        page.set_default_timeout(UI_TIMEOUT_MS)
+        page.set_default_navigation_timeout(UI_TIMEOUT_MS)
 
         # 0. Authorize by setting token in localStorage to bypass login
         if _IS_LOADFORGE_RUN:
@@ -140,12 +140,12 @@ class VRAUser(PlaywrightUser):
         async with event(self, "results page: chat response"):
             try:
                 await page.wait_for_url(re.compile(r".+/research-assistant$"))
-                await vra_chat_bubbles.nth(1).wait_for()
+                await vra_chat_bubbles.nth(1).wait_for(timeout=CHAT_TIMEOUT_MS)
             except Exception as e:
                 raise Exception(f"[{prompt}] {type(e).__name__}: {e}") from e
         await self.log_latest_chat_bubble_text(vra_chat_bubbles, "catalog search")
         try:
-            await search_results.first.wait_for()
+            await search_results.first.wait_for(timeout=5000)  # Chat req finished
         except Exception as e:
             raise Exception(
                 f"[{prompt}] No search results returned: {type(e).__name__}: {e}"
@@ -162,7 +162,7 @@ class VRAUser(PlaywrightUser):
         #     await send_button.click()
         #     async with event(self, "results page: chat response follow-up"):
         #         try:
-        #             await vra_chat_bubbles.nth(2).wait_for()
+        #             await vra_chat_bubbles.nth(2).wait_for(timeout=CHAT_TIMEOUT_MS)
         #         except Exception as e:
         #             raise Exception(
         #                 f"[{follow_up}] No chat response returned: {type(e).__name__}: {e}"
@@ -171,7 +171,7 @@ class VRAUser(PlaywrightUser):
         #         vra_chat_bubbles, "catalog search follow-up"
         #     )
         #     try:
-        #         await search_results.first.wait_for()
+        #         await search_results.first.wait_for(timeout=5000)  # Chat req finished
         #     except Exception as e:
         #         raise Exception(
         #             f"[{follow_up}] No search results returned: {type(e).__name__}: {e}"
@@ -208,7 +208,7 @@ class VRAUser(PlaywrightUser):
                 await chat_input.wait_for(state="visible")
                 await chat_input.fill(book_prompt)
                 await send_button.click()
-                await vra_chat_bubbles.nth(1).wait_for()
+                await vra_chat_bubbles.nth(1).wait_for(timeout=CHAT_TIMEOUT_MS)
             except Exception as e:
                 raise Exception(
                     f"[{book_prompt}] edition_id={edition_id} {type(e).__name__}: {e}"
