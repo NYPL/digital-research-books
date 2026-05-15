@@ -77,7 +77,7 @@ else:
 CATALOG_SEARCH_PROMPTS: list[str] = prompts["catalog_search"]
 SUGGESTION_PROMPTS: list[str] = prompts["suggestion"]
 FOLLOW_UP_PROMPTS: list[str] = prompts["follow_up"]
-BOOK_PROMPTS: list[str] = prompts["book"]
+BOOK_SEARCH_PROMPTS: list[str] = prompts["book_search"]
 
 
 class EnhancedSearchWebUser(PlaywrightUser):
@@ -201,7 +201,7 @@ class EnhancedSearchWebUser(PlaywrightUser):
         await asyncio.sleep(random.uniform(10, 30))  # Digest content on page
 
         # 6. Submit a prompt about the book
-        book_prompt = random.choice(BOOK_PROMPTS)
+        book_prompt = random.choice(BOOK_SEARCH_PROMPTS)
         print(f"[content search] submitting prompt='{book_prompt}'")
         async with event(self, "item page: chat response"):
             try:
