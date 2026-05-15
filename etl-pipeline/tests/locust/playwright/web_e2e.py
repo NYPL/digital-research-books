@@ -78,7 +78,7 @@ FOLLOW_UP_PROMPTS: list[str] = prompts["follow_up"]
 BOOK_PROMPTS: list[str] = prompts["book"]
 
 
-class VRAUser(PlaywrightUser):
+class EnhancedSearchWebUser(PlaywrightUser):
     wait_time = between(30, 60)  # Break before each user restarts the journey
 
     async def log_latest_chat_bubble_text(self, bubbles, label: str) -> None:
