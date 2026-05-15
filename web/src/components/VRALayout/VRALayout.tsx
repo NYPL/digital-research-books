@@ -1,7 +1,7 @@
 import React from "react";
 import { PageType } from "~/src/types/ResearchAssistant";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import DrbHero from "../DrbHero/DrbHero";
+import ESHero from "../ESHero/ESHero";
 import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
 import VRAPopupSurvey from "../VRAPopupSurvey/VRAPopupSurvey";
 
@@ -18,7 +18,7 @@ const VRALayout: React.FC<VRALayoutProps> = ({
 }) => (
   <>
     <DrbBreakout breadcrumbsData={breadcrumbsData}>
-      <DrbHero />
+      <ESHero />
       <ResearchAssistantNav activePage={activePage} />
       <VRAPopupSurvey />
     </DrbBreakout>

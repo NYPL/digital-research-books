@@ -1,7 +1,8 @@
 import { Box } from "@chakra-ui/react";
 import React, { useRef } from "react";
+import { breadcrumbTitles } from "~/src/constants/labels";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import { DrbHero } from "../DrbHero/DrbHero";
+import ESHero from "../ESHero/ESHero";
 import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
 import CollectionSection from "./CollectionSection";
 import HeroSection from "./HeroSection/HeroSection";
@@ -17,10 +18,10 @@ const LearnMore: React.FC = () => {
     <>
       <DrbBreakout
         breadcrumbsData={[
-          { url: "/research-assistant", text: "Virtual Research Assistant" },
+          { url: "/learn-more", text: breadcrumbTitles.learnMore },
         ]}
       >
-        <DrbHero />
+        <ESHero />
         <ResearchAssistantNav />
       </DrbBreakout>
       <Box display="flex" flexDir="column">

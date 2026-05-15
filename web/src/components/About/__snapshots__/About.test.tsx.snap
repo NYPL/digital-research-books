@@ -84,7 +84,7 @@ exports[`renders about unchanged 1`] = `
             <span
               class="ds-breadcrumbs-link-label"
             >
-              Digitized Research Books
+              Digital Research Books Beta
             </span>
           </a>
           <span

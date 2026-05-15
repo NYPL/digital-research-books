@@ -16,8 +16,8 @@ describe("Renders Work component when given valid work", () => {
   beforeEach(() => {
     render(<Work workResult={apiWork} />);
   });
-  test("Digitized Research Books doesn't have href attribute", () => {
-    const homepagelinks = screen.getAllByText("Digitized Research Books");
+  test("Digital Research Books Beta doesn't have href attribute", () => {
+    const homepagelinks = screen.getAllByText("Digital Research Books Beta");
     homepagelinks.forEach((link) => {
       expect(link).not.toHaveAttribute("href");
     });

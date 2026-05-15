@@ -93,7 +93,7 @@ const Error = ({ statusCode }) => {
           marginBottom={{ base: "xxl", md: "xxxl" }}
         >
           <Link to="/" variant="buttonPrimary">
-            Back to Digitized Research Books
+            Back to Digital Research Books
           </Link>
         </Box>
       </Flex>

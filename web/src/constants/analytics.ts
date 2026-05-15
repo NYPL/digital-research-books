@@ -1,4 +1,4 @@
-export const SITE_SECTION = "Digitized Research Books";
+export const SITE_SECTION = "Digital Research Books";
 
 export const pageNames = {
   home: "drb|home",

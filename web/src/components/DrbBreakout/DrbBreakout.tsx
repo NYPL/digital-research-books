@@ -20,15 +20,29 @@ const DrbBreadcrumbs: React.FC<{ breadcrumbsData: BreadcrumbsDataProps[] }> = (
 ) => {
   const { breadcrumbsData } = props;
 
-  const breadcrumbsDataAll = breadcrumbsData
+  let breadcrumbsDataAll = breadcrumbsData
     ? [...defaultBreadcrumbs, ...breadcrumbsData]
     : defaultBreadcrumbs;
 
+  const isDigitizedContext = breadcrumbsDataAll.some(
+    (crumb) =>
+      crumb.text === "Enhanced Search (beta)" || crumb.text === "Learn more"
+  );
+
+  if (isDigitizedContext) {
+    breadcrumbsDataAll = breadcrumbsDataAll.map((crumb) => {
+      if (crumb.text === "Digital Research Books Beta") {
+        return {
+          ...crumb,
+          text: "Digitized Research Books",
+        };
+      }
+      return crumb;
+    });
+  }
+
   return (
-    <Breadcrumbs
-      variant="research"
-      breadcrumbsData={breadcrumbsDataAll}
-    />
+    <Breadcrumbs variant="research" breadcrumbsData={breadcrumbsDataAll} />
   );
 };
 

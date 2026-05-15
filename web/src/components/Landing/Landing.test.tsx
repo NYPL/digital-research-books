@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import {
   searchFormRenderTests,
   searchFormTests,
@@ -11,7 +11,6 @@ import {
   collections,
 } from "~/src/__tests__/fixtures/CollectionFixture";
 import { render } from "~/src/__tests__/testUtils/render";
-import DrbBreakout from "../DrbBreakout/DrbBreakout";
 
 describe("Renders Index Page", () => {
   beforeEach(async () => {
@@ -19,25 +18,17 @@ describe("Renders Index Page", () => {
 
     // Wait for page to be loaded
     await screen.findByRole("heading", {
-      name: "Digitized Research Books",
+      name: "Digital Research Books Beta",
     });
   });
   test("Current page breadcrumb doesn't have href attribute", () => {
-    render(<DrbBreakout />);
-
-    const breadcrumbNavs = screen.getAllByRole("navigation", {
-      name: /breadcrumb/i,
-    });
-
-    const breadcrumbItem = within(breadcrumbNavs[0]).getByText(
-      "Digitized Research Books"
+    expect(screen.getByText("Digital Research Books Beta")).not.toHaveAttribute(
+      "href"
     );
-
-    expect(breadcrumbItem).not.toHaveAttribute("href");
   });
   test("Shows Heading", () => {
     expect(
-      screen.getByRole("heading", { name: "Digitized Research Books" })
+      screen.getByRole("heading", { name: "Digital Research Books Beta" })
     ).toBeInTheDocument();
   });
 
@@ -61,7 +52,7 @@ describe("Search using Landing Page Searchbar", () => {
     render(<LandingPage />);
     // Wait for page to be loaded
     await screen.findByRole("heading", {
-      name: "Digitized Research Books",
+      name: "Digital Research Books Beta",
     });
   });
   searchFormTests(mockRouter);

@@ -38,13 +38,15 @@ const breadcrumbUrls = {
   home: "https://www.nypl.org",
   research: "https://www.nypl.org/research",
   drb: "/",
+  learnMore: "/learn-more",
 };
 
 export const breadcrumbTitles = {
   home: "Home",
   research: "Research",
-  drb: "Digitized Research Books",
+  drb: "Digital Research Books Beta",
   advancedSearch: "Advanced Search",
+  learnMore: "Learn more",
 };
 
 export const defaultBreadcrumbs = [

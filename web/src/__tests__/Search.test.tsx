@@ -53,15 +53,15 @@ describe("Renders Search Results Page", () => {
   });
   afterEach(() => cleanup());
 
-  test("Digitized Research Books Beta doesn't have href attribute", () => {
-    const homepagelinks = screen.getAllByText("Digitized Research Books");
+  test("Digital Research Books Beta doesn't have href attribute", () => {
+    const homepagelinks = screen.getAllByText("Digital Research Books Beta");
     homepagelinks.forEach((link) => {
       expect(link).not.toHaveAttribute("href");
     });
   });
   test("DRB Header is shown", () => {
     expect(
-      screen.getByRole("heading", { name: "Digitized Research Books" })
+      screen.getByRole("heading", { name: "Digital Research Books Beta" })
     ).toBeInTheDocument();
   });
   describe("Header search Functionality", () => {
