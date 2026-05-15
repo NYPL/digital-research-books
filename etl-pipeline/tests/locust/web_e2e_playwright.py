@@ -76,7 +76,7 @@ else:
 
 CATALOG_SEARCH_PROMPTS: list[str] = PROMPTS["catalog_search"]
 SUGGESTION_PROMPTS: list[str] = PROMPTS["suggestion"]
-FOLLOW_UP_PROMPTS: list[str] = PROMPTS["follow_up"]
+# FOLLOW_UP_PROMPTS: list[str] = PROMPTS["follow_up"] -- Omitted (SCHOL-593)
 BOOK_SEARCH_PROMPTS: list[str] = PROMPTS["book_search"]
 
 
