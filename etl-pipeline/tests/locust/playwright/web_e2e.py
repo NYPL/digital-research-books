@@ -178,7 +178,6 @@ class VRAUser(PlaywrightUser):
         #         ) from e
 
         # 5. Navigate to item page for a search result
-        await search_results.first.wait_for()
         result_count = await search_results.count()
         selected_result = search_results.nth(random.randint(0, result_count - 1))
         edition_div_id = await selected_result.locator(
