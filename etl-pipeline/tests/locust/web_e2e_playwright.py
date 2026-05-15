@@ -21,7 +21,7 @@ Example usage (local/CI):
           --with "locust" \
           --with "locust-plugins[playwright]" \
           locust \
-            -f tests/locust/playwright/web_e2e.py \
+            -f tests/locust/web_e2e_playwright.py \
             --host <localhost|qa|etc> \
             --users 5 \
             --run-time 10m \
@@ -52,8 +52,8 @@ import socket
 from locust import between, task
 from locust_plugins.users.playwright import PlaywrightUser, event, pw
 from playwright.async_api import Page
- 
-UI_TIMEOUT_MS = 60_000     # 60s for navigation and UI interactions
+
+UI_TIMEOUT_MS = 60_000  # 60s for navigation and UI interactions
 CHAT_TIMEOUT_MS = 120_000  # 120s for chat responses
 
 _IS_LOADFORGE_RUN = socket.gethostname().startswith("loadforge-")
@@ -69,7 +69,9 @@ if _IS_LOADFORGE_RUN:
             f"Error loading user prompts file: {type(e).__name__}: {e}"
         ) from e
 else:
-    USER_PROMPTS_FILE = pathlib.Path(__file__).parent.parent / "user_prompts.json"
+    USER_PROMPTS_FILE = (
+        pathlib.Path(__file__).parent.parent / "fixtures" / "user_prompts.json"
+    )
     prompts = json.loads(USER_PROMPTS_FILE.read_text())
 
 CATALOG_SEARCH_PROMPTS: list[str] = prompts["catalog_search"]
