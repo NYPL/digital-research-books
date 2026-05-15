@@ -181,6 +181,10 @@ class EnhancedSearchWebUser(PlaywrightUser):
 
         # 5. Navigate to item page for a search result
         result_count = await search_results.count()
+        if result_count == 0:
+            raise Exception(
+                f"[{prompt}] Cannot navigate to item page (no search results returned)"
+            )
         selected_result = search_results.nth(random.randint(0, result_count - 1))
         edition_div_id = await selected_result.locator(
             "[id^='edition-']"
