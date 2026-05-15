@@ -12,11 +12,9 @@ The following events are reported:
 Event names are kept static for clean aggregation. The active prompt is logged before
 each event block and embedded in failure exception messages for per-prompt attribution.
 
-NOTE:
-This script is designed for execution on a local machine or in CI.
-To run in LoadForge, use web_e2e_loadforge.py.
+This script is designed to be run locally, in CI, or with LoadForge.
 
-Example usage:
+Example usage (local/CI):
     from etl-pipeline/:
         VRA_USER_AUTH_TOKEN=insert_token_here \
         uv run \
@@ -50,6 +48,7 @@ import os
 import pathlib
 import random
 import re
+import socket
 
 from locust import between, task
 from locust_plugins.users.playwright import PlaywrightUser, event, pw
@@ -59,8 +58,21 @@ logger = logging.getLogger(__name__)
 
 TIMEOUT_MS = 120_000  # 2 min
 
-USER_PROMPTS_FILE = pathlib.Path(__file__).parent.parent / "user_prompts.json"
-prompts = json.loads(USER_PROMPTS_FILE.read_text())
+_IS_LOADFORGE_RUN = socket.gethostname().startswith("loadforge-")
+
+# Load test user prompts from external file
+# For LoadForge, prompts are stored in their internal file system
+if _IS_LOADFORGE_RUN:
+    try:
+        with open("files/enhanced_search_user_prompts.json", "r") as f:
+            prompts = json.load(f)
+    except Exception as e:
+        raise FileNotFoundError(
+            f"Error loading user prompts file: {type(e).__name__}: {e}"
+        ) from e
+else:
+    USER_PROMPTS_FILE = pathlib.Path(__file__).parent.parent / "user_prompts.json"
+    prompts = json.loads(USER_PROMPTS_FILE.read_text())
 
 CATALOG_SEARCH_PROMPTS: list[str] = prompts["catalog_search"]
 SUGGESTION_PROMPTS: list[str] = prompts["suggestion"]
@@ -93,7 +105,16 @@ class VRAUser(PlaywrightUser):
         page.set_default_navigation_timeout(TIMEOUT_MS)
 
         # 0. Authorize by setting token in localStorage to bypass login
-        user_auth_token = os.environ["VRA_USER_AUTH_TOKEN"]
+        if _IS_LOADFORGE_RUN:
+            try:
+                with open("files/authToken-vratestuser.txt", "r") as f:
+                    user_auth_token = f.readline().strip()
+            except Exception as e:
+                raise FileNotFoundError(
+                    f"Error loading file containing authToken: {type(e).__name__}: {e}"
+                ) from e
+        else:
+            user_auth_token = os.environ["VRA_USER_AUTH_TOKEN"]
         await page.context.add_init_script(
             f"localStorage.setItem('authToken', {json.dumps(user_auth_token)})"
         )
@@ -197,3 +218,6 @@ class VRAUser(PlaywrightUser):
         await self.log_latest_chat_bubble_text(vra_chat_bubbles, "content search")
 
         await asyncio.sleep(random.uniform(5, 10))  # Read response and end journey
+
+
+# disable_random_checks
