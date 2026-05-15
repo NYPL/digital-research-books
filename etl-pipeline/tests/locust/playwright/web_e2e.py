@@ -22,12 +22,12 @@ Example usage (local/CI):
           --with "locust-plugins[playwright]" \
           locust \
             -f tests/locust/playwright/web_e2e.py \
-            --host https://drb-qa.nypl.org \
+            --host <localhost|qa|etc> \
             --users 5 \
             --run-time 10m \
             --spawn-rate 0.0167
 
-This will start a local server at http://localhost:8089. Navigate there in a browser to
+This will start a localhost server at port 8089. Navigate there in a browser to
 access the web UI for starting the test and viewing results, logs, etc. in real-time.
 - Specifying host, users, spawn rate, and run time just autofills the web UI form.
 - Adding --headless bypasses the web UI and runs the test immediately in the terminal.
