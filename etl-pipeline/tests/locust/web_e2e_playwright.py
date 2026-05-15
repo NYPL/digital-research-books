@@ -75,7 +75,7 @@ else:
     PROMPTS = json.loads(USER_PROMPTS_FILE.read_text())
 
 CATALOG_SEARCH_PROMPTS: list[str] = PROMPTS["catalog_search"]
-SUGGESTION_PROMPTS: list[str] = PROMPTS["suggestion"]
+SUGGESTION_PROMPTS: list[str] = PROMPTS["suggestion"]  # Excludes one prompt (SCHOL-588)
 # FOLLOW_UP_PROMPTS: list[str] = PROMPTS["follow_up"] -- Omitted (SCHOL-593)
 BOOK_SEARCH_PROMPTS: list[str] = PROMPTS["book_search"]
 
