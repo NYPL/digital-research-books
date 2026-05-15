@@ -40,6 +40,7 @@ class SentenceTransformersEmbedder(Embedder):
         """Return the model identifier."""
         return self._model
 
+    # TODO: confirm normalize_embedding=True should be passed (for consistency with hugging face TEI and theoretical reasons)
     def embed_one(self, text: str) -> list[float]:
         return self._embedder.encode(text).tolist()
 

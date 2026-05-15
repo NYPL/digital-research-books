@@ -115,7 +115,8 @@ class MetadataProvider:
         return {row[0]: {"title": row[1]} for row in rows}
 
     def _get_edition_metadata(self, record_ids: list[int]) -> dict[int, dict]:
-        """Query items -> editions -> works for edition metadata.
+        """Get editions by record_id.
+        Query items -> editions -> works for edition metadata.
 
         Returns a dict mapping record_id -> {
             "edition_id": int,

@@ -27,7 +27,7 @@ class DBManager:
         self.session = None
 
     def __enter__(self):
-        self.create_session(autoflush=True)
+        self.create_session()
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
@@ -78,8 +78,12 @@ class DBManager:
         self.session.rollback()
 
     def close_connection(self):
-        self.session.close()
-        self.engine.dispose()
+        if self.session is not None:
+            self.session.close()
+            self.session = None
+        if self.engine is not None:
+            self.engine.dispose()
+            self.engine = None
 
     def bulk_save_objects(self, objects, only_changed=True, retry=False):
         try:

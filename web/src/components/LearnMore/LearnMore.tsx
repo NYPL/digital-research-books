@@ -24,6 +24,7 @@ const LearnMore: React.FC = () => {
         <ESHero />
         <ResearchAssistantNav />
       </DrbBreakout>
+
       <Box display="flex" flexDir="column">
         <HeroSection
           ref={heroSectionRef}

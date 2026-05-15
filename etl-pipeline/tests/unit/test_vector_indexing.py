@@ -281,7 +281,7 @@ class TestPipeline:
 
         metadata_provider = Mock()
         metadata_provider.get_metadata.return_value = {
-            sample_book.book_id: sample_metadata
+            sample_book.barcode: sample_metadata
         }
 
         backend = Mock()
@@ -331,3 +331,19 @@ class TestPipeline:
 
         assert len(progress_calls) == 1
         assert progress_calls[0].barcode == sample_book.barcode
+
+    def test_pipeline_skips_downstream_steps_when_metadata_fetch_fails(
+        self, mock_pipeline, sample_book
+    ):
+        """When metadata provider raises, chunking, embedding, and insertion are skipped for that barcode."""
+        mock_pipeline._metadata_provider.get_metadata.side_effect = RuntimeError(
+            "DB connection failed"
+        )
+
+        result = mock_pipeline.index_book(sample_book.barcode)
+
+        assert not result.success
+        assert "Metadata retrieval error" in result.error
+        mock_pipeline._chunker.chunk.assert_not_called()
+        mock_pipeline._embedder.embed_batch.assert_not_called()
+        mock_pipeline._backend.insert.assert_not_called()

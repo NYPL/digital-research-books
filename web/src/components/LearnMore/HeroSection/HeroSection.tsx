@@ -31,9 +31,11 @@ const HeroSection: React.ForwardRefExoticComponent<
     return (
       <SectionContainer
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
+        paddingX={{ base: "0", md: "s" }}
         paddingTop="74px"
         paddingBottom="l"
         ref={ref}
+        tabIndex={-1}
       >
         <Flex
           flexDir="column"
@@ -57,8 +59,8 @@ const HeroSection: React.ForwardRefExoticComponent<
           </Heading>
           <StatisticRow />
           <Text fontSize="md" color="ui.gray.x-dark" marginBottom="l" isItalic>
-            Our collection of Digitized Research Books as of 1 July 2026
-            accessible through Enhanced Search
+            Our collection of Digitized Research Books accessible through
+            Enhanced Search as of June 1, 2026
           </Text>
           <Button
             id="read-more"
@@ -75,7 +77,8 @@ const HeroSection: React.ForwardRefExoticComponent<
               backgroundColor: "section.research.primary-05",
             }}
           >
-            Read More? <ArrowIcon direction="down" color="#006166" />
+            Read more
+            <ArrowIcon direction="down" color="#006166" />
           </Button>
         </Flex>
       </SectionContainer>
