@@ -43,7 +43,6 @@ slower ramp-ups may be used to meet different test criteria (e.g. DoS testing).
 
 import asyncio
 import json
-import logging
 import os
 import pathlib
 import random
@@ -54,7 +53,6 @@ from locust import between, task
 from locust_plugins.users.playwright import PlaywrightUser, event, pw
 from playwright.async_api import Page
 
-logger = logging.getLogger(__name__)
 
 TIMEOUT_MS = 120_000  # 2 min
 
@@ -90,7 +88,7 @@ class VRAUser(PlaywrightUser):
             text = await bubbles.nth(count - 1).evaluate(
                 "el => el.parentElement?.innerText ?? el.innerText"
             )
-            logger.info("[%s] response=%r", label, text.strip())
+            print(f"[{label}] response={json.dumps(text.strip())}")
 
     @task
     @pw
@@ -138,7 +136,7 @@ class VRAUser(PlaywrightUser):
             await page.get_by_role("button", name=prompt).click()
 
         # 3. Wait for chat panel response and at least one search result on results page
-        logger.info("[catalog search] submitting prompt='%s'", prompt)
+        print(f"[catalog search] submitting prompt='{prompt}'")
         async with event(self, "results page: chat response"):
             try:
                 await page.wait_for_url(re.compile(r".+/research-assistant$"))
@@ -159,7 +157,7 @@ class VRAUser(PlaywrightUser):
         # 4. Optionally submit a follow-up prompt on results page
         # if random.random() > 0.5:
         #     follow_up = random.choice(FOLLOW_UP_PROMPTS)
-        #     logger.info("[catalog search] submitting follow-up prompt='%s'", follow_up)
+        #     print(f"[catalog search] submitting follow-up prompt='{follow_up}'")
         #     await chat_input.fill(follow_up)
         #     await send_button.click()
         #     async with event(self, "results page: chat response follow-up"):
@@ -189,7 +187,7 @@ class VRAUser(PlaywrightUser):
         edition_id = (
             edition_div_id.removeprefix("edition-") if edition_div_id else "unknown"
         )
-        logger.info("[item page] navigating to edition %s", edition_id)
+        print(f"[item page] navigating to edition {edition_id}")
         async with event(self, "item page: load"):
             await (
                 selected_result.get_by_test_id("result-title")
@@ -203,7 +201,7 @@ class VRAUser(PlaywrightUser):
 
         # 6. Submit a prompt about the book
         book_prompt = random.choice(BOOK_PROMPTS)
-        logger.info("[content search] submitting prompt='%s'", book_prompt)
+        print(f"[content search] submitting prompt='{book_prompt}'")
         async with event(self, "item page: chat response"):
             try:
                 await vra_chat_bubbles.nth(0).wait_for()
