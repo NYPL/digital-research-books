@@ -409,14 +409,12 @@ class LLMLoggingHooks(RunHooks):
 
                 if content_val:
                     if (
-                        role == "user"
-                        and os.getenv(
+                        role != "user"
+                        or os.getenv(
                             "NEW_RELIC_CUSTOM_LLM_SEND_USER_PROMPT_TEXT_ENABLED"
                         )
-                        != "true"
+                        == "true"
                     ):
-                        pass
-                    else:
                         msg_payload["content"] = str(content_val)
 
                 newrelic.agent.record_custom_event(
