@@ -33,7 +33,7 @@ psycopg2-binary==2.9.6
 pycountry==22.3.5
 pyjwt[crypto]==2.6.0
 pymarc==4.2.2
-pypdf==6.7.1
+pypdf==6.10.2
 python-dotenv==1.2.1
 python-gnupg==0.5.0
 python-levenshtein==0.20.4
