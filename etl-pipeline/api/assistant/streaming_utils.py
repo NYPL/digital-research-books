@@ -11,15 +11,6 @@ from typing import Any, Dict, Optional
 from uuid import UUID
 
 
-def _default_json_serializer(obj: Any) -> Any:
-    """Convert non-serializable objects to JSON-compatible formats."""
-    if isinstance(obj, UUID):
-        return str(obj)
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
-
-
 def serialize_event(event_type: str, data: Dict[str, Any]) -> str:
     """
     Serialize an event as a single NDJSON line.
@@ -32,10 +23,7 @@ def serialize_event(event_type: str, data: Dict[str, Any]) -> str:
         A JSON string with the event, ending in a newline
     """
     event = {"type": event_type, **data}
-    return (
-        json.dumps(event, separators=(",", ":"), default=_default_json_serializer)
-        + "\n"
-    )
+    return json.dumps(event, separators=(",", ":")) + "\n"
 
 
 def format_error(message: str, code: Optional[str] = None) -> str:
