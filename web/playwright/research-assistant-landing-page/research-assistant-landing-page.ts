@@ -43,7 +43,9 @@ class ResearchAssistantLandingPage {
     this.suggestBtnShipbuilding = page.getByRole("button", {
       name: "The science of shipbuilding",
     });
-    this.learnMoreBtns = page.getByRole("button", { name: "Learn more" });
+    this.learnMoreBtns = page
+      .getByRole("link", { name: "Learn more" })
+      .and(page.locator("#learn-more-button"));
     this.featuresSectionHeading = page.getByRole("heading", {
       name: "What can the Assistant help you do?",
     });

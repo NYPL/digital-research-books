@@ -9,9 +9,12 @@ Priority level:
 from __future__ import annotations
 
 import os
+from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from glom import assign, delete
 
 if TYPE_CHECKING:
     from typing import Self
@@ -460,3 +463,168 @@ def reset_config() -> None:
     """Reset the global configuration (for testing)."""
     global _default_config
     _default_config = None
+
+
+####### Index Config ########
+
+
+class _DeleteSentinel:
+    """Sentinel value used in index config overrides to delete a path."""
+
+    def __repr__(self):
+        return "DELETE"
+
+
+DELETE = _DeleteSentinel()
+
+
+def load_from_module(class_name: str, module) -> type:
+    """Load a class by name from a module.
+
+    Args:
+        class_name: The name of the class to load
+        module: The module object to search in
+
+    Returns:
+        The class object
+
+    Raises:
+        ValueError: If the class is not found in the module
+    """
+    cls = getattr(module, class_name, None)
+    if cls is None:
+        raise ValueError(f"Unknown class: {class_name!r} in module {module.__name__}")
+    return cls
+
+
+def get_default_schema_with_dims(dims: str):
+    from vector_indexing.components.backends.turbopuffer import load_default_schema
+
+    schema = load_default_schema()
+    schema["vector"]["type"] = f"[{dims}]f16"
+    return schema
+
+
+HARRIER_OSS_V1_DIMENSIONS = 1024
+
+QWEN3_EMBEDDING_8B_DIMENSIONS = 1024
+
+
+def _index_config_entries():
+    from vector_indexing.components.backends.turbopuffer import (
+        load_default_schema,
+    )
+
+    return [
+        {  # Google
+            "names": [
+                "vra-dev",
+                "vra_test-sketches_of_the_north_river-gemini-001",
+            ],
+            "embedder": {
+                "class": "GoogleEmbedder",
+                "params": {
+                    # All are default and unnecessary
+                    "model": "gemini-embedding-001",
+                    "dimensions": 768,
+                    "task_type": "RETRIEVAL_QUERY",
+                },
+            },
+            "schema": load_default_schema(),
+        },
+        {  # Harrier
+            "names": [
+                "vra_test-sketches_of_the_north_river-harrier_oss_v1_.6b",
+                "vra_test-10k-harrier_oss_v1_.6b",
+            ],
+            "embedder": {
+                "class": "SageMakerEmbedder",
+                "params": {
+                    "endpoint_name": "hf-tei-harrier-oss-v1-0-6b-ml-g6-2xlarge-20260427-153815",  # pragma: allowlist secret
+                    "aws_profile": "vra-sandbox",
+                    "concurrency": 41,
+                },
+            },
+            "schema": get_default_schema_with_dims(HARRIER_OSS_V1_DIMENSIONS),
+        },
+        {  # Qwen 8b
+            "names": [
+                "vra_test-sketches_of_the_north-qwen3_embedding_8b"  # pragma: allowlist secret
+            ],
+            "embedder": {
+                "class": "SageMakerEmbedder",
+                "params": {
+                    "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6-2xlarge-20260507-231343",  # pragma: allowlist secret
+                    "aws_profile": "vra-sandbox",
+                    "concurrency": 14,
+                    "dimensions": QWEN3_EMBEDDING_8B_DIMENSIONS,
+                },
+            },
+            "schema": get_default_schema_with_dims(QWEN3_EMBEDDING_8B_DIMENSIONS),
+        },
+        {  # Qwen 4b
+            "names": [
+                # "vra_test-sketches_of_the_north-qwen3_embedding_4b"  # pragma: allowlist secret
+            ],
+            "embedder": {
+                "class": "SageMakerEmbedder",
+                "params": {
+                    "endpoint_name": "hf-tei-qwen3-embedding-4b-ml-g5-2xlarge-20260507-181318",  # pragma: allowlist secret
+                    "aws_profile": "vra-sandbox",
+                    "concurrency": 14,
+                    "dimensions": QWEN3_EMBEDDING_8B_DIMENSIONS,
+                },
+            },
+            "schema": get_default_schema_with_dims(QWEN3_EMBEDDING_8B_DIMENSIONS),
+        },
+    ]
+
+
+# TODO: make this more strict in validating that the override conforms to \
+# expected index config structure (e.g. names, embedder, schema top level keys, \
+# and embedder.params) (probably static path checks glom.assign can be removed \
+# but might be nice for target schema changes). Maybe even make the index config \
+# entry a nested dataclass to enforce/communicate structure
+def _apply_index_config_overrides(
+    entry: dict, overrides: dict[str, object] | None = None
+) -> dict:
+    """Apply dotted-path overrides to an index config entry in-place.
+
+    To delete a path, use the DELETE sentinel as the value::
+
+        overrides={"embedder.params.task_type": DELETE}
+    """
+    if not overrides:
+        return entry
+    for path, value in overrides.items():
+        if not isinstance(path, str) or not path:
+            raise ValueError(
+                f"Invalid override path {path!r}; expected a non-empty dotted path string"
+            )
+        if isinstance(value, _DeleteSentinel):
+            delete(entry, path)
+        else:
+            assign(entry, path, value)
+    return entry
+
+
+def get_index_config_dict(index_name, overrides: dict[str, object] | None = None):
+    """Return the raw index config dictionary for index_name."""
+    entry = next((e for e in _index_config_entries() if index_name in e["names"]), None)
+    if entry is None:
+        raise ValueError(f"No index config found for index name: {index_name!r}")
+    copied = deepcopy(entry)
+    return _apply_index_config_overrides(copied, overrides=overrides)
+
+
+def get_index_config(index_name, overrides: dict[str, object] | None = None):
+    from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
+    from vector_indexing.components import embedders as embedders_module
+
+    entry = get_index_config_dict(index_name, overrides=overrides)
+
+    embedder_class_name = entry["embedder"]["class"]
+    embedder_class = load_from_module(embedder_class_name, embedders_module)
+    embedder = embedder_class(**entry["embedder"]["params"])
+    backend = TurbopufferBackend(index_name=index_name, schema=entry["schema"])
+    return {"embedder": embedder, "backend": backend}

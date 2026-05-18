@@ -13,7 +13,7 @@ import KeywordSearchIcon from "./icons/KeywordSearchIcon";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 
 interface ResearchAssistantNavProps {
-  activePage: PageType;
+  activePage?: PageType;
 }
 
 const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
