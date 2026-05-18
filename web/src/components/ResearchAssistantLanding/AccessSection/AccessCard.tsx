@@ -15,11 +15,11 @@ const AccessCard: React.FC<AccessCardProps> = ({
     <Flex flexDir="column" gap="l">
       <Box
         background="ui.white"
-        border="1px solid"
+        border="2px solid"
         borderColor="section.research.secondary"
         borderRadius="16px"
         margin="0 auto"
-        padding="m"
+        padding="s"
         width="fit-content"
       >
         {icon}
