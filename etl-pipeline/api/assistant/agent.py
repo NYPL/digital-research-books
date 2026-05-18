@@ -504,8 +504,8 @@ class LLMLoggingHooks(RunHooks):
         self._last_response = response
 
         if response.usage:
-            self.total_input_tokens = response.usage.input_tokens or 0
-            self.total_output_tokens = response.usage.output_tokens or 0
+            self.total_input_tokens += response.usage.input_tokens or 0
+            self.total_output_tokens += response.usage.output_tokens or 0
 
         elapsed_str = f"{elapsed:.3f}s"
         output_types = [o.type for o in response.output] if response.output else []
