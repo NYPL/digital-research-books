@@ -63,15 +63,6 @@ const MessageBubble = memo(
                 )}
                 <Flex flexDir="column" gap="12px">
                   <Box>
-                    {!isLoading && (
-                      <Text
-                        color="section.research.secondary"
-                        isBold
-                        display="inline"
-                      >
-                        VRA:{" "}
-                      </Text>
-                    )}
                     {parseEditionLinks(contentItem.text, handleEditionClick)}
                     {isContentSearchResults(messageResults) &&
                       messageResults.snippets && (
