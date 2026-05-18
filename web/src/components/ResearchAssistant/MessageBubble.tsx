@@ -55,6 +55,7 @@ const MessageBubble = memo(
                 key={idx}
                 gap="xs"
                 alignItems={isLoading ? "center" : "flex-start"}
+                data-testid="assistant-message-bubble"
               >
                 {isLoading ? (
                   <LoadingEllipses />
