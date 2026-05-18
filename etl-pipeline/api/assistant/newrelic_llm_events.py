@@ -4,6 +4,7 @@ New Relic custom LLM event instrumentation for the AI chat assistant.
 Records LlmChatCompletionMessage and LlmChatCompletionSummary events
 compatible with the New Relic AI monitoring dashboard.
 """
+
 import json
 import os
 import time
@@ -151,16 +152,12 @@ def record_llm_events(
             if content_val:
                 if (
                     role != "user"
-                    or os.getenv(
-                        "NEW_RELIC_CUSTOM_LLM_SEND_USER_PROMPT_TEXT_ENABLED"
-                    )
+                    or os.getenv("NEW_RELIC_CUSTOM_LLM_SEND_USER_PROMPT_TEXT_ENABLED")
                     == "true"
                 ):
                     msg_payload["content"] = str(content_val)
 
-            newrelic.agent.record_custom_event(
-                "LlmChatCompletionMessage", msg_payload
-            )
+            newrelic.agent.record_custom_event("LlmChatCompletionMessage", msg_payload)
             sequence += 1
     except Exception as e:
         logger.warning(f"Error logging previous messages: {e}")
@@ -183,9 +180,7 @@ def record_llm_events(
         "span_id": span_id,
         "timestamp": timestamp_ms,
     }
-    newrelic.agent.record_custom_event(
-        "LlmChatCompletionMessage", final_msg_payload
-    )
+    newrelic.agent.record_custom_event("LlmChatCompletionMessage", final_msg_payload)
 
     # 4. Log summary event with aggregate LLM response metadata
     summary_payload = {
