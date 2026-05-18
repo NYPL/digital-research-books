@@ -126,7 +126,7 @@ describe("ResearchAssistantInput", () => {
     render(<ResearchAssistantInput />);
 
     const inputElement = screen.getByPlaceholderText(
-      /assistant is thinking.../i
+      /processing your query.../i
     ) as HTMLTextAreaElement;
     const sendButton = screen.getByRole("button", { name: /send/i });
 
@@ -134,7 +134,7 @@ describe("ResearchAssistantInput", () => {
     expect(sendButton).toBeDisabled();
   });
 
-  test('renders "Assistant is thinking..." placeholder when disabled', () => {
+  test('renders "Processing your query..." placeholder when disabled', () => {
     mockUseResearchAssistant.mockReturnValue({
       messages: [],
       sendMessage: mockSendMessage,
@@ -144,7 +144,7 @@ describe("ResearchAssistantInput", () => {
     render(<ResearchAssistantInput />);
 
     expect(
-      screen.getByPlaceholderText(/assistant is thinking.../i)
+      screen.getByPlaceholderText(/processing your query.../i)
     ).toBeInTheDocument();
     expect(
       screen.queryByPlaceholderText(/ask your question.../i)

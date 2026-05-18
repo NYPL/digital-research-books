@@ -57,6 +57,8 @@ from utils.timer import timer
 
 logger = create_log(__name__)
 
+EventCallback = Callable[[str, Dict[str, Any]], None]
+
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
 
@@ -250,6 +252,7 @@ class CatalogSearchExecutionContext:
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
     search_results: Dict = field(default_factory=dict)
+    event_callback: Optional[EventCallback] = None
 
 
 @dataclass
@@ -261,6 +264,21 @@ class ContentSearchExecutionContext:
     edition_id: int
     search_results: Dict = field(default_factory=dict)
     frbr_fields: Dict = field(default_factory=dict)
+    event_callback: Optional[EventCallback] = None
+
+
+def emit_stream_event(
+    exec_context: Any, event_type: str, payload: Dict[str, Any]
+) -> None:
+    """Emit a structured stream event if a callback exists in the execution context."""
+    callback = getattr(exec_context, "event_callback", None)
+    if callback is None:
+        return
+
+    try:
+        callback(event_type, payload)
+    except Exception:
+        logger.exception("Failed to emit stream event: %s", event_type)
 
 
 # TODO: make a name and args callback for any tool, and add a edition_id log message to search_book, add traceback log to this callback
@@ -442,6 +460,7 @@ async def update_chat(
     session_id: str,
     edition_id=None,
     max_turns: int = DEFAULT_MAX_TURNS,
+    event_callback: Optional[EventCallback] = None,
 ) -> RunResult:
     """
     Send a message to the conversation and get the agent's response.
@@ -512,6 +531,7 @@ async def update_chat(
             embedder=embedder,
             edition_id=edition_id,
             frbr_fields=frbr_fields,
+            event_callback=event_callback,
         )
 
         system_prompt = system_prompt_template.render(
@@ -521,7 +541,11 @@ async def update_chat(
 
     # Search for books in catalog
     else:  # conversation_type == "catalogSearch":
-        exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
+        exec_context = CatalogSearchExecutionContext(
+            backend=backend,
+            embedder=embedder,
+            event_callback=event_callback,
+        )
         system_prompt = remove_markdown_comments(
             system_prompt_template.render(conversation_type="catalogSearch")
         )
@@ -662,6 +686,17 @@ def search_catalog(
     filters: List | tuple | None = None,
     filters_match_null: bool = True,
 ) -> str:
+    tool_start = time.perf_counter()
+
+    emit_stream_event(
+        ctx.context,
+        "search_started",
+        {
+            "tool": ctx.tool_name,
+            "context": f'Searching the catalog for "{ranking_query}". This may take up to a minute.',
+        },
+    )
+
     try:
         logger.info(f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}'")
 
@@ -785,6 +820,18 @@ def search_catalog(
         # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
         # than saving JSON/API response separately but edition data json may \
         # include irrelevant metadata)
+        elapsed = time.perf_counter() - tool_start
+        emit_stream_event(
+            ctx.context,
+            "search_completed",
+            {
+                "tool": ctx.tool_name,
+                "status": (
+                    f'Searched for {elapsed:.3f} seconds in the catalog for "{ranking_query}".'
+                ),
+            },
+        )
+
         return format_search_results(edition_data, as_str=True)
 
     except Exception as e:
@@ -807,6 +854,18 @@ def search_book(
     filters: Optional[Union[List, tuple]] = None,
     filters_match_null: bool = True,
 ) -> str:
+    tool_start = time.perf_counter()
+    title = ctx.context.frbr_fields.get("title")
+
+    emit_stream_event(
+        ctx.context,
+        "search_started",
+        {
+            "tool": ctx.tool_name,
+            "context": f'Searching {title} for "{ranking_query}". This may take up to a minute.',
+        },
+    )
+
     try:
         logger.info(
             f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}', for edition_id = {ctx.context.edition_id}"
@@ -857,7 +916,18 @@ def search_book(
             "search_params": json.loads(ctx.tool_arguments),
         }
 
-        # Format results for LLM
+        elapsed = time.perf_counter() - tool_start
+        emit_stream_event(
+            ctx.context,
+            "search_completed",
+            {
+                "tool": ctx.tool_name,
+                "status": (
+                    f'Searched for {elapsed:.3f} seconds within {title} for "{ranking_query}".'
+                ),
+            },
+        )
+
         return format_search_results(
             ctx.context.search_results[ctx.tool_call_id]["edition_data"],
             as_str=True,

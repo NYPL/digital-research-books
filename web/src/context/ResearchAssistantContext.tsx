@@ -3,11 +3,15 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   ChatResultsMap,
   ConversationType,
+  ErrorEvent,
+  FinalResponseEvent,
   HistoryItem,
   Item,
   ItemType,
   MessageRole,
   PageType,
+  SearchCompletedEvent,
+  StreamEvent,
 } from "~/src/types/ResearchAssistant";
 import { SURVEY_DELAY_MS } from "../constants/researchAssistant";
 import { getSurveyStorageKey } from "../util/ResearchAssistantUtils";
@@ -28,6 +32,8 @@ interface ResearchAssistantContextType extends ResearchAssistantViewState {
   results: ChatResultsMap;
   isLoading: boolean;
   error: string | null;
+  progressEvents: StreamEvent[];
+  searchCompleted: Record<number, string>;
   historyStack: HistoryItem[];
   setHistoryStack: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
   goToPreviousState: (restoredStack?: HistoryItem[]) => void;
@@ -58,6 +64,10 @@ export const ResearchAssistantProvider: React.FC<{
   const [messages, setMessages] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progressEvents, setProgressEvents] = useState<StreamEvent[]>([]);
+  const [searchCompleted, setSearchCompleted] = useState<
+    Record<number, string>
+  >({});
   const [showChat, setShowChat] = useState(true);
   const [hasSentFirstQuery, setHasSentFirstQuery] = useState(false);
   const [activeSearchTimeMs, setActiveSearchTimeMs] = useState(0);
@@ -112,6 +122,7 @@ export const ResearchAssistantProvider: React.FC<{
 
     setError(null);
     setIsLoading(true);
+    setProgressEvents([]);
 
     const newUserMessage: Item = {
       type: ItemType.Message,
@@ -148,11 +159,87 @@ export const ResearchAssistantProvider: React.FC<{
         );
       }
 
-      const data = await response.json();
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let finalEvent: FinalResponseEvent | null = null;
+      let streamError: string | null = null;
+      let latestSearchCompletedStatus: string | null = null;
+      let isDone = false;
+
+      while (!isDone) {
+        const { done, value } = await reader.read();
+        isDone = done;
+
+        if (value) {
+          buffer += decoder.decode(value, { stream: true });
+        }
+
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event: StreamEvent = JSON.parse(line);
+            if (event.type === "error") {
+              streamError =
+                (event as ErrorEvent).message || "Unknown stream error";
+            } else if (event.type === "final_response") {
+              finalEvent = event as FinalResponseEvent;
+            } else {
+              if (
+                event.type === "search_completed" &&
+                (event as SearchCompletedEvent).status
+              ) {
+                latestSearchCompletedStatus = (event as SearchCompletedEvent)
+                  .status;
+              }
+              setProgressEvents((prev) => [...prev, event]);
+            }
+          } catch (parseError) {
+            console.error("Failed to parse stream line:", line, parseError);
+          }
+        }
+      }
+
+      if (streamError) {
+        setError(streamError);
+        return;
+      }
+
+      const data = {
+        messages: finalEvent.messages,
+        resultType: finalEvent.result_type,
+        results: finalEvent.result,
+        sessionId: finalEvent.session_id,
+      };
+
       setSessionId(data.sessionId);
+
+      const assistantMessageStartIndex = messages.length + 1;
 
       const newMessagesLength = messages.length + data.messages.length;
       setMessages((prevMessages) => [...prevMessages, ...data.messages]);
+
+      if (latestSearchCompletedStatus) {
+        const updates: Record<number, string> = {};
+        data.messages.forEach((item: Item, offset: number) => {
+          if (
+            item.type === ItemType.Message &&
+            item.role === MessageRole.Assistant
+          ) {
+            updates[
+              assistantMessageStartIndex + offset
+            ] = latestSearchCompletedStatus as string;
+          }
+        });
+
+        if (Object.keys(updates).length > 0) {
+          setSearchCompleted((prev) => ({ ...prev, ...updates }));
+        }
+      }
+
       const newResults = {
         ...viewState.results,
         [newMessagesLength]: data.results,
@@ -242,6 +329,7 @@ export const ResearchAssistantProvider: React.FC<{
     if (invalidateSession) clearSession();
     setMessages([]);
     setError(null);
+    setSearchCompleted({});
     if (page !== "item") {
       setViewState((prev) => ({
         ...prev,
@@ -305,6 +393,8 @@ export const ResearchAssistantProvider: React.FC<{
     setMessages,
     isLoading,
     error,
+    progressEvents,
+    searchCompleted,
     historyStack,
     setHistoryStack,
     goToPreviousState,

@@ -5,15 +5,26 @@ import {
   CATALOG_INITIAL_MESSAGE,
   CONTENT_INITIAL_MESSAGE,
   getPanelLayout,
-  LOADING_MESSAGE,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import { ConversationType, MessageRole } from "~/src/types/ResearchAssistant";
+import {
+  ConversationType,
+  ItemType,
+  MessageItem,
+  MessageRole,
+} from "~/src/types/ResearchAssistant";
 import MessageBubble from "./MessageBubble";
 
 const ResearchAssistantWindow: React.FC = () => {
-  const { messages, isLoading, error, results } = useResearchAssistant();
+  const {
+    messages,
+    isLoading,
+    error,
+    results,
+    progressEvents,
+    searchCompleted: searchCompleted,
+  } = useResearchAssistant();
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -52,6 +63,22 @@ const ResearchAssistantWindow: React.FC = () => {
         .join(" ")}`;
     }
     return "";
+  };
+
+  const searchStartedEvent = progressEvents?.find(
+    (e) => e.type === "search_started"
+  );
+  const searchContext = searchStartedEvent?.context;
+
+  const loadingMessage: MessageItem = {
+    type: ItemType.Message,
+    role: MessageRole.Assistant,
+    content: [
+      {
+        text: searchContext ?? "Thinking... This may take several seconds.",
+        type: "output_text",
+      },
+    ],
   };
 
   return (
@@ -104,6 +131,7 @@ const ResearchAssistantWindow: React.FC = () => {
                   index={index}
                   message={message}
                   messageResults={results?.[index] ?? null}
+                  searchCompletedMessage={searchCompleted?.[index] ?? null}
                 />
               </Box>
             );
@@ -113,7 +141,7 @@ const ResearchAssistantWindow: React.FC = () => {
           <Box ref={messagesEndRef}>
             <MessageBubble
               index={messages.length}
-              message={LOADING_MESSAGE}
+              message={loadingMessage}
               isLoading={isLoading}
             />
           </Box>

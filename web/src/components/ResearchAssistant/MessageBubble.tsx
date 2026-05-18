@@ -22,10 +22,17 @@ interface MessageBubbleProps {
   index: number;
   isLoading?: boolean;
   messageResults?: ChatResults | null;
+  searchCompletedMessage?: string;
 }
 
 const MessageBubble = memo(
-  ({ message, index, isLoading, messageResults }: MessageBubbleProps) => {
+  ({
+    message,
+    index,
+    isLoading,
+    messageResults,
+    searchCompletedMessage,
+  }: MessageBubbleProps) => {
     const isUser = message.role === MessageRole.User;
     const isAssistant = message.role === MessageRole.Assistant;
     const bubbleClasses = isUser
@@ -49,47 +56,63 @@ const MessageBubble = memo(
               {message.content}
             </Text>
           ) : (
-            isAssistant &&
-            message.content.map((contentItem, idx) => (
-              <Flex
-                key={idx}
-                gap="xs"
-                alignItems={isLoading ? "center" : "flex-start"}
-              >
-                {isLoading ? (
-                  <LoadingEllipses />
-                ) : (
-                  <ResearchAssistantIcon inCircle />
-                )}
-                <Flex flexDir="column" gap="12px">
-                  <Box>
-                    {!isLoading && (
-                      <Text
-                        color="section.research.secondary"
-                        isBold
-                        display="inline"
-                      >
-                        VRA:{" "}
-                      </Text>
-                    )}
-                    {parseEditionLinks(contentItem.text, handleEditionClick)}
-                    {isContentSearchResults(messageResults) &&
-                      messageResults.snippets && (
-                        <SnippetList snippets={messageResults.snippets} />
-                      )}
-                  </Box>
-                  {!isLoading &&
-                    (index === 0 ? (
-                      <AiGeneratedText isInitial />
+            isAssistant && (
+              <>
+                {message.content.map((contentItem, idx) => (
+                  <Flex
+                    key={idx}
+                    gap="xs"
+                    alignItems={isLoading ? "center" : "flex-start"}
+                  >
+                    {isLoading ? (
+                      <LoadingEllipses />
                     ) : (
-                      <Flex alignItems="center" justifyContent="space-between">
-                        <AiGeneratedText />
-                        <FeedbackButtons label="message feedback" />
-                      </Flex>
-                    ))}
-                </Flex>
-              </Flex>
-            ))
+                      <ResearchAssistantIcon inCircle />
+                    )}
+                    <Flex flexDir="column" gap="s">
+                      {!isLoading && searchCompletedMessage && (
+                        <Box>
+                          <Text color="ui.gray.dark" size="body2">
+                            {searchCompletedMessage}
+                          </Text>
+                        </Box>
+                      )}
+                      <Box>
+                        {!isLoading && (
+                          <Text
+                            color="section.research.secondary"
+                            isBold
+                            display="inline"
+                          >
+                            VRA:{" "}
+                          </Text>
+                        )}
+                        {parseEditionLinks(
+                          contentItem.text,
+                          handleEditionClick
+                        )}
+                        {isContentSearchResults(messageResults) &&
+                          messageResults.snippets && (
+                            <SnippetList snippets={messageResults.snippets} />
+                          )}
+                      </Box>
+                      {!isLoading &&
+                        (index === 0 ? (
+                          <AiGeneratedText isInitial />
+                        ) : (
+                          <Flex
+                            alignItems="center"
+                            justifyContent="space-between"
+                          >
+                            <AiGeneratedText />
+                            <FeedbackButtons label="message feedback" />
+                          </Flex>
+                        ))}
+                    </Flex>
+                  </Flex>
+                ))}
+              </>
+            )
           )}
         </Box>
       </Box>
