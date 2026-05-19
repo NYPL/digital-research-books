@@ -7,6 +7,8 @@ from copy import deepcopy
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 
+from glom import assign, delete
+
 from utils.common import require_env
 
 
@@ -123,6 +125,16 @@ class QwenConfig:
 ####### Index Config ########
 
 
+class _DeleteSentinel:
+    """Sentinel value used in index config overrides to delete a path."""
+
+    def __repr__(self):
+        return "DELETE"
+
+
+DELETE = _DeleteSentinel()
+
+
 def load_from_module(obj_name: str, module) -> type:
     """Load an object from a module by str name.
 
@@ -171,23 +183,37 @@ def _index_config_data():
             "embedder": {
                 "class": "SageMakerEmbedder",
                 "params": {
-                    "endpoint_name": "hf-tei-harrier-oss-v1-0-6b-ml-g6-2xlarge-20260424-011130",  # pragma: allowlist secret
-                    "aws_profile": "sandbox",
+                    "endpoint_name": "hf-tei-harrier-oss-v1-0-6b-ml-g6-2xlarge-20260427-153815",  # pragma: allowlist secret
+                    "aws_profile": "vra-sandbox",
                     "concurrency": 41,
                 },
             },
             "schema": get_default_schema_with_dims(HARRIER_OSS_V1_DIMENSIONS),
         },
-        {  # Qwen
+        {  # Qwen 8b
             "names": [
-                "vra_test-sketches_of_the_north-qwen3_embedding_8b",  # pragma: allowlist secret
-                "vra_test-10k-qwen3_embedding_8b",  # pragma: allowlist secret
+                "vra_test-sketches_of_the_north-qwen3_embedding_8b"  # pragma: allowlist secret
             ],
             "embedder": {
                 "class": "SageMakerEmbedder",
                 "params": {
-                    "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6e-xlarge-20260428-235752",  # pragma: allowlist secret
-                    "aws_profile": "sandbox",
+                    "endpoint_name": "hf-tei-qwen3-embedding-8b-ml-g6-2xlarge-20260507-231343",  # pragma: allowlist secret
+                    "aws_profile": "vra-sandbox",
+                    "concurrency": 14,
+                    "dimensions": QWEN3_EMBEDDING_8B_DIMENSIONS,
+                },
+            },
+            "schema": get_default_schema_with_dims(QWEN3_EMBEDDING_8B_DIMENSIONS),
+        },
+        {  # Qwen 4b
+            "names": [
+                # "vra_test-sketches_of_the_north-qwen3_embedding_4b"  # pragma: allowlist secret
+            ],
+            "embedder": {
+                "class": "SageMakerEmbedder",
+                "params": {
+                    "endpoint_name": "hf-tei-qwen3-embedding-4b-ml-g5-2xlarge-20260507-181318",  # pragma: allowlist secret
+                    "aws_profile": "vra-sandbox",
                     "concurrency": 14,
                     "dimensions": QWEN3_EMBEDDING_8B_DIMENSIONS,
                 },
@@ -197,22 +223,48 @@ def _index_config_data():
     ]
 
 
-def get_index_config_dict(index_name):
-    """Return the raw index config dictionary for index_name.
+# TODO: make this more strict in validating that the override conforms to \
+# expected index config structure (e.g. names, embedder, schema top level keys, \
+# and embedder.params) (probably static path checks glom.assign can be removed \
+# but might be nice for target schema changes). Maybe even make the index config \
+# entry a nested dataclass to enforce/communicate structure
+def _apply_index_config_overrides(
+    entry: dict, overrides: dict[str, object] | None = None
+) -> dict:
+    """Apply dotted-path overrides to an index config entry in-place.
 
-    If name associated with multiple entries, returns first.
+    To delete a path, use the DELETE sentinel as the value::
+
+        overrides={"embedder.params.task_type": DELETE}
     """
+    if not overrides:
+        return entry
+    for path, value in overrides.items():
+        if not isinstance(path, str) or not path:
+            raise ValueError(
+                f"Invalid override path {path!r}; expected a non-empty dotted path string"
+            )
+        if isinstance(value, _DeleteSentinel):
+            delete(entry, path)
+        else:
+            assign(entry, path, value)
+    return entry
+
+
+def get_index_config_dict(index_name, overrides: dict[str, object] | None = None):
+    """Return the raw index config dictionary for index_name."""
     entry = next((e for e in _index_config_data() if index_name in e["names"]), None)
     if entry is None:
         raise ValueError(f"No index config found for index name: {index_name!r}")
-    return deepcopy(entry)
+    copied = deepcopy(entry)
+    return _apply_index_config_overrides(copied, overrides=overrides)
 
 
-def get_index_config(index_name):
+def get_index_config(index_name, overrides: dict[str, object] | None = None):
     from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
     from vector_indexing.components import embedders as embedders_module
 
-    entry = get_index_config_dict(index_name)
+    entry = get_index_config_dict(index_name, overrides=overrides)
 
     embedder_class_name = entry["embedder"]["class"]
     embedder_class = load_from_module(embedder_class_name, embedders_module)

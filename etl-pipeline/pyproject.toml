@@ -1,9 +1,0 @@
-[project]
-name = 'etl-pipeline'
-requires-python = ">= 3.10"
-version="0.0.0"
-
-[tool.pytest.ini_options]
-addopts = "-rA"
-asyncio_mode = "strict"
-pythonpath = "."

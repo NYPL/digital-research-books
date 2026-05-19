@@ -11,4 +11,4 @@ class GrinPublicDomain10k(Base):
     barcode = Column(Text, primary_key=True)
     record_id = Column(
         Integer, unique=True, nullable=True
-    )  # NOTE: it would be better if this was not nullable
+    )  # NOTE: This reflects that the table was created with this field nullable. Ideally, it should not be nullable

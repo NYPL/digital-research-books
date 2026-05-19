@@ -29,6 +29,12 @@ Usage:
 
     # Use mock embedder (for testing):
     python -m vector_indexing.scripts.index_books --barcodes 33433001234567 --mock-embedder
+
+    # Use qa environment config:
+    python -m vector_indexing.scripts.index_books --10k --index-name vra_test-10k-harrier_oss_v1_.6b --env qa
+
+    # Override nested index config values at runtime:
+    python -m vector_indexing.scripts.index_books --10k --index-name vra_test-10k-harrier_oss_v1_.6b --config-overrides '{"embedder.params.endpoint_name": "new-endpoint-name"}'
 """
 
 import argparse
@@ -38,10 +44,6 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
-
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session
-
 
 # Add project root to path if running directly
 if __name__ == "__main__":
@@ -54,25 +56,23 @@ if __name__ == "__main__":
         sys.path.insert(0, str(project_root))
 
 from vector_indexing import SentenceSplitterChunker
-from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
 from vector_indexing.pipeline.orchestrator import BatchResult, Pipeline
 from vector_indexing.components import loaders
 from vector_indexing.core.config import (
+    DELETE,
     get_index_config,
     get_index_config_dict,
     load_from_module,
-    PostgresConfig,
     resolve_path,
 )
-from model.postgres.grin_public_domain_10k import GrinPublicDomain10k
+from vector_indexing.utils.barcodes import list_10k_barcodes
 from utils.common import batched
 
 
-DEFAULT_INDEX_NAME = "vra-dev"
+TURBOPUFFER_INDEX_NAME = "vra-dev"
 DEFAULT_RESULTS_DIR = Path(__file__).resolve().parent / "indexing_results"
 JOB_METADATA_FILE = "job_metadata.json"
 JOB_STATE_FILE = "job_state.json"
-BATCHES_DIR = "batches"
 
 
 class MockEmbedder:
@@ -116,8 +116,12 @@ def _iso_utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
-def build_job_metadata(args: argparse.Namespace) -> dict[str, Any]:
-    index_config_dict = get_index_config_dict(args.index_name)
+def build_job_metadata(
+    args: argparse.Namespace, config_overrides: dict[str, Any]
+) -> dict[str, Any]:
+    index_config_dict = get_index_config_dict(
+        args.index_name, overrides=config_overrides
+    )
     index_config = {k: v for k, v in index_config_dict.items() if k != "names"}
     if args.ten_k:
         barcode_input = {"type": "10k", "value": "grin_public_domain_10k"}
@@ -186,7 +190,6 @@ def create_job_dir(results_dir: Path, index_name: str) -> Path:
     timestamp = _iso_utc_now()
     job_dir = results_dir / f"{index_name}_job_{timestamp}"
     job_dir.mkdir(parents=True, exist_ok=False)
-    (job_dir / BATCHES_DIR).mkdir(parents=True, exist_ok=False)
     return job_dir
 
 
@@ -213,132 +216,34 @@ def find_latest_job(results_dir: Path, index_name: str) -> Path | None:
 ##############################
 
 
-#### Barcode Discovery Helpers ####
-
-
 def start_from_job(job_dir: Path) -> tuple[str | None, bool]:
     """Return first failed barcode in a indexing job folder, distinguishing
     between no barcodes attempted and all barcodes succeeded.
 
-    Returns the first failed barcode in chronological batch order. If batches exist
-    and all records succeeded, returns ``(None, True)``.
+    Returns (<barcode>, <all_succeeded>).
+        <barcode> is the first failed barcode in chronological batch order.
+        If batch results exist and all records succeeded, returns ``(None, True)``.
+        If no batch results exist, returns ``(None, False)``.
     """
-    batches_dir = job_dir / BATCHES_DIR
-    batch_result_paths = sorted(batches_dir.glob("batch_result_*.json"))
-
-    if not batch_result_paths:
+    batch_dirs = sorted(p for p in job_dir.glob("batch_*") if p.is_dir())
+    if not batch_dirs:
         return None, False
 
     found_any_batch_result = False
-    for path in batch_result_paths:
-        found_any_batch_result = True
-        batch_result = BatchResult.load(path)
-        for result in batch_result.results:
-            if not result.success:
-                return result.barcode, False
+    for batch_dir in batch_dirs:
+        for path in sorted(batch_dir.glob("batch_result_*.json")):
+            found_any_batch_result = True
+            batch_result = BatchResult.load(path)
+            for result in batch_result.results:
+                if not result.success:
+                    return result.barcode, False
 
     if not found_any_batch_result:
         return None, False
     return None, True
 
 
-def list_10k_barcodes(start_from: str | None = None):
-    """Return all barcodes from grin_public_domain_10k, sorted ascending.
-
-    If start_from is provided, only barcodes >= start_from are returned.
-    """
-    engine = create_engine(PostgresConfig().connection_url)
-    with Session(engine) as db_session:
-        query = select(GrinPublicDomain10k.barcode).order_by(
-            GrinPublicDomain10k.barcode
-        )
-        if start_from is not None:
-            query = query.where(GrinPublicDomain10k.barcode >= start_from)
-        rows = db_session.execute(query).scalars().all()
-    barcodes = list(rows)
-    print(f"Fetched {len(barcodes)} barcodes from grin_public_domain_10k")
-    return barcodes
-
-
-# TODO: some modularization so we can "scan()" with arbitrary queries like the one used here
-def write_non_indexed_10k_barcodes(index_name: str, output_path: Path | str) -> Path:
-    """Write 10k barcodes not yet indexed in the target turbopuffer namespace.
-
-    The output file contains one barcode per line, sorted ascending.
-    """
-    output_path = Path(output_path)
-    source_barcodes = set(list_10k_barcodes())
-    missing_barcodes = set(source_barcodes)
-
-    # limit.per returns 1 row per unique barcode value.
-    # limit.total is page size for paginating the sorted query over the whole index
-    # Cursor-based pagination handles datasets of any size.
-    _PAGE_LIMIT = 1_000
-    backend = TurbopufferBackend(index_name=index_name)
-    last_barcode: str | None = None
-
-    while missing_barcodes:
-        query_kwargs: dict[str, Any] = {
-            "rank_by": ("barcode", "asc"),
-            "limit": {
-                "total": _PAGE_LIMIT,  #
-                "per": {"attributes": ["barcode"], "limit": 1},
-            },
-            "include_attributes": ["barcode"],
-        }
-        if last_barcode is not None:
-            query_kwargs["filters"] = ("barcode", "Gt", last_barcode)
-
-        result = backend.namespace.query(**query_kwargs)
-        rows = result.rows
-        if not rows:
-            break
-
-        last_barcode = None
-        for row in rows:
-            barcode = row.model_dump().get("barcode")
-            last_barcode = barcode
-            if barcode in missing_barcodes:
-                missing_barcodes.discard(barcode)
-
-        if last_barcode is None or len(rows) < _PAGE_LIMIT:
-            break
-
-    non_indexed_barcodes = sorted(missing_barcodes)
-
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_contents = "\n".join(non_indexed_barcodes)
-    if output_contents:
-        output_contents += "\n"
-    output_path.write_text(output_contents)
-
-    print(
-        f"Wrote {len(non_indexed_barcodes)} non-indexed barcodes to {output_path} "
-        f"for index '{index_name}'"
-    )
-    return output_path
-
-
-# TODO: query limit 1 per barcode and get the batch_size-th largest barcode to \
-# accommodate that last successful batch given fail-fast indexing
-def get_last_indexed_barcode(index_name: str) -> str | None:
-    """Return the lexicographically largest barcode already indexed in the given
-    turbopuffer namespace, matching the ascending sort order used in list_10k_barcodes.
-    Returns None if the namespace is empty or has no indexed documents.
-    """
-    backend = TurbopufferBackend(index_name=index_name)
-    results = backend.query(
-        rank_by=("barcode", "desc"),
-        top_k=1,
-        include_attributes=["barcode"],
-    )
-    if not results:
-        return None
-    chunk, _ = results[0]
-    return chunk.barcode
-
-
-def rerun_indexing(results_dir: Path) -> Iterator[str]:
+def failed_from_job(results_dir: Path) -> Iterator[str]:
     """Generate failed barcodes from saved batch results in an indexing
     run results directory
     """
@@ -348,9 +253,6 @@ def rerun_indexing(results_dir: Path) -> Iterator[str]:
     for path in sorted(results_dir.glob("batch_result_*.json")):
         batch_result = BatchResult.load(path)
         yield from (r.barcode for r in batch_result.results if not r.success)
-
-
-###################################
 
 
 def _apply_start_from(barcodes: list[str], start_from: str | None) -> list[str]:
@@ -382,15 +284,20 @@ def load_barcodes_from_file(file_path: Path) -> list[str]:
     ]
 
 
-# NOTE: purely for pretty/readable errors
-def parse_loader_args(raw: str) -> dict:
+def parse_json_object_arg(raw: str, arg_name: str) -> dict[str, Any]:
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError as exc:
-        raise ValueError(f"Invalid JSON for --loader-args: {exc}") from exc
+        raise ValueError(f"Invalid JSON for --{arg_name}:  {exc}") from exc
     if not isinstance(parsed, dict):
-        raise ValueError("--loader-args must deserialize to a JSON object")
+        raise ValueError(f"--{arg_name} must deserialize to a JSON object")
     return parsed
+
+
+def parse_config_overrides(raw: str) -> dict[str, Any]:
+    """Parse --config-overrides JSON, mapping the string "DELETE" to the DELETE sentinel."""
+    parsed = parse_json_object_arg(raw, "config-overrides")
+    return {k: DELETE if v == "DELETE" else v for k, v in parsed.items()}
 
 
 def parse_args():
@@ -428,13 +335,68 @@ def parse_args():
         help="Print what would be done without actually indexing",
     )
     parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Ignore index-config mismatch with latest job and overwrite saved index_config. Does not override barcode_input mismatch.",
+    )
+    parser.add_argument(
+        "--resume-latest",
+        action="store_true",
+        help="Resume the latest matching job for this --index-name and barcode input. If omitted, always start a new job.",
+    )
+    parser.add_argument(
+        "--env",
+        default="production",
+        help="Environment name used to load config/.env.<env> (default: production)",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=100,
+        help="Batch size for pipeline runs. Use 0 for a single batch.",
+    )
+    # TODO: resolve relative paths to __file__
+    parser.add_argument(
+        "--results-dir",
+        type=Path,
+        default=DEFAULT_RESULTS_DIR,
+        help="Base directory for indexing job artifacts",
+    )
+
+    # Index Config
+    parser.add_argument(
+        "--index-name",
+        default=TURBOPUFFER_INDEX_NAME,  # ALT: import INDEX_NAME from api.assistant.agent
+        type=str,
+        help="Override IndexBackend index_name",
+    )
+    parser.add_argument(
+        "--config-overrides",
+        type=parse_config_overrides,
+        default={},
+        help=(
+            "JSON object of dotted-path overrides applied to index config before pipeline "
+            'construction, e.g. {"embedder.params.endpoint_name": "new-endpoint-name"}. '
+            'Use the string "DELETE" as a value to remove that path from the config, '
+            'e.g. {"embedder.params.task_type": "DELETE"}'
+        ),
+    )
+
+    # Pipeline steps not covered by INDEX_CONFIG
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        help="Override chunk size",
+    )
+    parser.add_argument(
         "--loader",
         default="S3BookLoader",
         help="Loader class name from vector_indexing.components.loaders",
     )
     parser.add_argument(
         "--loader-args",
-        default="{}",
+        type=lambda raw: parse_json_object_arg(raw, "loader-args"),
+        default={},
         help="JSON object with constructor kwargs for the selected loader",
     )
     parser.add_argument(
@@ -448,42 +410,6 @@ def parse_args():
         help="Use mock metadata instead of querying Postgres",
     )
 
-    # Config overrides
-    parser.add_argument(
-        "--index-name",
-        default=DEFAULT_INDEX_NAME,  # ALT: import INDEX_NAME from api.assistant.agent
-        type=str,
-        help="Override IndexBackend index_name",
-    )
-    parser.add_argument(
-        "--chunk-size",
-        type=int,
-        help="Override chunk size",
-    )
-    parser.add_argument(
-        "--batch-size",
-        type=int,
-        default=100,
-        help="Batch size for pipeline runs. Use 0 for a single batch.",
-    )
-
-    parser.add_argument(
-        "--results-dir",
-        type=Path,
-        default=DEFAULT_RESULTS_DIR,
-        help="Base directory for indexing job artifacts. Relative paths resolve to project_root.",
-    )
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Ignore index-config mismatch with latest job and overwrite saved index_config. Does not override barcode_input mismatch.",
-    )
-    parser.add_argument(
-        "--resume-latest",
-        action="store_true",
-        help="Resume the latest matching job for this --index-name and barcode input. If omitted, always start a new job.",
-    )
-
     return parser.parse_args()
 
 
@@ -493,7 +419,7 @@ def main():
     # Load env vars
     from utils.load_env import load_env
 
-    load_env("config/.env.production")
+    load_env(f"config/.env.{args.env}")
 
     # configure project loggers
     from logger import configure_loggers
@@ -502,8 +428,7 @@ def main():
 
     results_dir = resolve_path(args.results_dir)
     results_dir.mkdir(parents=True, exist_ok=True)
-
-    current_job_metadata = build_job_metadata(args)
+    current_job_metadata = build_job_metadata(args, args.config_overrides)
     job_dir = None
     if args.resume_latest:
         job_dir = find_latest_job(results_dir, args.index_name)
@@ -554,12 +479,12 @@ def main():
             print(f"  {barcode}")
         return
 
-    index_config = get_index_config(args.index_name)
+    index_config = get_index_config(args.index_name, overrides=args.config_overrides)
 
     # Build pipeline kwargs
     kwargs: dict = {}
 
-    loader_args = parse_loader_args(args.loader_args)
+    loader_args = args.loader_args
     loader_cls = load_from_module(args.loader, loaders)
     kwargs["loader"] = loader_cls(**loader_args)
     print(f"Using {args.loader} with loader args: {loader_args}")
@@ -604,7 +529,6 @@ def main():
     this_run_failed = 0
 
     # Run indexing (with batching and fail-fast logic)
-    batches_dir = job_dir / BATCHES_DIR
     for batch_index, barcode_batch in enumerate(batch_iter, start=1):
         result = pipeline.index_books(barcode_batch)
         # TODO: per step and per book timings (wait for orchestration?)
@@ -620,10 +544,14 @@ def main():
         write_job_state(job_dir, cumulative_succeeded, cumulative_elapsed)
 
         # Save batch result
-        result.save(batches_dir)
+        batch_dir = job_dir / f"batch_{_iso_utc_now()}"
+        batch_dir.mkdir(parents=True, exist_ok=False)
+        saved_path = result.save(batch_dir)
 
         batch_pct = 100.0 * batch_index / total_batches
-        print(f"[Batch {batch_index}/{total_batches} | {batch_pct:.0f}%]")
+        print(
+            f"[Batch {batch_index}/{total_batches} | {batch_pct:.0f}%] Saved batch result: {saved_path}"
+        )
 
         if result.failed > 0:
             print("Fail-fast: encountered failed records, stopping.")
@@ -633,7 +561,7 @@ def main():
             break
 
     prior_succeeded = cumulative_succeeded - this_run_succeeded
-    print(f"\nDone:")
+    print("\nDone:")
     print(f"  This run:  {this_run_succeeded}/{this_run_processed} books succeeded")
     if prior_succeeded > 0:
         print(

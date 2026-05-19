@@ -93,7 +93,7 @@ const ResearchAssistantWindow: React.FC = () => {
           if (message.type === "message")
             return (
               <Box
-                key={`message-${index + 1}`}
+                key={`message-${index}`}
                 ref={
                   index === messages.length - 1 && !isLoading
                     ? messagesEndRef
@@ -101,9 +101,9 @@ const ResearchAssistantWindow: React.FC = () => {
                 }
               >
                 <MessageBubble
-                  index={index + 1}
+                  index={index}
                   message={message}
-                  messageResults={results?.[index + 1] ?? null}
+                  messageResults={results?.[index] ?? null}
                 />
               </Box>
             );
@@ -112,7 +112,7 @@ const ResearchAssistantWindow: React.FC = () => {
         {isLoading && (
           <Box ref={messagesEndRef}>
             <MessageBubble
-              index={messages.length + 1}
+              index={messages.length}
               message={LOADING_MESSAGE}
               isLoading={isLoading}
             />

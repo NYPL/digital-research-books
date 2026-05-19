@@ -25,7 +25,7 @@ export const CONFIRMATION_TEXT = (
 );
 
 export const SURVEY_QUESTIONS = [
-  "The interface is easy and intuitive to navigate.",
+  "Enhanced Search is easy and intuitive to navigate.",
   "Search results were displayed in a clear and useful format.",
   "The results were relevant to my queries.",
   "I could easily trace results back to their original source materials.",
@@ -36,3 +36,4 @@ export const SURVEY_DESCRIPTION =
   "A few quick questions! How do you feel about this statement?";
 
 export const CHARACTER_LIMIT = 500;
+export const ANNOUNCE_THRESHOLDS = [50, 20, 0];

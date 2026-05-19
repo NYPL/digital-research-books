@@ -148,15 +148,35 @@ class TestDBManager:
         test_instance.session.rollback.assert_called_once
 
     def test_close_connection(self, test_instance, mocker):
-        test_instance.session = mocker.MagicMock()
-        test_instance.engine = mocker.MagicMock()
-        mock_commit = mocker.patch.object(DBManager, "commit_changes")
+        mock_session = mocker.MagicMock()
+        mock_engine = mocker.MagicMock()
+        test_instance.session = mock_session
+        test_instance.engine = mock_engine
 
         test_instance.close_connection()
 
-        mock_commit.assert_called_once
-        test_instance.session.close.assert_called_once
-        test_instance.engine.dispose.assert_called_once
+        mock_session.close.assert_called_once()
+        mock_engine.dispose.assert_called_once()
+        assert test_instance.session is None
+        assert test_instance.engine is None
+
+    def test_close_connection_no_session(self, test_instance, mocker):
+        mock_engine = mocker.MagicMock()
+        test_instance.session = None
+        test_instance.engine = mock_engine
+
+        test_instance.close_connection()
+
+        mock_engine.dispose.assert_called_once()
+
+    def test_close_connection_no_engine(self, test_instance, mocker):
+        mock_session = mocker.MagicMock()
+        test_instance.session = mock_session
+        test_instance.engine = None
+
+        test_instance.close_connection()
+
+        mock_session.close.assert_called_once()
 
     def test_bulk_save_objects_default(self, test_instance, mocker):
         test_instance.session = mocker.MagicMock()
