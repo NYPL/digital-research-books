@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Text } from "@nypl/design-system-react-components";
+import { Flex, Heading, Text } from "@nypl/design-system-react-components";
 
 interface AccessCardProps {
   icon: React.ReactNode;
@@ -13,7 +13,7 @@ const AccessCard: React.FC<AccessCardProps> = ({
 }) => {
   return (
     <Flex flexDir="column" gap="l">
-      <Box
+      <Flex
         background="ui.white"
         border="2px solid"
         borderColor="section.research.secondary"
@@ -23,7 +23,7 @@ const AccessCard: React.FC<AccessCardProps> = ({
         width="fit-content"
       >
         {icon}
-      </Box>
+      </Flex>
       <Flex flexDir="column" gap="s">
         <Heading level="h3" size="heading5">
           {title}
