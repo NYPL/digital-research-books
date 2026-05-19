@@ -2,12 +2,12 @@ import { DSProvider } from "@nypl/design-system-react-components";
 import { fireEvent, screen } from "@testing-library/react";
 import mockRouter from "next-router-mock";
 import React from "react";
-import { render } from "~/src/__tests__/testUtils/render";
+import { renderWithResearchAssistant } from "~/src/__tests__/testUtils/render";
 import ResearchAssistantLanding from "./ResearchAssistantLanding";
 
 describe("ResearchAssistantLanding", () => {
   const renderWithDSProvider = (ui: React.ReactElement) => {
-    return render(<DSProvider>{ui}</DSProvider>);
+    return renderWithResearchAssistant(<DSProvider>{ui}</DSProvider>);
   };
 
   beforeEach(() => {
