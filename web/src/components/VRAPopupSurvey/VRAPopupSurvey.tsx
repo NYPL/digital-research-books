@@ -47,7 +47,6 @@ const VRAPopupSurvey: React.FC = () => {
   useEffect(() => {
     if (isSurveyVisible && headingRef.current) {
       previousFocusRef.current = document.activeElement as HTMLElement;
-      headingRef.current.focus();
     }
   }, [isSurveyVisible]);
 
