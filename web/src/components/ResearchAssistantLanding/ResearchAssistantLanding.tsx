@@ -1,7 +1,7 @@
 import { Box, TextInputRefType } from "@nypl/design-system-react-components";
 import React, { useRef } from "react";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import ESHero from "../ESHero/ESHero";
+import EnhancedSearchHero from "../EnhancedSearchHero/EnhancedSearchHero";
 import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
 import HowItWorksSection from "./AccessSection/HowItWorksSection";
 import FaqSection from "./FaqSection";
@@ -23,7 +23,7 @@ const ResearchAssistantLanding: React.FC = () => {
           { url: "/research-assistant", text: "Enhanced Search (beta)" },
         ]}
       >
-        <ESHero />
+        <EnhancedSearchHero />
         <ResearchAssistantNav activePage="vra" />
       </DrbBreakout>
       <Box display="flex" flexDir="column">

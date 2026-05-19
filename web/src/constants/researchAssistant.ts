@@ -9,11 +9,11 @@ export const HEADER_HEIGHT = "58px";
 export const FIND_FEATURE_IMAGE =
   "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/findFeature.png";
 export const EVALUATE_FEATURE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/evaluateFeatureNew.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/evaluateFeature.png";
 export const ACCESS_FEATURE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/accessFeatureNew.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/accessFeature.png";
 export const EXPLORE_FEATURE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/exploreFeatureNew.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/exploreFeature.png";
 
 export const FEATURES = [
   {
@@ -88,13 +88,13 @@ export const LOADING_MESSAGE: MessageItem = {
 };
 
 export const NATURAL_LANGUAGE_MESSAGE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/naturalLanguageMsg.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/naturalLanguageMessage.png";
 export const FEEDBACK_MESSAGE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/improveMsg.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/feedbackMessage.png";
 export const SOURCE_MESSAGE_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/sourcesMsg.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/sourceMessage.png";
 export const CONTROL_SUBNAV_IMAGE =
-  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/privacyMsg.png";
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/controlSubnav.png";
 
 // ResearchAssistantPanel
 const CONTENT_PADDING_VALUE = "1rem";

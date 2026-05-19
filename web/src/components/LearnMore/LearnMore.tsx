@@ -2,7 +2,7 @@ import { Box } from "@chakra-ui/react";
 import React, { useRef } from "react";
 import { breadcrumbTitles } from "~/src/constants/labels";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import ESHero from "../ESHero/ESHero";
+import EnhancedSearchHero from "../EnhancedSearchHero/EnhancedSearchHero";
 import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
 import CollectionSection from "./CollectionSection";
 import HeroSection from "./HeroSection/HeroSection";
@@ -21,7 +21,7 @@ const LearnMore: React.FC = () => {
           { url: "/learn-more", text: breadcrumbTitles.learnMore },
         ]}
       >
-        <ESHero />
+        <EnhancedSearchHero />
         <ResearchAssistantNav />
       </DrbBreakout>
 

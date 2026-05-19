@@ -6,7 +6,7 @@ import {
 } from "@nypl/design-system-react-components";
 import React from "react";
 
-export const ESHero: React.FC = () => {
+export const EnhancedSearchHero: React.FC = () => {
   return (
     <Hero
       backgroundColor="section.research.primary"
@@ -27,4 +27,4 @@ export const ESHero: React.FC = () => {
   );
 };
 
-export default ESHero;
+export default EnhancedSearchHero;
