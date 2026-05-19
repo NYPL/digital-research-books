@@ -27,11 +27,7 @@ const DrbBreadcrumbs: React.FC<{ breadcrumbsData: BreadcrumbsDataProps[] }> = (
     ? [...defaultBreadcrumbs, ...breadcrumbsData]
     : defaultBreadcrumbs;
 
-  const isDigitizedContext =
-    page === "vra" ||
-    page === "item" ||
-    page === "learn-more" ||
-    page == "keyword";
+  const isDigitizedContext = page !== "drb";
 
   if (isDigitizedContext) {
     breadcrumbsDataAll = breadcrumbsDataAll.map((crumb) => {

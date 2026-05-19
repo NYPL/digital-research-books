@@ -1,9 +1,6 @@
 import { Box, TextInputRefType } from "@nypl/design-system-react-components";
 import React, { useRef } from "react";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
-import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import EnhancedSearchHero from "../EnhancedSearchHero/EnhancedSearchHero";
-import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
+import VRALayout from "../VRALayout/VRALayout";
 import HowItWorksSection from "./AccessSection/HowItWorksSection";
 import FaqSection from "./FaqSection";
 import FeaturesSection from "./FeaturesSection/FeaturesSection";
@@ -18,15 +15,15 @@ const ResearchAssistantLanding: React.FC = () => {
   const textInputRef = useRef<TextInputRefType>(null);
 
   return (
-    <ResultPageProvider value={{ page: "vra" }}>
-      <DrbBreakout
-        breadcrumbsData={[
-          { url: "/research-assistant", text: "Enhanced Search (beta)" },
-        ]}
-      >
-        <EnhancedSearchHero />
-        <ResearchAssistantNav activePage="vra" />
-      </DrbBreakout>
+    <VRALayout
+      activePage="vra"
+      breadcrumbsData={[
+        {
+          url: "/research-assistant",
+          text: "Enhanced Search (beta)",
+        },
+      ]}
+    >
       <Box display="flex" flexDir="column">
         <HeroSection
           ref={heroSectionRef}
@@ -50,7 +47,7 @@ const ResearchAssistantLanding: React.FC = () => {
           textInputRef={textInputRef}
         />
       </Box>
-    </ResultPageProvider>
+    </VRALayout>
   );
 };
 

@@ -1,10 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import React, { useRef } from "react";
 import { breadcrumbTitles } from "~/src/constants/labels";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
-import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import EnhancedSearchHero from "../EnhancedSearchHero/EnhancedSearchHero";
-import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
+import VRALayout from "../VRALayout/VRALayout";
 import CollectionSection from "./CollectionSection";
 import HeroSection from "./HeroSection/HeroSection";
 import MissionSection from "./MissionSection/MissionSection";
@@ -16,16 +13,15 @@ const LearnMore: React.FC = () => {
   const missionSectionRef = useRef<HTMLDivElement>(null);
 
   return (
-    <ResultPageProvider value={{ page: "learn-more" }}>
-      <DrbBreakout
-        breadcrumbsData={[
-          { url: "/learn-more", text: breadcrumbTitles.learnMore },
-        ]}
-      >
-        <EnhancedSearchHero />
-        <ResearchAssistantNav />
-      </DrbBreakout>
-
+    <VRALayout
+      activePage="vra"
+      breadcrumbsData={[
+        {
+          url: "/learn-more",
+          text: breadcrumbTitles.learnMore,
+        },
+      ]}
+    >
       <Box display="flex" flexDir="column">
         <HeroSection
           ref={heroSectionRef}
@@ -39,7 +35,7 @@ const LearnMore: React.FC = () => {
         <TechnologySection />
         <ModelsSection heroSectionRef={heroSectionRef} />
       </Box>
-    </ResultPageProvider>
+    </VRALayout>
   );
 };
 
