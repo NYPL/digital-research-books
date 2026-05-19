@@ -1,6 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import React, { useRef } from "react";
 import { breadcrumbTitles } from "~/src/constants/labels";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import EnhancedSearchHero from "../EnhancedSearchHero/EnhancedSearchHero";
 import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
@@ -15,7 +16,7 @@ const LearnMore: React.FC = () => {
   const missionSectionRef = useRef<HTMLDivElement>(null);
 
   return (
-    <>
+    <ResultPageProvider value={{ page: "learn-more" }}>
       <DrbBreakout
         breadcrumbsData={[
           { url: "/learn-more", text: breadcrumbTitles.learnMore },
@@ -38,7 +39,7 @@ const LearnMore: React.FC = () => {
         <TechnologySection />
         <ModelsSection heroSectionRef={heroSectionRef} />
       </Box>
-    </>
+    </ResultPageProvider>
   );
 };
 

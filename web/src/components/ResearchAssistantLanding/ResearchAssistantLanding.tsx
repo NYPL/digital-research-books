@@ -1,5 +1,6 @@
 import { Box, TextInputRefType } from "@nypl/design-system-react-components";
 import React, { useRef } from "react";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import EnhancedSearchHero from "../EnhancedSearchHero/EnhancedSearchHero";
 import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
@@ -17,7 +18,7 @@ const ResearchAssistantLanding: React.FC = () => {
   const textInputRef = useRef<TextInputRefType>(null);
 
   return (
-    <>
+    <ResultPageProvider value={{ page: "vra" }}>
       <DrbBreakout
         breadcrumbsData={[
           { url: "/research-assistant", text: "Enhanced Search (beta)" },
@@ -49,7 +50,7 @@ const ResearchAssistantLanding: React.FC = () => {
           textInputRef={textInputRef}
         />
       </Box>
-    </>
+    </ResultPageProvider>
   );
 };
 

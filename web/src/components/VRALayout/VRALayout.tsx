@@ -1,4 +1,5 @@
 import React from "react";
+import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import { PageType } from "~/src/types/ResearchAssistant";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
 import EnhancedSearchHero from "../EnhancedSearchHero/EnhancedSearchHero";
@@ -16,14 +17,14 @@ const VRALayout: React.FC<VRALayoutProps> = ({
   breadcrumbsData = [],
   children,
 }) => (
-  <>
+  <ResultPageProvider value={{ page: activePage }}>
     <DrbBreakout breadcrumbsData={breadcrumbsData}>
       <EnhancedSearchHero />
       <ResearchAssistantNav activePage={activePage} />
       <VRAPopupSurvey />
     </DrbBreakout>
     {children}
-  </>
+  </ResultPageProvider>
 );
 
 export default VRALayout;

@@ -6,7 +6,6 @@ import {
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import { isCatalogResults } from "~/src/util/ResearchAssistantUtils";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
@@ -60,11 +59,7 @@ const ResearchAssistant: React.FC = () => {
   }, [messages.length, results]);
 
   return (
-    <ResultPageProvider
-      value={{
-        page: "vra",
-      }}
-    >
+    <>
       <Box
         display="grid"
         gridTemplateColumns={gridTemplateColumns}
@@ -160,7 +155,7 @@ const ResearchAssistant: React.FC = () => {
           </Flex>
         </Flex>
       </Box>
-    </ResultPageProvider>
+    </>
   );
 };
 
