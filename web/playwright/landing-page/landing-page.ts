@@ -130,7 +130,7 @@ class LandingPage {
     );
     this.catalogHeaderLink = page.locator("span:text('Go To The Catalog')");
 
-    this.siteNameHeading = page.locator("h1:text('Digitized Research Books')");
+    this.siteNameHeading = page.locator("h1:text('Digital Research Books')");
     this.homeBreadcrumbLink = page.locator(
       "a[href='https://www.nypl.org'] > .ds-breadcrumbs-link-label"
     );
@@ -138,7 +138,7 @@ class LandingPage {
       "a[href='https://www.nypl.org/research'] > .ds-breadcrumbs-link-label"
     );
     this.digitalResearchBooksBetaBreadcrumbLink = page.locator(
-      "span.ds-breadcrumbs-link-label:text('Digitized Research Books')"
+      "span.ds-breadcrumbs-link-label:text('Digital Research Books Beta')"
     );
     this.introText = page.locator(
       "span:text('Find millions of digital books for research from multiple sources')"
