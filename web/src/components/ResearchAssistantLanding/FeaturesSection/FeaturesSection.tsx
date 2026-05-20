@@ -35,7 +35,7 @@ const FeaturesSection: React.ForwardRefExoticComponent<
           fontWeight="bold"
           marginBottom="xs"
         >
-          What can the Assistant help you do?
+          What can Enhanced Search help you do?
         </Heading>
         <Text
           fontSize="desktop.heading.heading5"
@@ -43,7 +43,7 @@ const FeaturesSection: React.ForwardRefExoticComponent<
           fontWeight="semibold"
           marginBottom="xxl"
         >
-          A collaborative tool designed to enhance and support your research
+          A collaborative discovery tool designed to support your research
         </Text>
         <Flex flexDir="column" gap="l">
           {FEATURES.map((feature) => (

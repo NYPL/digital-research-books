@@ -46,7 +46,7 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
                 color={activePage === "vra" ? "#006166" : "ui.black"}
                 size="medium"
               />
-              <span>Virtual Research Assistant</span>
+              <>Enhanced Search</>
               <Text
                 padding="2px 8px"
                 bg="#F9E08E"

@@ -46,7 +46,7 @@ class ResearchAssistantPage {
 
     // Chat interface (right panel)
     this.researchAssistantPanelHeading = page.getByRole("heading", {
-      name: "Virtual Research Assistant",
+      name: "Enhanced Search",
     });
     this.messageBubbles = page.getByTestId("assistant-message-bubble");
     this.chatInputTextBox = page.getByRole("textbox", {

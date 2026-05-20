@@ -68,7 +68,7 @@ const ResearchAssistantPanel: React.FC = () => {
               id="vra-panel-heading"
             >
               <ResearchAssistantIcon color="#ECFAFB" size="large" />
-              <span>Virtual Research Assistant</span>
+              <span>Enhanced Search</span>
             </Heading>
             <Flex gap="xxs">
               <Button
