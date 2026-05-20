@@ -53,6 +53,7 @@ const MessageBubble = memo(
                 key={idx}
                 gap="xs"
                 alignItems={isLoading ? "center" : "flex-start"}
+                data-testid="assistant-message-bubble"
               >
                 {isLoading ? (
                   <LoadingEllipses />
@@ -61,15 +62,6 @@ const MessageBubble = memo(
                 )}
                 <Flex flexDir="column" gap="12px">
                   <Box>
-                    {!isLoading && (
-                      <Text
-                        color="section.research.secondary"
-                        isBold
-                        display="inline"
-                      >
-                        VRA:{" "}
-                      </Text>
-                    )}
                     {renderMarkdownContent(
                       contentItem.text,
                       handleEditionClick
