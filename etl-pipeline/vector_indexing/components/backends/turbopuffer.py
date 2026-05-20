@@ -49,7 +49,6 @@ def get_default_schema_with_dims(dims: str):
     return schema
 
 
-
 def _is_size_error(e: Exception) -> bool:
     """Check if exception is a payload size error (HTTP 413) or timeout (HTTP 408)."""
     # Check for typed turbopuffer exception with status code
