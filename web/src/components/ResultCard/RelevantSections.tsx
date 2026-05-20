@@ -37,12 +37,15 @@ const RelevantSections: React.FC<RelevantSectionsProps> = ({
         cursor="pointer"
         _hover={{
           color: "section.research.primary",
+          svg: { path: { stroke: "#00838A" } },
         }}
       >
-        <Text>
+        <Text as="span" lineHeight="1rem">
           {isOpen
-            ? "Hide relevant sections"
-            : `View ${snippets.length} relevant sections`}
+            ? `Hide relevant section${snippets.length > 1 ? "s" : ""}`
+            : `View ${snippets.length} relevant section${
+                snippets.length > 1 ? "s" : ""
+              }`}
         </Text>
         <ChevronIcon
           iconRotation={isOpen ? "rotate(0deg)" : "rotate(180deg)"}

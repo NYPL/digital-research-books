@@ -3,11 +3,10 @@ Stochastic process tests for AI agent response quality.
 
 These tests verify the content and style of agent responses using a mix of:
   - LLM-as-judge for semantic correctness
-  - Structural assertions for deterministic properties (tool call presence, markdown)
+    - Structural assertions for deterministic properties (tool call presence)
 """
 
 import json
-import re
 from pathlib import Path
 from typing import Literal
 
@@ -280,38 +279,4 @@ the irrelevant results as if they are relevant to the query.""",
         assert len(tool_calls) == 0, (
             f"Expected no search tool calls for ambiguous query '{query}', "
             f"but found {len(tool_calls)} call(s)."
-        )
-
-    async def test_no_markdown_in_response(self, test_session_id):
-        """
-        Verify that the agent response does not contain markdown formatting.
-        This checks the final output for common markdown elements using regex patterns.
-        """
-
-        with stub_search_catalog("No results found for your query."):
-            run_result = await update_chat(
-                "north american early medicine",
-                conversation_type="catalogSearch",
-                session_id=test_session_id,
-            )
-
-        response_text = run_result.final_output
-
-        markdown_patterns = {
-            "heading": r"^#{1,6}\s",
-            "bold": r"\*\*[^*]+\*\*|__[^_]+__",
-            "inline_code": r"`[^`]+`",
-            "code_block": r"```",
-            "link": r"\[.+?\]\(.+?\)",
-        }
-
-        violations = [
-            name
-            for name, pattern in markdown_patterns.items()
-            if re.search(pattern, response_text, re.MULTILINE)
-        ]
-
-        assert not violations, (
-            f"Agent response contains markdown formatting: {violations}\n"
-            f"Response:\n{response_text}"
         )

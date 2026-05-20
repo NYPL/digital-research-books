@@ -1,10 +1,9 @@
-import React from "react";
 import { screen } from "@testing-library/react";
-import LandingPage from "./Landing";
 import {
   searchFormRenderTests,
   searchFormTests,
 } from "../../__tests__/componentHelpers/SearchForm";
+import LandingPage from "./Landing";
 
 import mockRouter from "next-router-mock";
 import {

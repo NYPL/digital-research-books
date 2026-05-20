@@ -35,7 +35,7 @@ const HowItWorksSection: React.FC = () => {
         fontWeight="bold"
         marginBottom="xs"
       >
-        How does the Assistant work?
+        How does Enhanced Search work?
       </Heading>
       <Text
         color="ui.gray.dark"
@@ -54,7 +54,7 @@ const HowItWorksSection: React.FC = () => {
               <Text as="span" color="section.research.secondary">
                 Uses natural language
               </Text>{" "}
-              so you&apos;re not worried about crafting the perfect query
+              so that it can understand your intent
             </Heading>
           }
           body={
@@ -94,7 +94,7 @@ const HowItWorksSection: React.FC = () => {
               <Text as="span" color="section.research.secondary">
                 Shows you the source
               </Text>{" "}
-              so that you can verify its responses on the spot
+              so that you can verify responses on the spot
             </Heading>
           }
           body={
@@ -120,7 +120,7 @@ const HowItWorksSection: React.FC = () => {
           body={
             <Image
               src={CONTROL_SUBNAV_IMAGE}
-              alt="A subnavigation bar with two options: 'Virtual Research Assistant' and 'Keyword search.' This illustrates how patrons can maintain control by opting out of the AI tool and switching back to traditional search at any time."
+              alt="A subnavigation bar with two options: 'Enhanced Search' and 'Keyword search.' This illustrates how patrons can maintain control by opting out of the AI tool and switching back to traditional search at any time."
               maxWidth="512px"
               background="transparent"
               flexShrink="0"

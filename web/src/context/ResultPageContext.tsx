@@ -6,7 +6,7 @@ type ResultPageContextType = {
 };
 
 const ResultPageContext = createContext<ResultPageContextType>({
-  page: "keyword",
+  page: "drb",
 });
 
 export const ResultPageProvider: React.FC<{

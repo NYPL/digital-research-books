@@ -2,6 +2,7 @@ import { Breadcrumbs } from "@nypl/design-system-react-components";
 import { BreadcrumbsDataProps } from "@nypl/design-system-react-components/dist/src/components/Breadcrumbs/Breadcrumbs";
 import React from "react";
 import { defaultBreadcrumbs } from "~/src/constants/labels";
+import { useResultPageContext } from "~/src/context/ResultPageContext";
 
 const DrbBreakout: React.FC<{
   children?: React.ReactNode;
@@ -20,15 +21,28 @@ const DrbBreadcrumbs: React.FC<{ breadcrumbsData: BreadcrumbsDataProps[] }> = (
 ) => {
   const { breadcrumbsData } = props;
 
-  const breadcrumbsDataAll = breadcrumbsData
+  const { page } = useResultPageContext();
+
+  let breadcrumbsDataAll = breadcrumbsData
     ? [...defaultBreadcrumbs, ...breadcrumbsData]
     : defaultBreadcrumbs;
 
+  const isDigitizedContext = page !== "drb";
+
+  if (isDigitizedContext) {
+    breadcrumbsDataAll = breadcrumbsDataAll.map((crumb) => {
+      if (crumb.text === "Digital Research Books Beta") {
+        return {
+          ...crumb,
+          text: "Digitized Research Books",
+        };
+      }
+      return crumb;
+    });
+  }
+
   return (
-    <Breadcrumbs
-      variant="research"
-      breadcrumbsData={breadcrumbsDataAll}
-    />
+    <Breadcrumbs variant="research" breadcrumbsData={breadcrumbsDataAll} />
   );
 };
 

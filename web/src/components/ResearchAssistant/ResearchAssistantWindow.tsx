@@ -42,12 +42,12 @@ const ResearchAssistantWindow: React.FC = () => {
   // TODO: Replace VRA references with new name
   const getAnnouncementText = () => {
     if (error) return error;
-    if (isLoading) return "Virtual Research Assistant is thinking";
+    if (isLoading) return "Enhanced Search is thinking";
     if (
       lastMessage?.type === "message" &&
       lastMessage?.role === MessageRole.Assistant
     ) {
-      return `Virtual Research Assistant: ${lastMessage.content
+      return `Enhanced Search: ${lastMessage.content
         .map((c) => c.text)
         .join(" ")}`;
     }
