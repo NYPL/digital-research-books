@@ -708,7 +708,14 @@ class TurbopufferPatchBuffer:
 
     @staticmethod
     def _estimate_patch_size(patch: dict) -> int:
-        """Estimate serialized size of a patch dict."""
+        """Estimate serialized size of a patch dict.
+
+        NOTE: Nested dicts are undercounted (treated as 8 bytes). The current
+        turbopuffer schema has no nested-object fields. If that changes,
+        this estimate will undershoot and flushes will trigger later than expected —
+        the buffer's adaptive 413 handling in _flush_with_retry still recovers,
+        just less efficiently.
+        """
         # Rough estimate: JSON serialization overhead
         size = 50  # Base overhead for dict structure
         for key, value in patch.items():
