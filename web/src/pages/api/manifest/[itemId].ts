@@ -24,7 +24,7 @@ export default async function handler(
   // `itemsReadFetcher` does not currently return the barcode, so we may need to create a new API route that returns the necessary
   // metadata for manifest generation based on the itemId. For now, we are hardcoding the barcode for testing purposes.
   // const itemReadResult = await itemsReadFetcher(itemId as string, pageId);
-  const barcode = "33333011962152";
+  const barcode = "33433062509165"; // Sketches of the North River
   const pageId = req.query.pageId as string | undefined;
   const title = "Sample PDF Document";
 
