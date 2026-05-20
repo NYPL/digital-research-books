@@ -1,5 +1,6 @@
 import {
   Box,
+  Flex,
   Icon,
   SubNav,
   SubNavButton,
@@ -40,23 +41,23 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
             isSelected={activePage === "vra"}
             id="subnav-vra"
           >
-            <Box>
+            <Flex display="flex" alignItems="center" gap="xxs">
               <ResearchAssistantIcon
                 color={activePage === "vra" ? "#006166" : "ui.black"}
-                size="small"
+                size="medium"
               />
-            </Box>
-            <>Enhanced Search</>
-            <Text
-              padding="2px 8px"
-              bg="#F9E08E"
-              borderRadius="24px"
-              color="ui.black"
-              fontSize="10px"
-              fontWeight="semibold"
-            >
-              BETA
-            </Text>
+              <>Enhanced Search</>
+              <Text
+                padding="2px 8px"
+                bg="#F9E08E"
+                borderRadius="24px"
+                color="ui.black"
+                fontSize="10px"
+                fontWeight="semibold"
+              >
+                BETA
+              </Text>
+            </Flex>
           </SubNavLink>
           <SubNavLink
             href="/keyword-search-landing"

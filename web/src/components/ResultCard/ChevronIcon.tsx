@@ -1,4 +1,4 @@
-import { Box } from "@nypl/design-system-react-components";
+import { Flex } from "@nypl/design-system-react-components";
 import React from "react";
 
 interface ChevronIconProps {
@@ -7,23 +7,23 @@ interface ChevronIconProps {
 
 const ChevronIcon: React.FC<ChevronIconProps> = ({ iconRotation }) => {
   return (
-    <Box height="1rem" width="1rem" transform={iconRotation}>
+    <Flex transform={iconRotation}>
       <svg
-        xmlns="http://www.w3.org/2000/svg"
         width="16"
         height="16"
         viewBox="0 0 16 16"
         fill="none"
+        xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M11 8L7 4L3 8"
+          d="M12 10L8 6L4 10"
           stroke="#006166"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
         />
       </svg>
-    </Box>
+    </Flex>
   );
 };
 
