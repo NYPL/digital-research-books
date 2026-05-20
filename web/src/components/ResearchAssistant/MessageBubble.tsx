@@ -5,10 +5,8 @@ import {
   MessageItem,
   MessageRole,
 } from "~/src/types/ResearchAssistant";
-import {
-  parseEditionLinks,
-  scrollToEdition,
-} from "~/src/util/EditionLinkParser";
+import { scrollToEdition } from "~/src/util/EditionLinkParser";
+import { renderMarkdownContent } from "~/src/util/MarkdownParser";
 import { isContentSearchResults } from "~/src/util/ResearchAssistantUtils";
 import styles from "../../../styles/components/MessageBubble.module.scss";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
@@ -72,11 +70,10 @@ const MessageBubble = memo(
                         VRA:{" "}
                       </Text>
                     )}
-                    {parseEditionLinks(contentItem.text, handleEditionClick)}
-                    {isContentSearchResults(messageResults) &&
-                      messageResults.snippets && (
-                        <SnippetList snippets={messageResults.snippets} />
-                      )}
+                    {renderMarkdownContent(
+                      contentItem.text,
+                      handleEditionClick
+                    )}
                   </Box>
                   {!isLoading &&
                     (index === 0 ? (
@@ -87,6 +84,10 @@ const MessageBubble = memo(
                         <FeedbackButtons label="message feedback" />
                       </Flex>
                     ))}
+                  {isContentSearchResults(messageResults) &&
+                    messageResults.snippets && (
+                      <SnippetList snippets={messageResults.snippets} />
+                    )}
                 </Flex>
               </Flex>
             ))
