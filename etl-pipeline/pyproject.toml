@@ -1,4 +1,0 @@
-[tool.pytest.ini_options]
-addopts = "-rA"
-asyncio_mode = "strict"
-pythonpath = "."

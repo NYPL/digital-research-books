@@ -21,13 +21,12 @@ if TYPE_CHECKING:
     from vector_indexing.components.chunkers.base import TextChunker
     from vector_indexing.components.embedders.base import Embedder
     from vector_indexing.components.loaders.base import BookLoader
-    from vector_indexing.components.metadata.provider import MetadataProvider
 
 # These are imported at runtime for default initialization
-from vector_indexing import get_config, SentenceSplitterChunker
+from vector_indexing import SentenceSplitterChunker
 from vector_indexing.components.loaders import S3BookLoader
 from vector_indexing.components.embedders import GoogleEmbedder
-from vector_indexing.components.metadata import MetadataProvider as MetadataProviderImpl
+from vector_indexing.components.metadata import MetadataProvider
 from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
 
 
@@ -122,9 +121,9 @@ ProgressCallback = Callable[[IndexingResult], None]
 
 def _default_on_progress(result: IndexingResult) -> None:
     """Default progress callback that prints indexing results."""
-    status = "y" if result.success else "n"
+    status = "success" if result.success else "failure"
     logger.info(
-        f"book processed: {status} {result.barcode}: {result.chunks_inserted} chunks inserted"
+        f"Processed {result.barcode}:  {status} - {result.chunks_inserted} chunks inserted"
         + (f" ({result.error})" if result.error else "")
     )
 
@@ -146,18 +145,6 @@ class Pipeline:
     continues processing the rest. This is to maximize throughput in large batches.
     We may want to add a catastrophic failure mode at some point where if some percentage
     of books fail we abort the entire batch.
-
-    Example:
-        >>> pipeline = (
-        ...     Pipeline.builder()
-        ...     .with_loader(S3BookLoader(...))
-        ...     .with_chunker(SentenceSplitterChunker())
-        ...     .with_embedder(GoogleEmbedder())
-        ...     .with_metadata_provider(MetadataProvider())
-        ...     .with_backend(ElasticsearchBackend(...))
-        ...     .build()
-        ... )
-        >>> result = pipeline.index_books(["33433001234567"])
     """
 
     def __init__(
@@ -168,26 +155,14 @@ class Pipeline:
         metadata_provider: "MetadataProvider" | None = None,
         backend: "IndexBackend" | None = None,
     ):
-        # Q: is there compelling reason to define these defaults elsewhere?
-        config = get_config()
+        self._backend = backend
 
-        self._loader = loader if loader is not None else S3BookLoader(config=config)
-        self._chunker = (
-            chunker if chunker is not None else SentenceSplitterChunker(config=config)
-        )
+        # Q: is there compelling reason to define these defaults elsewhere?
+        self._loader = loader if loader is not None else S3BookLoader()
+        self._chunker = chunker if chunker is not None else SentenceSplitterChunker()
         self._embedder = embedder if embedder is not None else GoogleEmbedder()
         self._metadata_provider = (
-            metadata_provider
-            if metadata_provider is not None
-            else MetadataProviderImpl(config=config)
-        )
-        self._backend = (
-            backend
-            if backend is not None
-            else TurbopufferBackend.from_config(
-                index_name="vra-dev",
-                config=config,
-            )
+            metadata_provider if metadata_provider is not None else MetadataProvider()
         )
 
     # TODO: not implemented... what was the vision here?
@@ -386,25 +361,16 @@ def main(barcodes: list[str] | None = None) -> BatchResult:
     from vector_indexing.components.embedders.google import GoogleEmbedder
     from vector_indexing.components.loaders.s3 import CachedS3BookLoader
     from vector_indexing.components.metadata.provider import MetadataProvider
-    from vector_indexing.core.config import GlobalConfig
 
     if barcodes is None:
         return
 
-    config = GlobalConfig.for_environment()
-
     pipeline = Pipeline(
-        loader=CachedS3BookLoader(config=config),
-        chunker=SentenceSplitterChunker(config=config),
-        embedder=GoogleEmbedder(
-            model=config.embedding_model,
-            dimensions=config.embedding_dimensions,
-            batch_size=config.embedding_batch_size,
-        ),
-        metadata_provider=MetadataProvider(config=config),
-        backend=TurbopufferBackend.from_config(
-            index_name="vra-dev-test", config=config
-        ),
+        loader=CachedS3BookLoader(),
+        chunker=SentenceSplitterChunker(),
+        embedder=GoogleEmbedder(),
+        metadata_provider=MetadataProvider(),
+        backend=TurbopufferBackend(index_name="vra-dev-test"),
     )
 
     def on_progress(result: IndexingResult) -> None:
@@ -413,10 +379,3 @@ def main(barcodes: list[str] | None = None) -> BatchResult:
     result = pipeline.index_books(barcodes, on_progress=on_progress)
     print(f"\n{result}")
     return result
-
-
-if __name__ == "__main__":
-    # Test using a few very small books
-    # main(["33433000136972", "33433006239176"])
-    # main(["33433071108306", "33433009163845"])
-    pass

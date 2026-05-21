@@ -7,7 +7,7 @@ interface EmptySearchPromptProps {
 }
 
 const EmptySearchPrompt: React.FC<EmptySearchPromptProps> = ({
-  message = "Start searching to see results from over 1 million scholarly e-books in the public domain",
+  message = "Start searching to see results from over 1 million Digitized Research Books",
   ...rest
 }) => (
   <Flex

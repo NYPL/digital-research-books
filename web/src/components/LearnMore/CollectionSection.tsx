@@ -7,7 +7,6 @@ import {
 } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
 import SectionContainer from "../ResearchAssistantLanding/SectionContainer";
-import Divider from "./Divider";
 
 const CollectionSection: React.FC = () => {
   return (
@@ -18,6 +17,7 @@ const CollectionSection: React.FC = () => {
       display="flex"
       flexDir="column"
       textAlign="left"
+      paddingX={{ base: "0px", md: "16px" }}
     >
       <Box maxWidth="55rem" margin="0 auto">
         <Flex flexDir="column" marginBottom="xxl">
@@ -46,6 +46,9 @@ const CollectionSection: React.FC = () => {
                 to="https://institutional.org/"
                 target="_blank"
                 rel="noopener noreferrer"
+                _hover={{
+                  color: "section.research.primary",
+                }}
                 _visited={{
                   color: "section.research.secondary",
                 }}
@@ -72,8 +75,13 @@ const CollectionSection: React.FC = () => {
             </Text>
           </Flex>
         </Flex>
-        <Divider orientation="horizontal" color="#006166" />
-        <Flex flexDir="column" marginY="l">
+        <Flex
+          flexDir="column"
+          marginBottom="l"
+          paddingTop="l"
+          borderTop="1px dashed"
+          borderColor="section.research.secondary"
+        >
           <Heading
             level="h3"
             marginBottom="s"
@@ -101,8 +109,13 @@ const CollectionSection: React.FC = () => {
             margin="0 auto"
           />
         </Flex>
-        <Divider orientation="horizontal" color="#006166" />
-        <Flex flexDir="column" marginY="l">
+        <Flex
+          flexDir="column"
+          marginBottom="l"
+          paddingTop="l"
+          borderTop="1px dashed"
+          borderColor="section.research.secondary"
+        >
           <Heading
             level="h3"
             marginBottom="s"
@@ -118,13 +131,16 @@ const CollectionSection: React.FC = () => {
             marginBottom="s"
             paddingBottom="l"
           >
-            The collection currently contains 82 subjects classified using the
-            first level of{" "}
+            The collection currently contains over 10,000 unique subjects
+            classified using the first level of{" "}
             <Link
               color="section.research.secondary"
               to="https://www.loc.gov/catdir/cpso/lcco/"
               target="_blank"
               rel="noopener noreferrer"
+              _hover={{
+                color: "section.research.primary",
+              }}
               _visited={{
                 color: "section.research.secondary",
               }}
@@ -135,15 +151,19 @@ const CollectionSection: React.FC = () => {
           </Text>
           <Image
             src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/subjectsGraph.png"
-            alt="A horizontal bar chart showing the percentage distribution of subjects. The subjects, ranked from highest to lowest percentage, are: Law (23%), Fiction (20%), Poetry (15%), Periodicals (10%), Literature (8%), Engineering (5%), United States (4%), and History, Chemistry, and Politics each at 3%."
+            alt="A horizontal bar chart showing the percentage distribution of subjects. The subjects, ranked from highest to lowest percentage, are: Law at 23%, Fiction at 20%, Poetry at 15%, Periodicals at 10%, Literature at 8%, Engineering at 5%, United States at 4%, and History, Chemistry, and Politics each at 3%."
             width="820px"
             flexShrink="0"
             backgroundColor="transparent"
             margin="0 auto"
           />
         </Flex>
-        <Divider orientation="horizontal" color="#006166" />
-        <Flex flexDir="column" marginY="l">
+        <Flex
+          flexDir="column"
+          paddingTop="l"
+          borderTop="1px dashed"
+          borderColor="section.research.secondary"
+        >
           <Heading
             level="h3"
             marginBottom="s"

@@ -24,6 +24,7 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
       display="flex"
       flexDir="column"
       alignItems="center"
+      paddingX={{ base: "0px", md: "16px" }}
     >
       <Box maxWidth="55rem" margin="0 auto">
         <Heading
@@ -40,7 +41,8 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
           color="ui.gray.dark"
           fontWeight="semibold"
         >
-          Chosen to balance speed, cost, performance, and environmental impact.
+          Selected to balance speed, cost, performance, and environmental
+          impact.
         </Text>
         <Flex gap="l" marginTop="xxl" marginBottom="xxl">
           <LandingCard
@@ -66,6 +68,8 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
                 </Text>
                 <Link
                   to="https://deepmind.google/models/gemini/flash/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   hasVisitedState={false}
                   isUnderlined={false}
                   color="section.research.secondary"
@@ -107,7 +111,8 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
                 </Text>
                 <Link
                   to="https://ai.google.dev/gemini-api/docs/embeddings"
-                  aria-label="Learn more about the project"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   hasVisitedState={false}
                   isUnderlined={false}
                   color="section.research.secondary"

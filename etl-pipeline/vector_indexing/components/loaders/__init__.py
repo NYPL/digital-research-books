@@ -19,13 +19,15 @@ Example:
     # Local loading
     from vector_indexing.components.loaders import LocalBookLoader
 
+    # Relative paths are resolved against project root
     loader = LocalBookLoader(Path("./data/experiment_books"))
     book = loader.load("33433000127989")
 
     # S3 with caching
     from vector_indexing.components.loaders import CachedS3BookLoader
 
-    loader = CachedS3BookLoader()
+    # Relative cache_dir is resolved against project root
+    loader = CachedS3BookLoader(cache_dir="./data/cache/books")
     book = loader.load("33433000127989")
 """
 

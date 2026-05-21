@@ -20,13 +20,11 @@ class ResearchAssistantLandingPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heroHeading = page.getByText("NYPL Virtual Research Assistant");
+    this.heroHeading = page.getByText("Try our new AI-enabled Enhanced Search");
     this.heroSubheading = page.getByText(
-      "Your AI partner in discovering content from over"
+      "Find and discover content using natural language"
     );
-    this.subNav = page.getByText(
-      "Virtual Research AssistantBETAKeyword search"
-    );
+    this.subNav = page.getByText("Enhanced SearchBETAKeyword search");
     this.searchTextBox = page.getByRole("textbox", {
       name: "What research topic",
     });
@@ -47,10 +45,10 @@ class ResearchAssistantLandingPage {
       .getByRole("link", { name: "Learn more" })
       .and(page.locator("#learn-more-button"));
     this.featuresSectionHeading = page.getByRole("heading", {
-      name: "What can the Assistant help you do?",
+      name: "What can Enhanced Search help you do?",
     });
     this.accessSectionHeading = page.getByRole("heading", {
-      name: "How does the Assistant work?",
+      name: "How does Enhanced Search work?",
     });
     this.faqSectionHeading = page.getByRole("heading", {
       name: "Frequently asked questions",

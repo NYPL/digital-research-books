@@ -67,10 +67,10 @@ from vector_indexing.pipeline.orchestrator import BatchResult, Pipeline
 from vector_indexing.components import loaders
 from vector_indexing.core.config import (
     DELETE,
-    get_config,
     get_index_config,
     get_index_config_dict,
     load_from_module,
+    resolve_path,
 )
 from vector_indexing.utils.barcodes import list_10k_barcodes
 from utils.common import batched
@@ -86,7 +86,8 @@ class MockEmbedder:
     """Mock embedder for testing - returns random vectors."""
 
     def __init__(self, dimensions: int | None = None):
-        self.dimensions = dimensions or get_config().embedding_dimensions
+        self.dimensions = dimensions or 768
+        # TODO: think about how to mock for index with different dims
 
     def embed_document_batch(self, texts: list[str]) -> list[list[float]]:
         import random
@@ -346,12 +347,11 @@ def parse_args():
         default=10,
         help="Batch size for pipeline runs. Use 0 for a single batch.",
     )
-    # TODO: resolve relative paths to __file__
     parser.add_argument(
         "--results-dir",
         type=Path,
         default=DEFAULT_RESULTS_DIR,
-        help="Base directory for indexing job artifacts",
+        help="Base directory for indexing job artifacts. If relative, path is resolved relative to etl-pipeline/",
     )
 
     # Index Config
@@ -420,7 +420,7 @@ def main():
 
     configure_loggers(log_level="info", stage="development")
 
-    results_dir = args.results_dir
+    results_dir = resolve_path(args.results_dir)
     results_dir.mkdir(parents=True, exist_ok=True)
     current_job_metadata = build_job_metadata(args, args.config_overrides)
     job_dir = None
