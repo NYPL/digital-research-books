@@ -8,24 +8,20 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional
 
 import turbopuffer as tpuf
 from logger import create_log
 from utils.common import require_env
 
-from vector_indexing.core.utils import format_bytes, TimerSet
+from vector_indexing.components.backends.base import IndexBackend
+from vector_indexing.core.config import VECTOR_INDEXING_ROOT
 from vector_indexing.core.types import (
     BookMetadata,
     ChunkDocument,
     InsertResult,
     PatchResult,
 )
-from vector_indexing.core.config import VECTOR_INDEXING_ROOT
-from vector_indexing.components.backends.base import IndexBackend
-from vector_indexing.core.config import VECTOR_INDEXING_ROOT
-from vector_indexing.core.types import BookMetadata, ChunkDocument, InsertResult
 from vector_indexing.core.utils import TimerSet, format_bytes
 
 if TYPE_CHECKING:
