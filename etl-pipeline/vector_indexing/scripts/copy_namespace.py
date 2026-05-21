@@ -30,7 +30,7 @@ import turbopuffer as tpuf
 
 from vector_indexing.components.backends.turbopuffer import (
     TurbopufferBackend,
-    TurbopufferBuffer,
+    TurbopufferInsertBuffer,
 )
 from vector_indexing.core.utils import format_bytes
 
@@ -146,7 +146,7 @@ def copy_namespace(
         }
 
     # Use TurbopufferBuffer for adaptive batching and retry logic
-    with TurbopufferBuffer(dest_backend) as buffer:
+    with TurbopufferInsertBuffer(dest_backend) as buffer:
         for chunk in src_backend.scan(filters=filters):
             result = buffer.add(chunk)
             if result:

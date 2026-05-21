@@ -575,7 +575,7 @@ class TurbopufferBackend(IndexBackend):
             }
 
 
-class TurbopufferBuffer:
+class TurbopufferInsertBuffer:
     """Accumulates chunks and auto-flushes when size limit is reached.
 
     Adaptive: Starts at 512MB, backs off by 1% on size errors, floor at 100MB.
@@ -667,7 +667,7 @@ class TurbopufferBuffer:
                 ) + self._flush_with_retry(second_half, depth + 1)
             raise
 
-    def __enter__(self) -> "TurbopufferBuffer":
+    def __enter__(self) -> "TurbopufferInsertBuffer":
         return self
 
     def __exit__(self, *args) -> None:
