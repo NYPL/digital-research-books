@@ -13,7 +13,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 import turbopuffer as tpuf
 
-from vector_indexing.core.config import GlobalConfig
 from vector_indexing.components.backends.turbopuffer import (
     TurbopufferBackend,
     TurbopufferPatchBuffer,
@@ -46,15 +45,15 @@ def fake_ns():
 
 
 @pytest.fixture
-def backend(fake_ns):
-    config = GlobalConfig(turbopuffer_api_key="test-key", turbopuffer_region="local")
+def backend(fake_ns, monkeypatch):
+    monkeypatch.setenv("TURBOPUFFER_API_KEY", "test-key")
     with patch(
         "vector_indexing.components.backends.turbopuffer.tpuf.Turbopuffer"
     ) as mock_client_cls:
         mock_client = MagicMock()
         mock_client.namespace.return_value = fake_ns
         mock_client_cls.return_value = mock_client
-        yield TurbopufferBackend(index_name="test-ns", config=config)
+        yield TurbopufferBackend(index_name="test-ns")
 
 
 class TestPatchDocuments:

@@ -22,7 +22,7 @@ from vector_indexing.core.types import (
     InsertResult,
     PatchResult,
 )
-from vector_indexing.core.config import get_config, GlobalConfig, VECTOR_INDEXING_ROOT
+from vector_indexing.core.config import VECTOR_INDEXING_ROOT
 from vector_indexing.components.backends.base import IndexBackend
 from vector_indexing.core.config import VECTOR_INDEXING_ROOT
 from vector_indexing.core.types import BookMetadata, ChunkDocument, InsertResult

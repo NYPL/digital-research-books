@@ -3,7 +3,7 @@ Stochastic process tests for AI agent response quality.
 
 These tests verify the content and style of agent responses using a mix of:
   - LLM-as-judge for semantic correctness
-    - Structural assertions for deterministic properties (tool call presence)
+  - Structural assertions for deterministic properties (tool call presence)
 """
 
 import json
