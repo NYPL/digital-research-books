@@ -32,7 +32,7 @@ export const FEATURES = [
       "Enhanced Search provides summaries and explains why you're seeing a particular result, so that you can determine a book's usefulness before diving into it. ",
     imageSrc: EVALUATE_FEATURE_IMAGE,
     imageAlt:
-      "A search result item of an e-book titled 'Privilege and Property: Essays on the History of Copyright.' There are expandable sections for 'Read summary', 'Why am I seeing this result?', and 'Other editions'. The expanded section for 'Why am I seeing this result?' explains that chapters 7, 8, and 10 cover North American printing presses and the evolution of legal rights.",
+      "Split-screen interface showing an e-book search result for 'Notions and fancy foods v.49' on the left, and a chat window requesting information about English department stores on the right. The search result's 'Why am I seeing this result?' explanation connects the book to the chat topic.",
   },
   {
     featureName: "ACCESS",
