@@ -19,6 +19,7 @@ tags
 # Vim
 *.swp
 /*venv*
+uv.lock
 
 analytics/upress_reporting/log_files
 

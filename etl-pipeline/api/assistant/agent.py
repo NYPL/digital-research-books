@@ -1,59 +1,57 @@
-from dataclasses import dataclass, field, asdict
-from datetime import datetime
 import json
-from pathlib import Path
-from typing import Dict, Any, Literal, Optional, Union, List, Iterator, Callable, Tuple
-from typing_extensions import TypedDict
-import sys
 import os
+import sys
 import time
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
 from agents import (
     Agent,
-    RunHooks,
-    OpenAIChatCompletionsModel,
-    Runner,
-    RunConfig,
-    function_tool,
-    RunContextWrapper,
     ModelSettings,
-    RunResult,
+    OpenAIChatCompletionsModel,
+    RunConfig,
+    RunContextWrapper,
     RunErrorHandlerInput,
     RunErrorHandlerResult,
+    RunHooks,
+    Runner,
+    RunResult,
+    function_tool,
 )
-from agents.run_config import DEFAULT_MAX_TURNS
-from agents.items import ModelResponse
-from agents.tool_context import ToolContext
 from agents.extensions.memory import SQLAlchemySession
+from agents.items import ModelResponse
 from agents.models.chatcmpl_converter import Converter
+from agents.run_config import DEFAULT_MAX_TURNS
+from agents.tool_context import ToolContext
+from jinja2 import Template
+from logger import create_log
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 from sqlalchemy import text
-from jinja2 import Template
-
-
-# api code
-from ..utils import remove_markdown_comments
-from ..db import (
-    get_frbr_data_by_edition,
-    get_readonly_session,
-    get_async_engine,
-    get_engine,
-)
-from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
-from .types import CatalogSearchResult, ContentSearchResult
+from typing_extensions import TypedDict
+from utils.common import require_env, wrap
+from utils.timer import timer
+from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
 
 # shared code
 from vector_indexing.components.embedders.google import GoogleEmbedder
-from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
-from vector_indexing.core.config import get_config
 from vector_indexing.core.utils import Timer
-from logger import create_log
-from utils.common import wrap, require_env
-from utils.timer import timer
 
+from ..db import (
+    get_async_engine,
+    get_engine,
+    get_frbr_data_by_edition,
+    get_readonly_session,
+)
+
+# api code
+from ..utils import remove_markdown_comments
+from .search import ReciprocalRankFuser, ScoredHit, hybrid_search
+from .types import CatalogSearchResult, ContentSearchResult
 
 logger = create_log(__name__)
 
@@ -472,7 +470,7 @@ async def update_chat(
     # some reused objs (backend, system prompts, async loop, etc...) (for sharing btw server \
     # request workers/threads)
 
-    backend = TurbopufferBackend(index_name=INDEX_NAME, config=get_config())
+    backend = TurbopufferBackend(index_name=INDEX_NAME)
     embedder = GoogleEmbedder(task_type="RETRIEVAL_QUERY")
 
     # NOTE: litellm has a bug converting `list | None = None` in agents sdk @functol_tool
@@ -505,6 +503,7 @@ async def update_chat(
             logger.error(
                 f"FRBR data missing for content search in edition {edition_id}"
             )
+            raise ValueError(f"No edition found with id {edition_id}")
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
         exec_context = ContentSearchExecutionContext(

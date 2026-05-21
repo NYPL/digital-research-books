@@ -14,7 +14,6 @@ from vector_indexing.core import (
     BookMetadata,
     ChunkDocument,
     InsertResult,
-    GlobalConfig,
 )
 from vector_indexing.components.chunkers import SentenceSplitterChunker
 from vector_indexing.components.loaders import LocalBookLoader
@@ -48,21 +47,14 @@ class TestLocalToElasticsearchFlow:
             yield tmpdir
 
     @pytest.fixture
-    def config(self, book_dir):
-        """Config pointing to temp book directory."""
-        # book_cache_dir should point to the books/ subdirectory directly
-        # since LocalBookLoader expects {cache_dir}/{barcode}/
-        return GlobalConfig(
-            data_dir=Path(book_dir),
-            book_cache_dir=Path(book_dir) / "books",
-            chunk_size=200,
-            chunk_overlap=20,
-        )
+    def book_cache_dir(self, book_dir):
+        """Path to books/ subdirectory used by LocalBookLoader."""
+        return Path(book_dir) / "books"
 
-    def test_local_load_chunk_and_embed(self, config, book_dir):
+    def test_local_load_chunk_and_embed(self, book_cache_dir, book_dir):
         """Load book from disk, chunk it, and verify chunk properties."""
-        loader = LocalBookLoader(config=config)
-        chunker = SentenceSplitterChunker(config=config)
+        loader = LocalBookLoader(data_dir=book_cache_dir)
+        chunker = SentenceSplitterChunker(chunk_size=200, chunk_overlap=20)
 
         # Load
         book = loader.load("33433001234567")
@@ -88,7 +80,7 @@ class TestLocalToElasticsearchFlow:
         # Chunk
         chunks = list(chunker.chunk(book))
 
-        assert len(chunks) >= 3  # Should have multiple chunks
+        assert len(chunks) >= 3  # Should have multiple chunks with chunk_size=200
 
         # Verify chunk structure
         for i, chunk in enumerate(chunks):
@@ -98,7 +90,7 @@ class TestLocalToElasticsearchFlow:
             assert chunk.text  # Non-empty
             assert chunk.book_metadata.title == "Integration Test Book"
 
-    def test_full_pipeline_with_mocked_es(self, config, book_dir):
+    def test_full_pipeline_with_mocked_es(self, book_cache_dir, book_dir):
         """Run full pipeline with real loader/chunker but mocked ES."""
         # Set up mocks
         mock_es_client = Mock()
@@ -125,8 +117,8 @@ class TestLocalToElasticsearchFlow:
             mock_bulk.return_value = (10, [])  # Success
 
             pipeline = Pipeline(
-                loader=LocalBookLoader(config=config),
-                chunker=SentenceSplitterChunker(config=config),
+                loader=LocalBookLoader(data_dir=book_cache_dir),
+                chunker=SentenceSplitterChunker(),
                 embedder=mock_embedder,
                 metadata_provider=mock_metadata,
                 backend=ElasticsearchBackend(

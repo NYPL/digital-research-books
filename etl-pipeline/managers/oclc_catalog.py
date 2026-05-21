@@ -18,8 +18,15 @@ class OCLCCatalogManager:
 
     def __init__(self):
         self.rate_limited = False
+        self.service_unavailable = False
 
     def query_catalog(self, oclc_no):
+        """Fetch a full bib record from the OCLC Metadata API by OCLC number.
+
+        Sets `service_unavailable` if a network error or timeout occurs.
+        """
+        self.rate_limited = False
+        self.service_unavailable = False
         catalog_query = self.METADATA_BIB_URL.format(oclc_no)
 
         for _ in range(0, 3):
@@ -40,6 +47,7 @@ class OCLCCatalogManager:
                 return catalog_response.text
             except (Timeout, ConnectionError):
                 logger.warning(f"Could not connect to {catalog_query} or timed out")
+                self.service_unavailable = True
             except Exception as e:
                 logger.error(
                     f"Failed to query catalog with query {catalog_query} due to {e}"
@@ -49,6 +57,13 @@ class OCLCCatalogManager:
         return None
 
     def get_related_oclc_numbers(self, oclc_number: int) -> list[int]:
+        """Return OCLC numbers for other editions of the given OCLC number.
+
+        Sets `rate_limited` on 429 or `service_unavailable` on 5xx/network errors
+        encountered during sub-requests.
+        """
+        self.rate_limited = False
+        self.service_unavailable = False
         related_oclc_numbers = []
 
         try:
@@ -125,10 +140,16 @@ class OCLCCatalogManager:
 
                 if other_editions_response.status_code == 429:
                     self.rate_limited = True
+                elif other_editions_response.status_code >= 500:
+                    self.service_unavailable = True
 
                 return None
 
             return other_editions_response.json()
+        except (Timeout, ConnectionError):
+            logger.warning(f"Could not connect to {other_editions_url} or timed out")
+            self.service_unavailable = True
+            return None
         except Exception as e:
             logger.error(
                 f"Failed to query other editions endpoint {other_editions_url} due to {e}"
@@ -143,6 +164,12 @@ class OCLCCatalogManager:
         ]
 
     def query_bibs(self, query: str):
+        """Search OCLC WorldCat for bib records matching the given query string.
+
+        Sets rate_limited on 429 or service_unavailable on 5xx/network errors.
+        """
+        self.rate_limited = False
+        self.service_unavailable = False
         bibs = []
 
         try:
@@ -172,9 +199,9 @@ class OCLCCatalogManager:
             return bibs
 
     def _search_bibs(self, query: str, offset: int = 0):
+        bibs_endpoint = self.OCLC_SEARCH_URL + "bibs"
         try:
             token = OCLCAuthManager.get_search_token()
-            bibs_endpoint = self.OCLC_SEARCH_URL + "bibs"
             headers = {"Authorization": f"Bearer {token}"}
 
             bibs_response = requests.get(
@@ -191,19 +218,25 @@ class OCLCCatalogManager:
 
             if not bibs_response.ok:
                 logger.warning(
-                    f"OCLC search bibs request for query {query} failed with status: {bibs_response.status_code} "
-                    f"due to: {self._get_error_detail(bibs_response)}"
+                    f"OCLC search bibs request failed. query: '{query}', status code: {bibs_response.status_code}, "
+                    f"error detail: {self._get_error_detail(bibs_response)}"
                 )
 
                 if bibs_response.status_code == 429:
                     self.rate_limited = True
+                elif bibs_response.status_code >= 500:
+                    self.service_unavailable = True
 
                 return None
 
             return bibs_response.json()
+        except (Timeout, ConnectionError):
+            logger.warning(f"Could not connect to {bibs_endpoint} or timed out")
+            self.service_unavailable = True
+            return None
         except Exception as e:
             logger.error(
-                f"Failed to query {bibs_endpoint} with query {query} due to {e}"
+                f"Failed to query '{bibs_endpoint}' with query '{query}' due to '{e}'"
             )
             return None
 
@@ -216,12 +249,12 @@ class OCLCCatalogManager:
         return f"ti:{title} au:{author}"
 
     def _get_error_detail(self, oclc_response) -> str | None:
-        default_error_detail = "unknown"
-
         try:
-            return oclc_response.json().get("detail", default_error_detail)
-        except Exception:
-            return default_error_detail
+            response_json = oclc_response.json()
+        except requests.exceptions.JSONDecodeError:
+            return "unknown"
+
+        return response_json.get("detail", response_json)
 
 
 class OCLCCatalogError(Exception):

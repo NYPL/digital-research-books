@@ -1,14 +1,13 @@
 """Sentence-based text chunker using LlamaIndex SentenceSplitter."""
 
 from itertools import accumulate
-from typing import Iterator, Optional
+from typing import Iterator
 
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import Document
 
-from vector_indexing.core.types import Book, BookMetadata, ChunkDocument
-from vector_indexing.core.config import get_config, GlobalConfig
 from vector_indexing.components.chunkers.base import ChunkWithPages, TextChunker
+from vector_indexing.core.types import Book, BookMetadata, ChunkDocument
 
 
 def char_to_page(
@@ -34,9 +33,8 @@ class SentenceSplitterChunker(TextChunker):
     Preserves paragraph structure where possible.
 
     Args:
-        chunk_size: Target chunk size in tokens (default from config).
-        chunk_overlap: Overlap between chunks in tokens (default from config).
-        config: Optional GlobalConfig override.
+        chunk_size: Target chunk size in tokens (default: 512).
+        chunk_overlap: Overlap between chunks in tokens (default: 50).
 
     Example:
         chunker = SentenceSplitterChunker()
@@ -46,13 +44,11 @@ class SentenceSplitterChunker(TextChunker):
 
     def __init__(
         self,
-        chunk_size: Optional[int] = None,
-        chunk_overlap: Optional[int] = None,
-        config: Optional[GlobalConfig] = None,
+        chunk_size: int = 512,
+        chunk_overlap: int = 50,
     ):
-        cfg = config or get_config()
-        self._chunk_size = chunk_size or cfg.chunk_size
-        self._chunk_overlap = chunk_overlap or cfg.chunk_overlap
+        self._chunk_size = chunk_size
+        self._chunk_overlap = chunk_overlap
         self._splitter = SentenceSplitter(
             chunk_size=self._chunk_size,
             chunk_overlap=self._chunk_overlap,

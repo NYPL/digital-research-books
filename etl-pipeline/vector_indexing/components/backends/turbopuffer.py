@@ -7,21 +7,22 @@ Provides a thin wrapper around the turbopuffer SDK.
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import Any, Dict, Iterator, Optional, TYPE_CHECKING
+import os
+from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional
 
 import turbopuffer as tpuf
-
 from logger import create_log
-from vector_indexing.core.utils import format_bytes, TimerSet
+from utils.common import require_env
+
+from vector_indexing.components.backends.base import IndexBackend
+from vector_indexing.core.config import VECTOR_INDEXING_ROOT
 from vector_indexing.core.types import (
     BookMetadata,
     ChunkDocument,
     InsertResult,
     PatchResult,
 )
-from vector_indexing.core.config import get_config, GlobalConfig, VECTOR_INDEXING_ROOT
-from vector_indexing.components.backends.base import IndexBackend
+from vector_indexing.core.utils import TimerSet, format_bytes
 
 if TYPE_CHECKING:
     pass
@@ -38,7 +39,10 @@ def load_default_schema() -> dict:
     return schema
 
 
-DEFAULT_TURBOPUFFER_SCHEMA = load_default_schema()
+def get_default_schema_with_dims(dims: str):
+    schema = load_default_schema()
+    schema["vector"]["type"] = f"[{dims}]f16"
+    return schema
 
 
 def _is_size_error(e: Exception) -> bool:
@@ -159,15 +163,13 @@ class TurbopufferBackend(IndexBackend):
         self,
         index_name: str,
         schema: Dict[str, Any] | None = None,
-        config: Optional[GlobalConfig] = None,
     ):
-        self._config = config or get_config()
         self._index_name = index_name
-        self._schema = schema or DEFAULT_TURBOPUFFER_SCHEMA
+        self._schema = schema or load_default_schema()
 
         self._client = tpuf.Turbopuffer(
-            api_key=self._config.turbopuffer_api_key or None,
-            region=self._config.turbopuffer_region or None,
+            api_key=require_env("TURBOPUFFER_API_KEY"),
+            region=os.environ.get("TURBOPUFFER_REGION", "aws-us-east-1"),
             timeout=600,  # 10 minute timeout for large uploads
         )
         self._ns = self._client.namespace(index_name)
@@ -568,18 +570,8 @@ class TurbopufferBackend(IndexBackend):
                 "error": str(e),
             }
 
-    @classmethod
-    def from_config(
-        cls,
-        index_name: str,
-        config: Optional[GlobalConfig] = None,
-    ) -> "TurbopufferBackend":
-        """Create backend from config."""
-        config = config or get_config()
-        return cls(index_name=index_name, config=config)
 
-
-class TurbopufferBuffer:
+class TurbopufferInsertBuffer:
     """Accumulates chunks and auto-flushes when size limit is reached.
 
     Adaptive: Starts at 512MB, backs off by 1% on size errors, floor at 100MB.
@@ -671,7 +663,7 @@ class TurbopufferBuffer:
                 ) + self._flush_with_retry(second_half, depth + 1)
             raise
 
-    def __enter__(self) -> "TurbopufferBuffer":
+    def __enter__(self) -> "TurbopufferInsertBuffer":
         return self
 
     def __exit__(self, *args) -> None:
@@ -806,9 +798,7 @@ class TurbopufferPatchBuffer:
         self.flush()
 
 
-def delete_test_namespace(
-    namespace_name: str, config: Optional[GlobalConfig] = None
-) -> None:
+def delete_test_namespace(namespace_name: str) -> None:
     """Delete a turbopuffer namespace. FOR TESTING ONLY.
 
     This function will only delete namespaces that contain 'test' in the name
@@ -817,7 +807,6 @@ def delete_test_namespace(
 
     Args:
         namespace_name: The name of the namespace to delete. Must contain 'test'.
-        config: Optional config with turbopuffer API key.
 
     Raises:
         ValueError: If namespace_name does not contain 'test'.
@@ -828,11 +817,9 @@ def delete_test_namespace(
             "namespace name must contain 'test' to be deleted with this function."
         )
 
-    config = config or get_config()
-
     client = tpuf.Turbopuffer(
-        api_key=config.turbopuffer_api_key or None,
-        region=config.turbopuffer_region or None,
+        api_key=require_env("TURBOPUFFER_API_KEY"),
+        region=os.environ.get("TURBOPUFFER_REGION", "aws-us-east-1"),
         timeout=60,
     )
     ns = client.namespace(namespace_name)

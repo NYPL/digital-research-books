@@ -1,4 +1,3 @@
-thruput_results
-.env.execution_role
+benchmarking_results
 indexing_results
 tmp/**
