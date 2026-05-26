@@ -57,7 +57,7 @@ class ResearchAssistantPage {
       "Thinking... This may take several seconds."
     );
     this.resultsBanner = page.getByText(
-      "public domain scholarly e-books from our collections"
+      "This tool only searches the Digitized Research Books collection"
     );
     this.emptySearchPrompt = page.getByRole("heading", {
       name: "Start searching to see results",
@@ -67,7 +67,7 @@ class ResearchAssistantPage {
 
     // Results (left panel)
     this.resultsBanner = page.getByText(
-      "public domain scholarly e-books from our collections"
+      "This tool only searches the Digitized Research Books collection"
     );
     this.emptySearchPrompt = page.getByRole("heading", {
       name: "Start searching to see results",
