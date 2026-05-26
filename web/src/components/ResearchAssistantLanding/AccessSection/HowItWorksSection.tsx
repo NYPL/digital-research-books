@@ -60,7 +60,7 @@ const HowItWorksSection: React.FC = () => {
           body={
             <Image
               src={NATURAL_LANGUAGE_MESSAGE_IMAGE}
-              alt="A chat message from a patron asking: 'Does this book make any mention of the Smith's early life and childhood? Which parts of the book can I find this info in?'"
+              alt="A chat message from a patron asking: 'Does this book mention Smith's early life and childhood? Where in this book can I find that information?'"
               maxWidth="512px"
               background="transparent"
               flexShrink="0"
@@ -80,7 +80,7 @@ const HowItWorksSection: React.FC = () => {
           body={
             <Image
               src={FEEDBACK_MESSAGE_IMAGE}
-              alt="A chat message from the VRA stating: 'Here are some results that match your criteria. Verify results. Your data is not used to train our models.' The message includes interactive thumbs-up and thumbs-down icons for feedback."
+              alt="A chat message from the VRA stating: 'Here are some books on astronomy in the middle ages.' The message includes interactive thumbs-up and thumbs-down icons for feedback."
               maxWidth="512px"
               background="transparent"
               flexShrink="0"
@@ -100,7 +100,7 @@ const HowItWorksSection: React.FC = () => {
           body={
             <Image
               src={SOURCE_MESSAGE_IMAGE}
-              alt="A chat message from the VRA stating: 'Yes, this book mentions Smith's birth and childhood (p3). It also describes his early schooling in Kansas (p8).' The page numbers are styled as clickable links."
+              alt="A chat message from the VRA stating: 'Yes, this book mentions Smith's childhood (p3). It also describes his college years in Texas (p8).' The page numbers are styled as clickable links."
               maxWidth="512px"
               background="transparent"
               flexShrink="0"

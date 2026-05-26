@@ -14,3 +14,4 @@ export const ASK_NYPL = "https://www.nypl.org/get-help/contact-us";
 export const PRIVACY_POLICY_LINK =
   "https://www.nypl.org/help/about-nypl/legal-notices/privacy-policy";
 export const ARCADIA_FUND_LINK = "https://arcadiafund.org.uk/";
+export const RESEARCH_LINK = "https://www.nypl.org/research";
