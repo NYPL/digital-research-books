@@ -555,7 +555,7 @@ class TurbopufferBackend(IndexBackend):
             for attribute-ranked queries and populated for vector/BM25/hybrid
             queries.
 
-        See: https://turbopuffer.com/docs/export
+        See: https://turbopuffer.com/docs/export and https://turbopuffer.com/docs/query#pagination
         """
         kwargs.setdefault("rank_by", ("id", "asc"))
 
