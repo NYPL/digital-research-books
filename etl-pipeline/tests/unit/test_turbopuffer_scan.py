@@ -78,7 +78,7 @@ def _chunk_with_id(doc_id: str) -> ChunkDocument:
     )
 
 
-# TODO: specifically check where else this is used post-
+# TODO: fix the out of data global config usage
 def make_backend() -> TurbopufferBackend:
     """Return a TurbopufferBackend with mocked TP client."""
     with patch("vector_indexing.components.backends.turbopuffer.tpuf") as mock_tpuf:

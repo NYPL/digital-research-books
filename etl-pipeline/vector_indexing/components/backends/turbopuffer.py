@@ -544,9 +544,10 @@ class TurbopufferBackend(IndexBackend):
         Args:
             rank_by: Ranking specification forwarded to TP. Defaults to
                 ``("id", "asc")``.
-            limit: Max documents to return. Accepts an ``int`` or a TP limit
-                dict with ``"total"`` (and optionally ``"per"`` or other TP
-                limit fields). ``None`` returns all matching documents.
+            limit: Max documents to return. Same syntax as TP query `limit` parameter
+                (int or dict). Optional. Default returns all matching documents.
+                ``None`` returns all matching documents. If dict, `limit.total`
+                is optional, and if missing returns all matching documents.
             **kwargs: Any other ``ns.query()`` parameters (e.g.
                 ``include_vectors``, ``consistency``).
 

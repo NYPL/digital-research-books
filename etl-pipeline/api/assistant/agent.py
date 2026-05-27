@@ -632,7 +632,7 @@ def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
             )
 
 
-# TODO: make score type metadata of the chunk index search method
+# TODO: make score type metadata/attr of the chunk index search method (e.g. RankFuser or TPBackend)
 CHUNK_SCORE_TYPE: Literal["higher-is-better", "lower-is-better"] = "higher-is-better"
 
 if CHUNK_SCORE_TYPE == "higher-is-better":
