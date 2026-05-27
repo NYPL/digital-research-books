@@ -20,6 +20,9 @@ class OpenAIEmbedder(Embedder):
         model_name: Model identifier to pass in the request payload.
         dimensions: Output vector dimensions. Must match the model's output size.
         batch_size: Max texts per API call (default: 32).
+
+        .embed_document(), .embed_document_batch(), .embed_query(), and .embed_query_batch()
+        inherited from the abstract class raise NotImplementedError.
     """
 
     def __init__(

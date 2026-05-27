@@ -32,12 +32,12 @@ if __name__ == "__main__":
         sys.path.insert(0, str(project_root))
 
 import turbopuffer as tpuf
-from vector_indexing.core.config import get_config
-from vector_indexing.core.utils import format_bytes
+
 from vector_indexing.components.backends.turbopuffer import (
     TurbopufferBackend,
-    TurbopufferBuffer,
+    TurbopufferInsertBuffer,
 )
+from vector_indexing.core.utils import format_bytes
 from logger import create_log
 
 logger = create_log(__name__)
@@ -126,14 +126,12 @@ def copy_namespace(
     Returns:
         dict with copy statistics
     """
-    config = get_config()
-
     # Set default region if not set by environment
     if region and not os.environ.get("TURBOPUFFER_REGION"):
         os.environ["TURBOPUFFER_REGION"] = region
 
-    src_backend = TurbopufferBackend(src_name, config=config)
-    dest_backend = TurbopufferBackend(dest_name, config=config)
+    src_backend = TurbopufferBackend(src_name)
+    dest_backend = TurbopufferBackend(dest_name)
 
     logger.info(f"Source namespace: {src_name}")
     logger.info(f"Destination namespace: {dest_name}")
@@ -163,7 +161,7 @@ def copy_namespace(
         }
 
     # Use TurbopufferBuffer for adaptive batching and retry logic
-    with TurbopufferBuffer(dest_backend) as buffer:
+    with TurbopufferInsertBuffer(dest_backend) as buffer:
         for chunk in src_backend.scan(filters=filters):
             result = buffer.add(chunk)
             if result:

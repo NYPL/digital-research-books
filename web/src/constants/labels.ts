@@ -38,6 +38,7 @@ const breadcrumbUrls = {
   home: "https://www.nypl.org",
   research: "https://www.nypl.org/research",
   drb: "/",
+  learnMore: "/learn-more",
 };
 
 export const breadcrumbTitles = {
@@ -45,6 +46,7 @@ export const breadcrumbTitles = {
   research: "Research",
   drb: "Digital Research Books Beta",
   advancedSearch: "Advanced Search",
+  learnMore: "Learn more",
 };
 
 export const defaultBreadcrumbs = [
@@ -79,7 +81,7 @@ export const inputTerms = [
 ];
 
 const useQuotes = "Use quotation marks to search for an exact phrase.";
-const example = "Example: "
+const example = "Example: ";
 
 export const SEARCH_FORM_OPTIONS = {
   keyword: {
@@ -92,11 +94,12 @@ export const SEARCH_FORM_OPTIONS = {
   },
   author: {
     placeholder: `${example} Hurston, Zora Neale or New York City Ballet`,
-    searchTip: "Enter the name of an author, contributor, or organization. Use Last Name, First Name for more precise results.",
+    searchTip:
+      "Enter the name of an author, contributor, or organization. Use Last Name, First Name for more precise results.",
   },
   subject: {
     placeholder: `${example} Ornithology or Greek Architecture`,
-    searchTip: "Enter a subject keyword or phrase."
+    searchTip: "Enter a subject keyword or phrase.",
   },
 };
 

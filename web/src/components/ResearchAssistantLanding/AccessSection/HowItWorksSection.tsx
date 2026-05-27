@@ -35,7 +35,7 @@ const HowItWorksSection: React.FC = () => {
         fontWeight="bold"
         marginBottom="xs"
       >
-        How does the Assistant work?
+        How does Enhanced Search work?
       </Heading>
       <Text
         color="ui.gray.dark"
@@ -54,13 +54,13 @@ const HowItWorksSection: React.FC = () => {
               <Text as="span" color="section.research.secondary">
                 Uses natural language
               </Text>{" "}
-              so you&apos;re not worried about crafting the perfect query
+              so that it can understand your intent
             </Heading>
           }
           body={
             <Image
               src={NATURAL_LANGUAGE_MESSAGE_IMAGE}
-              alt="A chat message from a patron asking: 'Does this book make any mention of the Smith's early life and childhood? Which parts of the book can I find this info in?'"
+              alt="A chat message from a patron asking: 'Does this book mention Smith's early life and childhood? Where in this book can I find that information?'"
               maxWidth="512px"
               background="transparent"
               flexShrink="0"
@@ -80,7 +80,7 @@ const HowItWorksSection: React.FC = () => {
           body={
             <Image
               src={FEEDBACK_MESSAGE_IMAGE}
-              alt="A chat message from the VRA stating: 'Here are some results that match your criteria. Verify results. Your data is not used to train our models.' The message includes interactive thumbs-up and thumbs-down icons for feedback."
+              alt="A chat message from the VRA stating: 'Here are some books on astronomy in the middle ages.' The message includes interactive thumbs-up and thumbs-down icons for feedback."
               maxWidth="512px"
               background="transparent"
               flexShrink="0"
@@ -94,13 +94,13 @@ const HowItWorksSection: React.FC = () => {
               <Text as="span" color="section.research.secondary">
                 Shows you the source
               </Text>{" "}
-              so that you can verify its responses on the spot
+              so that you can verify responses on the spot
             </Heading>
           }
           body={
             <Image
               src={SOURCE_MESSAGE_IMAGE}
-              alt="A chat message from the VRA stating: 'Yes, this book mentions Smith's birth and childhood (p3). It also describes his early schooling in Kansas (p8).' The page numbers are styled as clickable links."
+              alt="A chat message from the VRA stating: 'Yes, this book mentions Smith's childhood (p3). It also describes his college years in Texas (p8).' The page numbers are styled as clickable links."
               maxWidth="512px"
               background="transparent"
               flexShrink="0"
@@ -120,7 +120,7 @@ const HowItWorksSection: React.FC = () => {
           body={
             <Image
               src={CONTROL_SUBNAV_IMAGE}
-              alt="A subnavigation bar with two options: 'Virtual Research Assistant' and 'Keyword search.' This illustrates how patrons can maintain control by opting out of the AI tool and switching back to traditional search at any time."
+              alt="A subnavigation bar with two options: 'Enhanced Search' and 'Keyword search.' This illustrates how patrons can maintain control by opting out of the AI tool and switching back to traditional search at any time."
               maxWidth="512px"
               background="transparent"
               flexShrink="0"

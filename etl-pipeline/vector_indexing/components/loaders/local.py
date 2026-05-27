@@ -8,21 +8,23 @@ from pathlib import Path
 from typing import Optional
 
 from logger import create_log
-from vector_indexing.core.types import Book
-from vector_indexing.core.config import get_config, GlobalConfig
+
 from vector_indexing.components.loaders.base import (
-    BookLoader,
     BookCache,
-    BookNotFoundError,
+    BookLoader,
     BookLoadError,
+    BookNotFoundError,
 )
+from vector_indexing.core.config import DATA_DIR, resolve_path
+from vector_indexing.core.types import Book
 
 logger = create_log(__name__)
 
+BOOK_CACHE_DIR: Path = resolve_path(DATA_DIR / "books")
+
 
 class LocalBookLoader(BookLoader):
-    """Load books from local filesystem. Takes in a base data directory and an optional config.
-    If config is not provided, uses get_config() to obtain global config.
+    """Load books from local filesystem.
 
     Expects directory structure:
         data_dir/
@@ -31,18 +33,15 @@ class LocalBookLoader(BookLoader):
                 page_002.txt
                 ...
 
-    Note: By default data_dir is config.resolved_book_cache_dir which is data/v2/books.
+    Note: By default data_dir is BOOK_CACHE_DIR (data/books).
+    If data_dir is relative, it is resolved against project root.
     """
 
     def __init__(
         self,
         data_dir: Optional[Path] = None,
-        config: Optional[GlobalConfig] = None,
     ):
-        self._config = config or get_config()
-        self._data_dir = (
-            Path(data_dir) if data_dir else self._config.resolved_book_cache_dir
-        )
+        self._data_dir = resolve_path(data_dir) if data_dir else BOOK_CACHE_DIR
 
     @property
     def data_dir(self) -> Path:
@@ -109,19 +108,17 @@ class LocalBookLoader(BookLoader):
 
 
 class DiskBookCache(BookCache):
-    """Cache books on local filesystem. Takes in the cache directory and optional config.
-    If config is not provided, uses get_config() to obtain global config.
+    """Cache books on local filesystem.
+
+    Default cache directory is BOOK_CACHE_DIR. If cache_dir is relative,
+    it is resolved against project root.
     """
 
     def __init__(
         self,
         cache_dir: Optional[Path] = None,
-        config: Optional[GlobalConfig] = None,
     ):
-        self._config = config or get_config()
-        self._cache_dir = (
-            Path(cache_dir) if cache_dir else self._config.resolved_book_cache_dir
-        )
+        self._cache_dir = resolve_path(cache_dir) if cache_dir else BOOK_CACHE_DIR
 
     @property
     def cache_dir(self) -> Path:

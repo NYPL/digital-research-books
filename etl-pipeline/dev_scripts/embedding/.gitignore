@@ -1,6 +1,5 @@
-thruput_results/
-.env.execution_role
-indexing_results/
+thruput_results
+indexing_results
+llm_as_judge_results
+ranking_task_results
 tmp/**
-llm_as_judge_results/
-ranking_task_results/
