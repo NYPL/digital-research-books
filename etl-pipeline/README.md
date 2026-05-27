@@ -2,7 +2,7 @@
 
 <!-- ![ETL_Pipeline_Tests](https://github.com/NYPL/drb-etl-pipeline/workflows/ETL_Pipeline_Tests/badge.svg) -->
 
-This directory contains a containerized python application for importing data from multiple source projects and transforming this data into a unified format that can be accessed via an API. The curated data and API powers the [Virtual Research Assistant](http://digital-research-books-beta.nypl.org/research-assistant) and the legacy [Digital Research Books Beta](http://digital-research-books-beta.nypl.org/).
+This directory contains a containerized python application for importing data from multiple source projects and transforming this data into a unified format that can be accessed via an API. The curated data and API powers the [Enhanced Search](http://digital-research-books-beta.nypl.org/research-assistant) and the legacy [Digital Research Books Beta](http://digital-research-books-beta.nypl.org/).
 
 ## ETL Pipeline
 

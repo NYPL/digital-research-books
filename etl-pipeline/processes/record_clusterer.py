@@ -56,10 +56,8 @@ class RecordClusterer:
                 # Sync new orm objs with DB
                 self._commit_changes()
 
-                # Delete old ORM objs
+                # Delete old ORM objs (commit happens inside delete_records_by_query)
                 self._delete_stale_works(stale_work_ids)
-                # Sync deletion to DB
-                self._commit_changes()
 
                 logger.info(f"Clustered record: {record}")
 

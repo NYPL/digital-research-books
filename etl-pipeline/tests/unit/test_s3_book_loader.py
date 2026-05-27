@@ -4,17 +4,16 @@ Tests the loading flow: cache -> pages -> archive fallback.
 Uses mocked S3 client and GPG to avoid network/decryption dependencies.
 """
 
-import pytest
 from unittest.mock import Mock, patch
-from botocore.exceptions import ClientError
 
-from vector_indexing.core.types import Book
+import pytest
+from botocore.exceptions import ClientError
+from vector_indexing.components.loaders.base import BookNotFoundError
 from vector_indexing.components.loaders.s3 import (
     S3BookLoader,
     _extract_page_number,
 )
-from vector_indexing.components.loaders.base import BookNotFoundError
-
+from vector_indexing.core.types import Book
 
 # --- Fixtures ---
 
@@ -111,28 +110,14 @@ class TestBuildS3Prefix:
     """Tests for _build_s3_prefix."""
 
     def test_strips_trailing_slash(self, mock_s3_client):
-        with (
-            patch("vector_indexing.components.loaders.s3.gnupg.GPG"),
-            patch("vector_indexing.components.loaders.s3.get_config") as mock_config,
-        ):
-            # Mock config to return prefix with trailing slash
-            mock_config.return_value.s3_bucket = "test"
-            mock_config.return_value.s3_prefix = "grin/"
-            mock_config.return_value.grin_access_key = None
+        with patch("vector_indexing.components.loaders.s3.gnupg.GPG"):
             loader = S3BookLoader(
                 bucket="test", prefix="grin/", s3_client=mock_s3_client
             )
         assert loader._build_s3_prefix("123") == "grin/123/"
 
     def test_without_prefix(self, mock_s3_client):
-        with (
-            patch("vector_indexing.components.loaders.s3.gnupg.GPG"),
-            patch("vector_indexing.components.loaders.s3.get_config") as mock_config,
-        ):
-            # Mock config to return empty prefix
-            mock_config.return_value.s3_bucket = "test"
-            mock_config.return_value.s3_prefix = ""
-            mock_config.return_value.grin_access_key = None
+        with patch("vector_indexing.components.loaders.s3.gnupg.GPG"):
             loader = S3BookLoader(bucket="test", prefix="", s3_client=mock_s3_client)
         assert loader._build_s3_prefix("123") == "123/"
 

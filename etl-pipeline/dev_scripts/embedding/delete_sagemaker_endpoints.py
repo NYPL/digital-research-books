@@ -22,6 +22,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 
+# TODO: handle case where endpoint is still "creating" (10's of minutes), poll or abort the creation
 def delete_endpoint_resources(sm_client, endpoint_name: str, dry_run: bool) -> None:
     """Delete endpoint + endpoint config + model(s) using boto3 directly."""
     # Resolve endpoint config name from the endpoint description
