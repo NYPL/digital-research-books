@@ -47,6 +47,7 @@ from utils.timer import timer
 from ..utils import remove_markdown_comments
 from .search import ReciprocalRankFuser, ScoredHit, hybrid_search
 from .types import CatalogSearchResult, ContentSearchResult
+from .newrelic_llm_events import record_llm_events
 from ..db import (
     get_async_engine,
     get_engine,
