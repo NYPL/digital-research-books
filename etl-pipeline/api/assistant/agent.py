@@ -1,11 +1,12 @@
 import json
 import os
-import sys
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Tuple, Union
+from typing_extensions import TypedDict
+
 
 import numpy as np
 import pandas as pd
@@ -28,30 +29,29 @@ from agents.models.chatcmpl_converter import Converter
 from agents.run_config import DEFAULT_MAX_TURNS
 from agents.tool_context import ToolContext
 from jinja2 import Template
-from logger import create_log
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 from sqlalchemy import text
-from typing_extensions import TypedDict
-from utils.common import require_env, wrap
-from utils.timer import timer
-from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
+
 
 # shared code
 from vector_indexing.components.embedders.google import GoogleEmbedder
+from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
 from vector_indexing.core.utils import Timer
+from logger import create_log
+from utils.common import require_env, wrap
+from utils.timer import timer
 
+# api code
+from ..utils import remove_markdown_comments
+from .search import ReciprocalRankFuser, ScoredHit, hybrid_search
+from .types import CatalogSearchResult, ContentSearchResult
 from ..db import (
     get_async_engine,
     get_engine,
     get_frbr_data_by_edition,
     get_readonly_session,
 )
-
-# api code
-from ..utils import remove_markdown_comments
-from .search import ReciprocalRankFuser, ScoredHit, hybrid_search
-from .types import CatalogSearchResult, ContentSearchResult
 
 logger = create_log(__name__)
 
@@ -471,7 +471,7 @@ async def update_chat(
     # request workers/threads)
 
     backend = TurbopufferBackend(index_name=INDEX_NAME)
-    embedder = GoogleEmbedder(task_type="RETRIEVAL_QUERY")
+    embedder = GoogleEmbedder()
 
     # NOTE: litellm has a bug converting `list | None = None` in agents sdk @functol_tool
     # param type annotations into gemini API compatible format
@@ -670,7 +670,7 @@ def search_catalog(
         )
 
         # Embed the query for semantic search
-        query_vector = ctx.context.embedder.embed_one(ranking_query)
+        query_vector = ctx.context.embedder.embed_query(ranking_query)
 
         # Execute hybrid search (vector + BM25) with RRF
         results = hybrid_search(
@@ -826,7 +826,7 @@ def search_book(
             combined_filters = book_filter
 
         # Embed the query for semantic search
-        query_vector = ctx.context.embedder.embed_one(ranking_query)
+        query_vector = ctx.context.embedder.embed_query(ranking_query)
 
         # Execute hybrid search (vector + BM25) with RRF fusion
         results = hybrid_search(

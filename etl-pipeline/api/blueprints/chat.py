@@ -219,6 +219,9 @@ def _chat_handler(user, session_id, conversation_type, message, edition_id):
             update_chat(message, conversation_type, session_id, edition_id=edition_id)
         )
     except ValueError as e:
+        # Intended to catch "No edition found with id=XXX"
+        # TODO: make error filter specific to intended error, even tho its the \
+        # only ValueError intentionlly raided in the update_chat() boundary
         return APIUtils.formatResponseObject(404, RESPONSE_TYPE, {"message": str(e)})
 
     # Add relevant snippets to search result, if search was executed in this agent turn

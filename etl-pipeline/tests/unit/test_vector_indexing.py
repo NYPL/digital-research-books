@@ -316,7 +316,7 @@ class TestPipeline:
         ]
 
         embedder = Mock()
-        embedder.embed_batch.return_value = [[0.1] * 768] * 3
+        embedder.embed_document_batch.return_value = [[0.1] * 768] * 3
 
         metadata_provider = Mock()
         metadata_provider.get_metadata.return_value = {
@@ -346,9 +346,9 @@ class TestPipeline:
         """Pipeline embeds all chunks in one batch call."""
         mock_pipeline.index_books([sample_book.barcode])
 
-        # Should call embed_batch once with all chunk texts
-        mock_pipeline._embedder.embed_batch.assert_called_once()
-        texts = mock_pipeline._embedder.embed_batch.call_args[0][0]
+        # Should call embed_document_batch once with all chunk texts
+        mock_pipeline._embedder.embed_document_batch.assert_called_once()
+        texts = mock_pipeline._embedder.embed_document_batch.call_args[0][0]
         assert len(texts) == 3
 
     def test_pipeline_handles_load_failure(self, mock_pipeline):
@@ -384,5 +384,5 @@ class TestPipeline:
         assert not result.success
         assert "Metadata retrieval error" in result.error
         mock_pipeline._chunker.chunk.assert_not_called()
-        mock_pipeline._embedder.embed_batch.assert_not_called()
+        mock_pipeline._embedder.embed_document_batch.assert_not_called()
         mock_pipeline._backend.insert.assert_not_called()
