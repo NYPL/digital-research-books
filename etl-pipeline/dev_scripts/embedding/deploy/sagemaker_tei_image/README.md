@@ -7,11 +7,11 @@ Target HF_MODEL_ID is specified when deploying to sagemaker, and the model weigh
 Useful when the HF provided AWS images (https://huggingface.co/docs/sagemaker/main/en/dlcs/available) do not support the most recent TEI versions.
 
 Examples:
-Push image:
+Push TEI image:
 ```
 AWS_PROFILE=vra-sandbox TEI_IMAGE=ghcr.io/huggingface/text-embeddings-inference:89-1.9 ./build_and_push.sh 
 ```
-Deploy image and Model:
+Deploy image with Model:
 ```
 AWS_PROFILE=vra-sandbox HF_MODEL_ID=perplexity-ai/pplx-embed-v1-4b INSTANCE_TYPE=ml.g6e.xlarge ./deploy.sh
 ```
@@ -26,10 +26,15 @@ Resources:
 
 
 <!-- 
-# our avg chunk is 730 tokens so 3000 should be plenty + save memory
+# PPLX
 AWS_PROFILE=vra-sandbox HF_MODEL_ID=perplexity-ai/pplx-embed-v1-4b INSTANCE_TYPE=ml.g6e.xlarge TEI_EXTRA_ARGS="--dtype float32 --max-batch-tokens 3000" ./deploy.sh
+# - --max-batch-tokens 3000" -> our avg chunk is 730 tokens so 3000 should be plenty + save memory. Is this an issue with multiple docs per request?
 
-This is in the logs. Seems ok but verifying against sentence transformers local build could be a nice check
-"modules.json parse warning for st_quantize.FlexibleQuantizer:
-TEI cannot parse that custom sentence-transformers module type, so it skips dense module loading."
+
+"""
+modules.json parse warning for st_quantize.FlexibleQuantizer:
+TEI cannot parse that custom sentence-transformers module type, so it skips dense module loading.
+"""
+This is from the logs. Seems ok but verifying against sentence transformers local build could be a nice check
+
 -->
