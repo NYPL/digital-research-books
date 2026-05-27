@@ -135,9 +135,6 @@ timings["ANN scan       "] = (ann_elapsed, len(ann_dists))
 # inside the same loop. Many round trips — expected to be the slowest.
 # ---------------------------------------------------------------------------
 
-# Upper bound on chunks per book for per-barcode queries (approach 3)
-MAX_CHUNKS_PER_BARCODE = 5_000
-
 print(f"\n[3] Per-barcode KNN  (doc cap={TOP_K:,})")
 t0 = time.perf_counter()
 
@@ -155,15 +152,16 @@ for chunk, _ in BACKEND.scan(
     if not barcode:
         continue
 
-    # KNN query scoped to this barcode's chunks only
-    results = BACKEND.query(
+    # kNN scan scoped to this barcode's chunks
+    for _, dist in BACKEND.scan(
         rank_by=("vector", "kNN", QUERY_VECTOR),
         filters=["barcode", "Eq", barcode],
-        top_k=min(MAX_CHUNKS_PER_BARCODE, TOP_K - pb_total_docs),
+        limit=TOP_K - pb_total_docs,
         include_attributes=["barcode"],
-    )
-    pb_total_docs += len(results)
-    pb_dists.extend(d for _, d in results if d is not None)
+    ):
+        pb_total_docs += 1
+        if dist is not None:
+            pb_dists.append(dist)
     pb_barcodes += 1
     if pb_barcodes % 50 == 0:
         print(f"  ...{pb_barcodes} barcodes, {pb_total_docs:,} docs")
