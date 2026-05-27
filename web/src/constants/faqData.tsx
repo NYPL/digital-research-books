@@ -1,14 +1,15 @@
 import { Box, List, Text } from "@nypl/design-system-react-components";
+import { useContext } from "react";
 import Link from "~/src/components/Link/Link";
 import {
   ARCADIA_FUND_LINK,
   ARCHIVES_PORTAL_LINK,
-  ASK_NYPL,
   DIGITAL_COLLECTIONS_LINK,
   ONLINE_DATABASES_LINK,
   PRIVACY_POLICY_LINK,
   RESEARCH_CATALOG_LINK,
 } from "~/src/constants/links";
+import { FeedbackContext } from "../context/FeedbackContext";
 
 const generateResponseListItems = [
   <>
@@ -50,7 +51,7 @@ const provideFeedbackListItems = [
 
 const GENERAL_ACCORDION_DATA = [
   {
-    label: "What content Enhanced Search provide access to?",
+    label: "What content does Enhanced Search provide access to?",
     panel: (
       <Box>
         <Text marginBottom="s">
@@ -437,11 +438,7 @@ const COST_ACCORDION_DATA = [
           consumption and re-evaluate our models regularly.
         </Text>
         <Text>
-          <Link
-            to="#"
-            color="section.research.secondary"
-            hasVisitedState={false}
-          >
+          <Link to="#" hasVisitedState={false}>
             Learn more
           </Link>{" "}
           about the project.
@@ -450,6 +447,38 @@ const COST_ACCORDION_DATA = [
     ),
   },
 ];
+
+const HelpContactPanel: React.FC = () => {
+  const { onOpen } = useContext(FeedbackContext);
+
+  const triggerFeedback = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onOpen();
+  };
+
+  return (
+    <Box>
+      We are happy to assist if you have any additional questions or need help
+      using the tool. Please{" "}
+      <Link
+        to="#"
+        role="button"
+        hasVisitedState={false}
+        onClick={triggerFeedback}
+        onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
+          if (e.key === " " || e.key === "Spacebar") {
+            triggerFeedback(e);
+          }
+        }}
+      >
+        contact us
+      </Link>{" "}
+      with your question and an email address, and we will reach out to you as
+      soon as possible.
+    </Box>
+  );
+};
 
 const HELP_ACCORDION_DATA = [
   {
@@ -483,17 +512,7 @@ const HELP_ACCORDION_DATA = [
   },
   {
     label: "What if I need help using this tool or have more questions?",
-    panel: (
-      <Box>
-        We are happy to assist if you have any additional questions or need help
-        using the tool. Please{" "}
-        <Link to={ASK_NYPL} hasVisitedState={false}>
-          contact us
-        </Link>{" "}
-        with your question and an email address, and we will reach out to you as
-        soon as possible.
-      </Box>
-    ),
+    panel: <HelpContactPanel />,
   },
 ];
 

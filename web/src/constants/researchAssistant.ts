@@ -20,7 +20,7 @@ export const FEATURES = [
     featureName: "FIND",
     title: "Surface knowledge from thousands of trusted sources ",
     description:
-      "Enhanced Search uses a natural-language chat interface to engage with over 1 million Digitized Research Books, so that you can quickly find relevant scholarly content.",
+      "Enhanced Search uses a natural language chat interface to engage with over 1 million Digitized Research Books, so that you can quickly find relevant scholarly content.",
     imageSrc: FIND_FEATURE_IMAGE,
     imageAlt:
       'Split-screen interface with search results on the left and the Enhanced Search chat on the right. A patron asks about US copyright law history. The AI confirms matching items found and prompts the patron to ask follow up questions or choose from suggested options including "Digital Copyright Act," "Intellectual property law," and "Fair use doctrine."',
@@ -32,13 +32,13 @@ export const FEATURES = [
       "Enhanced Search provides summaries and explains why you're seeing a particular result, so that you can determine a book's usefulness before diving into it. ",
     imageSrc: EVALUATE_FEATURE_IMAGE,
     imageAlt:
-      "A search result item of an e-book titled 'Privilege and Property: Essays on the History of Copyright.' There are expandable sections for 'Read summary', 'Why am I seeing this result?', and 'Other editions'. The expanded section for 'Why am I seeing this result?' explains that chapters 7, 8, and 10 cover North American printing presses and the evolution of legal rights.",
+      "Split-screen interface showing an e-book search result for 'Notions and fancy foods v.49' on the left, and a chat window requesting information about English department stores on the right. The search result's 'Why am I seeing this result?' explanation connects the book to the chat topic.",
   },
   {
     featureName: "ACCESS",
     title: "Focus on the most important parts of a book",
     description:
-      "Enhanced Search directs you to the most relevant sections of a book and cites its sources, so that you can research with trust, efficiency and confidence.",
+      "Enhanced Search directs you to the most relevant sections of a book and cites its sources, so that you can research with efficiency and confidence.",
     imageSrc: ACCESS_FEATURE_IMAGE,
     imageAlt:
       "PDF viewer showing a biography of Charles Thomas Walker. In the AI assistant on the right the patron asked if the book mentions Walker's early life and childhood and the assistant replies with confirmation and cites page 2. The document text details his 1858 birth in Hephzibah, Georgia, as the youngest of 11 children.",
@@ -47,7 +47,7 @@ export const FEATURES = [
     featureName: "EXPLORE",
     title: "Expand your research by finding related content",
     description:
-      "Enhanced Search provides recommendations based on your interests, so that you can discover more from the collection and expand your research.",
+      "Enhanced Search provides recommendations based on your interests, so that you can discover more materials and find new information pathways.",
     imageSrc: EXPLORE_FEATURE_IMAGE,
     imageAlt:
       "PDF viewer showing a book cover. The AI assistant on the right suggests related content, including 'Life of Charles T. Walker, D.D.' by Silas Xavier Floyd and 'The first Colored Baptist church in North America' by James Simms.",

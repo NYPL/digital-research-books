@@ -10,6 +10,7 @@ import { renderMarkdownContent } from "~/src/util/MarkdownParser";
 import { isContentSearchResults } from "~/src/util/ResearchAssistantUtils";
 import styles from "../../../styles/components/MessageBubble.module.scss";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
+import HiddenAria from "../HiddenAria/HiddenAria";
 import SnippetList from "../ResultCard/SnippetList";
 import FeedbackButtons from "./FeedbackButtons";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
@@ -62,6 +63,7 @@ const MessageBubble = memo(
                 )}
                 <Flex flexDir="column" gap="12px">
                   <Box>
+                    <HiddenAria>Enhanced Search says:</HiddenAria>
                     {renderMarkdownContent(
                       contentItem.text,
                       handleEditionClick
