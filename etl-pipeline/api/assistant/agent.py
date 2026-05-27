@@ -291,21 +291,6 @@ class LLMLoggingHooks(RunHooks):
         self._last_input_items: list = []
         self._last_response: Optional[ModelResponse] = None
 
-    def record_newrelic_llm_events(self, agent: Agent) -> None:
-        """Delegate to the dedicated New Relic instrumentation module."""
-        record_llm_events(
-            agent,
-            session_id=self.session_id,
-            conversation_type=self.conversation_type,
-            edition_id=self.edition_id,
-            last_response=self._last_response,
-            last_system_prompt=self._last_system_prompt,
-            last_input_items=self._last_input_items,
-            total_input_tokens=self.total_input_tokens,
-            total_output_tokens=self.total_output_tokens,
-            total_llm_elapsed=self.total_llm_elapsed,
-        )
-
     async def on_llm_start(
         self,
         context: RunContextWrapper,
@@ -618,7 +603,18 @@ async def update_chat(
             ),
         )
 
-    logging_hooks.record_newrelic_llm_events(agent)
+    record_llm_events(
+        agent,
+        session_id=logging_hooks.session_id,
+        conversation_type=logging_hooks.conversation_type,
+        edition_id=logging_hooks.edition_id,
+        last_response=logging_hooks._last_response,
+        last_system_prompt=logging_hooks._last_system_prompt,
+        last_input_items=logging_hooks._last_input_items,
+        total_input_tokens=logging_hooks.total_input_tokens,
+        total_output_tokens=logging_hooks.total_output_tokens,
+        total_llm_elapsed=logging_hooks.total_llm_elapsed,
+    )
 
     return run_result
 
