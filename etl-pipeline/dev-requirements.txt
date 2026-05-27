@@ -11,4 +11,5 @@ pytest-xdist==3.8.0
 pytest==9.0.2
 requests-mock==1.12.1
 ruff==0.11.7
+statsmodels==0.14.6 # used in bias_analysis.py
 transformers==5.8.0 # used in dev_scripts/embedding/huggingface_sagemaker_throughput.py

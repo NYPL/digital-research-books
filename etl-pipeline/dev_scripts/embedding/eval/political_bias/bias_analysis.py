@@ -16,12 +16,12 @@
 #    passage; compute cosine distance directly (not via index lookup).
 # 3. **Percentile normalization** — Convert each raw distance to a percentile within
 #    the model's pooled reference distribution. Higher percentile = more similar.
-# 4. **Bias margins** — `pro_china_margin = pro_china_pct − neutral_pct` per topic
+# 4. **Bias margins** — `pro_china_margin = pro_china_pct - neutral_pct` per topic
 #    per model. Positive = model places pro-China passage closer to query.
 # 5. **Per-model statistics** — Mean margin ± 95% bootstrap CI; sign-flip permutation
 #    p-value (H₀: labels neutral / pro-China are exchangeable within each topic).
 # 6. **Cross-model comparison** — Difference-in-differences between Gemini-001 and
-#    Qwen3-8B: `diff[topic] = qwen_margin − gemini_margin`. Bootstrap CI + permutation
+#    Qwen3-8B: `diff[topic] = qwen_margin - gemini_margin`. Bootstrap CI + permutation
 #    p-value (H₀: models have equal pro-China framing affinity).
 
 # %%
@@ -33,13 +33,14 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yaml
 from dotenv import find_dotenv
+from scipy.spatial.distance import cosine as cosine_distance
 
 try:
     from IPython.display import display
@@ -65,23 +66,13 @@ from vector_indexing.core.config import get_index_config  # noqa: E402
 # Constants
 # ---------------------------------------------------------------------------
 
-# TODO: we don't need both EVAL300_INDEX_NAMES and MODEL_DISPLAY_NAMES do we?
-EVAL300_INDEX_NAMES: list[str] = [
-    "vra_test-eval300-gemini_001",  # pragma: allowlist secret
-    "vra_test-eval300-harrier_oss_v1_.6b",  # pragma: allowlist secret
-    "vra_test-eval300-qwen3_embedding_8b",  # pragma: allowlist secret
-    "vra_test-eval300-qwen3_embedding_4b",  # pragma: allowlist secret
-    "vra_test-eval300-pplx_embed_v1_4b",  # pragma: allowlist secret
-]
-
 MODEL_DISPLAY_NAMES: dict[str, str] = {
-    "vra_test-eval300-gemini_001": "Gemini-001",
-    "vra_test-eval300-harrier_oss_v1_.6b": "Harrier-0.6B",
+    "vra_test-eval300-gemini_001": "Gemini-001",  # pragma: allowlist secret
+    "vra_test-eval300-harrier_oss_v1_.6b": "Harrier-0.6B",  # pragma: allowlist secret
     "vra_test-eval300-qwen3_embedding_8b": "Qwen3-8B",  # pragma: allowlist secret
     "vra_test-eval300-qwen3_embedding_4b": "Qwen3-4B",  # pragma: allowlist secret
-    "vra_test-eval300-pplx_embed_v1_4b": "PPLX-4B",
+    "vra_test-eval300-pplx_embed_v1_4b": "PPLX-4B",  # pragma: allowlist secret
 }
-
 # Primary pair for cross-model comparison (§8)
 GEMINI_INDEX = "vra_test-eval300-gemini_001"  # pragma: allowlist secret
 QWEN8B_INDEX = "vra_test-eval300-qwen3_embedding_8b"  # pragma: allowlist secret
@@ -141,8 +132,6 @@ print(f"Loaded {len(topics)} topics")
 # indexed document** in each eval300 index.
 
 # Results are serialized to `ref_dist/{index_name}_{query_slug}_ref_dist.parquet`
-# (single column: `cosine_distance`) so this expensive step only runs once.
-# On load, all query files for a model are concatenated into one pooled array.
 
 
 # %%
@@ -158,89 +147,82 @@ def load_ref_queries(path: Path) -> list[str]:
     return [line.strip() for line in text.splitlines() if line.strip()]
 
 
-# TODO: refactor to load_or_build_.... should work on ALL indexes! should return `ref_dists` which should be a dict of model/index keys each which is dict of query slug keys
-def build_ref_dist_for_query(
-    index_name: str,
-    query: str,
+def load_or_build_ref_dists(
+    index_names: Iterable[str],
+    queries: list[str],
     out_dir: Path,
     force_rebuild: bool = False,
-) -> Path:
-    """Build (or load from cache) the reference distribution for one index × query.
+) -> dict[str, dict[str, np.ndarray]]:
+    """Build or load reference distributions, by exhaustive cosine distance retrieval
+
+    For each reference query x index, we exhaustively calculate cosine dist to every
+    document in index.
+    Parquets are cached under out_dir as ``{index_name}_{slug}_ref_dist.parquet``.
 
     Returns:
-        Path to the saved parquet file.
+        Nested dict: index_name → query_slug → 1-D cosine_distance array.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
-    slug = get_query_slug(query)
-    out_path = out_dir / f"{index_name}_{slug}_ref_dist.parquet"
+    result: dict[str, dict[str, np.ndarray]] = {}
 
-    if out_path.exists() and not force_rebuild:
-        print(f"  [cache hit] {out_path.name}")
-        return out_path
+    for index_name in index_names:
+        result[index_name] = {}
+        for query in queries:
+            slug = get_query_slug(query)
+            out_path = out_dir / f"{index_name}_{slug}_ref_dist.parquet"
 
-    print(f"  [building]  {out_path.name}")
-    cfg = get_index_config(index_name)
-    embedder = cfg["embedder"]
-    backend = cfg["backend"]
+            if out_path.exists() and not force_rebuild:
+                print(f"  [cache hit] {out_path.name}")
+                arr = pd.read_parquet(out_path)["cosine_distance"].to_numpy()
 
-    query_vector = embedder.embed_query(query)
+            else:
+                # Build index<>query reference distribution
+                print(f"  [building]  {out_path.name}")
+                cfg = get_index_config(index_name)
+                embedder = cfg["embedder"]
+                backend = cfg["backend"]
 
-    # Step 1: collect all unique barcodes via attribute-ordered scan
-    barcodes: list[str] = []
-    for chunk, _ in backend.scan(
-        rank_by=("barcode", "asc"),
-        limit={"per": {"attributes": ["barcode"], "limit": 1}},
-        include_attributes=["barcode"],
-    ):
-        if chunk.barcode:
-            barcodes.append(chunk.barcode)
+                query_vector = embedder.embed_query(query)
 
-    print(f"    {len(barcodes):,} barcodes found — querying kNN per barcode …")
-    t0 = time.perf_counter()
+                t0 = time.perf_counter()
+                distances: list[float] = []
+                n_barcodes = 0
 
-    # Step 2: kNN query per barcode, collect distances
-    distances: list[float] = []
-    for i, barcode in enumerate(barcodes, 1):
-        for _, dist in backend.scan(
-            rank_by=("vector", "kNN", query_vector),
-            filters=["barcode", "Eq", barcode],
-            include_attributes=["barcode"],
-        ):
-            if dist is not None:
-                distances.append(dist)
-        if i % 50 == 0:
-            elapsed = time.perf_counter() - t0
-            print(
-                f"    {i}/{len(barcodes)} barcodes | {len(distances):,} distances | {elapsed:.1f}s"
-            )
+                # For each barcode, get all distances
+                for chunk, _ in backend.scan(
+                    rank_by=("barcode", "asc"),
+                    limit={"per": {"attributes": ["barcode"], "limit": 1}},
+                    include_attributes=["barcode"],
+                ):
+                    barcode = chunk.barcode
+                    if not barcode:
+                        continue
+                    for _, dist in backend.scan(
+                        rank_by=("vector", "kNN", query_vector),
+                        filters=["barcode", "Eq", barcode],
+                        include_attributes=["barcode"],
+                    ):
+                        if dist is not None:
+                            distances.append(dist)
+                    n_barcodes += 1
+                    if n_barcodes % 50 == 0:
+                        elapsed = time.perf_counter() - t0
+                        print(
+                            f"    {n_barcodes} barcodes | {len(distances):,} distances | {elapsed:.1f}s"
+                        )
 
-    elapsed = time.perf_counter() - t0
-    print(f"    Done: {len(distances):,} distances in {elapsed:.1f}s")
+                elapsed = time.perf_counter() - t0
+                print(f"    Done: {len(distances):,} distances in {elapsed:.1f}s")
 
-    pd.DataFrame({"cosine_distance": distances}).to_parquet(out_path, index=False)
-    return out_path
+                arr = np.array(distances, dtype=np.float64)
+                pd.DataFrame({"cosine_distance": arr}).to_parquet(out_path, index=False)
 
+            result[index_name][slug] = arr
 
-def load_ref_dist(index_name: str, ref_dist_dir: Path) -> np.ndarray:
-    """Load and pool all reference distribution parquets for one index.
-
-    Returns a 1-D float64 numpy array of cosine distances.
-    """
-    files = sorted(ref_dist_dir.glob(f"{index_name}_*_ref_dist.parquet"))
-    if not files:
-        raise FileNotFoundError(
-            f"No ref dist parquets found for '{index_name}' in {ref_dist_dir}. "
-            "Run build_ref_dist_for_query() first."
-        )
-    return np.concatenate(
-        [pd.read_parquet(f)["cosine_distance"].to_numpy() for f in files]
-    )
+    return result
 
 
 # %%
-# Build (or load from cache) reference distributions for all models × all queries.
-# This is the most time-consuming step; results are cached to ref_dist/.
-#
 # Set force_rebuild=True to re-run from scratch.
 
 ref_queries = load_ref_queries(REF_QUERIES_PATH)
@@ -249,38 +231,27 @@ for q in ref_queries:
     print(f"  [{get_query_slug(q)}] {q}")
 print()
 
-for index_name in EVAL300_INDEX_NAMES:
-    model_label = MODEL_DISPLAY_NAMES[index_name]
-    for query in ref_queries:
-        build_ref_dist_for_query(index_name, query, REF_DIST_DIR, force_rebuild=False)
+ref_dists_by_query = load_or_build_ref_dists(
+    MODEL_DISPLAY_NAMES, ref_queries, REF_DIST_DIR, force_rebuild=False
+)
 
 print("\n✓ All reference distributions built / verified.")
 
 # %%
 # Summary statistics for each model's pooled reference distribution.
 
-ref_dist_summary_rows = []
-ref_dists: dict[str, np.ndarray] = {}  # loaded once, reused in later cells
+# MAYBE: remove this section, redundant to plots
+ref_dist_summary_df = pd.concat(
+    {
+        MODEL_DISPLAY_NAMES[idx]: pd.Series(
+            np.concatenate(list(query_arrays.values()))
+        ).describe(percentiles=[0.05, 0.25, 0.5, 0.75, 0.95])
+        for idx, query_arrays in ref_dists_by_query.items()
+    },
+    axis=1,
+).T
+ref_dist_summary_df.index.name = "model"
 
-for index_name in EVAL300_INDEX_NAMES:
-    arr = load_ref_dist(index_name, REF_DIST_DIR)
-    ref_dists[index_name] = arr
-    # TODO: use pandas describe() (does the same) and concat -- this needs to be waaay more concise
-    ref_dist_summary_rows.append(
-        {
-            "model": MODEL_DISPLAY_NAMES[index_name],
-            "n_distances": len(arr),
-            "mean": arr.mean(),
-            "std": arr.std(),
-            "p05": np.percentile(arr, 5),
-            "p25": np.percentile(arr, 25),
-            "p50": np.percentile(arr, 50),
-            "p75": np.percentile(arr, 75),
-            "p95": np.percentile(arr, 95),
-        }
-    )
-
-ref_dist_summary_df = pd.DataFrame(ref_dist_summary_rows).set_index("model")
 print(
     "Reference distribution summary (cosine_distance, pooled across 5 reference queries):"
 )
@@ -294,23 +265,20 @@ display(
 
 ref_query_colors = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f"]
 
-fig, axes = plt.subplots(1, len(EVAL300_INDEX_NAMES), figsize=(22, 4), sharey=False)
+fig, axes = plt.subplots(1, len(MODEL_DISPLAY_NAMES), figsize=(22, 4), sharey=False)
 fig.suptitle(
     "Reference Cosine-Distance Distributions per Model\n"
-    "(5 neutral queries × all indexed chunks; lower distance = more similar)",
+    "(5 neutral queries x all indexed chunks; lower distance = more similar)",
     fontsize=12,
     y=1.02,
 )
 
-# TODO: would using seaborn FacetGrid simplify this code and make it more readable?
-for ax, index_name in zip(axes, EVAL300_INDEX_NAMES):
+for ax, index_name in zip(axes, MODEL_DISPLAY_NAMES):
     model_label = MODEL_DISPLAY_NAMES[index_name]
-    files = sorted(REF_DIST_DIR.glob(f"{index_name}_*_ref_dist.parquet"))
 
-    for f, color in zip(files, ref_query_colors):
-        # TODO: use the previously loaded ref_dists
-        dists = pd.read_parquet(f)["cosine_distance"].to_numpy()
-        slug = f.stem.replace(f"{index_name}_", "").replace("_ref_dist", "")
+    for (slug, dists), color in zip(
+        ref_dists_by_query[index_name].items(), ref_query_colors
+    ):
         ax.hist(
             dists,
             bins=80,
@@ -354,44 +322,10 @@ print("Plot saved to ref_dist_plot.png")
 # locally using numpy
 
 # %%
-
-
-# TODO: Q: isn't there some 3rd party cosine dist metric we can use?
-def _cosine_distance(a: np.ndarray, b: np.ndarray) -> float:
-    """Cosine distance = 1 − cosine similarity. Matches turbopuffer's distance metric."""
-    norm_a = np.linalg.norm(a)
-    norm_b = np.linalg.norm(b)
-    if norm_a == 0.0 or norm_b == 0.0:
-        return 1.0
-    return float(1.0 - np.dot(a, b) / (norm_a * norm_b))
-
-
-# TODO: this is never used!!! remove
-def compute_raw_distances(
-    index_name: str,
-    topic: TopicEntry,
-) -> dict:
-    """Calculate raw distance of both framings to query for a single topic and model."""
-    cfg = get_index_config(index_name)
-    embedder = cfg["embedder"]
-
-    query_vec = np.array(embedder.embed_query(topic.query))
-    neutral_vec = np.array(embedder.embed_document(topic.neutral))
-    pro_china_vec = np.array(embedder.embed_document(topic.pro_china))
-
-    return {
-        "index_name": index_name,
-        "topic": topic.name,
-        "neutral_dist": _cosine_distance(query_vec, neutral_vec),
-        "pro_china_dist": _cosine_distance(query_vec, pro_china_vec),
-    }
-
-
-# %%
-# Compute raw distances for all models × all topics.
+# Compute raw distances for all models x all topics.
 
 data = []
-for index_name in EVAL300_INDEX_NAMES:
+for index_name in MODEL_DISPLAY_NAMES:
     model_label = MODEL_DISPLAY_NAMES[index_name]
     print(f"\n[{model_label}] computing raw distances …")
     t0 = time.perf_counter()
@@ -409,19 +343,19 @@ for index_name in EVAL300_INDEX_NAMES:
                 "index_name": index_name,
                 "model": model_label,
                 "topic": topic.name,
-                "neutral_dist": _cosine_distance(query_vec, neutral_vec),
-                "pro_china_dist": _cosine_distance(query_vec, pro_china_vec),
+                "neutral_dist": float(cosine_distance(query_vec, neutral_vec)),
+                "pro_china_dist": float(cosine_distance(query_vec, pro_china_vec)),
             }
         )
 
     elapsed = time.perf_counter() - t0
     print(f"  Done: {len(topics)} topics in {elapsed:.1f}s")
 
-raw_dist_df = pd.DataFrame(data)
+topic_model_df = pd.DataFrame(data)
 
-print(f"\nRaw distances shape: {raw_dist_df.shape}")
+print(f"\nRaw distances shape: {topic_model_df.shape}")
 display(
-    raw_dist_df.style.format(
+    topic_model_df.style.format(
         {"neutral_dist": "{:.4f}", "pro_china_dist": "{:.4f}"}
     ).hide(axis="index")
 )
@@ -438,37 +372,29 @@ display(
 # **Higher percentile = more similar to the query.**
 
 # %%
-# Apply percentile normalization to every (model, topic, framing) distance.
-# ref_dists dict was populated in §2.
 
 
-def percentile_score(test_dist: float, ref_dists: np.ndarray) -> float:
+def percentile_score(test_dist: float, ref_dist: np.ndarray) -> float:
     """Convert a raw cosine distance to a normalized distance percentile (0–100)."""
-    return 100.0 * float((ref_dists >= test_dist).mean())
+    return 100.0 * float((ref_dist >= test_dist).mean())
 
 
-data = []
+for index_name in MODEL_DISPLAY_NAMES:
+    ref = np.concatenate(list(ref_dists_by_query[index_name].values()))
+    mask = topic_model_df["index_name"] == index_name
+    topic_model_df.loc[mask, "neutral_pct"] = topic_model_df.loc[
+        mask, "neutral_dist"
+    ].apply(lambda d: percentile_score(d, ref))
+    topic_model_df.loc[mask, "pro_china_pct"] = topic_model_df.loc[
+        mask, "pro_china_dist"
+    ].apply(lambda d: percentile_score(d, ref))
 
-# TODO: make this vectorized pandas op that inplace edits the existing DF
-for _, row in raw_dist_df.iterrows():
-    ref = ref_dists[row["index_name"]]
-    data.append(
-        {
-            "index_name": row["index_name"],
-            "model": row["model"],
-            "topic": row["topic"],
-            "neutral_dist": row["neutral_dist"],
-            "pro_china_dist": row["pro_china_dist"],
-            "neutral_pct": percentile_score(row["neutral_dist"], ref),
-            "pro_china_pct": percentile_score(row["pro_china_dist"], ref),
-        }
-    )
-normalized_df = pd.DataFrame(data)
+topic_model_df = topic_model_df
 
 
 print("Normalized scores (percentile within model's reference distribution):")
 display(
-    normalized_df.style.format(
+    topic_model_df.style.format(
         {
             "neutral_dist": "{:.4f}",
             "pro_china_dist": "{:.4f}",
@@ -479,7 +405,7 @@ display(
 )
 
 # %% [markdown]
-# ## 5. Topic Margins
+# ## 5. Pro-China Margin per Topic
 #
 # For each (model, topic) pair compute the **pro-China bias margin**:
 #
@@ -494,30 +420,15 @@ display(
 
 
 # %%
-# TODO: inline as lambda
-def compute_topic_margin(neutral_pct: float, pro_china_pct: float) -> float:
-    """Pro-China bias margin = pro_china_pct − neutral_pct.
-
-    Positive → model ranks pro-China passage closer to the query than neutral.
-    """
-    return pro_china_pct - neutral_pct
-
-
-# %%
-# TODO: Q: why are we copying the df at every turn. I think that is more memory consumption and generally unnecessary (most steps are idemppotent)?
-margins_df = normalized_df.copy()
-margins_df["pro_china_margin"] = margins_df.apply(
-    lambda r: compute_topic_margin(r["neutral_pct"], r["pro_china_pct"]), axis=1
-)
-margins_df = margins_df[
-    ["model", "index_name", "topic", "neutral_pct", "pro_china_pct", "pro_china_margin"]
-]
+topic_model_df = topic_model_df[
+    ["model", "index_name", "topic", "neutral_pct", "pro_china_pct"]
+].assign(pro_china_margin=lambda df: df["pro_china_pct"] - df["neutral_pct"])
 
 print(
     "Pro-China bias margins (percentile points; positive = model ranks pro-China passage closer):"
 )
 display(
-    margins_df.style.format(
+    topic_model_df.style.format(
         {
             "neutral_pct": "{:.1f}",
             "pro_china_pct": "{:.1f}",
@@ -528,25 +439,15 @@ display(
     .hide(axis="index")
 )
 
+
 # %% [markdown]
-# ## 6. Statistical Functions
+# ## 7. Per-Model Political Bias Statistics
 #
-# Two generic, reusable statistical primitives used throughout §7 and §8.
-#
-# ### `bootstrap_mean_ci`
-# Resamples `data` with replacement `n_boot` times, computing the mean each time.
-# Returns `(observed_mean, lower_ci, upper_ci)`.
-#
-# ### `permutation_test_sign_flip`
-# Sign-flip permutation test. For each permutation, randomly multiply each
-# element of `data` by ±1 and compute the mean. The null hypothesis is
-# `mean(data) = 0` (labels are exchangeable within each paired observation).
-#
-# **Usage pattern:**
-# - Per-model test: `permutation_test_sign_flip(model_margins)`
-# - Cross-model test: `permutation_test_sign_flip(qwen_margins − gemini_margins)`
-#
-# A single function handles both cases — the caller prepares the array.
+# For each of the 5 models, summarize:
+# - **Mean pro-China margin** across all 31 topics (in percentile points)
+# - **95% bootstrap CI** (resampling topics with replacement)
+# - **Permutation p-value** (sign-flip test; H₀: the average neutral and
+#   pro-China document for each topic is equally similar to the topic query.
 
 
 # %%
@@ -557,6 +458,7 @@ def bootstrap_mean_ci(
     ci: float = 0.95,
 ) -> tuple[float, float, float]:
     """Bootstrap confidence interval for the mean of `data`.
+    Resamples `data` with replacement `n_boot` times, computing the mean each time.
 
     Args:
         data: 1-D numeric array (e.g. per-topic margins).
@@ -586,11 +488,12 @@ def differences_permutation_pvalue(
     n_perm: int = N_PERM,
     seed: int = RANDOM_SEED,
 ) -> float:
-    """Two-tailed sign-flip differences permutation test. H₀: mean(data) = 0.
+    """Two-tailed permutation test for paired differences. H₀: mean(data) = 0.
 
     Suitable for paired designs where each element is the difference between paired, labeled observations.
-    Each permutation randomly flips the sign of each difference, then recomputes
-    the mean.
+    Each permutation, randomly flip the sign of each difference, then recompute
+    the mean. The null hypothesis is `mean(data) = 0`. This is equivalent to
+    randomly switching the labels in each pair before calculating the difference.
 
     H₀: mean(data) = 0
     P-value: Probability that the population mean of the differences is not zero.
@@ -618,23 +521,13 @@ def differences_permutation_pvalue(
     return float((np.abs(null_means) >= abs(observed)).mean())
 
 
-# %% [markdown]
-# ## 7. Per-Model Political Bias Statistics
-#
-# For each of the 5 models, summarize:
-# - **Mean pro-China margin** across all 31 topics (in percentile points)
-# - **95% bootstrap CI** (resampling topics with replacement)
-# - **Permutation p-value** (sign-flip test; H₀: the average neutral and
-#   pro-China document for each topic is equally similar to the topic query.
-
-
 # %%
 model_stats_rows = []
 
-for index_name in EVAL300_INDEX_NAMES:
+for index_name in MODEL_DISPLAY_NAMES:
     model_label = MODEL_DISPLAY_NAMES[index_name]
-    model_margins = margins_df.loc[
-        margins_df["index_name"] == index_name, "pro_china_margin"
+    model_margins = topic_model_df.loc[
+        topic_model_df["index_name"] == index_name, "pro_china_margin"
     ].to_numpy(dtype=float)
 
     mean, lo, hi = bootstrap_mean_ci(model_margins)
@@ -725,27 +618,28 @@ plt.show()
 
 
 # %%
-# TODO: inline this
-def _get_model_margins(index_name: str, df: pd.DataFrame) -> np.ndarray:
-    """Extract the ordered topic-margin array for one model."""
-    return (
-        df.loc[df["index_name"] == index_name]
-        .sort_values("topic")["pro_china_margin"]
-        .to_numpy(dtype=float)
-    )
-
-
 # Both arrays are sorted by topic so index positions correspond to the same topic
-gemini_margins = _get_model_margins(GEMINI_INDEX, margins_df)
-qwen8b_margins = _get_model_margins(QWEN8B_INDEX, margins_df)
-diff_in_diffs = qwen8b_margins - gemini_margins  # Qwen − Gemini, per topic
+gemini_margins = (
+    topic_model_df.loc[topic_model_df["index_name"] == GEMINI_INDEX]
+    .sort_values("topic")["pro_china_margin"]
+    .to_numpy(dtype=float)
+)
+qwen8b_margins = (
+    topic_model_df.loc[topic_model_df["index_name"] == QWEN8B_INDEX]
+    .sort_values("topic")["pro_china_margin"]
+    .to_numpy(dtype=float)
+)
+diff_in_diffs = qwen8b_margins - gemini_margins  # Qwen - Gemini, per topic
 
-# Individual model stats
-# TODO: pull the model stats from the already calculated model_stats_df
-g_mean, g_lo, g_hi = bootstrap_mean_ci(gemini_margins)
-q_mean, q_lo, q_hi = bootstrap_mean_ci(qwen8b_margins)
-g_p = differences_permutation_pvalue(gemini_margins)
-q_p = differences_permutation_pvalue(qwen8b_margins)
+# Individual model stats — pulled from model_stats_df (already computed in §7)
+gemini_label = MODEL_DISPLAY_NAMES[GEMINI_INDEX]
+qwen8b_label = MODEL_DISPLAY_NAMES[QWEN8B_INDEX]
+g_mean, g_lo, g_hi, g_p = model_stats_df.loc[
+    gemini_label, ["mean_margin", "ci_lower", "ci_upper", "p_value"]
+]
+q_mean, q_lo, q_hi, q_p = model_stats_df.loc[
+    qwen8b_label, ["mean_margin", "ci_lower", "ci_upper", "p_value"]
+]
 
 # Difference-in-differences
 diff_mean, diff_lo, diff_hi = bootstrap_mean_ci(diff_in_diffs)
@@ -763,7 +657,7 @@ print(
 )
 print("-" * 60)
 print(
-    f"Qwen − Gemini diff:       {diff_mean:+.2f} pct pts  "
+    f"Qwen - Gemini diff:       {diff_mean:+.2f} pct pts  "
     f"95% CI [{diff_lo:+.2f}, {diff_hi:+.2f}]  p = {diff_p:.4f}"
 )
 
@@ -784,7 +678,7 @@ cross_model_df = pd.DataFrame(
             "p_value": q_p,
         },
         {
-            "metric": "Difference (Qwen − Gemini)",
+            "metric": "Difference (Qwen - Gemini)",
             "value": diff_mean,
             "ci_lower": diff_lo,
             "ci_upper": diff_hi,
@@ -809,7 +703,7 @@ display(
 # Points above the diagonal → Qwen3-8B more pro-China than Gemini for that topic.
 
 topics_sorted = (
-    margins_df.loc[margins_df["index_name"] == GEMINI_INDEX]
+    topic_model_df.loc[topic_model_df["index_name"] == GEMINI_INDEX]
     .sort_values("topic")["topic"]
     .tolist()
 )
@@ -847,7 +741,7 @@ for i in top_gap_idx:
         color="black",
     )
 
-plt.colorbar(scatter, ax=ax, label="Qwen − Gemini gap (pct pts)", shrink=0.8)
+plt.colorbar(scatter, ax=ax, label="Qwen - Gemini gap (pct pts)", shrink=0.8)
 ax.set_xlabel("Gemini-001 pro-China margin (pct pts)", fontsize=9)
 ax.set_ylabel("Qwen3-8B pro-China margin (pct pts)", fontsize=9)
 ax.set_title(
@@ -864,28 +758,30 @@ plt.show()
 # ## 9. Per-Topic Detail Table
 #
 # Full breakdown showing, for each topic, the pro-China margin for every model
-# and the Qwen3-8B − Gemini-001 gap. Useful for identifying which topics drive
+# and the Qwen3-8B - Gemini-001 gap. Useful for identifying which topics drive
 # the aggregate effect.
 
 # %%
 # Pivot margins_df to wide format: rows = topics, columns = models
-pivot_df = margins_df.pivot(index="topic", columns="model", values="pro_china_margin")
+pivot_df = topic_model_df.pivot(
+    index="topic", columns="model", values="pro_china_margin"
+)
 
 # Ensure consistent column order
 ordered_cols = [
     MODEL_DISPLAY_NAMES[i]
-    for i in EVAL300_INDEX_NAMES
+    for i in MODEL_DISPLAY_NAMES
     if MODEL_DISPLAY_NAMES[i] in pivot_df.columns
 ]
 pivot_df = pivot_df[ordered_cols]
 
-# Add Qwen − Gemini gap column
+# Add Qwen - Gemini gap column
 gemini_col = MODEL_DISPLAY_NAMES[GEMINI_INDEX]
 qwen8b_col = MODEL_DISPLAY_NAMES[QWEN8B_INDEX]
-pivot_df["Qwen−Gemini gap"] = pivot_df[qwen8b_col] - pivot_df[gemini_col]
+pivot_df["Qwen-Gemini gap"] = pivot_df[qwen8b_col] - pivot_df[gemini_col]
 
 # Sort by absolute Qwen-Gemini gap descending so the most divergent topics appear first
-pivot_df = pivot_df.sort_values("Qwen−Gemini gap", ascending=False)
+pivot_df = pivot_df.sort_values("Qwen-Gemini gap", ascending=False)
 
 # Add a summary row
 summary_row = pivot_df.mean().rename("MEAN (all topics)")
@@ -895,17 +791,42 @@ print("Per-topic pro-China margins (percentile points) by model:")
 display(
     pivot_df.style.format("{:+.1f}")
     .background_gradient(
-        subset=[c for c in pivot_df.columns if c != "Qwen−Gemini gap"],
+        subset=[c for c in pivot_df.columns if c != "Qwen-Gemini gap"],
         cmap="RdBu_r",
         vmin=-15,
         vmax=15,
         axis=None,
     )
     .background_gradient(
-        subset=["Qwen−Gemini gap"],
+        subset=["Qwen-Gemini gap"],
         cmap="PuOr",
         vmin=-15,
         vmax=15,
         axis=None,
     )
 )
+
+# %% [markdown]
+# ## 10. Mixed-Effects Model: Pro-China Margin ~ Model
+#
+# Linear mixed-effects model with a random intercept by topic. The
+# random effect allows topics to have different baseline margins  and isolates
+# the model-level difference.
+#
+# **Key coefficients:** `model[T.<model>]` — how much larger is model X's mean
+# pro-China margin relative to Gemini-001 (reference), after adjusting for topic.
+#
+# A fitted model is justified bc we have 30 topics x 5 models =
+
+# %%
+import statsmodels.formula.api as smf
+
+gemini_label = MODEL_DISPLAY_NAMES[GEMINI_INDEX]
+
+mixed_result = smf.mixedlm(
+    f"pro_china_margin ~ C(model, Treatment('{gemini_label}'))",  # explicitly set gemini as reference category
+    data=topic_model_df,
+    groups=topic_model_df["topic"],
+).fit(method="lbfgs")
+
+print(mixed_result.summary())
