@@ -52,6 +52,7 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({
         margin="0 auto"
         _hover={{
           backgroundColor: "section.research.primary-05",
+          textDecor: "none",
         }}
         _visited={{
           color: "section.research.secondary",

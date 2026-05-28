@@ -176,7 +176,7 @@ export type SearchParams = {
   filters?: [string, string][];
 };
 
-export type PageType = "vra" | "keyword" | "item";
+export type PageType = "drb" | "vra" | "keyword" | "item" | "learn-more";
 
 export type ItemReadResults = {
   data: ApiItemsRead;

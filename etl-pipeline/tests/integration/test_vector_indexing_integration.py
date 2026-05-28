@@ -14,7 +14,6 @@ from vector_indexing.core import (
     BookMetadata,
     ChunkDocument,
     InsertResult,
-    GlobalConfig,
 )
 from vector_indexing.components.chunkers import SentenceSplitterChunker
 from vector_indexing.components.loaders import LocalBookLoader
@@ -48,21 +47,14 @@ class TestLocalToElasticsearchFlow:
             yield tmpdir
 
     @pytest.fixture
-    def config(self, book_dir):
-        """Config pointing to temp book directory."""
-        # book_cache_dir should point to the books/ subdirectory directly
-        # since LocalBookLoader expects {cache_dir}/{barcode}/
-        return GlobalConfig(
-            data_dir=Path(book_dir),
-            book_cache_dir=Path(book_dir) / "books",
-            chunk_size=200,
-            chunk_overlap=20,
-        )
+    def book_cache_dir(self, book_dir):
+        """Path to books/ subdirectory used by LocalBookLoader."""
+        return Path(book_dir) / "books"
 
-    def test_local_load_chunk_and_embed(self, config, book_dir):
+    def test_local_load_chunk_and_embed(self, book_cache_dir, book_dir):
         """Load book from disk, chunk it, and verify chunk properties."""
-        loader = LocalBookLoader(config=config)
-        chunker = SentenceSplitterChunker(config=config)
+        loader = LocalBookLoader(data_dir=book_cache_dir)
+        chunker = SentenceSplitterChunker(chunk_size=200, chunk_overlap=20)
 
         # Load
         book = loader.load("33433001234567")
@@ -88,7 +80,7 @@ class TestLocalToElasticsearchFlow:
         # Chunk
         chunks = list(chunker.chunk(book))
 
-        assert len(chunks) >= 3  # Should have multiple chunks
+        assert len(chunks) >= 3  # Should have multiple chunks with chunk_size=200
 
         # Verify chunk structure
         for i, chunk in enumerate(chunks):
@@ -98,14 +90,16 @@ class TestLocalToElasticsearchFlow:
             assert chunk.text  # Non-empty
             assert chunk.book_metadata.title == "Integration Test Book"
 
-    def test_full_pipeline_with_mocked_es(self, config, book_dir):
+    def test_full_pipeline_with_mocked_es(self, book_cache_dir, book_dir):
         """Run full pipeline with real loader/chunker but mocked ES."""
         # Set up mocks
         mock_es_client = Mock()
         mock_es_client.indices.exists.return_value = True
 
         mock_embedder = Mock()
-        mock_embedder.embed_batch.side_effect = lambda texts: [[0.1] * 768] * len(texts)
+        mock_embedder.embed_document_batch.side_effect = lambda texts: [
+            [0.1] * 768
+        ] * len(texts)
 
         mock_metadata = Mock()
         mock_metadata.get_metadata.return_value = {
@@ -125,8 +119,8 @@ class TestLocalToElasticsearchFlow:
             mock_bulk.return_value = (10, [])  # Success
 
             pipeline = Pipeline(
-                loader=LocalBookLoader(config=config),
-                chunker=SentenceSplitterChunker(config=config),
+                loader=LocalBookLoader(data_dir=book_cache_dir),
+                chunker=SentenceSplitterChunker(),
                 embedder=mock_embedder,
                 metadata_provider=mock_metadata,
                 backend=ElasticsearchBackend(
@@ -149,7 +143,7 @@ class TestLocalToElasticsearchFlow:
             assert result.chunks_inserted == result.chunks_created
 
             # Verify embedder was called with chunk texts
-            mock_embedder.embed_batch.assert_called_once()
+            mock_embedder.embed_document_batch.assert_called_once()
 
             # Verify bulk was called
             mock_bulk.assert_called_once()
@@ -177,12 +171,15 @@ class TestMultiBookBatch:
             language=[],
         )
 
+        book1 = Book(barcode="good1", pages=["text"], book_id="rec1", metadata=meta1)
+        book2 = Book(barcode="good2", pages=["text"], book_id="rec2", metadata=meta2)
+
         # Create mocks
         loader = Mock()
         loader.load.side_effect = [
-            Book(barcode="good1", pages=["text"], book_id="rec1", metadata=meta1),
+            book1,
             None,  # Book not found
-            Book(barcode="good2", pages=["text"], book_id="rec2", metadata=meta2),
+            book2,
         ]
 
         chunker = Mock()
@@ -204,12 +201,12 @@ class TestMultiBookBatch:
         chunker.chunk.side_effect = make_chunks
 
         embedder = Mock()
-        embedder.embed_batch.return_value = [[0.1] * 768, [0.1] * 768]
+        embedder.embed_document_batch.return_value = [[0.1] * 768, [0.1] * 768]
 
         metadata_provider = Mock()
         metadata_provider.get_metadata.return_value = {
-            "rec1": meta1,
-            "rec2": meta2,
+            book1.barcode: meta1,
+            book2.barcode: meta2,
         }
 
         backend = Mock()

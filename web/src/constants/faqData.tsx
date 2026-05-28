@@ -1,48 +1,73 @@
 import { Box, List, Text } from "@nypl/design-system-react-components";
+import { useContext } from "react";
 import Link from "~/src/components/Link/Link";
 import {
+  ARCADIA_FUND_LINK,
   ARCHIVES_PORTAL_LINK,
   DIGITAL_COLLECTIONS_LINK,
   ONLINE_DATABASES_LINK,
+  PRIVACY_POLICY_LINK,
   RESEARCH_CATALOG_LINK,
 } from "~/src/constants/links";
+import { FeedbackContext } from "../context/FeedbackContext";
 
 const generateResponseListItems = [
   <>
-    <Text as="span" isBold>
-      Continuously collect and review feedback
-    </Text>{" "}
-    both from within the tool and externally from our users, librarians, and
-    subject matter experts.
+    <b>Continuously collect and review feedback</b> both from within the tool
+    and externally from our users, librarians, and subject matter experts.
   </>,
   <>
-    <Text as="span" isBold>
-      Evaluate our training models regularly
-    </Text>{" "}
-    to check performance and incorporate new improvements as they become
-    available.
+    <b>Evaluate our training models regularly</b> to check performance and
+    incorporate new improvements as they become available.
+  </>,
+];
+
+const collectedDataListItems = [
+  <>Timestamp of messages</>,
+  <>Sources retrieved</>,
+  <>Clicks on thumbs up/down buttons</>,
+  <>Feedback form submissions</>,
+];
+
+const provideFeedbackListItems = [
+  <>
+    <b>By using the thumbs up or down buttons in the chat,</b> which will open a
+    feedback form where you can provide further details if desired.
+  </>,
+  <>
+    <b>
+      By using the &apos;Help and feedback&apos; button at the bottom of the
+      page,
+    </b>{" "}
+    which will open up the same feedback form. Being as detailed as possible and
+    providing context will help us address your concerns better.{" "}
+  </>,
+  <>
+    <b>By completing any surveys that might appear during your session,</b>{" "}
+    which will help us collect satisfaction metrics and evaluate your overall
+    experience.
   </>,
 ];
 
 const GENERAL_ACCORDION_DATA = [
   {
-    label:
-      "What content does the Virtual Research Assistant provide access to?",
+    label: "What content does Enhanced Search provide access to?",
     panel: (
       <Box>
         <Text marginBottom="s">
-          The Virtual Research Assistant currently provides access to over 1
-          million public domain books from two sources - books from NYPL
-          digitized through the Google Books project, and books from the{" "}
+          Enhanced Search currently provides access to Digitized Research Books,
+          a collection of over 1 million scholarly books published prior to
+          1930. These come from two sources - the New York Public Library&apos;s
+          own collections digitized through the Google Books project, and the
+          public corpus of the{" "}
           <Link to="#" hasVisitedState={false}>
             Harvard Institutional Data Initiative
           </Link>
-          . More books are added to the repository on a regular basis.
+          .
         </Text>
         <Text>
-          At this time, the Virtual Research Assistant does not provide access
-          to other parts of the NYPL Research Collections, such as materials
-          from the{" "}
+          At this time, Enhanced Search does not provide access to other parts
+          of the NYPL Research Collections, such as materials from the{" "}
           <Link to={RESEARCH_CATALOG_LINK} hasVisitedState={false}>
             Research Catalog
           </Link>
@@ -52,7 +77,7 @@ const GENERAL_ACCORDION_DATA = [
           </Link>
           ,{" "}
           <Link to={ONLINE_DATABASES_LINK} hasVisitedState={false}>
-            Online Databases
+            Online Resource & Databases
           </Link>
           , or the{" "}
           <Link to={ARCHIVES_PORTAL_LINK} hasVisitedState={false}>
@@ -68,36 +93,57 @@ const GENERAL_ACCORDION_DATA = [
     ),
   },
   {
-    label: "Is the Virtual Research Assistant free to use? ",
+    label: "Is Enhanced Search free to use?",
     panel: (
       <Box>
-        Yes, the Virtual Research Assistant is free to use. It can be accessed
-        without an NYPL account or library card. You do not need to be logged in
-        to use the tool.
+        Yes, Enhanced Search is free to use. It can be used without an NYPL
+        account or library card. You do not need to be logged in to use the
+        tool.
       </Box>
     ),
   },
   {
-    label: "How do I use the Virtual Research Assistant?",
+    label: "How do I use Enhanced Search?",
     panel: (
       <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
+        <Text marginBottom="s">
+          Enhanced Search is an AI-enabled tool that uses a natural language
+          chat interface to help you discover and access content from over 1
+          million scholarly books published prior to 1930. You can use it both
+          to search <i>for</i> and <i>within</i> these books.
+        </Text>
+        <Text marginBottom="s">
+          Start by asking a question or typing in a topic of interest and view
+          results in the left sidebar. You can continue to refine your search by
+          asking follow-up questions like “Show me only books published between
+          1890 and 1920.” Every result also includes a “Why am I seeing this
+          result?” section to help you understand the tool&apos;s reasoning.
+        </Text>
+        <Text>
+          Once you&apos;ve selected a book, you can use the chat to help you
+          locate relevant content from that book. You can ask questions like
+          “Does this book mention the contributions of Copernicus to 16th
+          century astronomy?” and the tool will guide you to the parts
+          containing that information.
+        </Text>
       </Box>
     ),
   },
   {
-    label: "What types of books are in the current repository?",
+    label: "What types of content does Digitized Research Books have?",
     panel: (
       <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
+        <Text marginBottom="s">
+          Digitized Research Books contains over 1 million scholarly books
+          published prior to 1930. This humanities-focused collection, largely
+          in English and other Western European languages, spans subjects such
+          as literature, law, history, poetry, fiction, and more.
+        </Text>
+        <Text>
+          The composition of the collection will continue to change as we add
+          more books. In the future, we hope to provide access to a greater
+          variety of languages, subjects, and time periods.
+        </Text>
       </Box>
     ),
   },
@@ -105,15 +151,57 @@ const GENERAL_ACCORDION_DATA = [
 
 const securityAccordionData = [
   {
-    label:
-      "What is done with the information I type into the Virtual Research Assistant?",
+    label: "What is done with the information I type into Enhanced Search?",
     panel: (
       <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
+        <Text marginBottom="s">
+          When you type something into Enhanced Search, our AI models turn it
+          into embeddings. Embeddings are mathematical representations of your
+          questions that can be read by the technology to understand your
+          intent. These are matched against the collection to find and show you
+          relevant content.
+        </Text>
+        <Text marginBottom="s">
+          Your questions are kept confidential. While we don&apos;t record your
+          conversation history, it will be available to you until you close or
+          refresh your browser, or for 30 days of leaving it open. There is no
+          way for another user, your school, your employer, or NYPL to see your
+          conversations with the tool.
+        </Text>
+        <Text>
+          View our{" "}
+          <Link to={PRIVACY_POLICY_LINK} hasVisitedState={false}>
+            privacy policy
+          </Link>
+          .
+        </Text>
+      </Box>
+    ),
+  },
+  {
+    label: "What security measures do you use to safeguard my data?",
+    panel: (
+      <Box>
+        <Text marginBottom="s">
+          Enhanced Search does not have access to any personally identifiable
+          information. It cannot identify you apart from any information you
+          voluntarily provide, even when you use it when logged in from your
+          NYPL account. Additionally, clicking on &apos;Start over&apos; at any
+          point erases your conversation history and ensures no memory
+          retention.
+        </Text>
+        <Text marginBottom="s">
+          Everything you type into the tool is sent to our AI models over HTTPS
+          and validated with a secure API. All conversations are encrypted with
+          Transport Layer Security (TLS) to preserve your privacy.
+        </Text>
+        <Text>
+          View our{" "}
+          <Link to={PRIVACY_POLICY_LINK} hasVisitedState={false}>
+            privacy policy
+          </Link>
+          .
+        </Text>
       </Box>
     ),
   },
@@ -121,11 +209,36 @@ const securityAccordionData = [
     label: "What data do you collect?",
     panel: (
       <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
+        <Text marginBottom="s">
+          We collect the following usage statistics in order to evaluate and
+          improve the tool:
+        </Text>
+        <Box marginLeft="s" marginBottom="s">
+          <List
+            listItems={collectedDataListItems}
+            variant="ul"
+            sx={{
+              "li::before": {
+                content: '"+" / ""',
+                fontWeight: "medium",
+                color: "ui.black",
+              },
+            }}
+          />
+        </Box>
+        <Text marginBottom="s">
+          These usage statistics are stored in a database and used to identify
+          patterns and troubleshoot problems. They are visible only to a limited
+          number of NYPL staff. They are anonymous and cannot be traced to your
+          name or institution.
+        </Text>
+        <Text>
+          View our{" "}
+          <Link to={PRIVACY_POLICY_LINK} hasVisitedState={false}>
+            privacy policy
+          </Link>
+          .
+        </Text>
       </Box>
     ),
   },
@@ -141,7 +254,7 @@ const securityAccordionData = [
         </Text>
         <Text>
           View our{" "}
-          <Link to="#" color="section.research.secondary">
+          <Link to={PRIVACY_POLICY_LINK} hasVisitedState={false}>
             privacy policy
           </Link>
           .
@@ -150,15 +263,14 @@ const securityAccordionData = [
     ),
   },
   {
-    label:
-      "Can I opt out of using the Virtual Research Assistant, or turn it off?",
+    label: "Can I opt out of using Enhanced Search or turn it off?",
     panel: (
       <Box>
-        Yes, you can opt out of using the Virtual Research Assistant and still
-        access the repository by using a traditional keyword search. The tool
-        can be turned off by clicking on the &apos;keyword search&apos; tab at
-        the top of the search results page, or by moving the toggle to the
-        &apos;off&apos; position on the book page.
+        Yes, you can opt out of using Enhanced Search and still access Digitized
+        Research Books through a traditional keyword search. To do this, click
+        on the &apos;Keyword search&apos; tab at the top of the search results
+        page, or turn the &apos;Use Enhanced Search&apos; tool toggle off on the
+        book page.
       </Box>
     ),
   },
@@ -166,30 +278,44 @@ const securityAccordionData = [
 
 const TECHNOLOGY_ACCORDION_DATA = [
   {
-    label: "Why did NYPL develop the Virtual Research Assistant?",
+    label: "Why did NYPL develop Enhanced Search?",
     panel: (
       <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
+        <Text marginBottom="s">
+          Enhanced Search was developed in service of NYPL&apos;s mission to
+          support open access to scholarly content in a global context. Made
+          possible through the generous support of{" "}
+          <Link to={ARCADIA_FUND_LINK} hasVisitedState={false}>
+            The Arcadia Fund
+          </Link>
+          , it was born out of the Library&apos;s commitment to innovation and
+          its enduring values of trust and authenticity.
+        </Text>
+        <Text>
+          Currently in beta and live on Digitized Research Books, Enhanced
+          Search leverages cutting-edge advances in AI to transform how users
+          interact with our resources and ushers in a new paradigm of discovery
+          and access. As NYPL&apos;s first public-facing venture enabled by AI,
+          it is designed to meaningfully support researchers while adhering to
+          the high legal, ethical, and academic standards that govern our
+          institution.
+        </Text>
       </Box>
     ),
   },
   {
-    label: "How does the Virtual Research Assistant generate its responses?",
+    label: "How does Enhanced Search generate its responses?",
     panel: (
       <Box>
         <Text marginBottom="s">
-          The Virtual Research Assistant uses a Large Language Model (LLM) to
-          understand your questions and generate its responses. It uses a
-          technology called Retrieval Augmented Generation (RAG) to find
-          relevant materials from the repository. RAG ensures that only vetted
-          sources are searched, minimizing the chances of hallucinations and
-          mistakes. To maintain quality and improve accuracy we also:
+          Enhanced Search uses a Large Language Model (LLM) to understand your
+          questions and generate responses. It uses a technology called
+          Retrieval Augmented Generation (RAG) to find relevant materials from
+          the collection based on your intent. By using RAG, we ensure that only
+          vetted sources are searched, minimizing the chances of hallucinations
+          and mistakes. To maintain quality and improve accuracy we also:
         </Text>
-        <Box marginLeft="s" marginBottom="s">
+        <Box marginLeft="s">
           <List
             listItems={generateResponseListItems}
             variant="ul"
@@ -202,64 +328,67 @@ const TECHNOLOGY_ACCORDION_DATA = [
             }}
           />
         </Box>
+      </Box>
+    ),
+  },
+  {
+    label: "Can Enhanced Search hallucinate or make mistakes?",
+    panel: (
+      <Box>
+        <Text marginBottom="s">
+          As with any AI-powered tool, there is always some risk of
+          hallucination (defined as when a chatbot generates untrue information
+          in its response) when using Enhanced Search.
+        </Text>
         <Text>
-          <Link
-            to="#"
-            color="section.research.secondary"
-            hasVisitedState={false}
-          >
-            Learn more about the project.
-          </Link>
+          Though the tool is designed to only provide answers grounded in
+          trusted academic sources, you are encouraged to verify its responses
+          and report to us if you discover an error. AI can make mistakes, and
+          the evaluation of the output is ultimately in the hands of the user.
         </Text>
       </Box>
     ),
   },
   {
-    label: "What AI models does the Virtual Research Assistant use?",
+    label: "How does Enhanced Search differ from other AI research tools?",
     panel: (
       <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
+        <Text marginBottom="s">
+          Unlike many other AI research tools that are behind institutional or
+          subscription paywalls, Enhanced Search provides free access to our
+          collection of Digitized Research Books without requiring institutional
+          affiliation or even an NYPL library card.
+        </Text>
+        <Text>
+          Enhanced Search is designed to support content discovery rather than
+          content generation. It uses AI to expand access to our vetted
+          collections, and to connect researchers to scholarly books quickly and
+          efficiently. It aims to augment the rigor of the research process, not
+          replace it.
+        </Text>
       </Box>
     ),
   },
   {
-    label: "Can the Virtual Research Assistant hallucinate or make mistakes?",
+    label: "What languages does Enhanced Search support?",
     panel: (
       <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
-      </Box>
-    ),
-  },
-  {
-    label:
-      "How does the Virtual Research Assistant differ from other AI research tools?What data do you collect?",
-    panel: (
-      <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
-      </Box>
-    ),
-  },
-  {
-    label: "What input languages does the Virtual Research Assistant support?",
-    panel: (
-      <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
+        <Text marginBottom="s">
+          While Enhanced Search is able to interpret conversations in multiple
+          languages, the output (which will be generated in the language of the
+          input) may vary in quality depending on the complexity of the input.
+          For best results, we recommend communicating with the tool in English.
+        </Text>
+        <Text marginBottom="s">
+          The Digitized Research Books collection contains books in several
+          languages. These may be shown in the results if relevant, even when
+          the input is in English. Some titles may be transliterated due to the
+          original characters not being supported by the tool.
+        </Text>
+        <Text>
+          Enhanced Search cannot provide direct text translation of source
+          material.
+        </Text>
       </Box>
     ),
   },
@@ -267,11 +396,9 @@ const TECHNOLOGY_ACCORDION_DATA = [
     label: "Can I access my previous conversations?",
     panel: (
       <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
+        No, Enhanced Search does not retain your previous conversations. If you
+        wish to keep your chats for future reference, we recommend copying and
+        pasting them into a word document.
       </Box>
     ),
   },
@@ -279,75 +406,113 @@ const TECHNOLOGY_ACCORDION_DATA = [
 
 const COST_ACCORDION_DATA = [
   {
-    label: "Who pays for the Virtual Research Assistant?",
+    label: "Who pays for Enhanced Search?",
     panel: (
       <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
+        Enhanced Search is made possible through the generous support of{" "}
+        <Link to={ARCADIA_FUND_LINK} hasVisitedState={false}>
+          The Arcadia Fund
+        </Link>
+        . Their sponsorship has enabled NYPL to invest in AI to improve and
+        expand access to scholarly content, and to make available this tool to
+        patrons free of charge.
       </Box>
     ),
   },
   {
-    label:
-      "How does the Virtual Research Assistant manage the environmental impacts of AI?",
+    label: "How does Enhanced Search manage the environmental impacts of AI?",
     panel: (
       <Box>
         <Text marginBottom="s">
           NYPL recognizes the environmental impacts of AI and is committed to
           using it ethically and responsibly. We understand that while AI can
-          help advance meaningful access to scholarship, it also comes with high
+          help advance meaningful access to scholarship, it comes with high
           energy demands. Our goal is to build a lean, scalable, and efficient
-          research tool that uses AI only on an &apos;as needed&apos; basis to
-          reduce resource consumption.
+          search tool that deploys AI selectively and with restraint.
         </Text>
         <Text marginBottom="s">
-          Energy use is an important factor in our model selection. Our current
-          models have been chosen after careful consideration of their
-          environmental impact alongside other factors such as task suitability,
-          cost, and performance. We continue to monitor the Virtual Research
-          Assistant&apos;s energy usage and re-evaluate our models regularly.
+          Energy use is an important factor in our model selection. Our models
+          have been chosen after careful consideration of their carbon footprint
+          alongside other factors such as task suitability, cost, speed, and
+          overall performance. We continue to monitor the tool&apos;s energy
+          consumption and re-evaluate our models regularly.
         </Text>
         <Text>
-          <Link
-            to="#"
-            color="section.research.secondary"
-            hasVisitedState={false}
-          >
-            Learn more about the project.
-          </Link>
+          <Link to="#" hasVisitedState={false}>
+            Learn more
+          </Link>{" "}
+          about the project.
         </Text>
       </Box>
     ),
   },
 ];
 
+const HelpContactPanel: React.FC = () => {
+  const { onOpen } = useContext(FeedbackContext);
+
+  const triggerFeedback = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onOpen();
+  };
+
+  return (
+    <Box>
+      We are happy to assist if you have any additional questions or need help
+      using the tool. Please{" "}
+      <Link
+        to="#"
+        role="button"
+        hasVisitedState={false}
+        onClick={triggerFeedback}
+        onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
+          if (e.key === " " || e.key === "Spacebar") {
+            triggerFeedback(e);
+          }
+        }}
+      >
+        contact us
+      </Link>{" "}
+      with your question and an email address, and we will reach out to you as
+      soon as possible.
+    </Box>
+  );
+};
+
 const HELP_ACCORDION_DATA = [
   {
-    label: "How do I provide feedback about the Virtual Research Assistant?",
+    label: "How do I provide feedback about Enhanced Search?",
     panel: (
       <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
+        <Text marginBottom="s">
+          Your feedback is important and helps us improve the tool. You can
+          provide it in the following ways:
+        </Text>
+        <Box marginLeft="s" marginBottom="s">
+          <List
+            listItems={provideFeedbackListItems}
+            variant="ul"
+            sx={{
+              "li::before": {
+                content: '"+" / ""',
+                fontWeight: "medium",
+                color: "ui.black",
+              },
+            }}
+          />
+        </Box>
+        <Text>
+          All feedback remains anonymous unless you choose to voluntarily
+          include any identifying information. Providing an email address is
+          optional but helps us get in touch with you if needed.
+        </Text>
       </Box>
     ),
   },
   {
     label: "What if I need help using this tool or have more questions?",
-    panel: (
-      <Box>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur.
-      </Box>
-    ),
+    panel: <HelpContactPanel />,
   },
 ];
 

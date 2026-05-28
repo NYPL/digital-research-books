@@ -7,7 +7,6 @@ import VRAFeedback from "~/src/components/VRAFeedback/VRAFeedback";
 import VRALayout from "~/src/components/VRALayout/VRALayout";
 import { MAX_PAGE_TITLE_LENGTH } from "~/src/constants/editioncard";
 import { documentTitles } from "~/src/constants/labels";
-import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import { workFetcher } from "~/src/lib/api/SearchApi";
 import { WorkQuery, WorkResult } from "~/src/types/WorkQuery";
 import { getBackToVraUrl } from "~/src/util/LinkUtils";
@@ -63,13 +62,7 @@ const ItemPage: React.FC<any> = (props) => {
           },
         ]}
       >
-        <ResultPageProvider
-          value={{
-            page: "item",
-          }}
-        >
-          <ItemDetail workResult={props.workResult} backUrl={props.backUrl} />
-        </ResultPageProvider>
+        <ItemDetail workResult={props.workResult} backUrl={props.backUrl} />
       </VRALayout>
     </Layout>
   );

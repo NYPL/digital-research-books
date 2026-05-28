@@ -34,6 +34,7 @@ const HeroSection: React.ForwardRefExoticComponent<
       <SectionContainer
         display="flex"
         flexDir="column"
+        paddingBottom="20px"
         ref={ref}
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
       >
@@ -48,23 +49,19 @@ const HeroSection: React.ForwardRefExoticComponent<
             fontWeight="bold"
             marginBottom="s"
             size="heading1"
+            fontFamily="Domine"
+            lineHeight="115%"
           >
-            <Box display="flex" alignItems="center" fontFamily="Domine">
-              <Text as="span" color="section.research.secondary">
-                New!&nbsp;
-              </Text>
-              <span>The NYPL Virtual Research Assistant</span>
-            </Box>
+            Try our new AI-enabled Enhanced Search
           </Heading>
           <Text
             fontSize="desktop.heading.heading4"
             fontWeight="medium"
             color="ui.gray.x-dark"
+            lineHeight="130%"
           >
-            <span>Your AI partner in discovering content from over</span>
-            <Text as="span" color="section.research.secondary">
-              &nbsp;1 million digitized research books
-            </Text>
+            Find and discover content using natural language. Now live in
+            Digitized Research Books.
           </Text>
         </Box>
         <SearchSection textInputRef={textInputRef} />

@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Iterator, Optional, TYPE_CHECKING
 
-from vector_indexing.core.types import InsertResult
+from vector_indexing.core.types import InsertResult, PatchResult
 
 if TYPE_CHECKING:
     from vector_indexing.core.types import ChunkDocument
@@ -61,6 +61,35 @@ class IndexBackend(ABC):
     def patch_document(self, doc_id: str, fields: dict) -> bool:
         """Partially update a document (merge fields). True if updated, False if not found."""
         ...
+
+    def patch_documents(self, patches: list[dict]) -> PatchResult:
+        """Partially update multiple documents in bulk.
+
+        Each patch dict must include an 'id' field plus the fields to update.
+        Patches to non-existent IDs should be silently ignored (reported as
+        skipped, not failed).
+
+        Default implementation raises NotImplementedError; backends that
+        support bulk patches (e.g. turbopuffer) should override.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not implement patch_documents"
+        )
+
+    def patch_by_filter(
+        self,
+        filters: list,
+        patch: dict,
+        allow_partial: bool = False,
+    ) -> PatchResult:
+        """Patch all documents matching a filter expression.
+
+        Default implementation raises NotImplementedError; backends that
+        support server-side filtered patches (e.g. turbopuffer) should override.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not implement patch_by_filter"
+        )
 
     @abstractmethod
     def get_existing_ids(self, candidate_ids: list[str]) -> set[str]:

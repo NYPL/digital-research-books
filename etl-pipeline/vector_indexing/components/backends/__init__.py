@@ -3,15 +3,14 @@
 from vector_indexing.components.backends.base import IndexBackend
 from vector_indexing.components.backends.elasticsearch import (
     ElasticsearchBackend,
-    build_index_mapping,
+    load_default_index_mapping,
     DEFAULT_VECTOR_MAPPING,
     chunk_to_es_action,
     chunk_from_es_hit,
 )
 from vector_indexing.components.backends.turbopuffer import (
     TurbopufferBackend,
-    TurbopufferBuffer,
-    TPUF_SCHEMA,
+    TurbopufferInsertBuffer,
     chunk_to_tpuf_row,
     chunk_from_tpuf_row,
 )
@@ -19,13 +18,12 @@ from vector_indexing.components.backends.turbopuffer import (
 __all__ = [
     "IndexBackend",
     "ElasticsearchBackend",
-    "build_index_mapping",
+    "load_default_index_mapping",
     "DEFAULT_VECTOR_MAPPING",
     "chunk_to_es_action",
     "chunk_from_es_hit",
     "TurbopufferBackend",
-    "TurbopufferBuffer",
-    "TPUF_SCHEMA",
+    "TurbopufferInsertBuffer",
     "chunk_to_tpuf_row",
     "chunk_from_tpuf_row",
 ]

@@ -31,9 +31,11 @@ const HeroSection: React.ForwardRefExoticComponent<
     return (
       <SectionContainer
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
-        paddingTop="74px"
-        paddingBottom="l"
+        paddingX={{ base: "0", md: "s" }}
+        paddingTop="xxl"
+        paddingBottom="20px"
         ref={ref}
+        tabIndex={-1}
       >
         <Flex
           flexDir="column"
@@ -45,7 +47,7 @@ const HeroSection: React.ForwardRefExoticComponent<
             level="h1"
             fontWeight="bold"
             maxWidth="740px"
-            marginBottom="76.5px"
+            marginBottom="63.5px"
             size="heading1"
             fontFamily="Domine"
           >
@@ -56,9 +58,9 @@ const HeroSection: React.ForwardRefExoticComponent<
             when it helps unlock access to knowledge
           </Heading>
           <StatisticRow />
-          <Text fontSize="md" color="ui.gray.x-dark" marginBottom="l" isItalic>
-            Our collection of Digitized Research Books as of 1 July 2026
-            accessible through Enhanced Search
+          <Text fontSize="md" color="ui.gray.x-dark" marginBottom="xl" isItalic>
+            Our collection of Digitized Research Books accessible through
+            Enhanced Search as of June 1, 2026
           </Text>
           <Button
             id="read-more"
@@ -75,7 +77,8 @@ const HeroSection: React.ForwardRefExoticComponent<
               backgroundColor: "section.research.primary-05",
             }}
           >
-            Read More? <ArrowIcon direction="down" color="#006166" />
+            Read more
+            <ArrowIcon direction="down" color="#006166" />
           </Button>
         </Flex>
       </SectionContainer>

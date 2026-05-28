@@ -1,15 +1,14 @@
-import React from "react";
-import Work from "./Work";
 import { screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import mockRouter from "next-router-mock";
+import { render } from "~/src/__tests__/testUtils/render";
 import { breadcrumbTitles, inputTerms } from "~/src/constants/labels";
 import {
   workDetail as apiWork,
   workDetailWithCatalog as apiWorkOnlyCatalog,
   workDetailInCollection,
 } from "../../__tests__/fixtures/WorkDetailFixture";
-import mockRouter from "next-router-mock";
-import userEvent from "@testing-library/user-event";
-import { render } from "~/src/__tests__/testUtils/render";
+import Work from "./Work";
 
 const backUrl = "/search?query=keyword%3AYoruba&sort=title%3ADESC";
 

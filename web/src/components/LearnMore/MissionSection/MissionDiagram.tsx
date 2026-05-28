@@ -15,17 +15,24 @@ const MissionDiagram = () => {
     >
       <Box
         position="absolute"
-        top="26%"
+        top="22%"
         left="50%"
-        right="0"
-        height="1px"
-        maxWidth="500px"
         width="70%"
-        border="solid 2px"
         borderColor="section.research.secondary"
         transform="translateY(-50%) translateX(-50%)"
         zIndex={0}
-      />
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="100%"
+          height="2"
+          viewBox="0 0 500 2"
+          fill="none"
+        >
+          <path d="M500 1L0 1" stroke="#006166" stroke-width="2" />
+        </svg>
+      </Box>
+
       <Flex alignItems="center" flexDir="column" width="239px" zIndex={1}>
         <Box
           boxSizing="content-box"
@@ -71,7 +78,9 @@ const MissionDiagram = () => {
         </Box>
         <Box flex="1">
           <Text fontWeight="bold">ENHANCED SEARCH</Text>
-          <Text color="ui.gray.x-dark">The technology</Text>
+          <Text color="ui.gray.x-dark" fontWeight="regular" isItalic>
+            The technology
+          </Text>
         </Box>
       </Flex>
       <Flex
@@ -98,7 +107,9 @@ const MissionDiagram = () => {
         </Box>
         <Box flex="1">
           <Text fontWeight="bold">DIGITIZED RESEARCH BOOKS</Text>
-          <Text color="ui.gray.x-dark">The collection</Text>
+          <Text color="ui.gray.x-dark" fontWeight="regular" isItalic>
+            The collection
+          </Text>
         </Box>
       </Flex>
     </Flex>

@@ -10,7 +10,7 @@ Reusable building blocks for pipelines and other uses:
 from vector_indexing.components.backends import (
     IndexBackend,
     ElasticsearchBackend,
-    build_index_mapping,
+    load_default_index_mapping,
     DEFAULT_VECTOR_MAPPING,  # Deprecated
 )
 from vector_indexing.components.loaders import (
@@ -28,7 +28,7 @@ __all__ = [
     # Backends
     "IndexBackend",
     "ElasticsearchBackend",
-    "build_index_mapping",
+    "load_default_index_mapping",
     "DEFAULT_VECTOR_MAPPING",  # Deprecated
     # Loaders
     "BookLoader",
