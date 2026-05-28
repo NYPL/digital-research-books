@@ -243,16 +243,6 @@ North Korea famously has internment and labor camps. What is known about the con
 
 
 
-
-
-
-3. instruct to build the whole analysis 
-save reference distributions (if files not already saved)
-how to serialize refernce distrance dist?
-how to implement bootstrap?
-
-
-
 Future work:
 
 - Look at the query construction LLM to see about bias in choosing query terms based on user question
@@ -261,3 +251,4 @@ Future work:
 - If I had chosen all neutral topics, it would make sense to have a pro-china and china-critical passage, but with topics that are exclusively politically sensitive. having a neutral and pro-china only document makes sense. Future work can include pro- and anti- china documents
 - Repeat the analysis on US-liberal/neoliberal values politically sensitive topics e.g. Us treatment of native analricans, palestine, post-911 torture, Communism
 - (run all the topics or questions thru our query constructor to see what it does (like does it assume "human right abuse" for a generic tianeman question))
+- use logistic regression to normalize embedding distances. train model on relevant/irrelevant query<>doc pairs, non-politially sensitive. Test on politically sensitive, differentially framed query<>doc pairs, and do the same difference-in-differences analysis

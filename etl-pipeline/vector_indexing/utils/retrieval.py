@@ -15,11 +15,7 @@ def scan_ann(
     log_progress: bool = False,
     log_interval: int = 100_000,
 ) -> list[float]:
-    """Retrieve cosine distances via a single approximate-nearest-neighbour scan.
-
-    Approach 2 from ``benchmark_exhaustive_retrieval.py``.  One request (with
-    internal pagination) — fast but approximate; the ANN index may miss some
-    documents in very large namespaces.
+    """Retrieve approximately correctly ordered cosine distances for every document in index.
 
     Args:
         backend: Turbopuffer backend to scan.
@@ -73,17 +69,18 @@ def scan_ann(
     return distances
 
 
-def scan_knn_exhaustive(
+def scan_knn(
     backend: TurbopufferBackend,
     query_vector: list[float],
     log_progress: bool = False,
     log_interval: int = 100_000,
+    limit: Optional[int] = None,
 ) -> list[float]:
-    """Retrieve exact cosine distances for every document via kNN + universal filter.
+    """Retrieve cosine distances for every document in index.
 
     Uses ``["id", "NotEq", None]`` as a filter that matches all documents,
     satisfying turbopuffer's requirement that kNN queries have a filter while
-    still covering the full namespace.  The result is exact (not approximate).
+    still covering the full namespace.
 
     Args:
         backend: Turbopuffer backend to scan.
@@ -91,6 +88,7 @@ def scan_knn_exhaustive(
         log_progress: When True, print progress every ``log_interval`` docs and
             a final summary line when the scan completes.
         log_interval: Number of docs between progress log lines.
+        limit: Maximum number of results to return.  ``None`` returns all docs.
 
     Returns:
         List of cosine distances (one per document, exact).
@@ -100,8 +98,13 @@ def scan_knn_exhaustive(
 
     for _, dist in backend.scan(
         rank_by=("vector", "kNN", query_vector),
-        filters=["id", "NotEq", None],
+        filters=[
+            "id",
+            "NotEq",
+            None,
+        ],  # Filter required for KNN. Matches all documents.
         include_attributes=False,
+        limit=limit,
     ):
         if dist is not None:
             distances.append(dist)
@@ -128,17 +131,15 @@ def scan_knn_exhaustive(
 # BUG
 # Failure Mode:
 # Hangs indefinitely when querying large barcodes.... can't quite figure it out
-def scan_per_barcode_knn(
+def scan_knn_by_barcode(
     backend: TurbopufferBackend,
     query_vector: list[float],
     log_interval: int = 50,
 ) -> list[float]:
     """Retrieve cosine distances via exact per-barcode kNN scans.
 
-    Approach 3 from ``benchmark_exhaustive_retrieval.py``.  Enumerates unique
-    barcodes with a deduplicated attribute scan, then issues one exact kNN query
-    per barcode scoped via a filter.  Guarantees exact distances for every chunk
-    but requires many round-trips.
+    Enumerates unique barcodes in index, then issues one kNN query
+    per barcode scoped via a filter.
 
     Args:
         backend: Turbopuffer backend to scan.

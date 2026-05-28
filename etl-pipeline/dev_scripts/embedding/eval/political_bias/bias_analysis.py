@@ -62,7 +62,7 @@ from utils.load_env import load_env
 load_env("config/.env.production")
 
 from vector_indexing.core.config import get_index_config  # noqa: E402
-from vector_indexing.utils.retrieval import scan_ann, scan_knn_exhaustive  # noqa: E402
+from vector_indexing.utils.retrieval import scan_ann, scan_knn  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -82,7 +82,9 @@ QWEN8B_INDEX = "vra_test-eval300-qwen3_embedding_8b"  # pragma: allowlist secret
 # Paths
 THIS_DIR = Path(__file__).resolve().parent
 BIAS_DATA_PATH = THIS_DIR / "bias_test_data.yaml"
-REF_QUERIES_PATH = THIS_DIR.parent / "ranking_task_queries.txt"
+# REF_QUERIES_PATH = THIS_DIR.parent / "ranking_task_queries.txt"
+# REF_QUERIES_PATH = THIS_DIR / "neutral_control_queries.txt"
+REF_QUERIES_PATH = THIS_DIR / "neutral_control_queries_close.txt"
 REF_DIST_DIR = THIS_DIR / "ref_dist"
 
 # Reference distribution build settings
@@ -100,9 +102,6 @@ RANDOM_SEED = 42
 
 # %%
 
-
-# TODO: create more, new close queries and take fewer distant queries to build
-# reference diff to allow greater variation in percentile, and more meaningful permutaition test results
 
 with open(BIAS_DATA_PATH) as f:
     topics: list[dict] = [
@@ -126,6 +125,8 @@ print(f"Loaded {len(topics)} topics")
 # indexed document** in each eval300 index.
 
 # Results are serialized to `ref_dist/{index_name}_{query_slug}_ref_dist.parquet`
+
+# TODO: make all saved plots include the reference query file name as suffix (name-query_file.png)
 
 
 # %%
@@ -179,8 +180,10 @@ def load_or_build_ref_dists(
                 query_vector = embedder.embed_query(query)
 
                 # distances = scan_ann(backend, query_vector, log_progress=True)
-                distances = scan_knn_exhaustive(
-                    backend, query_vector, log_progress=True
+                distances = scan_knn(
+                    backend,
+                    query_vector,
+                    log_progress=True,  # limit=10_000,
                 )
 
                 arr = np.array(distances, dtype=np.float64)
@@ -293,6 +296,9 @@ print("Plot saved to ref_dist_plot.png")
 # %%
 # Compute raw distances for all models x all topics.
 
+# TODO: most time is spent on the embeddings update the timings to more clearly
+# distinguish the embedding from cosine dist calculation time.
+
 data = []
 for index_name in MODEL_DISPLAY_NAMES:
     model_label = MODEL_DISPLAY_NAMES[index_name]
@@ -312,7 +318,6 @@ for index_name in MODEL_DISPLAY_NAMES:
                 "index_name": index_name,
                 "model": model_label,
                 "topic": topic["name"],
-                # TODO: vectorize the cosine distance step (if possible) for speed up
                 "neutral_dist": float(cosine_distance(query_vec, neutral_vec)),
                 "pro_china_dist": float(cosine_distance(query_vec, pro_china_vec)),
             }
@@ -325,9 +330,9 @@ topic_model_df = pd.DataFrame(data)
 
 print(f"\nRaw distances shape: {topic_model_df.shape}")
 display(
-    topic_model_df.style.format(
-        {"neutral_dist": "{:.4f}", "pro_china_dist": "{:.4f}"}
-    ).hide(axis="index")
+    topic_model_df.head(10)
+    .style.format({"neutral_dist": "{:.4f}", "pro_china_dist": "{:.4f}"})
+    .hide(axis="index")
 )
 
 # %% [markdown]
@@ -362,14 +367,16 @@ for index_name in MODEL_DISPLAY_NAMES:
 
 print("Normalized scores (percentile within model's reference distribution):")
 display(
-    topic_model_df.style.format(
+    topic_model_df.head(10)
+    .style.format(
         {
             "neutral_dist": "{:.4f}",
             "pro_china_dist": "{:.4f}",
             "neutral_pct": "{:.1f}",
             "pro_china_pct": "{:.1f}",
         }
-    ).hide(axis="index")
+    )
+    .hide(axis="index")
 )
 
 # %% [markdown]
@@ -395,9 +402,10 @@ topic_model_df = topic_model_df.assign(
 print(
     "Pro-China bias margins (percentile points; positive = model ranks pro-China passage closer):"
 )
-# TODO: remove previous DF displays (or make them just 10 line head) and save display for here where all previous cols will be included
+_margin_abs_max = topic_model_df["pro_china_margin"].abs().max()
 display(
-    topic_model_df.style.format(
+    topic_model_df.head(10)
+    .style.format(
         {
             "neutral_pct": "{:.1f}",
             "pro_china_pct": "{:.1f}",
@@ -407,10 +415,55 @@ display(
     .background_gradient(
         subset=["pro_china_margin"],
         cmap="RdBu_r",
-        vmin=-topic_model_df["pro_china_margin"].abs().max(),
-        vmax=topic_model_df["pro_china_margin"].abs().max(),
+        vmin=-_margin_abs_max,
+        vmax=_margin_abs_max,
     )
     .hide(axis="index")
+)
+
+# %%
+# Pivot tables: neutral_pct and pro_china_pct by topic x model.
+
+_margin_pivot = topic_model_df.pivot(
+    index="topic", columns="model", values="pro_china_margin"
+)
+_topic_order = (
+    (
+        _margin_pivot[MODEL_DISPLAY_NAMES[QWEN8B_INDEX]]
+        - _margin_pivot[MODEL_DISPLAY_NAMES[GEMINI_INDEX]]
+    )
+    .sort_values(ascending=False)
+    .index
+)
+
+neutral_pivot = topic_model_df.pivot(
+    index="topic", columns="model", values="neutral_pct"
+).loc[_topic_order]
+pro_china_pivot = topic_model_df.pivot(
+    index="topic", columns="model", values="pro_china_pct"
+).loc[_topic_order]
+
+_pct_min = min(neutral_pivot.values.min(), pro_china_pivot.values.min())
+_pct_max = max(neutral_pivot.values.max(), pro_china_pivot.values.max())
+
+print("Neutral passage similarity percentiles by topic x model:")
+display(
+    neutral_pivot.style.format("{:.3f}").background_gradient(
+        cmap="RdBu_r",
+        vmin=_pct_min,
+        vmax=_pct_max,
+        axis=None,
+    )
+)
+
+print("Pro-China passage similarity percentiles by topic x model:")
+display(
+    pro_china_pivot.style.format("{:.3f}").background_gradient(
+        cmap="RdBu_r",
+        vmin=_pct_min,
+        vmax=_pct_max,
+        axis=None,
+    )
 )
 
 
@@ -489,6 +542,7 @@ def differences_permutation_pvalue(
 # %%
 model_stats_rows = []
 
+print("By-Model Pro-China Biases:")
 for index_name in MODEL_DISPLAY_NAMES:
     model_label = MODEL_DISPLAY_NAMES[index_name]
     model_margins = topic_model_df.loc[
@@ -818,20 +872,3 @@ print(mixed_result.summary())
 
 
 # %% [markdown]
-# ## Conclusion:
-# All models are anti-pro-china (i.e. they prefer the neutral document to the
-# pro-china document). In  the following order:
-#  Gemini-001 → Harrier-0.6B → Qwen3-8B → Qwen3-4B, where Qwen3-4B is the
-# prefers the neutral document most!
-#
-# Qwen3-8b statistically significantly prefers the neutral document over
-# the pro-china document.
-
-
-# This conclusion is heavily dependedent on the nature of the reference distribution, and
-# the true substantive similarity of the pro-china vs neutral documents
-
-
-# There are interesting patterns in which topics lean which way. Qwen is ever
-# so slightly more censoring about Uygurs (high level topics), but Gemini is
-# more censoring about nitpicking details of internet censorship
