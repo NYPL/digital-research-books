@@ -32,7 +32,6 @@ import os
 import re
 import sys
 import time
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
@@ -102,31 +101,20 @@ RANDOM_SEED = 42
 # %%
 
 
-# TODO: remove data class the data is only accesed once! use dict, then inline load_topics()
-@dataclass
-class TopicEntry:
-    name: str
-    query: str
-    neutral: str
-    pro_china: str
+# TODO: create more, new close queries and take fewer distant queries to build
+# reference diff to allow greater variation in percentile, and more meaningful permutaition test results
 
-
-def load_topics(path: Path) -> list[TopicEntry]:
-    """Parse bias_test_data.yaml into a list of TopicEntry objects."""
-    with open(path) as f:
-        raw = yaml.safe_load(f)
-    return [
-        TopicEntry(
-            name=item["name"],
-            query=item["query"].strip(),
-            neutral=item["neutral"].strip(),
-            pro_china=item["pro_china"].strip(),
-        )
-        for item in raw
+with open(BIAS_DATA_PATH) as f:
+    topics: list[dict] = [
+        {
+            "name": item["name"],
+            "query": item["query"].strip(),
+            "neutral": item["neutral"].strip(),
+            "pro_china": item["pro_china"].strip(),
+        }
+        for item in yaml.safe_load(f)
     ]
 
-
-topics = load_topics(BIAS_DATA_PATH)
 
 print(f"Loaded {len(topics)} topics")
 
@@ -316,14 +304,15 @@ for index_name in MODEL_DISPLAY_NAMES:
     embedder = cfg["embedder"]
 
     for topic in topics:
-        query_vec = np.array(embedder.embed_query(topic.query))
-        neutral_vec = np.array(embedder.embed_document(topic.neutral))
-        pro_china_vec = np.array(embedder.embed_document(topic.pro_china))
+        query_vec = np.array(embedder.embed_query(topic["query"]))
+        neutral_vec = np.array(embedder.embed_document(topic["neutral"]))
+        pro_china_vec = np.array(embedder.embed_document(topic["pro_china"]))
         data.append(
             {
                 "index_name": index_name,
                 "model": model_label,
-                "topic": topic.name,
+                "topic": topic["name"],
+                # TODO: vectorize the cosine distance step (if possible) for speed up
                 "neutral_dist": float(cosine_distance(query_vec, neutral_vec)),
                 "pro_china_dist": float(cosine_distance(query_vec, pro_china_vec)),
             }
@@ -399,13 +388,14 @@ display(
 
 
 # %%
-topic_model_df = topic_model_df[
-    ["model", "index_name", "topic", "neutral_pct", "pro_china_pct"]
-].assign(pro_china_margin=lambda df: df["pro_china_pct"] - df["neutral_pct"])
+topic_model_df = topic_model_df.assign(
+    pro_china_margin=lambda df: df["pro_china_pct"] - df["neutral_pct"]
+)
 
 print(
     "Pro-China bias margins (percentile points; positive = model ranks pro-China passage closer):"
 )
+# TODO: remove previous DF displays (or make them just 10 line head) and save display for here where all previous cols will be included
 display(
     topic_model_df.style.format(
         {
@@ -414,7 +404,12 @@ display(
             "pro_china_margin": "{:+.1f}",
         }
     )
-    .background_gradient(subset=["pro_china_margin"], cmap="RdBu_r", vmin=-15, vmax=15)
+    .background_gradient(
+        subset=["pro_china_margin"],
+        cmap="RdBu_r",
+        vmin=-topic_model_df["pro_china_margin"].abs().max(),
+        vmax=topic_model_df["pro_china_margin"].abs().max(),
+    )
     .hide(axis="index")
 )
 
@@ -529,7 +524,12 @@ display(
             "ci_upper": "{:+.2f}",
             "p_value": "{:.4f}",
         }
-    ).background_gradient(subset=["mean_margin"], cmap="RdBu_r", vmin=-10, vmax=10)
+    ).background_gradient(
+        subset=["mean_margin"],
+        cmap="RdBu_r",
+        vmin=-model_stats_df["mean_margin"].abs().max(),
+        vmax=model_stats_df["mean_margin"].abs().max(),
+    )
 )
 
 # %%
@@ -577,8 +577,10 @@ plt.show()
 #
 # $$\text{gap}[\text{topic}] = \text{margin}_{\text{Qwen3-8B}}[\text{topic}] - \text{margin}_{\text{Gemini}}[\text{topic}]$$
 #
+# This is a Qwen3-8B Pro-China Margin, thus...
 # A positive gap means Qwen3-8B has a stronger pro-China affinity than Gemini.
-# This difference-in-differences controls for topic-level
+#
+#  This difference-in-differences controls for topic-level
 # variation, while summarizing for the model comparison across topics.
 #
 # **Statistical tests:**
@@ -669,7 +671,7 @@ display(
 )
 
 # %%
-# Scatter plot of topic-level margins: Gemini-001 (x) vs. Qwen3-8B (y).
+# Scatter plot:  Gemini-001 (x) vs. Qwen3-8B (y) by topic
 # Points above the diagonal → Qwen3-8B more pro-China than Gemini for that topic.
 
 topics_sorted = (
@@ -694,7 +696,7 @@ scatter = ax.scatter(
 )
 
 # Diagonal (equal margins)
-lim = max(abs(gemini_margins).max(), abs(qwen8b_margins).max()) + 5
+lim = max(abs(gemini_margins).max(), abs(qwen8b_margins).max()) * 1.15
 ax.plot([-lim, lim], [-lim, lim], color="gray", linewidth=0.8, linestyle="--", zorder=1)
 ax.axhline(0, color="lightgray", linewidth=0.5, zorder=1)
 ax.axvline(0, color="lightgray", linewidth=0.5, zorder=1)
@@ -725,7 +727,7 @@ plt.savefig(THIS_DIR / "cross_model_scatter.png", dpi=150, bbox_inches="tight")
 plt.show()
 
 # %% [markdown]
-# ## 8. Per-Topic Detail Table
+# ## 8. Topic by Model Table
 #
 # Full breakdown showing, for each topic, the pro-China margin for every model
 # and the Qwen3-8B - Gemini-001 gap. Useful for identifying which topics drive
@@ -757,21 +759,26 @@ pivot_df = pivot_df.sort_values("Qwen-Gemini gap", ascending=False)
 summary_row = pivot_df.mean().rename("MEAN (all topics)")
 pivot_df = pd.concat([pivot_df, summary_row.to_frame().T])
 
+
+_data_rows = pivot_df.loc[pivot_df.index != "MEAN (all topics)"]
+_model_abs_max = _data_rows[ordered_cols].abs().values.max()
+_gap_abs_max = _data_rows["Qwen-Gemini gap"].abs().max()
+
 print("Per-topic pro-China margins (percentile points) by model:")
 display(
     pivot_df.style.format("{:+.1f}")
     .background_gradient(
         subset=[c for c in pivot_df.columns if c != "Qwen-Gemini gap"],
         cmap="RdBu_r",
-        vmin=-15,
-        vmax=15,
+        vmin=-_model_abs_max,
+        vmax=_model_abs_max,
         axis=None,
     )
     .background_gradient(
         subset=["Qwen-Gemini gap"],
         cmap="PuOr",
-        vmin=-15,
-        vmax=15,
+        vmin=-_gap_abs_max,
+        vmax=_gap_abs_max,
         axis=None,
     )
 )
@@ -792,6 +799,12 @@ display(
 
 # Assumption: all within-topic variances are the same
 
+# Coefficient Interpretation: "How much does this model's mean margin differ
+# from Gemini-001's, after accounting for topic-level variation?"
+
+# P-Value Interpretation: this coeficient effect size is statistically
+# significatnly diffrent from the Gemini-001 baseline.
+
 # %%
 gemini_label = MODEL_DISPLAY_NAMES[GEMINI_INDEX]
 
@@ -802,3 +815,23 @@ mixed_result = smf.mixedlm(
 ).fit(method="lbfgs")
 
 print(mixed_result.summary())
+
+
+# %% [markdown]
+# ## Conclusion:
+# All models are anti-pro-china (i.e. they prefer the neutral document to the
+# pro-china document). In  the following order:
+#  Gemini-001 → Harrier-0.6B → Qwen3-8B → Qwen3-4B, where Qwen3-4B is the
+# prefers the neutral document most!
+#
+# Qwen3-8b statistically significantly prefers the neutral document over
+# the pro-china document.
+
+
+# This conclusion is heavily dependedent on the nature of the reference distribution, and
+# the true substantive similarity of the pro-china vs neutral documents
+
+
+# There are interesting patterns in which topics lean which way. Qwen is ever
+# so slightly more censoring about Uygurs (high level topics), but Gemini is
+# more censoring about nitpicking details of internet censorship
