@@ -54,6 +54,7 @@ const ResearchAssistantWindow: React.FC = () => {
         paddingLeft={paddingX}
         paddingRight={`calc(${PADDING_COUNTER} * 2)`}
         role="log"
+        aria-live="polite"
         aria-label="Chat messages"
       >
         <MessageBubble index={0} message={initialMessage} />
