@@ -6,15 +6,15 @@ set -euo pipefail
 # INSTANCE_TYPE – SageMaker instance type (e.g. ml.g6e.xlarge)
 #
 # Optional env vars (defaults below)
-# AWS_PROFILE   – AWS CLI profile (no default)
-# AWS_REGION    – defaults to `aws configure get region`
-# ROLE_ARN      – SageMaker execution role ARN (defaults to arn:aws:iam::260496020663:role/SageMakerExecutionRole)
-# IMAGE_URI     – ECR image URI (defaults to 260496020663.dkr.ecr.us-east-1.amazonaws.com/custom-sagemaker-tei:latest)
-# TEI_EXTRA_ARGS – extra args appended to text-embeddings-router (ex: "--dtype float32 --max-batch-tokens 32768")
+# AWS_PROFILE      – AWS CLI profile (no default)
+# AWS_REGION       – defaults to `aws configure get region`
+# ROLE_ARN         – SageMaker execution role ARN (defaults to arn:aws:iam::260496020663:role/SageMakerExecutionRole)
+# ECR_REPOSITORY   – ECR repository name (default: custom-sagemaker-tei)
+# TEI_EXTRA_ARGS   – extra args appended to text-embeddings-router (ex: "--dtype float32 --max-batch-tokens 32768")
 
-AWS_REGION="${AWS_REGION:-$(aws configure get region 2>/dev/null || true)}"
+AWS_REGION="${AWS_REGION:-$(aws configure get region 2>/dev/null || true)}" # MAYBE: handle fetch error more explicitly like AWS_ACCOUNT_ID
 ROLE_ARN="${ROLE_ARN:-arn:aws:iam::260496020663:role/SageMakerExecutionRole}"
-IMAGE_URI="${IMAGE_URI:-260496020663.dkr.ecr.us-east-1.amazonaws.com/custom-sagemaker-tei:latest}"
+ECR_REPOSITORY="${ECR_REPOSITORY:-custom-sagemaker-tei}"
 TEI_EXTRA_ARGS="${TEI_EXTRA_ARGS:-}"
 
 missing=()
@@ -26,6 +26,28 @@ if [[ ${#missing[@]} -gt 0 ]]; then
   echo "Error: missing required environment variable(s): ${missing[*]}" >&2
   exit 1
 fi
+
+# Resolve AWS_ACCOUNT_ID
+AWS_ACCOUNT_ID="$(aws --region "$AWS_REGION" sts get-caller-identity --query Account --output text 2>/dev/null || true)"
+if [[ -z "$AWS_ACCOUNT_ID" || "$AWS_ACCOUNT_ID" == "None" ]]; then
+  echo "Unable to determine AWS account ID from credentials via STS. Verify your AWS credentials/session." >&2
+  exit 1
+fi
+
+# Derive IMAGE_URI from INSTANCE_TYPE (e.g. ml.g6e.xlarge → g6e-latest)
+INSTANCE_FAMILY="${INSTANCE_TYPE#ml.}"
+INSTANCE_FAMILY="${INSTANCE_FAMILY%%.*}"
+IMAGE_TAG="${INSTANCE_FAMILY}-latest"
+IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
+
+# Verify the image exists in ECR before attempting deployment
+aws --region "$AWS_REGION" ecr describe-images \
+  --repository-name "$ECR_REPOSITORY" \
+  --image-ids "imageTag=${IMAGE_TAG}" \
+  >/dev/null 2>&1 \
+  || { echo "Image '${IMAGE_URI}' not found in ECR. Run build_and_push.sh with INSTANCE_TYPE='${INSTANCE_TYPE}' first." >&2; exit 1; }
+
+echo "Using IMAGE_URI='$IMAGE_URI'"
 
 # Normalize HF_MODEL_ID and INSTANCE_TYPE and construct valid AWS endpoint name
 sanitize_name() {
