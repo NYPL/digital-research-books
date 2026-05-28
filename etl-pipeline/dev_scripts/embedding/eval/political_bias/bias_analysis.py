@@ -34,11 +34,12 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import statsmodels.formula.api as smf
 import yaml
 from dotenv import find_dotenv
 from scipy.spatial.distance import cosine as cosine_distance
@@ -73,7 +74,7 @@ MODEL_DISPLAY_NAMES: dict[str, str] = {
     "vra_test-eval300-harrier_oss_v1_.6b": "Harrier-0.6B",  # pragma: allowlist secret
     "vra_test-eval300-qwen3_embedding_8b": "Qwen3-8B",  # pragma: allowlist secret
     "vra_test-eval300-qwen3_embedding_4b": "Qwen3-4B",  # pragma: allowlist secret
-    "vra_test-eval300-pplx_embed_v1_4b": "PPLX-4B",  # pragma: allowlist secret
+    # "vra_test-eval300-pplx_embed_v1_4b": "PPLX-4B",  # pragma: allowlist secret
 }
 # Primary pair for cross-model comparison (§8)
 GEMINI_INDEX = "vra_test-eval300-gemini_001"  # pragma: allowlist secret
@@ -212,7 +213,7 @@ for q in ref_queries:
 print()
 
 ref_dists_by_query = load_or_build_ref_dists(
-    MODEL_DISPLAY_NAMES, ref_queries, REF_DIST_DIR, force_rebuild=False
+    MODEL_DISPLAY_NAMES.keys(), ref_queries, REF_DIST_DIR, force_rebuild=False
 )
 
 print("\n✓ All reference distributions built / verified.")
@@ -369,8 +370,6 @@ for index_name in MODEL_DISPLAY_NAMES:
         mask, "pro_china_dist"
     ].apply(lambda d: percentile_score(d, ref))
 
-topic_model_df = topic_model_df
-
 
 print("Normalized scores (percentile within model's reference distribution):")
 display(
@@ -451,10 +450,7 @@ def bootstrap_mean_ci(
     """
     rng = np.random.default_rng(seed)
     n = len(data)
-    boot_means = np.fromiter(
-        (rng.choice(data, n, replace=True).mean() for _ in range(n_boot)),
-        dtype=float,
-    )
+    boot_means = rng.choice(data, (n_boot, n), replace=True).mean(axis=1)
     alpha = (1.0 - ci) / 2.0
     return (
         float(data.mean()),
@@ -489,15 +485,9 @@ def differences_permutation_pvalue(
     rng = np.random.default_rng(seed)
     observed = float(differences.mean())
     n = len(differences)
-    null_means = np.fromiter(
-        (
-            (rng.choice(np.array([-1.0, 1.0]), n) * differences).mean()
-            for _ in range(n_perm)
-        ),
-        dtype=float,
-    )
+    random_signs = rng.choice(np.array([-1.0, 1.0]), size=(n_perm, n))
+    null_means = (random_signs * differences).mean(axis=1)
     # Two-sided alternative (abs)
-    # Null Hypothesis:
     return float((np.abs(null_means) >= abs(observed)).mean())
 
 
@@ -611,7 +601,7 @@ qwen8b_margins = (
 )
 diff_in_diffs = qwen8b_margins - gemini_margins  # Qwen - Gemini, per topic
 
-# Individual model stats — pulled from model_stats_df (already computed in §7)
+# Individual model stats
 gemini_label = MODEL_DISPLAY_NAMES[GEMINI_INDEX]
 qwen8b_label = MODEL_DISPLAY_NAMES[QWEN8B_INDEX]
 g_mean, g_lo, g_hi, g_p = model_stats_df.loc[
@@ -796,11 +786,13 @@ display(
 # **Key coefficients:** `model[T.<model>]` — how much larger is model X's mean
 # pro-China margin relative to Gemini-001 (reference), after adjusting for topic.
 #
-# A fitted model is justified bc we have 30 topics x 5 models =
+# A fitted model is justified: we have 31 topics x 5 models = 155 observations,
+# enough to estimate n_models fixed-effect coefficients + 1 within-topic,
+# random-topic-intercept-effect variance.
+
+# Assumption: all within-topic variances are the same
 
 # %%
-import statsmodels.formula.api as smf
-
 gemini_label = MODEL_DISPLAY_NAMES[GEMINI_INDEX]
 
 mixed_result = smf.mixedlm(
