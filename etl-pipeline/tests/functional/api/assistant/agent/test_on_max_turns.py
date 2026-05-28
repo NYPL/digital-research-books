@@ -15,11 +15,10 @@ class TestOnMaxTurns:
         2. final_output is a non-empty string (graceful LLM response).
         3. raw_responses has exactly 2 entries (max_turns agent-loop LLM calls).
         """
-        # Prevent real backend/config initialization
+        # Prevent real backend initialization
         mocker.patch("api.assistant.agent.TurbopufferBackend")
-        mocker.patch("api.assistant.agent.get_config")
 
-        # Prevent real Google Embedder API calls; embed_one returns a mock (hybrid_search
+        # Prevent real Google Embedder API calls; embed_query returns a mock (hybrid_search
         # raises before it's used, so the return value doesn't matter)
         mocker.patch("api.assistant.agent.GoogleEmbedder")
 

@@ -8,7 +8,7 @@ describe("ResearchAssistantNav", () => {
 
     const navItems = screen.getAllByRole("link");
     const keywordSearchTab = screen.getByText(/keyword search/i);
-    const vraTab = screen.getByText(/virtual research assistant/i);
+    const vraTab = screen.getByText(/enhanced search/i);
     expect(navItems.length).toBeGreaterThanOrEqual(2);
     expect(vraTab).toBeInTheDocument();
     expect(vraTab.closest("a")).toHaveAttribute(
@@ -25,7 +25,7 @@ describe("ResearchAssistantNav", () => {
   test("highlights VRA tab when active", () => {
     render(<ResearchAssistantNav activePage={"vra"} />);
 
-    const vraTab = screen.getByText(/virtual research assistant/i);
+    const vraTab = screen.getByText(/enhanced search/i);
     const keywordTab = screen.getByText(/keyword search/i);
     expect(vraTab.closest("a")).toHaveAttribute("aria-current", "page");
     expect(keywordTab.closest("a")).not.toHaveAttribute("aria-current", "page");
@@ -35,7 +35,7 @@ describe("ResearchAssistantNav", () => {
     render(<ResearchAssistantNav activePage={"keyword"} />);
 
     const keywordTab = screen.getByText(/keyword search/i);
-    const vraTab = screen.getByText(/virtual research assistant/i);
+    const vraTab = screen.getByText(/enhanced search/i);
     expect(keywordTab.closest("a")).toHaveAttribute("aria-current", "page");
     expect(vraTab.closest("a")).not.toHaveAttribute("aria-current", "page");
   });

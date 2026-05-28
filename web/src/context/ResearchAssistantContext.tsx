@@ -13,8 +13,10 @@ import {
   SearchCompletedEvent,
   StreamEvent,
 } from "~/src/types/ResearchAssistant";
-import { SURVEY_DELAY_MS } from "../constants/researchAssistant";
-import { getSurveyStorageKey } from "../util/ResearchAssistantUtils";
+import {
+  SURVEY_DELAY_MS,
+  SURVEY_SESSION_STORAGE_KEY,
+} from "../constants/researchAssistant";
 import { FeedbackContext } from "./FeedbackContext";
 
 interface ResearchAssistantViewState {
@@ -81,7 +83,7 @@ export const ResearchAssistantProvider: React.FC<{
     results: null,
   });
 
-  const { sessionId, setSessionId } = useContext(FeedbackContext);
+  const { setSessionId } = useContext(FeedbackContext);
 
   const router = useRouter();
   const conversationType = router.pathname.startsWith("/item/")
@@ -90,11 +92,11 @@ export const ResearchAssistantProvider: React.FC<{
 
   const markSurveyHandled = React.useCallback(() => {
     if (typeof window !== "undefined") {
-      window.sessionStorage.setItem(getSurveyStorageKey(sessionId), "true");
+      window.sessionStorage.setItem(SURVEY_SESSION_STORAGE_KEY, "true");
     }
     setHasSurveyBeenHandled(true);
     setIsSurveyVisible(false);
-  }, [sessionId]);
+  }, []);
 
   const pushNewState = ({
     results,
@@ -357,14 +359,14 @@ export const ResearchAssistantProvider: React.FC<{
   useEffect(() => {
     if (typeof window === "undefined") return;
     const hasHandledSurvey =
-      window.sessionStorage.getItem(getSurveyStorageKey(sessionId)) === "true";
+      window.sessionStorage.getItem(SURVEY_SESSION_STORAGE_KEY) === "true";
     if (hasHandledSurvey) {
       setHasSurveyBeenHandled(true);
       setIsSurveyVisible(false);
       return;
     }
     setHasSurveyBeenHandled(false);
-  }, [sessionId]);
+  }, []);
 
   useEffect(() => {
     if (!hasSentFirstQuery || hasSurveyBeenHandled || isSurveyVisible) return;

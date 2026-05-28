@@ -1,3 +1,6 @@
+# for default --results-dir in vector_indexing/scripts/index_books.py
+**/indexing_results/
+
 .DS_Store
 .coverage
 /.vscode/*
@@ -16,6 +19,7 @@ tags
 # Vim
 *.swp
 /*venv*
+uv.lock
 
 analytics/upress_reporting/log_files
 

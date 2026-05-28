@@ -176,3 +176,31 @@ class InsertResult:
 
     def __repr__(self) -> str:
         return f"InsertResult(inserted={self.inserted}, skipped={self.skipped}, failed={self.failed}, written_bytes={self.written_bytes})"
+
+
+@dataclass
+class PatchResult:
+    """Result of a patch operation."""
+
+    patched: int = 0
+    skipped: int = 0
+    failed: int = 0
+    rows_remaining: bool = False
+    errors: list[dict] = field(default_factory=list)
+
+    @property
+    def total(self) -> int:
+        return self.patched + self.skipped + self.failed
+
+    def __add__(self, other: "PatchResult") -> "PatchResult":
+        """Combine two results (for aggregating batch results)."""
+        return PatchResult(
+            patched=self.patched + other.patched,
+            skipped=self.skipped + other.skipped,
+            failed=self.failed + other.failed,
+            rows_remaining=self.rows_remaining or other.rows_remaining,
+            errors=self.errors + other.errors,
+        )
+
+    def __repr__(self) -> str:
+        return f"PatchResult(patched={self.patched}, skipped={self.skipped}, failed={self.failed}, rows_remaining={self.rows_remaining})"

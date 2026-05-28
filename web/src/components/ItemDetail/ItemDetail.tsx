@@ -192,7 +192,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ workResult, backUrl }) => {
               >
                 <Toggle
                   isChecked={vraEnabled}
-                  labelText="Use Virtual Research Assistant"
+                  labelText="Use Enhanced Search"
                   onChange={() => setVraEnabled((prev) => !prev)}
                   size="small"
                   sx={{
