@@ -124,7 +124,7 @@ class EnhancedSearchWebUser(PlaywrightUser):
         async with event(self, "landing page: load"):
             await page.goto("/research-assistant-landing")
             await page.get_by_role(
-                "heading", level=1, name=re.compile("NYPL Virtual Research Assistant")
+                "heading", level=1, name=re.compile("AI-enabled Enhanced Search")
             ).wait_for()
 
         await asyncio.sleep(random.uniform(3, 8))  # Choose text entry or suggestion
