@@ -1,8 +1,10 @@
 allure-pytest==2.15.2
 deepeval==4.0.2
 ipykernel==7.2.0
+matplotlib==3.10.9 # used in dev_scripts/embedding/eval/political_bias/bias_analysis.py
 openpyxl>=3.1.5
 pre-commit==4.3.0
+pyarrow==17.0.0
 pytest-asyncio==1.3.0
 pytest-cov==7.0.0
 pytest-mock==3.15.1

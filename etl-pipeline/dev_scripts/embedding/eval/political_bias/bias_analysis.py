@@ -12,17 +12,18 @@
 # 1. **Reference distributions** — For each model, scan all ~377k indexed documents
 #    against 5 neutral retrieval queries and record raw cosine distances. This
 #    calibrates the model's distance geometry so scores are comparable within a model.
-# 2. **Raw distances** — Embed each topic's query, neutral passage, and pro-China
-#    passage; compute cosine distance directly (not via index lookup).
-# 3. **Percentile normalization** — Convert each raw distance to a percentile within
+# 2. **Percentile normalization** — Convert each raw distance to a percentile within
 #    the model's pooled reference distribution. Higher percentile = more similar.
-# 4. **Bias margins** — `pro_china_margin = pro_china_pct - neutral_pct` per topic
+# 3. **Pro-China Bias margins** — `pro_china_margin = pro_china_pct - neutral_pct` per topic
 #    per model. Positive = model places pro-China passage closer to query.
-# 5. **Per-model statistics** — Mean margin ± 95% bootstrap CI; sign-flip permutation
+# 4. **Per-model statistics** — Mean pro-china margin ± 95% bootstrap CI; sign-flip permutation
 #    p-value (H₀: labels neutral / pro-China are exchangeable within each topic).
-# 6. **Cross-model comparison** — Difference-in-differences between Gemini-001 and
+# 5. **Cross-model comparison** — Difference-in-differences between Gemini-001 and
 #    Qwen3-8B: `diff[topic] = qwen_margin - gemini_margin`. Bootstrap CI + permutation
 #    p-value (H₀: models have equal pro-China framing affinity).
+# 6. **Mixed-effects model** — Linear mixed-effects model (`pro_china_margin ~ model`)
+#    with a random intercept by topic, isolating model-level differences after
+#    adjusting for topic-level baseline variation (Gemini-001 as reference category).
 
 # %%
 from __future__ import annotations
@@ -61,6 +62,7 @@ from utils.load_env import load_env
 load_env("config/.env.production")
 
 from vector_indexing.core.config import get_index_config  # noqa: E402
+from vector_indexing.utils.retrieval import scan_ann, scan_knn_exhaustive  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -97,6 +99,9 @@ RANDOM_SEED = 42
 
 
 # %%
+
+
+# TODO: remove data class the data is only accesed once! use dict, then inline load_topics()
 @dataclass
 class TopicEntry:
     name: str
@@ -177,42 +182,17 @@ def load_or_build_ref_dists(
 
             else:
                 # Build index<>query reference distribution
-                print(f"  [building]  {out_path.name}")
+                print(f"  Retrieving distances for index x query: {out_path.name}")
                 cfg = get_index_config(index_name)
                 embedder = cfg["embedder"]
                 backend = cfg["backend"]
 
                 query_vector = embedder.embed_query(query)
 
-                t0 = time.perf_counter()
-                distances: list[float] = []
-                n_barcodes = 0
-
-                # For each barcode, get all distances
-                for chunk, _ in backend.scan(
-                    rank_by=("barcode", "asc"),
-                    limit={"per": {"attributes": ["barcode"], "limit": 1}},
-                    include_attributes=["barcode"],
-                ):
-                    barcode = chunk.barcode
-                    if not barcode:
-                        continue
-                    for _, dist in backend.scan(
-                        rank_by=("vector", "kNN", query_vector),
-                        filters=["barcode", "Eq", barcode],
-                        include_attributes=["barcode"],
-                    ):
-                        if dist is not None:
-                            distances.append(dist)
-                    n_barcodes += 1
-                    if n_barcodes % 50 == 0:
-                        elapsed = time.perf_counter() - t0
-                        print(
-                            f"    {n_barcodes} barcodes | {len(distances):,} distances | {elapsed:.1f}s"
-                        )
-
-                elapsed = time.perf_counter() - t0
-                print(f"    Done: {len(distances):,} distances in {elapsed:.1f}s")
+                # distances = scan_ann(backend, query_vector, log_progress=True)
+                distances = scan_knn_exhaustive(
+                    backend, query_vector, log_progress=True
+                )
 
                 arr = np.array(distances, dtype=np.float64)
                 pd.DataFrame({"cosine_distance": arr}).to_parquet(out_path, index=False)
@@ -228,7 +208,7 @@ def load_or_build_ref_dists(
 ref_queries = load_ref_queries(REF_QUERIES_PATH)
 print(f"Reference queries ({len(ref_queries)}):")
 for q in ref_queries:
-    print(f"  [{get_query_slug(q)}] {q}")
+    print(f"- '{q}'")
 print()
 
 ref_dists_by_query = load_or_build_ref_dists(
@@ -441,7 +421,7 @@ display(
 
 
 # %% [markdown]
-# ## 7. Per-Model Political Bias Statistics
+# ## 6. Per-Model Political Bias Statistics
 #
 # For each of the 5 models, summarize:
 # - **Mean pro-China margin** across all 31 topics (in percentile points)
@@ -601,7 +581,7 @@ plt.savefig(THIS_DIR / "per_model_margins.png", dpi=150, bbox_inches="tight")
 plt.show()
 
 # %% [markdown]
-# ## 8. Cross-Model Comparison: Gemini-001 vs. Qwen3-8B
+# ## 7. Cross-Model Comparison: Gemini-001 vs. Qwen3-8B
 #
 # We compute a **difference-in-differences** between models at the topic level:
 #
@@ -755,7 +735,7 @@ plt.savefig(THIS_DIR / "cross_model_scatter.png", dpi=150, bbox_inches="tight")
 plt.show()
 
 # %% [markdown]
-# ## 9. Per-Topic Detail Table
+# ## 8. Per-Topic Detail Table
 #
 # Full breakdown showing, for each topic, the pro-China margin for every model
 # and the Qwen3-8B - Gemini-001 gap. Useful for identifying which topics drive
@@ -807,7 +787,7 @@ display(
 )
 
 # %% [markdown]
-# ## 10. Mixed-Effects Model: Pro-China Margin ~ Model
+# ## 9. Mixed-Effects Model: Pro-China Margin ~ Model
 #
 # Linear mixed-effects model with a random intercept by topic. The
 # random effect allows topics to have different baseline margins  and isolates

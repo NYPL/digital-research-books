@@ -155,7 +155,10 @@ def chunk_from_tpuf_row(row) -> ChunkDocument:
         language=row_dict.get("language", []),
     )
 
-    return ChunkDocument.create(
+    return ChunkDocument(
+        doc_id=str(
+            row_dict["id"]
+        ),  # turbopuffer always returns id even when include_attributes=False
         barcode=row_dict.get("barcode"),
         book_id=row_dict.get("book_id"),
         chunk_index=row_dict.get("chunk_index"),

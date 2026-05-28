@@ -3,6 +3,7 @@
 
 # copilot instructions
 .github/instructions/*
+.github/skills/
 .github/copilot-instructions.md
 
 .deepeval/
