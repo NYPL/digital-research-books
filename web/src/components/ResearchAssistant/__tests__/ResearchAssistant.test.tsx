@@ -73,7 +73,7 @@ describe("ResearchAssistant", () => {
     });
 
     render(<ResearchAssistant />);
-    expect(screen.getAllByText(/failed to fetch response./i)).toHaveLength(2);
+    expect(screen.getByText(/failed to fetch response./i)).toBeInTheDocument();
   });
 
   test("sends initial message from sessionStorage on first load", () => {
