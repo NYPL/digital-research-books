@@ -43,7 +43,7 @@ const MessageBubble = memo(
       >
         <Box className={bubbleClasses}>
           {isUser ? (
-            <Text>
+            <Text as="h3" fontSize="desktop.body.body2">
               <b>You: </b>
               {message.content}
             </Text>

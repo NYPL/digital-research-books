@@ -73,7 +73,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
             isFocused
               ? {
                   boxShadow: "none",
-                  outline: "3px solid",
+                  outline: "2px solid",
                   outlineColor: "section.research.secondary",
                 }
               : {}

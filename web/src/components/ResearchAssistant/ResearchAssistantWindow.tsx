@@ -9,7 +9,7 @@ import {
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
-import { ConversationType, MessageRole } from "~/src/types/ResearchAssistant";
+import { ConversationType } from "~/src/types/ResearchAssistant";
 import MessageBubble from "./MessageBubble";
 
 const ResearchAssistantWindow: React.FC = () => {
@@ -38,39 +38,8 @@ const ResearchAssistantWindow: React.FC = () => {
       ? CONTENT_INITIAL_MESSAGE
       : CATALOG_INITIAL_MESSAGE;
 
-  const lastMessage = messages[messages.length - 1];
-  // TODO: Replace VRA references with new name
-  const getAnnouncementText = () => {
-    if (error) return error;
-    if (isLoading) return "Enhanced Search is thinking";
-    if (
-      lastMessage?.type === "message" &&
-      lastMessage?.role === MessageRole.Assistant
-    ) {
-      return `Enhanced Search: ${lastMessage.content
-        .map((c) => c.text)
-        .join(" ")}`;
-    }
-    return "";
-  };
-
   return (
     <>
-      <Box
-        aria-live="polite"
-        aria-atomic="true"
-        position="absolute"
-        width="1px"
-        height="1px"
-        padding="0"
-        margin="-1px"
-        overflow="hidden"
-        whiteSpace="nowrap"
-        borderWidth={0}
-        sx={{ clip: "rect(0, 0, 0, 0)" }}
-      >
-        {getAnnouncementText()}
-      </Box>
       <Box
         flex="1"
         display="flex"
@@ -85,7 +54,6 @@ const ResearchAssistantWindow: React.FC = () => {
         paddingLeft={paddingX}
         paddingRight={`calc(${PADDING_COUNTER} * 2)`}
         role="log"
-        aria-live="off"
         aria-label="Chat messages"
       >
         <MessageBubble index={0} message={initialMessage} />
