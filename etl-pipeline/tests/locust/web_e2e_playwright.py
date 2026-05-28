@@ -105,6 +105,7 @@ class EnhancedSearchWebUser(PlaywrightUser):
         page.set_default_navigation_timeout(UI_TIMEOUT_MS)
 
         # 0. Authorize by setting token in localStorage to bypass login
+        # NOTE: This step will no longer be needed after auth is removed
         if _IS_LOADFORGE_RUN:
             try:
                 with open("files/authToken-vratestuser.txt", "r") as f:
