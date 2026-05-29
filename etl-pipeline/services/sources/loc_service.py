@@ -81,7 +81,7 @@ class LOCService(SourceService):
     def _fetch_page_json_data(self, page_url: str) -> dict | None:
         max_attempts = 3
 
-        for attempt in (0, max_attempts):
+        for attempt in range(max_attempts):
             try:
                 page_response = requests.get(
                     page_url, headers={"Accept": "application/json"}
