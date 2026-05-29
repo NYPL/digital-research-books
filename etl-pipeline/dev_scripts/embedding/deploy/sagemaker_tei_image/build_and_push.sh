@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# MUST be called from CWD containing Dockerfile
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )
 
 # Required env var
 : "${INSTANCE_TYPE:=}"      # Required. SageMaker instance type, e.g. ml.g6e.xlarge.
@@ -123,14 +123,14 @@ aws --region "$AWS_REGION" ecr get-login-password \
 
 # Build image and push directly to ECR
 # Enforce a concrete image manifest rather than an mutable OCI image index, as required by SageMaker CreateModel.
-# Disable provenance/SBOM to prevent pushing attestations (which might create OCI image index).
+# Disable provenance/SBOM to prevent pushing attestations (which might create OCI image index). #TODO: experiment whether this is necessary.
 docker buildx build \
   --platform=linux/amd64 \
   --provenance=false \
   --sbom=false \
   --build-arg TEI_IMAGE="$TEI_IMAGE" \
   --output "type=image,name=$REMOTE_IMAGE,push=true,oci-mediatypes=false" \
-  .
+  "$SCRIPT_DIR"
 
 # # Pull to local and tag for convenience.
 # docker pull "$REMOTE_IMAGE" >/dev/null
