@@ -1,7 +1,7 @@
 import { BrowserContext, expect, Page, test } from "@playwright/test";
 import { ItemPage } from "./item-page";
 
-test.describe("Item Page UI", { tag: "@vra" }, () => {
+test.describe("Item Page UI", { tag: "@enhanced-search" }, () => {
   let page: Page;
   let itemPage: ItemPage;
 
@@ -15,7 +15,7 @@ test.describe("Item Page UI", { tag: "@vra" }, () => {
     await page.close();
   });
 
-  test.describe("Summary metadata and download option", { tag: "@vra" }, () => {
+  test.describe("Summary metadata and download option", () => {
     test("E-BOOK label is visible", async () => {
       await expect(itemPage.eBookLabel).toBeVisible();
     });
@@ -33,7 +33,7 @@ test.describe("Item Page UI", { tag: "@vra" }, () => {
     });
   });
 
-  test.describe("Sidebar accordion panels", { tag: "@vra" }, () => {
+  test.describe("Sidebar accordion panels", () => {
     test("'Details' accordion control is visible", async () => {
       await expect(itemPage.detailsAccordion).toBeVisible();
     });
@@ -59,7 +59,7 @@ test.describe("Item Page UI", { tag: "@vra" }, () => {
     });
   });
 
-  test.describe("PDF reader", { tag: "@vra" }, () => {
+  test.describe("PDF reader", () => {
     test("Reader controls region is visible", async () => {
       await expect(itemPage.readerControls).toBeVisible({ timeout: 60_000 });
     });
@@ -69,7 +69,7 @@ test.describe("Item Page UI", { tag: "@vra" }, () => {
     });
   });
 
-  test.describe("Chat panel initial state", { tag: "@vra" }, () => {
+  test.describe("Chat panel initial state", () => {
     test("Chat panel heading is visible", async () => {
       await expect(itemPage.chatPanelHeading).toBeVisible();
     });
@@ -83,7 +83,7 @@ test.describe("Item Page UI", { tag: "@vra" }, () => {
     });
   });
 
-  test.describe("Details panel metadata", { tag: "@vra" }, () => {
+  test.describe("Details panel metadata", () => {
     test.describe.configure({ mode: "serial" });
 
     const detailsFields = [
@@ -140,43 +140,47 @@ test.describe("Item Page UI", { tag: "@vra" }, () => {
   });
 });
 
-test.describe("Item Page — Chat Functionality", { tag: "@vra" }, () => {
-  test.describe.configure({ mode: "serial" });
-  test.setTimeout(120_000); // Override global timeout — AI response may be slow
+test.describe(
+  "Item Page — Chat Functionality",
+  { tag: "@enhanced-search" },
+  () => {
+    test.describe.configure({ mode: "serial" });
+    test.setTimeout(120_000); // Override global timeout — AI response may be slow
 
-  let context: BrowserContext;
-  let page: Page;
-  let itemPage: ItemPage;
-  const testQuery = "what are the main topics of this text?";
+    let context: BrowserContext;
+    let page: Page;
+    let itemPage: ItemPage;
+    const testQuery = "what are the main topics of this text?";
 
-  test.beforeAll(async ({ browser }) => {
-    context = await browser.newContext();
-    page = await context.newPage();
-    itemPage = new ItemPage(page);
-    await itemPage.navigateTo();
-    await itemPage.logIn(process.env.VRA_USERNAME, process.env.VRA_PASSWORD);
-    await itemPage.navigateTo(); // Return to item page after auth redirect
-  });
-
-  test.afterAll(async () => {
-    await context.close();
-  });
-
-  test("Chat input accepts the query text", async () => {
-    await itemPage.chatInputTextBox.fill(testQuery);
-    const inputValue = await itemPage.chatInputTextBox.inputValue();
-    expect(inputValue).toBe(testQuery);
-  });
-
-  test("An assistant response is displayed after submitting text", async () => {
-    await itemPage.query(testQuery);
-
-    await test.step("Wait for loading indicator to disappear", async () => {
-      await expect(itemPage.loadingIndicator).toBeHidden({ timeout: 90_000 });
+    test.beforeAll(async ({ browser }) => {
+      context = await browser.newContext();
+      page = await context.newPage();
+      itemPage = new ItemPage(page);
+      await itemPage.navigateTo();
+      await itemPage.logIn(process.env.VRA_USERNAME, process.env.VRA_PASSWORD);
+      await itemPage.navigateTo(); // Return to item page after auth redirect
     });
 
-    await expect(itemPage.messageBubbles.nth(1)).toBeVisible({
-      timeout: 10_000, // Assistant response should shortly follow loading indicator disappearing
+    test.afterAll(async () => {
+      await context.close();
     });
-  });
-});
+
+    test("Chat input accepts the query text", async () => {
+      await itemPage.chatInputTextBox.fill(testQuery);
+      const inputValue = await itemPage.chatInputTextBox.inputValue();
+      expect(inputValue).toBe(testQuery);
+    });
+
+    test("An assistant response is displayed after submitting text", async () => {
+      await itemPage.query(testQuery);
+
+      await test.step("Wait for loading indicator to disappear", async () => {
+        await expect(itemPage.loadingIndicator).toBeHidden({ timeout: 90_000 });
+      });
+
+      await expect(itemPage.messageBubbles.nth(1)).toBeVisible({
+        timeout: 10_000, // Assistant response should shortly follow loading indicator disappearing
+      });
+    });
+  }
+);
