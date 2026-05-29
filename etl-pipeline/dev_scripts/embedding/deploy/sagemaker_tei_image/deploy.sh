@@ -10,21 +10,38 @@ set -euo pipefail
 # AWS_REGION       – defaults to `aws configure get region`
 # ROLE_ARN         – SageMaker execution role ARN (defaults to arn:aws:iam::260496020663:role/SageMakerExecutionRole)
 # ECR_REPOSITORY   – ECR repository name (default: custom-sagemaker-tei)
-# TEI_EXTRA_ARGS   – extra args appended to text-embeddings-router (ex: "--dtype float32 --max-batch-tokens 32768")
+# TEI_VERSION             – TEI image version tag suffix (default: latest; e.g. "2.4.0" → image tag "g6e-2.4.0")
+# TEI_EXTRA_ARGS          – extra args appended to text-embeddings-router (ex: "--dtype float32 --max-batch-tokens 32768")
+# INFERENCE_AMI_VERSION   – SageMaker host AMI override; controls the NVIDIA driver / CUDA version on the host.
+#                           Ex: "al2-ami-sagemaker-inference-gpu-2" → driver 535 / CUDA 12.2
+#                           See: https://docs.aws.amazon.com/sagemaker/latest/dg/inference-gpu-drivers.html
 
-AWS_REGION="${AWS_REGION:-$(aws configure get region 2>/dev/null || true)}" # MAYBE: handle fetch error more explicitly like AWS_ACCOUNT_ID
+
+# Check the console for deployment success or failure. 
+# If failure, check in the "Errors" tab for the endpoint for the reason
+
 ROLE_ARN="${ROLE_ARN:-arn:aws:iam::260496020663:role/SageMakerExecutionRole}"
 ECR_REPOSITORY="${ECR_REPOSITORY:-custom-sagemaker-tei}"
 TEI_EXTRA_ARGS="${TEI_EXTRA_ARGS:-}"
+TEI_VERSION="${TEI_VERSION:-latest}"
+INFERENCE_AMI_VERSION="${INFERENCE_AMI_VERSION:-}"
 
 missing=()
 [[ -z "${HF_MODEL_ID:-}"    ]] && missing+=("HF_MODEL_ID")
 [[ -z "${INSTANCE_TYPE:-}"  ]] && missing+=("INSTANCE_TYPE")
-[[ -z "${AWS_REGION:-}"     ]] && missing+=("AWS_REGION")
 
 if [[ ${#missing[@]} -gt 0 ]]; then
   echo "Error: missing required environment variable(s): ${missing[*]}" >&2
   exit 1
+fi
+
+# Resolve AWS_REGION
+if [[ -z "${AWS_REGION:-}" ]]; then
+  AWS_REGION="$(aws configure get region 2>/dev/null || true)"
+  if [[ -z "$AWS_REGION" || "$AWS_REGION" == "None" ]]; then
+    echo "Unable to determine AWS region. Set AWS_REGION or configure a default region via 'aws configure'." >&2
+    exit 1
+  fi
 fi
 
 # Resolve AWS_ACCOUNT_ID
@@ -37,7 +54,7 @@ fi
 # Derive IMAGE_URI from INSTANCE_TYPE (e.g. ml.g6e.xlarge → g6e-latest)
 INSTANCE_FAMILY="${INSTANCE_TYPE#ml.}"
 INSTANCE_FAMILY="${INSTANCE_FAMILY%%.*}"
-IMAGE_TAG="${INSTANCE_FAMILY}-latest"
+IMAGE_TAG="${INSTANCE_FAMILY}-${TEI_VERSION}"
 IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
 
 # Verify the image exists in ECR before attempting deployment
@@ -94,19 +111,25 @@ aws sagemaker create-model \
 # - from Dockerfile -> HUGGINGFACE_HUB_CACHE, HF_HOME 
 # - from serve.py -> STARTUP_TIMEOUT_SECONDS, REQUEST_TIMEOUT_SECONDS
 
+# Build ProductionVariant JSON; conditionally include InferenceAmiVersion when set.
+PRODUCTION_VARIANT="$(jq -n \
+  --arg model        "$MODEL_NAME" \
+  --arg instance     "$INSTANCE_TYPE" \
+  --arg ami_version  "$INFERENCE_AMI_VERSION" \
+  '{
+    VariantName:          "AllTraffic",
+    ModelName:            $model,
+    InitialInstanceCount: 1,
+    InstanceType:         $instance,
+    InitialVariantWeight: 1.0
+  } | if $ami_version != "" then . + {InferenceAmiVersion: $ami_version} else . end'
+)"
+
 # Create endpoint config
 aws sagemaker create-endpoint-config \
   --region "$AWS_REGION" \
   --endpoint-config-name "$ENDPOINT_CONFIG_NAME" \
-  --production-variants "[
-    {
-      \"VariantName\": \"AllTraffic\",
-      \"ModelName\": \"${MODEL_NAME}\",
-      \"InitialInstanceCount\": 1,
-      \"InstanceType\": \"${INSTANCE_TYPE}\",
-      \"InitialVariantWeight\": 1.0
-    }
-  ]"
+  --production-variants "[$PRODUCTION_VARIANT]"
 
 # Create endpoint
 aws sagemaker create-endpoint \
@@ -116,6 +139,11 @@ aws sagemaker create-endpoint \
 
 echo "Endpoint name: $ENDPOINT_NAME"
 
+
+# TODO: poll describe endpoint until status InService or Failure. Print failure error
+
+
+
 # # Invoke Endpoint
 # aws sagemaker-runtime invoke-endpoint \
 #   --region "$AWS_REGION" \
@@ -123,3 +151,5 @@ echo "Endpoint name: $ENDPOINT_NAME"
 #   --content-type application/json \
 #   --body '{"inputs":["hello world","test embedding"]}' \
 #   /dev/stdout
+
+

@@ -89,6 +89,8 @@ async def wait_for_tei_ready() -> None:
 async def lifespan(app: FastAPI):
     global tei_process
 
+    # MAYBE: run `nvidia-smi` to print CUDA and nvidia driver for informational purposes before launching TEI.
+
     tei_process = start_tei()
     await wait_for_tei_ready()
 

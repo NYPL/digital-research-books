@@ -33,6 +33,7 @@ def delete_endpoint_resources(sm_client, endpoint_name: str, dry_run: bool) -> N
     except ClientError as e:
         print(f"  [warning] could not describe endpoint: {e}")
         endpoint_config_name = None
+        endpoint_name = None
 
     # Resolve model names from the endpoint config
     model_names = []
@@ -45,7 +46,7 @@ def delete_endpoint_resources(sm_client, endpoint_name: str, dry_run: bool) -> N
         except ClientError as e:
             print(f"  [warning] could not describe endpoint config: {e}")
 
-    print(f"  endpoint        : {endpoint_name}")
+    print(f"  endpoint        : {endpoint_name or '[not found]'}")
     print(f"  endpoint config : {endpoint_config_name or '[not found]'}")
     print(f"  model(s)        : {model_names or '[not found]'}")
 

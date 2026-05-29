@@ -10,29 +10,9 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )
 : "${AWS_PROFILE:=}"       # AWS CLI profile — honored natively by the CLI
 : "${ECR_REPOSITORY:=custom-sagemaker-tei}"
 : "${TEI_VERSION:=latest}"  # Tag version suffix, based on the TEI image tagging convention. 
-                            # "latest" (default) or a specific version like "1.9.3".
+                            # "latest" (default) or a specific version like "1.9" or "1.9.3".
                             # Check repo for exact available tags, they change regularly. 
                             # See : https://github.com/huggingface/text-embeddings-inference/pkgs/container/text-embeddings-inference
-
-# Derive TEI_IMAGE from INSTANCE_TYPE.
-#
-# SageMaker instance type → TEI image tag
-# Sources:
-#   Docs:     https://github.com/huggingface/text-embeddings-inference/#docker-images
-#   Registry: https://github.com/huggingface/text-embeddings-inference/pkgs/container/text-embeddings-inference
-#
-# Instance family → GPU           → Architecture         → Full tag (TEI_VERSION=latest)
-#   g4dn          → T4            → Turing (sm_75)       → turing-latest  (experimental; Flash Attention off by default)
-#   g5            → A10G          → Ampere 8.6 (sm_86)   → 86-latest
-#   g6            → L4            → Ada Lovelace (sm_89) → 89-latest
-#   g6e           → L40S          → Ada Lovelace (sm_89) → 89-latest
-#   p3            → V100          → Volta (sm_70)         → NOT SUPPORTED
-#   p4d           → A100 (40GB)  → Ampere 8.0 (sm_80)   → latest  (no prefix)
-#   p4de          → A100 (80GB)  → Ampere 8.0 (sm_80)   → latest  (no prefix)
-#   p5            → H100          → Hopper (sm_90)        → hopper-latest
-#   p5e           → H200          → Hopper (sm_90)        → hopper-latest
-
-TEI_BASE_REPO="ghcr.io/huggingface/text-embeddings-inference"
 
 if [[ -z "$INSTANCE_TYPE" ]]; then
   echo "INSTANCE_TYPE is required (e.g. ml.g6e.xlarge)." >&2
@@ -43,40 +23,49 @@ fi
 INSTANCE_FAMILY="${INSTANCE_TYPE#ml.}"
 INSTANCE_FAMILY="${INSTANCE_FAMILY%%.*}"
 
+# Derive TEI_IMAGE from INSTANCE_TYPE.
+# SageMaker instance type → TEI image tag
+# Sources:
+#   Docs:     https://github.com/huggingface/text-embeddings-inference/#docker-images
+#   Registry: https://github.com/huggingface/text-embeddings-inference/pkgs/container/text-embeddings-inference
+
+TEI_BASE_REPO="ghcr.io/huggingface/text-embeddings-inference"
+
 case "$INSTANCE_FAMILY" in
   g4dn)
-    # T4 — Turing (sm_75); Flash Attention disabled by default due to precision issues
+    # gpu=T4, architecture=Turing (sm_75), Flash Attention disabled by default due to precision issues
     TEI_IMAGE="${TEI_BASE_REPO}:turing-${TEI_VERSION}"
     ;;
   g5)
-    # A10G — Ampere 8.6 (sm_86)
+    # gpu=A10G, architecture=Ampere 8.6 (sm_86)
     TEI_IMAGE="${TEI_BASE_REPO}:86-${TEI_VERSION}"
     ;;
   g6)
-    # L4 — Ada Lovelace (sm_89)
+    # gpu=L4, architecture=Ada Lovelace (sm_89)
     TEI_IMAGE="${TEI_BASE_REPO}:89-${TEI_VERSION}"
     ;;
   g6e)
-    # L40S — Ada Lovelace (sm_89)
+    # gpu=L40S, architecture=Ada Lovelace (sm_89)
     TEI_IMAGE="${TEI_BASE_REPO}:89-${TEI_VERSION}"
     ;;
   p4d)
-    # A100 40GB — Ampere 8.0 (sm_80); base tag has no architecture prefix
+    # gpu=A100 40GB, architecture=Ampere 8.0 (sm_80), base tag has no architecture prefix
     TEI_IMAGE="${TEI_BASE_REPO}:${TEI_VERSION}"
     ;;
   p4de)
-    # A100 80GB — Ampere 8.0 (sm_80); base tag has no architecture prefix
+    # gpu=A100 80GB, architecture=Ampere 8.0 (sm_80), base tag has no architecture prefix
     TEI_IMAGE="${TEI_BASE_REPO}:${TEI_VERSION}"
     ;;
   p5)
-    # H100 — Hopper (sm_90)
+    # gpu=H100, architecture=Hopper (sm_90)
     TEI_IMAGE="${TEI_BASE_REPO}:hopper-${TEI_VERSION}"
     ;;
   p5e)
-    # H200 — Hopper (sm_90)
+    # gpu=H200, architecture=Hopper (sm_90)
     TEI_IMAGE="${TEI_BASE_REPO}:hopper-${TEI_VERSION}"
     ;;
   p3)
+    # gpu=V100,  architecture=Volta (sm_70)
     echo "SageMaker instance type '$INSTANCE_TYPE' (V100/Volta sm_70) is not supported by TEI." >&2
     exit 1
     ;;
@@ -89,8 +78,8 @@ esac
 
 echo "Derived TEI_IMAGE='$TEI_IMAGE' for INSTANCE_TYPE='$INSTANCE_TYPE'"
 
-# Tag the ECR image by instance family (e.g. ml.g6e.xlarge → g6e-latest)
-IMAGE_TAG="${INSTANCE_FAMILY}-latest"
+# Tag the ECR image by instance family and TEI version (e.g. ml.g6e.xlarge + latest → g6e-latest)
+IMAGE_TAG="${INSTANCE_FAMILY}-${TEI_VERSION}"
 
 # Resolve AWS_REGION from env or CLI config
 AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-$(aws configure get region 2>/dev/null || true)}}"
