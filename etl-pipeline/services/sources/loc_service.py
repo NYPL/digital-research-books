@@ -101,7 +101,7 @@ class LOCService(SourceService):
                     continue
 
                 logger.exception(f"Failed to load page data from: {page_url}")
-                return {}
+                return None
 
     def get_record(self, record_id: str):
         pass
