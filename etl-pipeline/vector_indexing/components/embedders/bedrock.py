@@ -36,8 +36,8 @@ class BedrockEmbedder(Embedder):
             ``assume_role`` is also provided, this profile is used to perform
             the STS AssumeRole call.
         assume_role: ARN of an IAM role to assume for model inference calls.
-        
-        .embed_document(), .embed_document_batch(), .embed_query(), and .embed_query_batch() 
+
+        .embed_document(), .embed_document_batch(), .embed_query(), and .embed_query_batch()
         inherited from the abstract class raise NotImplementedError.
     """
 
