@@ -141,7 +141,7 @@ test.describe("Item Page UI", { tag: "@enhanced-search" }, () => {
 });
 
 test.describe(
-  "Item Page — Chat Functionality",
+  "Item Page Chat Functionality",
   { tag: "@enhanced-search" },
   () => {
     test.describe.configure({ mode: "serial" });
