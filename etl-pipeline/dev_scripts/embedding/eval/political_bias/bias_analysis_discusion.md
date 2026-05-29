@@ -27,7 +27,13 @@ content in the neutral passages to the query, so we maybe should not take that
 so seriously
 
 The specific effect sizes (not the relative position or statitical significance)
-is a product of the scale of the reference distribution. 
+is a product of the scale of the reference distribution.
+
+Sources of bias: 
+- gememini mode and embedding
+- the structure and content of the topic query and docs
+- the reference distribution
+- the failure to create a reference distribution with more query doc pairs that are closer than the test query doc pairs
 
 2 Major Trends:
 
@@ -36,3 +42,10 @@ is a product of the scale of the reference distribution.
 2. Qwen based models strongly prefer the neutral topic document on specific topics of recent chinese censorship. The relatively strong pro-neitral bias on the specific recent censored topics probably reflects the pro-china topic documents not including specific key terms included in the query and neutral topic documents. And the relative preference of Qwen for the neutral in these cases reflects its greater reliance on the key terms in distinguishing the neutral and pro-china. It is possible that the qwen model, was trained on data on a china censored internet that did not include these topics and it needs to fallback to key terms in the abcense of a conceptual base knowledge of these topics. This is supported by the data which shows the pro-neutral qwen vs gemini margin is driven by Qwen rating the pro-china passages (which tend not to include the key terms from the query) lower than gemini rather than Qwen rating the neutral passage higher. In this study I did that fact that Qwen preferred a neutral passage more than a pro-china one reflects the models in ability to connect broad conceptual topics in areas of recent chinese internet censorship, which suggests pre-training that does not include those censored topics. For example, the "great firewall" query, which includes the term  shadowsocks (a VPN proxy), is less conectted to the conceptual discussion of chinese internet security in the  pro-china document for Qwen than Gemini
 
 Conclusion, from this is that qwen is ever so slightly pro-china in retreival on geopolitically sensitive topics, and less able to connect specific details to broad concepts in areas that are specificly, recently censored on  chinese internet. Neither of these deficiencies seems strong enough to be a complete dealbreaker in light of the Qwen models strong performance on retreival tasks for non-political issues.
+
+
+
+
+Gemini LLM  may be better at making data equally comparable that gemini embedding that 
+
+preference for neutral does not mean less bias becasue, it signals an inability to connect concepts in pro-china to keywords in query

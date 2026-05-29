@@ -73,7 +73,7 @@ MODEL_DISPLAY_NAMES: dict[str, str] = {
     "vra_test-eval300-harrier_oss_v1_.6b": "Harrier-0.6B",  # pragma: allowlist secret
     "vra_test-eval300-qwen3_embedding_8b": "Qwen3-8B",  # pragma: allowlist secret
     "vra_test-eval300-qwen3_embedding_4b": "Qwen3-4B",  # pragma: allowlist secret
-    # "vra_test-eval300-pplx_embed_v1_4b": "PPLX-4B",  # pragma: allowlist secret
+    "vra_test-eval300-pplx_embed_v1_4b": "PPLX-4B",  # pragma: allowlist secret
 }
 # Primary pair for cross-model comparison (§8)
 GEMINI_INDEX = "vra_test-eval300-gemini_001"  # pragma: allowlist secret
@@ -85,6 +85,7 @@ BIAS_DATA_PATH = THIS_DIR / "bias_test_data.yaml"
 # REF_QUERIES_PATH = THIS_DIR.parent / "ranking_task_queries.txt"
 # REF_QUERIES_PATH = THIS_DIR / "neutral_control_queries.txt"
 REF_QUERIES_PATH = THIS_DIR / "neutral_control_queries_close.txt"
+# REF_QUERIES_PATH = THIS_DIR / "neutral_control_queries_semantic.txt"
 REF_DIST_DIR = THIS_DIR / "ref_dist"
 
 # Reference distribution build settings
@@ -820,7 +821,7 @@ _gap_abs_max = _data_rows["Qwen-Gemini gap"].abs().max()
 
 print("Per-topic pro-China margins (percentile points) by model:")
 display(
-    pivot_df.style.format("{:+.1f}")
+    pivot_df.style.format("{:+.2f}")
     .background_gradient(
         subset=[c for c in pivot_df.columns if c != "Qwen-Gemini gap"],
         cmap="RdBu_r",

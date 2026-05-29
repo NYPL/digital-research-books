@@ -252,3 +252,5 @@ Future work:
 - Repeat the analysis on US-liberal/neoliberal values politically sensitive topics e.g. Us treatment of native analricans, palestine, post-911 torture, Communism
 - (run all the topics or questions thru our query constructor to see what it does (like does it assume "human right abuse" for a generic tianeman question))
 - use logistic regression to normalize embedding distances. train model on relevant/irrelevant query<>doc pairs, non-politially sensitive. Test on politically sensitive, differentially framed query<>doc pairs, and do the same difference-in-differences analysis
+
+***with lin reg… Non politically sensitive queries, with chia crital facts vs pro china facts, same facts critical and pro tone/narrative
