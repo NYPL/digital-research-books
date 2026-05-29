@@ -93,7 +93,6 @@ jobs:
           ENVIRONMENT: local
         working-directory: ./etl-pipeline
         run: |
-          pip install pytest-timeout
           make integration-drb
 
       - name: Seed local Postgres DB to support /chat API tests
