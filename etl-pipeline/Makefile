@@ -19,7 +19,7 @@ integration-drb:
 	python -m pytest tests/integration --ignore=tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4 --timeout=120
 
 integration-vra:
-	python -m pytest tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4
+	python -m pytest tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4 --timeout=120
 
 up:
 	$(compose_command) up -d
