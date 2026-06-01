@@ -103,7 +103,9 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = React.memo(
                 ariaLabel: "What is this book about?",
                 label: (
                   <>
-                    <HiddenAria>AI Generated:</HiddenAria>
+                    <HiddenAria ariaLive="off" ariaAtomic={false}>
+                      AI Generated:
+                    </HiddenAria>
                     <AccordionLabelWithIcon text="What is this book about?" />
                   </>
                 ),
@@ -135,7 +137,9 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = React.memo(
                 ariaLabel: "Related books",
                 label: (
                   <>
-                    <HiddenAria>AI Generated:</HiddenAria>
+                    <HiddenAria ariaLive="off" ariaAtomic={false}>
+                      AI Generated:
+                    </HiddenAria>
                     <AccordionLabelWithIcon text="Related books" />
                   </>
                 ),
