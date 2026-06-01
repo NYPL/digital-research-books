@@ -15,7 +15,7 @@ const HiddenAria: React.FC<HiddenAriaProps> = ({
   return (
     <Box
       aria-live={ariaLive}
-      aria-atomic={ariaAtomic ? "true" : "false"}
+      aria-atomic={ariaAtomic}
       position="absolute"
       width="1px"
       height="1px"
