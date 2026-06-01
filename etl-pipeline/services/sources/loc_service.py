@@ -81,7 +81,7 @@ class LOCService(SourceService):
     def _fetch_page_json_data(self, page_url: str) -> dict | None:
         max_attempts = 3
 
-        for attempt in (0, max_attempts):
+        for attempt in (0, max_attempts):  # Test #1121 fix in CI
             try:
                 page_response = requests.get(
                     page_url, headers={"Accept": "application/json"}
@@ -101,7 +101,7 @@ class LOCService(SourceService):
                     continue
 
                 logger.exception(f"Failed to load page data from: {page_url}")
-                return {}
+                return {}  # Test #1121 fix in CI
 
     def get_record(self, record_id: str):
         pass
