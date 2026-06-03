@@ -36,7 +36,7 @@ class ResearchAssistantPage {
   readonly firstResultAuthor: Locator;
   readonly firstResultEdition: Locator;
   readonly firstResultPublisher: Locator;
-  readonly firstResultPreviewBtn: Locator;
+  readonly firstResultReadOnlineBtn: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -93,8 +93,8 @@ class ResearchAssistantPage {
     this.firstResultPublisher = this.firstResult.getByTestId(
       RESULT_PUBLISHER_TEST_ID
     );
-    this.firstResultPreviewBtn = this.firstResult.getByRole("link", {
-      name: "Preview",
+    this.firstResultReadOnlineBtn = this.firstResult.getByRole("link", {
+      name: "Read online",
     });
   }
 

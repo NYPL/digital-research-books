@@ -165,14 +165,17 @@ test.describe("Research Assistant Page Functionality", { tag: "@vra" }, () => {
         await researchAssistantPage.firstResultTitleLink.click({ trial: true });
       }).toPass();
 
-      await expect(researchAssistantPage.firstResultPreviewBtn).toHaveAttribute(
-        "href",
-        itemPageUrlPattern
-      );
-      await expect(researchAssistantPage.firstResultPreviewBtn).toBeVisible();
-      await expect(researchAssistantPage.firstResultPreviewBtn).toBeEnabled();
+      await expect(
+        researchAssistantPage.firstResultReadOnlineBtn
+      ).toHaveAttribute("href", itemPageUrlPattern);
+      await expect(
+        researchAssistantPage.firstResultReadOnlineBtn
+      ).toBeVisible();
+      await expect(
+        researchAssistantPage.firstResultReadOnlineBtn
+      ).toBeEnabled();
       await expect(async () => {
-        await researchAssistantPage.firstResultPreviewBtn.click({
+        await researchAssistantPage.firstResultReadOnlineBtn.click({
           trial: true,
         });
       }).toPass();
