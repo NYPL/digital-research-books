@@ -67,17 +67,8 @@ export const ResultCard: React.FC<ResultCardProps> = ({
       edition && edition.publication_date
         ? `${edition.publication_date} edition`
         : "Unknown edition";
-    // const additionalEditions =
-    //   isFeaturedEdition && page === "vra"
-    //     ? ` + ${work.edition_count - 1} more`
-    //     : "";
 
-    return (
-      <>
-        {editionDisplay}
-        {/* <Link to="/">{additionalEditions}</Link> */}
-      </>
-    );
+    return <>{editionDisplay}</>;
   };
 
   const isPhysicalEdition = EditionCardUtils.isPhysicalEdition(previewItem);
