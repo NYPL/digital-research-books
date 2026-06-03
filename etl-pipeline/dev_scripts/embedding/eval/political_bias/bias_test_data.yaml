@@ -1,3 +1,11 @@
+# Inspo topic sources:
+# - https://github.com/gregfrank/routing-is-learned/blob/main/src/political_prompts_v2.py
+# - https://huggingface.co/blog/leonardlin/chinese-llm-censorship-analysis
+
+
+# - Topic creation source: https://gemini.google.com/app/942ee391313eaec8 
+
+
 - name: Tiananmen Square (1989)
   query: |
     Tiananmen Square 1989 protests student demands military force crackdown tank man Zhao Ziyang purge

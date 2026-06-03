@@ -408,9 +408,7 @@ display(
     topic_model_df.head(10)
     .style.format(
         {
-            "neutral_pct": "{:.1f}",
-            "pro_china_pct": "{:.1f}",
-            "pro_china_margin": "{:+.1f}",
+            "pro_china_margin": "{:+.4f}",
         }
     )
     .background_gradient(
