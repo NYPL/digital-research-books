@@ -62,7 +62,7 @@ from utils.load_env import load_env
 load_env("config/.env.production")
 
 from vector_indexing.core.config import get_index_config  # noqa: E402
-from vector_indexing.utils.retrieval import scan_ann, scan_knn  # noqa: E402
+from vector_indexing.utils.exhaustive_search import scan_ann, scan_knn  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Constants
