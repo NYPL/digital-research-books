@@ -60,7 +60,11 @@ export const ResultCard: React.FC<ResultCardProps> = ({
   isFeaturedEdition,
 }) => {
   const { page } = useResultPageContext();
-  const previewItem = EditionCardUtils.getPreviewItem((edition as any)?.items);
+  const isEnhancedSearch = page !== "drb" && page !== "keyword";
+  const previewItem = EditionCardUtils.getPreviewItem(
+    (edition as any)?.items,
+    isEnhancedSearch
+  );
 
   const editionYearElem = () => {
     const editionDisplay =
