@@ -7,7 +7,6 @@ import {
 } from "@nypl/design-system-react-components";
 import Link from "../Link/Link";
 import SectionContainer from "../ResearchAssistantLanding/SectionContainer";
-import Divider from "./Divider";
 
 const CollectionSection: React.FC = () => {
   return (
@@ -76,8 +75,13 @@ const CollectionSection: React.FC = () => {
             </Text>
           </Flex>
         </Flex>
-        <Divider orientation="horizontal" color="#006166" />
-        <Flex flexDir="column" marginY="l">
+        <Flex
+          flexDir="column"
+          marginBottom="l"
+          paddingTop="l"
+          borderTop="1px dashed"
+          borderColor="section.research.secondary"
+        >
           <Heading
             level="h3"
             marginBottom="s"
@@ -105,8 +109,13 @@ const CollectionSection: React.FC = () => {
             margin="0 auto"
           />
         </Flex>
-        <Divider orientation="horizontal" color="#006166" />
-        <Flex flexDir="column" marginY="l">
+        <Flex
+          flexDir="column"
+          marginBottom="l"
+          paddingTop="l"
+          borderTop="1px dashed"
+          borderColor="section.research.secondary"
+        >
           <Heading
             level="h3"
             marginBottom="s"
@@ -122,8 +131,8 @@ const CollectionSection: React.FC = () => {
             marginBottom="s"
             paddingBottom="l"
           >
-            The collection currently contains 82 subjects classified using the
-            first level of{" "}
+            The collection currently contains over 10,000 unique subjects
+            classified using the first level of{" "}
             <Link
               color="section.research.secondary"
               to="https://www.loc.gov/catdir/cpso/lcco/"
@@ -138,7 +147,7 @@ const CollectionSection: React.FC = () => {
             >
               Library of Congress&apos; Classification Outline
             </Link>
-            . The bar chart below shows the top ten subjects.
+            . The table below shows the top ten subjects.
           </Text>
           <Image
             src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/subjectsGraph.png"
@@ -149,8 +158,12 @@ const CollectionSection: React.FC = () => {
             margin="0 auto"
           />
         </Flex>
-        <Divider orientation="horizontal" color="#006166" />
-        <Flex flexDir="column" marginY="l">
+        <Flex
+          flexDir="column"
+          paddingTop="l"
+          borderTop="1px dashed"
+          borderColor="section.research.secondary"
+        >
           <Heading
             level="h3"
             marginBottom="s"

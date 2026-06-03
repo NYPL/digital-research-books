@@ -23,7 +23,7 @@ const PrinciplesSection: React.FC<PrinciplesSectionProps> = ({
       icon: <BuildingIcon />,
       title: "Grounded in authoritative sources",
       description:
-        "We only search within our corpus of digitized research books to ensure that all responses are trustworthy and verifiable.",
+        "We train the tool to only search our collection of trusted scholarly books to ensure that all  its responses are verifiable.",
     },
     {
       icon: <OpenBookIcon />,
@@ -35,13 +35,13 @@ const PrinciplesSection: React.FC<PrinciplesSectionProps> = ({
       icon: <AwardIcon />,
       title: "Backed by rigorous quality checks",
       description:
-        "We regularly evaluate our technical frameworks and the tool's outputs to ensure quality and accuracy.",
+        "We regularly evaluate our models and technical frameworks to ensure that the tool's outputs align with our values.",
     },
     {
       icon: <TargetIcon />,
       title: "Designed for deep engagement",
       description:
-        "We strive to connect you with scholarly sources as fast as possible so that you can free up time for deeper analysis.",
+        "We strive to connect you with scholarly sources quickly and efficiently so that you can free up time for deep analysis.",
     },
     {
       icon: <GraduationHatIcon />,
@@ -53,7 +53,7 @@ const PrinciplesSection: React.FC<PrinciplesSectionProps> = ({
       icon: <DataFlowIcon />,
       title: "Developed for research workflows",
       description:
-        "We solicit feedback from the academic community so that we can continue to enhance the research experience.",
+        "We solicit feedback from the academic community to ensure that the tool meets researchers where they are",
     },
   ];
 

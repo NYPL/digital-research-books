@@ -4,16 +4,18 @@ import React from "react";
 type HiddenAriaProps = {
   children: React.ReactNode;
   ariaLive?: "polite" | "assertive" | "off";
+  ariaAtomic?: boolean;
 };
 
 const HiddenAria: React.FC<HiddenAriaProps> = ({
   children,
   ariaLive = "polite",
+  ariaAtomic = true,
 }) => {
   return (
     <Box
       aria-live={ariaLive}
-      aria-atomic="true"
+      aria-atomic={ariaAtomic}
       position="absolute"
       width="1px"
       height="1px"

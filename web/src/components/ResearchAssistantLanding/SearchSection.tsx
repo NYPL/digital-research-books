@@ -56,7 +56,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
     <>
       <Form
         id="vra-landing-form"
-        marginBottom="l"
+        marginBottom="xl"
         // @ts-expect-error: Override gap value type
         gap="0"
       >
@@ -140,7 +140,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
         display="grid"
         gridTemplateColumns="repeat(2, 1fr)"
         gap="s"
-        marginBottom="xxxl"
+        marginBottom="xl"
       >
         {featuredSuggestions.map((suggestion, index) => (
           <Button

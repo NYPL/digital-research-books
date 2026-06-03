@@ -5,13 +5,12 @@ import {
   MessageItem,
   MessageRole,
 } from "~/src/types/ResearchAssistant";
-import {
-  parseEditionLinks,
-  scrollToEdition,
-} from "~/src/util/EditionLinkParser";
+import { scrollToEdition } from "~/src/util/EditionLinkParser";
+import { renderMarkdownContent } from "~/src/util/MarkdownParser";
 import { isContentSearchResults } from "~/src/util/ResearchAssistantUtils";
 import styles from "../../../styles/components/MessageBubble.module.scss";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
+import HiddenAria from "../HiddenAria/HiddenAria";
 import SnippetList from "../ResultCard/SnippetList";
 import FeedbackButtons from "./FeedbackButtons";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
@@ -55,6 +54,7 @@ const MessageBubble = memo(
                 key={idx}
                 gap="xs"
                 alignItems={isLoading ? "center" : "flex-start"}
+                data-testid="assistant-message-bubble"
               >
                 {isLoading ? (
                   <LoadingEllipses />
@@ -63,20 +63,13 @@ const MessageBubble = memo(
                 )}
                 <Flex flexDir="column" gap="12px">
                   <Box>
-                    {!isLoading && (
-                      <Text
-                        color="section.research.secondary"
-                        isBold
-                        display="inline"
-                      >
-                        VRA:{" "}
-                      </Text>
+                    <HiddenAria ariaLive="off" ariaAtomic={false}>
+                      Enhanced Search says:
+                    </HiddenAria>
+                    {renderMarkdownContent(
+                      contentItem.text,
+                      handleEditionClick
                     )}
-                    {parseEditionLinks(contentItem.text, handleEditionClick)}
-                    {isContentSearchResults(messageResults) &&
-                      messageResults.snippets && (
-                        <SnippetList snippets={messageResults.snippets} />
-                      )}
                   </Box>
                   {!isLoading &&
                     (index === 0 ? (
@@ -87,6 +80,10 @@ const MessageBubble = memo(
                         <FeedbackButtons label="message feedback" />
                       </Flex>
                     ))}
+                  {isContentSearchResults(messageResults) &&
+                    messageResults.snippets && (
+                      <SnippetList snippets={messageResults.snippets} />
+                    )}
                 </Flex>
               </Flex>
             ))

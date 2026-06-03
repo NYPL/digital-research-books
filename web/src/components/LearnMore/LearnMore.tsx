@@ -1,8 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import React, { useRef } from "react";
-import DrbBreakout from "../DrbBreakout/DrbBreakout";
-import { DrbHero } from "../DrbHero/DrbHero";
-import ResearchAssistantNav from "../ResearchAssistant/ResearchAssistantNav";
+import { breadcrumbTitles } from "~/src/constants/labels";
+import VRALayout from "../VRALayout/VRALayout";
 import CollectionSection from "./CollectionSection";
 import HeroSection from "./HeroSection/HeroSection";
 import MissionSection from "./MissionSection/MissionSection";
@@ -14,16 +13,15 @@ const LearnMore: React.FC = () => {
   const missionSectionRef = useRef<HTMLDivElement>(null);
 
   return (
-    <>
-      <DrbBreakout
-        breadcrumbsData={[
-          { url: "/research-assistant", text: "Virtual Research Assistant" },
-        ]}
-      >
-        <DrbHero />
-        <ResearchAssistantNav />
-      </DrbBreakout>
-
+    <VRALayout
+      activePage="vra"
+      breadcrumbsData={[
+        {
+          url: "/learn-more",
+          text: breadcrumbTitles.learnMore,
+        },
+      ]}
+    >
       <Box display="flex" flexDir="column">
         <HeroSection
           ref={heroSectionRef}
@@ -37,7 +35,7 @@ const LearnMore: React.FC = () => {
         <TechnologySection />
         <ModelsSection heroSectionRef={heroSectionRef} />
       </Box>
-    </>
+    </VRALayout>
   );
 };
 

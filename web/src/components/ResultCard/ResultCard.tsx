@@ -26,6 +26,7 @@ import EditionCardUtils from "~/src/util/EditionCardUtils";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import AuthorsList from "../AuthorsList/AuthorsList";
+import HiddenAria from "../HiddenAria/HiddenAria";
 import Link from "../Link/Link";
 import FeedbackButtons from "../ResearchAssistant/FeedbackButtons";
 import PublicDomainBadge from "../ResearchAssistant/PublicDomainBadge";
@@ -100,6 +101,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             __css={{ svg: { marginInlineStart: "0 !important" } }}
           >
             <ResearchAssistantIcon inCircle />
+            <HiddenAria ariaLive="off" ariaAtomic={false}>
+              AI Generated:
+            </HiddenAria>
             <Text>Why am I seeing this result?</Text>
           </Box>
         ),
@@ -140,6 +144,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
           __css={{ svg: { marginInlineStart: "0 !important" } }}
         >
           <ResearchAssistantIcon inCircle />
+          <HiddenAria ariaLive="off" ariaAtomic={false}>
+            AI Generated:
+          </HiddenAria>
           <Text>What is this book about?</Text>
         </Box>
       ),

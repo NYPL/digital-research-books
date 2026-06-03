@@ -14,6 +14,7 @@ import { GRID_PADDING_X } from "~/src/constants/researchAssistant";
 import { ApiWork } from "~/src/types/WorkQuery";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
 import AuthorsList from "../AuthorsList/AuthorsList";
+import HiddenAria from "../HiddenAria/HiddenAria";
 import Link from "../Link/Link";
 import AccordionLabelWithIcon from "./AccordionLabelWithIcon";
 import DetailsPanel from "./panels/DetailsPanel";
@@ -101,7 +102,12 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = React.memo(
               {
                 ariaLabel: "What is this book about?",
                 label: (
-                  <AccordionLabelWithIcon text="What is this book about?" />
+                  <>
+                    <HiddenAria ariaLive="off" ariaAtomic={false}>
+                      AI Generated:
+                    </HiddenAria>
+                    <AccordionLabelWithIcon text="What is this book about?" />
+                  </>
                 ),
                 panel: <SummaryPanel previewEdition={previewEdition} />,
               },
@@ -129,7 +135,14 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = React.memo(
               },
               {
                 ariaLabel: "Related books",
-                label: <AccordionLabelWithIcon text="Related books" />,
+                label: (
+                  <>
+                    <HiddenAria ariaLive="off" ariaAtomic={false}>
+                      AI Generated:
+                    </HiddenAria>
+                    <AccordionLabelWithIcon text="Related books" />
+                  </>
+                ),
                 panel: <RelatedBooksPanel />,
               },
             ]}

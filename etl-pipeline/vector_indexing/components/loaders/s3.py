@@ -17,20 +17,23 @@ import tempfile
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import cached_property
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import boto3
 import gnupg
+from botocore.config import Config
 
 from logger import create_log
-from vector_indexing.core.types import Book
-from vector_indexing.core.config import get_config, GlobalConfig
+from utils.common import require_env
+
 from vector_indexing.components.loaders.base import (
-    BookLoader,
     BookCache,
+    BookLoader,
     BookNotFoundError,
 )
-from vector_indexing.components.loaders.local import DiskBookCache
+from vector_indexing.components.loaders.local import BOOK_CACHE_DIR, DiskBookCache
+from vector_indexing.core.config import resolve_path
+from vector_indexing.core.types import Book
 
 if TYPE_CHECKING:
     from mypy_boto3_s3 import S3Client
@@ -40,6 +43,8 @@ logger = create_log(__name__)
 # Regex to extract page number from S3 key
 # Matches patterns like: path/to/barcode/1_1.txt, path/00042.txt, etc.
 PAGE_NUMBER_PATTERN = re.compile(r"(\d+)(?:_\d+)?\.txt$")
+
+S3_PREFIX = "grin"
 
 
 def _extract_page_number(key: str) -> int:
@@ -54,20 +59,23 @@ class S3BookLoader(BookLoader):
     """Load books from S3 with parallel downloads.
 
     Tries to load books in this order:
-    1. Local cache (if configured)
-    2. Unpacked .txt pages from S3 (validates page count against XML metadata)
+    1. Local cache (if configured. Validation check: at least one page file must be present)
+    2. Unpacked .txt pages from S3 (Validation check: use only if page count matches XML metadata)
     3. Encrypted .tar.gz.gpg archive from S3 (decrypts and extracts)
 
-    If unpacked pages exist but fail validation, falls back to the archive.
+    If cache is configured, each book loaded from S3 pages or S3 archive is
+    overwritten in cache.
 
     Args:
-        bucket: S3 bucket name. Defaults to config.s3_bucket.
-        prefix: S3 key prefix for book data. Defaults to config.s3_prefix.
+        bucket: S3 bucket name. Defaults to PRIVATE_FILE_BUCKET env var.
+        prefix: S3 key prefix for book data. Defaults to S3_PREFIX ("grin").
         cache: Optional BookCache for local caching.
-        max_workers: Max parallel download threads. Default 10.
+        max_workers: Max parallel download threads. It is recommended that
+            smax_pool_connections == max_workers.
+        max_pool_connections: Max open connections in the boto3 connection pool.
+            It is recommended that max_pool_connections == max_workers.
         s3_client: Optional boto3 S3 client.
-        config: Optional GlobalConfig.
-        grin_access_key: Key for decrypting GRIN archives.
+        grin_access_key: Key for decrypting GRIN archives. Defaults to GRIN_ACCESS_KEY env var.
 
     Examples:
         loader = S3BookLoader()
@@ -84,18 +92,18 @@ class S3BookLoader(BookLoader):
         bucket: Optional[str] = None,
         prefix: Optional[str] = None,
         cache: Optional[BookCache] = None,
-        max_workers: int = 10,
+        max_workers: int = 30,
+        max_pool_connections: int = 30,
         s3_client: Optional[S3Client] = None,
-        config: Optional[GlobalConfig] = None,
         grin_access_key: Optional[str] = None,
     ):
-        self._config = config or get_config()
-        self._bucket = bucket or self._config.s3_bucket
-        self._prefix = prefix or self._config.s3_prefix
+        self._bucket = bucket or require_env("PRIVATE_FILE_BUCKET")
+        self._prefix = prefix if prefix is not None else S3_PREFIX
         self._cache = cache
         self._max_workers = max_workers
+        self._max_pool_connections = max_pool_connections
         self._s3_client = s3_client
-        self._grin_access_key = grin_access_key or self._config.grin_access_key
+        self._grin_access_key = grin_access_key or os.environ.get("GRIN_ACCESS_KEY")
         self._gpg = gnupg.GPG()
 
     @cached_property
@@ -103,7 +111,12 @@ class S3BookLoader(BookLoader):
         """Lazily initialize S3 client."""
         if self._s3_client is not None:
             return self._s3_client
-        return boto3.client("s3")
+        config = Config(
+            # TODO: maybe just set max_pool_connections directly from max_workers
+            max_pool_connections=self._max_pool_connections,
+            retries={"max_attempts": 3, "mode": "adaptive"},
+        )
+        return boto3.client("s3", config=config)
 
     @property
     def bucket(self) -> str:
@@ -296,6 +309,9 @@ class S3BookLoader(BookLoader):
 
     def _try_cache(self, barcode: str) -> Optional[Book]:
         """Try to load from cache."""
+        # TODO: implement a cache validation step that checks that the local
+        # cache pages match the S3 page count (similar to _try_cache())
+
         if self._cache is None:
             return None
         book = self._cache.get(barcode)
@@ -323,6 +339,8 @@ class S3BookLoader(BookLoader):
             return None
         return self._load_from_archive(barcode, archive_key)
 
+    # TODO: look for speed ups in downloading books in parallel and maybe
+    # multi-process decrypting
     def load(self, barcode: str) -> Book:
         """Load a book, trying sources in order: cache -> pages -> archive.
 
@@ -372,7 +390,11 @@ class S3BookLoader(BookLoader):
 
 
 class CachedS3BookLoader(S3BookLoader):
-    """S3 book loader with built-in disk caching. Convenience class that creates a DiskBookCache automatically."""
+    """S3 book loader with built-in disk caching.
+
+    Convenience class that creates a DiskBookCache automatically.
+    If cache_dir is relative, it is resolved against project root.
+    """
 
     def __init__(
         self,
@@ -381,15 +403,10 @@ class CachedS3BookLoader(S3BookLoader):
         cache_dir: Optional[str] = None,
         max_workers: int = 10,
         s3_client: Optional[S3Client] = None,
-        config: Optional[GlobalConfig] = None,
         grin_access_key: Optional[str] = None,
     ):
-        config = config or get_config()
-
-        from pathlib import Path
-
-        cache_path = Path(cache_dir) if cache_dir else config.resolved_book_cache_dir
-        disk_cache = DiskBookCache(cache_dir=cache_path, config=config)
+        cache_path = resolve_path(cache_dir) if cache_dir else BOOK_CACHE_DIR
+        disk_cache = DiskBookCache(cache_dir=cache_path)
 
         super().__init__(
             bucket=bucket,
@@ -397,7 +414,6 @@ class CachedS3BookLoader(S3BookLoader):
             cache=disk_cache,
             max_workers=max_workers,
             s3_client=s3_client,
-            config=config,
             grin_access_key=grin_access_key,
         )
 

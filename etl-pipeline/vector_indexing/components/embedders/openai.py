@@ -1,38 +1,39 @@
-"""Qwen local embedding implementation via LM Studio or similar."""
+"""OpenAI-compatible embeddings endpoint implementation."""
+# see: https://developers.openai.com/api/reference/resources/embeddings/methods/create
 
 from __future__ import annotations
-
-from typing import TYPE_CHECKING
 
 import requests
 
 from vector_indexing.components.embedders.base import Embedder
-from vector_indexing.core.config import GlobalConfig, get_config
 
 
-# Qwen3-embedding-8b outputs 4096-dimensional vectors
-DEFAULT_DIMS = 4096
 DEFAULT_BATCH_SIZE = 32
 
 
-class QwenEmbedder(Embedder):
-    """Qwen embedding model implementation.
-
-    All connection details are derived from GlobalConfig.
+class OpenAIEmbedder(Embedder):
+    """Embedding model served by any OpenAI-compatible embeddings endpoint.
 
     Args:
-        config: GlobalConfig instance. If None, uses get_config().
-        dimensions: Output vector dimensions (default: 4096)
-        batch_size: Max texts per API call (default: 32)
+        base_url: Base URL of the endpoint (e.g. ``http://localhost:1234``).
+            The path ``/v1/embeddings`` is appended automatically.
+        model_name: Model identifier to pass in the request payload.
+        dimensions: Output vector dimensions. Must match the model's output size.
+        batch_size: Max texts per API call (default: 32).
+
+        .embed_document(), .embed_document_batch(), .embed_query(), and .embed_query_batch()
+        inherited from the abstract class raise NotImplementedError.
     """
 
     def __init__(
         self,
-        config: GlobalConfig | None = None,
-        dimensions: int = DEFAULT_DIMS,
+        base_url: str,
+        model_name: str,
+        dimensions: int,
         batch_size: int = DEFAULT_BATCH_SIZE,
     ):
-        self._config = config or get_config()
+        self._base_url = base_url.rstrip("/")
+        self._model_name = model_name
         self._dimensions = dimensions
         self._batch_size = batch_size
 
@@ -44,7 +45,7 @@ class QwenEmbedder(Embedder):
     @property
     def model_name(self) -> str:
         """Return the model identifier."""
-        return self._config.qwen_model
+        return self._model_name
 
     @property
     def batch_size(self) -> int:
@@ -54,7 +55,7 @@ class QwenEmbedder(Embedder):
     @property
     def endpoint(self) -> str:
         """Return the full embeddings endpoint URL."""
-        return f"{self._config.qwen_url}/v1/embeddings"
+        return f"{self._base_url}/v1/embeddings"
 
     def embed_one(self, text: str) -> list[float]:
         """Embed a single text string."""
@@ -98,8 +99,8 @@ class QwenEmbedder(Embedder):
             response.raise_for_status()
 
             data = response.json()
-            # Response has an 'index' key, that is the order in which the data is sent.
-            # should be returned in order but sort to be safe
+            # Response has an 'index' key indicating the original order.
+            # Sort to be safe even if the server returns them out of order.
             batch_embeddings = sorted(data["data"], key=lambda x: x["index"])
             vectors.extend([item["embedding"] for item in batch_embeddings])
 

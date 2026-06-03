@@ -11,15 +11,15 @@ describe("VRA Layout component", () => {
     );
   });
 
-  test("Digital Research Books Beta doesn't have href attribute", () => {
-    const homepagelinks = screen.getAllByText("Digital Research Books Beta");
+  test("Digitized Research Books doesn't have href attribute", () => {
+    const homepagelinks = screen.getAllByText("Digitized Research Books");
     homepagelinks.forEach((link) => {
       expect(link).not.toHaveAttribute("href");
     });
   });
   test("DRB Header is shown", () => {
     expect(
-      screen.getByRole("heading", { name: "Digital Research Books Beta" })
+      screen.getByRole("heading", { name: "Digitized Research Books" })
     ).toBeInTheDocument();
   });
   test("should have text in layout body", () => {
