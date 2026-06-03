@@ -186,11 +186,7 @@ export type ItemReadResults = {
 };
 
 export type ApiItemsRead = {
-  pageContentType: string;
-  pageData: string;
-  pageName: string;
-  previousPages: string[];
-  nextPages: string[];
+  barcode: string;
 };
 
 export type FeedbackState = "up" | "down" | null;
