@@ -68,7 +68,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         ? `${edition.publication_date} edition`
         : "Unknown edition";
 
-    return <>{editionDisplay}</>;
+    return editionDisplay;
   };
 
   const isPhysicalEdition = EditionCardUtils.isPhysicalEdition(previewItem);
