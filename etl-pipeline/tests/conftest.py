@@ -84,19 +84,11 @@ def setup_env(pytestconfig, request):
         import subprocess
 
         result = subprocess.run(
-            # Timeout prevents start up of not running services
-            [
-                "docker",
-                "compose",
-                "up",
-                "--no-recreate",
-                "--wait",
-                "--wait-timeout",
-                "10",
-            ],
+            ["bash", "scripts/docker-compose-healthcheck.sh"],
             capture_output=True,
             text=True,
             cwd=str(Path(__file__).parent.parent),  # etl-pipeline/
+            env={**os.environ, "POLL_INTERVAL": "1", "TIMEOUT": "2"},
         )
         if result.returncode != 0:
             output = (result.stdout or "") + (result.stderr or "")
