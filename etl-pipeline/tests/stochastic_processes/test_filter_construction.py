@@ -106,6 +106,7 @@ def filter_match(filters, attribute=None, operator=None, value=None):
 # TODO: mock search backend to just test filter construction
 
 
+# TODO: parameterize over ContentSearch and CatalogSearch
 class TestCatalogSearchFilterConstruction:
     """Test that the agent constructs appropriate filters for catalog searches."""
 
