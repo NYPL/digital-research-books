@@ -1,14 +1,14 @@
 import json
-import os
 import mimetypes
+import os
 import re
 
 import requests
-
 from digital_assets.utils.get_stored_file_url import get_stored_file_url
 from logger import create_log
-from mappings.xml import XMLMapping
 from model import FileFlags, Part, Record
+
+from mappings.xml import XMLMapping
 
 logger = create_log(__name__)
 
@@ -186,7 +186,7 @@ class GutenbergMapping(XMLMapping):
             cover_url = get_stored_file_url(self.file_bucket, cover_path)
             cover_root = yaml_file.get("url").replace("ebooks", "files")
             cover_source_url = f"{cover_root}/{cover_data.get('image_path')}"
-            response = requests.head(cover_source_url, allow_redirects=True)
+            response = requests.head(cover_source_url, allow_redirects=True, timeout=15)
             response.raise_for_status()
 
             self.record.has_part.append(

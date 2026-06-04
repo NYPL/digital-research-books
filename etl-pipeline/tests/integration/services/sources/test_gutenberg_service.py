@@ -1,10 +1,16 @@
+import pytest
+import requests
 from services.sources.gutenberg_service import GutenbergService
 
 
 def test_get_records():
     gutenberg_service = GutenbergService()
 
-    records = gutenberg_service.get_records(limit=100)
+    try:
+        records = gutenberg_service.get_records(limit=100)
 
-    for record in records:
-        assert record is not None
+        for record in records:
+            assert record is not None
+
+    except requests.exceptions.RequestException as e:
+        pytest.skip(f"Gutenberg API unavailable: {e}")
