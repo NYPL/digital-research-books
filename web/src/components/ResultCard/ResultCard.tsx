@@ -67,16 +67,8 @@ export const ResultCard: React.FC<ResultCardProps> = ({
       edition && edition.publication_date
         ? `${edition.publication_date} edition`
         : "Unknown edition";
-    const additionalEditions =
-      isFeaturedEdition && page === "vra"
-        ? ` + ${work.edition_count - 1} more`
-        : "";
 
-    return (
-      <>
-        {editionDisplay} <Link to="/">{additionalEditions}</Link>
-      </>
-    );
+    return editionDisplay;
   };
 
   const isPhysicalEdition = EditionCardUtils.isPhysicalEdition(previewItem);
@@ -134,39 +126,39 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         ),
       });
     }
-    accordionData.push({
-      label: (
-        <Box
-          display="flex"
-          gap="xxs"
-          alignItems="center"
-          margin="0"
-          __css={{ svg: { marginInlineStart: "0 !important" } }}
-        >
-          <ResearchAssistantIcon inCircle />
-          <HiddenAria ariaLive="off" ariaAtomic={false}>
-            AI Generated:
-          </HiddenAria>
-          <Text>What is this book about?</Text>
-        </Box>
-      ),
-      panel: (
-        <Box display="flex" flexDir="column" gap="xs">
-          {edition.summary ||
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            height="1.125rem"
-            __css={{ button: { padding: "xs" } }}
-          >
-            <AiGeneratedText />
-            <FeedbackButtons label="summary feedback" />
-          </Box>
-        </Box>
-      ),
-    });
+    // accordionData.push({
+    //   label: (
+    //     <Box
+    //       display="flex"
+    //       gap="xxs"
+    //       alignItems="center"
+    //       margin="0"
+    //       __css={{ svg: { marginInlineStart: "0 !important" } }}
+    //     >
+    //       <ResearchAssistantIcon inCircle />
+    //       <HiddenAria ariaLive="off" ariaAtomic={false}>
+    //         AI Generated:
+    //       </HiddenAria>
+    //       <Text>What is this book about?</Text>
+    //     </Box>
+    //   ),
+    //   panel: (
+    //     <Box display="flex" flexDir="column" gap="xs">
+    //       {edition.summary ||
+    //         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
+    //       <Box
+    //         display="flex"
+    //         alignItems="center"
+    //         justifyContent="space-between"
+    //         height="1.125rem"
+    //         __css={{ button: { padding: "xs" } }}
+    //       >
+    //         <AiGeneratedText />
+    //         <FeedbackButtons label="summary feedback" />
+    //       </Box>
+    //     </Box>
+    //   ),
+    // });
     if (work.editions.length > 1) {
       accordionData.push({
         label: (
