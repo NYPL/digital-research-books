@@ -159,7 +159,7 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 @require_api_key
 @require_session_jwt
 @timer(logger)
-def chat(user, session_id):
+def chat(session_id):
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
@@ -175,10 +175,10 @@ def chat(user, session_id):
         newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
 
     with LogContextVars(get_app_logger(), context=log_context):
-        return _chat_handler(user, session_id, conversation_type, message, edition_id)
+        return _chat_handler(session_id, conversation_type, message, edition_id)
 
 
-def _chat_handler(user, session_id, conversation_type, message, edition_id):
+def _chat_handler(session_id, conversation_type, message, edition_id):
     """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
 
     logger.info(f"Chat request received: {message[:20]}...")
