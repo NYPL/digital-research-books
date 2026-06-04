@@ -1,7 +1,7 @@
+import requests
 from constants.get_constants import get_constants
 from mappings.rights import get_rights_string
 from model import Source
-import requests
 
 hathi_catalog_url = "https://catalog.hathitrust.org/api/volumes/brief/htid/{}.json"
 hathi_constansts = get_constants()["hathitrust"]
@@ -12,7 +12,9 @@ def determine_rights(barcode) -> str | None:
     catalog_response = requests.get(hathi_catalog_url.format(htid))
 
     if catalog_response.status_code != 200:
-        return None
+        raise requests.exceptions.RequestException(
+            f"HathiTrust API request failed with status code {catalog_response.status_code}"
+        )
 
     catalog_data = catalog_response.json()
 
@@ -29,4 +31,6 @@ def determine_rights(barcode) -> str | None:
                 rights_statement=rights["statement"],
             )
 
-    return None
+    raise ValueError(
+        f"No matching record found for barcode {barcode} in HathiTrust catalog"
+    )
