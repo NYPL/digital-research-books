@@ -60,8 +60,6 @@ logger = create_log(__name__)
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
 
-INDEX_NAME = os.getenv("TURBOPUFFER_NAMESPACE")
-
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 
@@ -502,7 +500,7 @@ async def update_chat(
     # some reused objs (backend, system prompts, async loop, etc...) (for sharing btw server \
     # request workers/threads)
 
-    backend = TurbopufferBackend(index_name=INDEX_NAME)
+    backend = TurbopufferBackend(index_name=require_env("TURBOPUFFER_NAMESPACE"))
     embedder = GoogleEmbedder()
 
     # NOTE: litellm has a bug converting `list | None = None` in agents sdk @functol_tool

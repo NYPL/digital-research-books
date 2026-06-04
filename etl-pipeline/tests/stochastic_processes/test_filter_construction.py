@@ -13,12 +13,20 @@ import json
 import pytest
 from pathlib import Path
 
-from agents.items import ToolCallItem
+from agents.items import ToolCallItem, ToolCallOutputItem
 
-from api.assistant.agent import update_chat, META_OPERATORS
+from api.assistant.agent import update_chat, META_OPERATORS, search_catalog
+from tests.stochastic_processes.conftest import stub_function_tool
 
 
-pytestmark = [pytest.mark.asyncio, pytest.mark.usefixtures("patch_search_catalog")]
+pytestmark = [pytest.mark.asyncio]
+
+
+@pytest.fixture
+def patch_search_catalog():
+    """Fixture that stubs search_catalog to return 'No results found.'"""
+    with stub_function_tool(search_catalog, "No results found."):
+        yield
 
 
 def get_last_tool_call_args(run_result) -> dict:
@@ -106,10 +114,12 @@ def filter_match(filters, attribute=None, operator=None, value=None):
 # TODO: mock search backend to just test filter construction
 
 
+# TODO: parameterize over ContentSearch and CatalogSearch
 class TestCatalogSearchFilterConstruction:
     """Test that the agent constructs appropriate filters for catalog searches."""
 
     @pytest.mark.xfail
+    @pytest.mark.usefixtures("patch_search_catalog")
     async def test_no_filter_for_generic_search(self, test_session_id):
         """
         Test: No filter is used when not needed (shipbuilding example).
@@ -131,6 +141,7 @@ class TestCatalogSearchFilterConstruction:
         # Either no filters applied, or only basic non-restrictive filters
         assert filters is None
 
+    @pytest.mark.usefixtures("patch_search_catalog")
     async def test_filters_used_for_metadata_search(self, test_session_id):
         """
         Test: Filter is used when needed (poetry with mother-daughter themes).
@@ -156,6 +167,7 @@ class TestCatalogSearchFilterConstruction:
             f"filters do not match expected criteria: {filters}"
         )
 
+    @pytest.mark.usefixtures("patch_search_catalog")
     async def test_negative_filter_construction(self, test_session_id):
         """
         Test: A negative filter is used when appropriate.
@@ -181,6 +193,7 @@ class TestCatalogSearchFilterConstruction:
             f"filters do not match expected criteria: {filters}"
         )
 
+    @pytest.mark.usefixtures("patch_search_catalog")
     async def test_language_filter(self, test_session_id):
         """
         Test: Language filter construction uses ContainsAny for multiple languages.
@@ -214,6 +227,7 @@ class TestCatalogSearchFilterConstruction:
             )
         ), f"filters do not match expected criteria: {filters}"
 
+    @pytest.mark.usefixtures("patch_search_catalog")
     async def test_date_range_filter_construction(self, test_session_id):
         """
         Test: Date range filters for publication dates.
@@ -269,6 +283,7 @@ class TestCatalogSearchFilterConstruction:
     #         ), f"Expected combined filters for subject and language, got: {filters}"
 
     @pytest.mark.xfail(reason="behavior unstable")
+    @pytest.mark.usefixtures("patch_search_catalog")
     async def test_author_filter_construction(self, test_session_id):
         """
         Test: Author filter for books by specific authors.
@@ -294,3 +309,35 @@ class TestCatalogSearchFilterConstruction:
             operator=["ContainsAllTokens"],
             value=lambda v: "austen" in v.lower(),
         ), f"filters do not match expected criteria: {filters}"
+
+    # @pytest.mark.xfail
+    async def test_no_filter_construction_errors(self, test_session_id):
+        """
+        Test: No filter construction errors
+
+        For a query like "Ornithology in the nineteenth century", the agent should
+        construct valid filters on the first attempt.
+        """
+        run_result = await update_chat(
+            "Ornithology in the nineteenth century",
+            conversation_type="catalogSearch",
+            session_id=test_session_id,
+            max_turns=1,
+        )
+        tool_call_items = [
+            item for item in run_result.new_items if isinstance(item, ToolCallItem)
+        ]
+        tool_call_output_items = [
+            item
+            for item in run_result.new_items
+            if isinstance(item, ToolCallOutputItem)
+        ]
+
+        for item in tool_call_items:
+            assert item.raw_item.name == "search_catalog", (
+                f"Expected tool call to 'search_catalog', got '{item.raw_item.name}'"
+            )
+        for item in tool_call_output_items:
+            assert "error" not in item.output.lower(), (
+                f"Tool call output contains 'error': {item.output}"
+            )

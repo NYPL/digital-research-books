@@ -1,4 +1,6 @@
-benchmarking_results
 thruput_results
 indexing_results
+llm_as_judge_results
+ranking_task_results
+ref_dist
 tmp/**
