@@ -157,8 +157,8 @@ jobs:
           CATALOG_USER_PIN: ${{ env.CATALOG_USER_PIN }}
         run: npm run playwright:drb
 
-      - name: Run Playwright tests (VRA)
-        id: vra_tests
+      - name: Run Playwright tests (Enhanced Search)
+        id: enhanced_search_tests
         if: success() || steps.drb_tests.outcome == 'failure'
         working-directory: ./web
         env:
@@ -166,7 +166,7 @@ jobs:
           API_URL: ${{ inputs.api_url }}
           VRA_USERNAME: ${{ env.VRA_USERNAME }}
           VRA_PASSWORD: ${{ env.VRA_PASSWORD }}
-        run: npm run playwright:vra
+        run: npm run playwright:enhanced-search
 
       - name: Upload error context (if any)
         if: failure()
