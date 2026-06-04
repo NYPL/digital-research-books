@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import appConfig from "~/config/appConfig";
-import { normalizeCombiningHalfMarksDeep } from "~/src/util/TextNormalization";
 
 export default async function handler(
   req: NextApiRequest,
@@ -72,7 +71,7 @@ export default async function handler(
     }
 
     const chatResult = await chatResponse.json();
-    const chatData = normalizeCombiningHalfMarksDeep(chatResult.data);
+    const chatData = chatResult.data;
 
     return res.status(201).json({
       results: chatData.result,

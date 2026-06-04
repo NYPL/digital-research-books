@@ -7,7 +7,6 @@ import { ApiLanguageResponse } from "~/src/types/LanguagesQuery";
 import { LinkResult } from "~/src/types/LinkQuery";
 import { WorkQuery, WorkResult } from "~/src/types/WorkQuery";
 import { toLocationQuery } from "~/src/util/apiConversion";
-import { normalizeCombiningHalfMarksDeep } from "~/src/util/TextNormalization";
 import { ApiSearchQuery, ApiSearchResult } from "../../types/SearchQuery";
 import { log } from "../newrelic/NewRelic";
 
@@ -55,9 +54,7 @@ export const searchResultsFetcher = async (apiQuery: ApiSearchQuery) => {
   url.search = new URLSearchParams(toLocationQuery(searchApiQuery)).toString();
 
   const res = await fetch(url.toString());
-  const searchResult: ApiSearchResult = normalizeCombiningHalfMarksDeep(
-    await res.json()
-  );
+  const searchResult: ApiSearchResult = await res.json();
 
   if (!res.ok) {
     const err = new Error(searchResult.data.message);
@@ -77,9 +74,7 @@ export const workFetcher = async (query: WorkQuery) => {
   const url = new URL(recordUrl + "/" + query.identifier);
   url.search = new URLSearchParams(workApiQuery).toString();
   const res = await fetch(url.toString());
-  const workResult: WorkResult = normalizeCombiningHalfMarksDeep(
-    await res.json()
-  );
+  const workResult: WorkResult = await res.json();
 
   if (!res.ok) {
     const err = new Error(workResult.data.message);
@@ -100,9 +95,7 @@ export const editionFetcher = async (query: EditionQuery) => {
   const url = new URL(editionUrl + "/" + query.editionIdentifier);
   url.search = new URLSearchParams(editionApiQuery).toString();
   const res = await fetch(url.toString());
-  const editionResult: EditionResult = normalizeCombiningHalfMarksDeep(
-    await res.json()
-  );
+  const editionResult: EditionResult = await res.json();
 
   if (!res.ok) {
     const err = new Error(editionResult.data.message);
