@@ -174,12 +174,16 @@ test.describe(
         }).toPass();
 
         await expect(
-          researchAssistantPage.firstResultPreviewBtn
+          researchAssistantPage.firstResultReadOnlineBtn
         ).toHaveAttribute("href", itemPageUrlPattern);
-        await expect(researchAssistantPage.firstResultPreviewBtn).toBeVisible();
-        await expect(researchAssistantPage.firstResultPreviewBtn).toBeEnabled();
+        await expect(
+          researchAssistantPage.firstResultReadOnlineBtn
+        ).toBeVisible();
+        await expect(
+          researchAssistantPage.firstResultReadOnlineBtn
+        ).toBeEnabled();
         await expect(async () => {
-          await researchAssistantPage.firstResultPreviewBtn.click({
+          await researchAssistantPage.firstResultReadOnlineBtn.click({
             trial: true,
           });
         }).toPass();
