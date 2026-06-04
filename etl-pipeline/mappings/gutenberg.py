@@ -2,6 +2,7 @@ import json
 import mimetypes
 import os
 import re
+import socket
 
 import requests
 from digital_assets.utils.get_stored_file_url import get_stored_file_url
@@ -168,6 +169,7 @@ class GutenbergMapping(XMLMapping):
 
     def add_cover(self):
         yaml_file = self.yaml_file
+        socket.setdefaulttimeout(15)
 
         if yaml_file is None:
             return
@@ -186,8 +188,16 @@ class GutenbergMapping(XMLMapping):
             cover_url = get_stored_file_url(self.file_bucket, cover_path)
             cover_root = yaml_file.get("url").replace("ebooks", "files")
             cover_source_url = f"{cover_root}/{cover_data.get('image_path')}"
-            response = requests.head(cover_source_url, allow_redirects=True, timeout=15)
-            response.raise_for_status()
+            try:
+                response = requests.head(cover_source_url, allow_redirects=True)
+                response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                logger.warning(
+                    f"Unable to access cover image at {cover_source_url}: {e}"
+                )
+                continue
+            finally:
+                socket.setdefaulttimeout(None)
 
             self.record.has_part.append(
                 str(
