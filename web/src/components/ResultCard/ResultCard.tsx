@@ -101,7 +101,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
             __css={{ svg: { marginInlineStart: "0 !important" } }}
           >
             <ResearchAssistantIcon inCircle />
-            <HiddenAria>AI Generated:</HiddenAria>
+            <HiddenAria ariaLive="off" ariaAtomic={false}>
+              AI Generated:
+            </HiddenAria>
             <Text>Why am I seeing this result?</Text>
           </Box>
         ),
@@ -142,7 +144,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
           __css={{ svg: { marginInlineStart: "0 !important" } }}
         >
           <ResearchAssistantIcon inCircle />
-          <HiddenAria>AI Generated:</HiddenAria>
+          <HiddenAria ariaLive="off" ariaAtomic={false}>
+            AI Generated:
+          </HiddenAria>
           <Text>What is this book about?</Text>
         </Box>
       ),
