@@ -20,7 +20,7 @@ from ..utils import APIUtils, orm_to_dict
 from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
-from ..decorators import require_basic_authentication, require_session_jwt
+from ..decorators import require_session_jwt
 from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
 from ..assistant.snippets import get_relevant_snippets
 
@@ -157,7 +157,6 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 
 @chat_blueprint.route("", methods=["POST"])
 @require_api_key
-@require_basic_authentication
 @require_session_jwt
 @timer(logger)
 def chat(user, session_id):
