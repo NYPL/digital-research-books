@@ -1,7 +1,9 @@
 import asyncio
 from dataclasses import asdict
-from typing import Dict, Tuple
-from flask import Blueprint, request
+from textwrap import indent
+from typing import Any, Dict, Tuple
+from api.assistant.types import CatalogSearchResult
+from flask import Blueprint, current_app, request
 import newrelic.agent
 
 # shared code
@@ -15,6 +17,8 @@ from utils.timer import timer
 
 # API code
 from ..utils import APIUtils, orm_to_dict
+from ..elastic import ElasticClient
+from ..db import DBClient
 from ..auth import require_api_key
 from ..decorators import require_basic_authentication, require_session_jwt
 from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
@@ -156,7 +160,7 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 @require_basic_authentication
 @require_session_jwt
 @timer(logger)
-def chat(session_id):
+def chat(user, session_id):
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
@@ -172,10 +176,10 @@ def chat(session_id):
         newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
 
     with LogContextVars(get_app_logger(), context=log_context):
-        return _chat_handler(session_id, conversation_type, message, edition_id)
+        return _chat_handler(user, session_id, conversation_type, message, edition_id)
 
 
-def _chat_handler(session_id, conversation_type, message, edition_id):
+def _chat_handler(user, session_id, conversation_type, message, edition_id):
     """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
 
     logger.info(f"Chat request received: {message[:20]}...")
