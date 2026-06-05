@@ -666,7 +666,7 @@ def test_session_id():
 
     yield TEST_SESSION_ID
 
-    # Print convo history to logs
+    # Print convo history to logs (because it will be deleted)
     print(f"\n--- Raw agent_messages for session '{TEST_SESSION_ID}' ---")
     messages = get_session_messages(TEST_SESSION_ID)
     print(json.dumps(messages, indent=2))

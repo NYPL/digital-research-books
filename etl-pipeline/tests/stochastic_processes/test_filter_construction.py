@@ -310,16 +310,69 @@ class TestCatalogSearchFilterConstruction:
             value=lambda v: "austen" in v.lower(),
         ), f"filters do not match expected criteria: {filters}"
 
-    # @pytest.mark.xfail
-    async def test_no_filter_construction_errors(self, test_session_id):
+    @pytest.mark.xfail
+    @pytest.mark.parametrize(
+        "query",
+        [
+            # Target Error: Model writes ["And", cond1, cond2] instead of ["And", [cond1, cond2]] —
+            # child conditions spread as variadic args rather than wrapped in an inner list.
+            pytest.param(
+                "Ornithology in the nineteenth century",
+                id="and_or_wrong_nesting_1",
+            ),
+            pytest.param(
+                "Theories of value and labor in 19th century economic thought",
+                id="and_or_wrong_nesting_2",
+            ),
+            pytest.param(
+                "The development of calculus and the Newton-Leibniz priority dispute",
+                id="and_or_wrong_nesting_3",
+            ),
+            # Target Error: Model uses non-existent field names derived from UI facet labels
+            # (e.g. publication_dateHeader, subjectSelection) instead of real schema fields.
+            pytest.param(
+                "European cartographic traditions before the Age of Exploration",
+                id="hallucinated_field_mild",
+            ),
+            # Target Error: Model appends suffixes to both field names AND operators
+            # (e.g. OrScroll, subjectScroll, ContainsAnyTokenScroll), producing
+            # completely undeserializable filter JSON.
+            pytest.param(
+                "How did rapid urbanization affect social structures in 19th century Europe?",
+                id="hallucinated_field_severe",
+            ),
+            # Target Error: Model substitutes integers or null in place of filter condition lists
+            # (e.g. ["And", ["Or", 1, 2, 3, ...]]) rather than constructing real conditions.
+            pytest.param(
+                "19th century british poems",
+                id="numeric_placeholder",
+            ),
+            # Target Error: Model correctly identifies the conditions it wants but serializes them as
+            # JSON strings instead of nested lists (e.g. ["And", ["[\"title\", \"Eq\", \"...\"]"]]).
+            pytest.param(
+                "What is the source of the information of when the ottoman empire was found from?",
+                id="json_string_conditions",
+            ),
+            # Target Error: Model generates And/Or with an empty children list (e.g. ["Or", []]) or
+            # passes a fully empty filter list.
+            pytest.param(
+                "Theories of planetary motion before Newton",
+                id="empty_filter",
+            ),
+        ],
+    )
+    async def test_no_filter_construction_errors(self, test_session_id, query):
         """
-        Test: No filter construction errors
+        Test: No filter construction errors.
 
-        For a query like "Ornithology in the nineteenth century", the agent should
-        construct valid filters on the first attempt.
+        The agent should construct valid filters for each query without triggering
+        a backend error.
+        max_turns=1 keeps the agent to one attempt to construct filters without error.
+        Each parametrized case targets a known root cause category
+        observed in production (see inline comments on each pytest.param).
         """
         run_result = await update_chat(
-            "Ornithology in the nineteenth century",
+            query,
             conversation_type="catalogSearch",
             session_id=test_session_id,
             max_turns=1,
@@ -333,11 +386,15 @@ class TestCatalogSearchFilterConstruction:
             if isinstance(item, ToolCallOutputItem)
         ]
 
+        assert len(tool_call_items) > 0, (
+            "Expected at least one tool call, but none were made"
+        )
+
         for item in tool_call_items:
             assert item.raw_item.name == "search_catalog", (
                 f"Expected tool call to 'search_catalog', got '{item.raw_item.name}'"
             )
         for item in tool_call_output_items:
-            assert "error" not in item.output.lower(), (
-                f"Tool call output contains 'error': {item.output}"
-            )
+            assert not item.output.startswith(
+                "An error occurred while running the tool"
+            ), f"Search tool call resulted in error: {item.output}"

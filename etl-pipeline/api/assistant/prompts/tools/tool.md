@@ -134,12 +134,19 @@ Filters allow you to narrow down results by applying exact conditions to the ret
 All fields are nullable (value = `null`)
 <!-- null must be represented as raw JSON null value, as all parameters are constructed by the agent as valid JSON -->
 
-Two or more **conditions** can be combined using `{And,Or}` operations:
+Two or more **conditions** can be combined using `{And,Or}` operations. **`And`/`Or` always take exactly two elements: the operator name and a single array `[...]` containing all conditions. Never pass conditions as additional arguments outside that array.**
+
 ```
-// basic `And` condition
+// And with two conditions — all conditions go inside the inner array
 "filters": ["And", [
   ["author", "ContainsAnyToken", "Twain Hemingway"],
   ["publication_date", "Gte", "1900-01-01"]
+]]
+
+// date range (two conditions — both go inside the inner array)
+"filters": ["And", [
+  ["publication_date", "Gte", "1800-01-01"],
+  ["publication_date", "Lt", "1900-01-01"]
 ]]
 
 // conditions can be nested
