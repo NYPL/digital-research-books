@@ -4,19 +4,21 @@ import { useResultPageContext } from "~/src/context/ResultPageContext";
 import { ItemLink } from "~/src/types/DataModel";
 import Link from "../../Link/Link";
 
-interface PreviewLinkProps {
-  previewLink: ItemLink;
+interface OcrReadLinkProps {
+  readLink: ItemLink;
   workId?: string;
   editionId?: number;
+  title?: string;
 }
 
-const PreviewLink: React.FC<PreviewLinkProps> = ({
-  previewLink,
+const OcrReadLink: React.FC<OcrReadLinkProps> = ({
+  readLink,
   workId,
   editionId,
+  title,
 }) => {
   const { page } = useResultPageContext();
-  const isResearchAssistant = page === "vra";
+  const isEnhancedSearch = page === "vra";
 
   const itemPageUrl = workId
     ? {
@@ -27,17 +29,17 @@ const PreviewLink: React.FC<PreviewLinkProps> = ({
 
   return (
     <>
-      {isResearchAssistant && previewLink && workId ? (
+      {isEnhancedSearch && readLink && workId ? (
         <Box>
           <Link
             to={itemPageUrl}
             variant="buttonPrimary"
             width="100%"
-            aria-label="Preview item"
+            aria-label={`${title} Read online`}
             bgColor="section.research.secondary"
             _hover={{ bgColor: "section.research.primary" }}
           >
-            Preview
+            Read online
           </Link>
         </Box>
       ) : (
@@ -47,4 +49,4 @@ const PreviewLink: React.FC<PreviewLinkProps> = ({
   );
 };
 
-export default PreviewLink;
+export default OcrReadLink;
