@@ -509,6 +509,7 @@ async def update_chat(
     # model = "litellm/gemini/gemini-3-flash-preview"
     model = OpenAIChatCompletionsModel(
         model="gemini-3-flash-preview",
+        # model="gemini-3.5-flash",
         openai_client=AsyncOpenAI(
             api_key=require_env("GOOGLE_API_KEY"),
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
