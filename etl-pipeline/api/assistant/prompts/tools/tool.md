@@ -439,7 +439,7 @@ Args:
   ranking_query: The query string used to rank text chunks in the search results. See the "Ranking" section of the tool description for more details.
    
 
-  filters: (optional) The filter to apply to the query. See "Filtering" section of the tool description for syntax details.
+  filters: (optional) The filter to apply to the query. See "Filtering" section of the tool description for syntax details. Remember, always wrap the conditions of an And/Or filter in a wrapping array (e.g. `["And", [["publication_date", "Gte", "1750-01-01"], ["publication_date", "Lt", "1790-01-01"]]]`) !!!!
 
   filters_match_null: (optional, defaults to True) When True, automatically modifies filters on potentially incomplete fields (subject, language, publication_date, author) to also match chunks where those fields are null. This ensures search results include books with incomplete metadata. For example, a filter like `["subject", "ContainsAnyToken", "poetry"]` is automatically transformed to `["Or", [["subject", "ContainsAnyToken", "poetry"], ["subject", "Eq", null]]]`. Set to False if you specifically want to exclude results with missing metadata for filtered fields.
 
