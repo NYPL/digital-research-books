@@ -30,7 +30,10 @@ const FeaturesSection: React.ForwardRefExoticComponent<
       >
         <Heading
           level="h2"
-          size="heading2"
+          fontSize={{
+            base: "mobile.heading.heading3",
+            md: "desktop.heading.heading2",
+          }}
           fontFamily="Domine"
           fontWeight="bold"
           marginBottom="xs"
@@ -38,14 +41,17 @@ const FeaturesSection: React.ForwardRefExoticComponent<
           What can Enhanced Search help you do?
         </Heading>
         <Text
-          fontSize="desktop.heading.heading5"
+          fontSize={{
+            base: "mobile.heading.heading5",
+            md: "desktop.heading.heading5",
+          }}
           color="ui.gray.dark"
-          fontWeight="semibold"
-          marginBottom="xxl"
+          fontWeight={{ base: "590", md: "semibold" }}
+          marginBottom={{ base: "l", md: "xxl" }}
         >
           A collaborative discovery tool designed to support your research
         </Text>
-        <Flex flexDir="column" gap="l">
+        <Flex flexDir="column" gap={{ base: "s", md: "l" }}>
           {FEATURES.map((feature) => (
             <FeatureCard
               key={feature.featureName}

@@ -56,9 +56,12 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
     <>
       <Form
         id="vra-landing-form"
-        marginBottom="xl"
         // @ts-expect-error: Override gap value type
         gap="0"
+        marginBottom={{
+          base: "l",
+          md: "xl",
+        }}
       >
         <Box
           display="flex"
@@ -140,7 +143,12 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
         display="grid"
         gridTemplateColumns="repeat(2, 1fr)"
         gap="s"
-        marginBottom="xl"
+        sx={{
+          marginBottom: {
+            base: "l",
+            md: "xl",
+          },
+        }}
       >
         {featuredSuggestions.map((suggestion, index) => (
           <Button
