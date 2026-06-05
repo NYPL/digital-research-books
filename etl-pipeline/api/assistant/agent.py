@@ -277,14 +277,10 @@ class ContentSearchExecutionContext:
 
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
-<<<<<<< HEAD
     session_id: str
     edition_id: int
-    conversation_type: str = "contentSearch"
-=======
-    edition_id: Optional[int] = None
     barcode: Optional[str] = None
->>>>>>> b1cdce594e (Switch to barcode rather than edition_id)
+    conversation_type: str = "contentSearch"
     search_results: Dict = field(default_factory=dict)
     frbr_fields: Dict = field(default_factory=dict)
 
@@ -549,7 +545,6 @@ async def update_chat(
 
     # Search within single book
     if conversation_type == "contentSearch":
-<<<<<<< HEAD
         # Fetch FRBR data for the book
         with Timer(
             "get_frbr_data_by_edition",
@@ -563,7 +558,6 @@ async def update_chat(
                 f"FRBR data missing for content search in edition {edition_id}"
             )
             raise ValueError(f"No edition found with id {edition_id}")
-=======
         # Prefer barcode-based lookup when provided. Barcode is stable across
         # FRBR re-clustering, whereas edition_id is not.
         if barcode is not None:
@@ -592,19 +586,14 @@ async def update_chat(
                     f"FRBR data missing for content search in edition {edition_id}"
                 )
             resolved_edition_id = edition_id
->>>>>>> b1cdce594e (Switch to barcode rather than edition_id)
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
         exec_context = ContentSearchExecutionContext(
             backend=backend,
             embedder=embedder,
-<<<<<<< HEAD
-            edition_id=edition_id,
-            session_id=session_id,
-=======
             edition_id=resolved_edition_id,
+            session_id=session_id,
             barcode=barcode,
->>>>>>> b1cdce594e (Switch to barcode rather than edition_id)
             frbr_fields=frbr_fields,
         )
 
