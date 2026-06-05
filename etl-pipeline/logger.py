@@ -105,8 +105,9 @@ def configure_loggers(log_level=None, stage=None):
         formatter = logging.Formatter("[%(name)s %(levelname)s] %(message)s")
     else:
         formatter = NewRelicContextFormatter(
-            "%(asctime)s | %(name)s | %(levelname)s: %(message)s"
-        )  # noqa: E501
+            "%(asctime)s | %(name)s | %(levelname)s: %(message)s",
+            stack_trace_limit=None,
+        )
 
     logger = get_app_logger()
     logger.handlers.clear()  # remove any pre-existing log handlers
