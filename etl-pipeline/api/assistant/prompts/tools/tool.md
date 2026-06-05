@@ -284,19 +284,41 @@ This semantic similarity calculation is done via semantic embedding of the the `
 
 ### `And`/`Or` syntax
 
-`And` and `Or` always have exactly two elements: the operator name and a **single array containing all child conditions**. Every child condition must itself be an array.
+`And` and `Or` arrays take exactly two elements: the operator name (`And`/`Or`) and **one wrapper array `[...]` that collects all child conditions**. The second element is always that single wrapping array — never the conditions themselves. Each entry inside the wrapper array is a child condition (or a nested filter). No matter how many conditions you have, they all go into that one inner array:
 
-❌ **Incorrect** — conditions passed as extra top-level elements instead of inside one array:
-```json
-{ "filters": ["And", ["publication_date", "Gte", "1900-01-01"], ["publication_date", "Lt", "2000-01-01"]] }
+```
+["And", [cond1, cond2, cond3, ...]]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+          one array, any number of conditions inside
 ```
 
-✅ **Correct** — all conditions wrapped together in one array:
+✅ **Correct** — all conditions wrapped in the second array (date range):
 ```json
 { "filters": ["And", [
-    ["publication_date", "Gte", "1900-01-01"],
-    ["publication_date", "Lt", "2000-01-01"]
+    ["publication_date", "Gte", "1700-01-01"],
+    ["publication_date", "Lt", "1800-01-01"]
 ]] }
+```
+`"And"` has exactly 2 elements: the string `"And"` and one array `[...]`. Both date conditions live *inside* that inner array as its entries. `"And"` never sees the conditions directly — they are always one level deeper, inside the wrapping array.
+
+✅ **Correct** — all conditions wrapped in the second array (author + date range):
+```json
+{ "filters": ["And", [
+    ["author", "ContainsAnyToken", "Darwin Huxley Wallace"],
+    ["publication_date", "Gte", "1700-01-01"],
+    ["publication_date", "Lt", "1800-01-01"]
+]] }
+```
+The inner wrapper array holds all conditions, even if you have many. Whether you have 2 or 10, they all go inside that single wrapping array.
+
+❌ **Incorrect** — conditions passed as top-level elements instead of collected into the wrapper array.
+A common mistake is passing conditions as extra elements after the operator, e.g. ["And", cond1, cond2]. This has 3 elements: `"And"`, then two bare condition arrays. The inner wrapping array is missing! Instead the conditions must be collected inside a wrapper array  e.g. ["And", [cond1, cond2]].
+
+When there is only one condition, use it directly, without `And`/`Or`.
+
+✅ **Correct** — use the condition directly when there is only one (no `And`/`Or` needed):
+```json
+{ "filters": ["publication_date", "Gte", "1900-01-01"] }
 ```
 
 ❌ **Incorrect** — single condition wrapped in `And`:
@@ -304,11 +326,6 @@ This semantic similarity calculation is done via semantic embedding of the the `
 { "filters": ["And", ["publication_date", "Gte", "1900-01-01"]] }
 ```
 
-✅ **Correct** — use the condition directly when there is only one:
-```json
-{ "filters": ["publication_date", "Gte", "1900-01-01"] }
-```
-```
 
 ### Nested `And` and `Or` filters
 
