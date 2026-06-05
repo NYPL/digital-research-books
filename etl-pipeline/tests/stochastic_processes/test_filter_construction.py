@@ -368,8 +368,8 @@ class TestCatalogSearchFilterConstruction:
         The agent should construct valid filters for each query without triggering
         a backend error.
         max_turns=1 keeps the agent to one attempt to construct filters without error.
-        Each parametrized case targets a known root cause category
-        observed in production (see inline comments on each pytest.param).
+        Each parametrized case targets an observed error category during testing
+        (see inline comments on each pytest.param).
         """
         run_result = await update_chat(
             query,
