@@ -60,8 +60,6 @@ logger = create_log(__name__)
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
 
-INDEX_NAME = os.getenv("TURBOPUFFER_NAMESPACE")
-
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 
@@ -502,7 +500,7 @@ async def update_chat(
     # some reused objs (backend, system prompts, async loop, etc...) (for sharing btw server \
     # request workers/threads)
 
-    backend = TurbopufferBackend(index_name=INDEX_NAME)
+    backend = TurbopufferBackend(index_name=require_env("TURBOPUFFER_NAMESPACE"))
     embedder = GoogleEmbedder()
 
     # NOTE: litellm has a bug converting `list | None = None` in agents sdk @functol_tool
@@ -511,6 +509,7 @@ async def update_chat(
     # model = "litellm/gemini/gemini-3-flash-preview"
     model = OpenAIChatCompletionsModel(
         model="gemini-3-flash-preview",
+        # model="gemini-3.5-flash",
         openai_client=AsyncOpenAI(
             api_key=require_env("GOOGLE_API_KEY"),
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -621,6 +620,7 @@ async def update_chat(
 
 def get_session_messages(session_id):
     """Read message data for session ID as ND-JSON"""
+    # TODO: replace with Session.get_items()
     engine = get_engine()
     with engine.connect() as conn:
         rows = conn.execute(
@@ -633,6 +633,7 @@ def get_session_messages(session_id):
 
 def delete_session_data(session_id: str) -> None:
     """Delete all rows in agent_messages and agent_sessions for the given session_id."""
+    # TODO: replace with Session.clear_session()
     engine = get_engine()
     with engine.connect() as conn:
         with conn.begin():

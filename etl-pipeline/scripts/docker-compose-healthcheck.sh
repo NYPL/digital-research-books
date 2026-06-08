@@ -6,20 +6,21 @@
 # if docker is not running, exits status 1
 # if all services are not healthy before TIMEOUT, exits status 1
 # MUST be executed with etl-pipeline/ as CWD
-# Usage: ./docker-compose-healthcheck.sh
+# Usage: [POLL_INTERVAL=N TIMEOUT=M] ./docker-compose-healthcheck.sh
 
 set -e
 
-# Configuration
-POLL_INTERVAL=10
-TIMEOUT=180
-ELAPSED=0
+# Defaults
+POLL_INTERVAL=${POLL_INTERVAL:-10}
+TIMEOUT=${TIMEOUT:-180}
+
 
 echo "Waiting for all services to become healthy..."
 echo "Timeout: ${TIMEOUT}s, Poll interval: ${POLL_INTERVAL}s"
 echo ""
 
 # Poll service status
+ELAPSED=0
 while [ $ELAPSED -lt $TIMEOUT ]; do
     echo "[$(date +%H:%M:%S)] Checking service health... (${ELAPSED}s elapsed)"
     

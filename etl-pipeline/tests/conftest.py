@@ -84,19 +84,11 @@ def setup_env(pytestconfig, request):
         import subprocess
 
         result = subprocess.run(
-            # Timeout prevents start up of not running services
-            [
-                "docker",
-                "compose",
-                "up",
-                "--no-recreate",
-                "--wait",
-                "--wait-timeout",
-                "10",
-            ],
+            ["bash", "scripts/docker-compose-healthcheck.sh"],
             capture_output=True,
             text=True,
             cwd=str(Path(__file__).parent.parent),  # etl-pipeline/
+            env={**os.environ, "POLL_INTERVAL": "1", "TIMEOUT": "2"},
         )
         if result.returncode != 0:
             output = (result.stdout or "") + (result.stderr or "")
@@ -674,7 +666,7 @@ def test_session_id():
 
     yield TEST_SESSION_ID
 
-    # Print convo history to logs
+    # Print convo history to logs (because it will be deleted)
     print(f"\n--- Raw agent_messages for session '{TEST_SESSION_ID}' ---")
     messages = get_session_messages(TEST_SESSION_ID)
     print(json.dumps(messages, indent=2))
