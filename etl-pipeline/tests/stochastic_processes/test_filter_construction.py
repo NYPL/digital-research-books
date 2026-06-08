@@ -359,7 +359,7 @@ class TestCatalogSearchFilterConstruction:
                 None,
                 id="numeric_placeholder",
             ),
-            # NOTE: this test case does not reproduce... delete or replace with a json_string_conditions case that reproduces
+            # NOTE: this test case does not reproduce a search tool call... delete or replace with alternative json_string_conditions test case
             # # Target Error: Model correctly identifies the conditions it wants but serializes them as
             # # JSON strings instead of nested lists (e.g. ["And", ["[\"title\", \"Eq\", \"...\"]"]]).
             # pytest.param(

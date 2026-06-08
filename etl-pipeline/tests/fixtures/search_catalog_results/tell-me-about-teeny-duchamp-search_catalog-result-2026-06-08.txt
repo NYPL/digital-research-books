@@ -1,0 +1,294 @@
+<search_results>
+
+<edition>
+<edition_id>15549590</edition_id>
+<title>The nation</title>
+<authors>Nation (N.Y.), N.Y. : 1865) </authors>
+<publisher>J.H. Richards,</publisher>
+<date>1865-01-01</date>
+<subjects>Social policy, Stany Zjednoczone polityka i rządy czasopisma, periodicals, Hiss, Alger, Humanities, Périodiques, Politics and government, Letterkunde, Arts, Literature, Current events, Politics and culture, Actualité, Histoire, United States, politiske forhold, Political science, Zeitung, Periodical publications.- New York, Canada, History, Modern, Education, News, États-Unis, Czasopisma amerykańskie, South African newspapers, Reviews, International relations, Right and left (Political science) -- Periodicals. , News and opinion, Newspapers, Estats Units d'Amèrica, Trials, økonomiske forhold, Periodical, Livres, United States -- Periodicals -- Politics and government, Liberalism -- Periodicals -- United States, Poverty, Zeitschrift, Periodikum, Current events -- Periodicals. , United States. , Economics, USA, Social Commentary & Opinion, Electronic journals, Publicaciones periódicas, periodika, Informació general, Social sciences, Racism, Czasopisma społeczno-kulturalne amerykańskie, États-Unis, Czasopisma społeczno-kulturalne amerykańskie, Stany Zjednoczone sytuacja społeczna czasopisma, Ausgabe, Cultura de Estados Unidos, Ciencias sociales, Lesotho, Czasopisma amerykańskie 19 w, Ressources internet, United States -- Periodicals. -- Politics and government , Politique et culture, Sociale forhold, Books, Right and left (Political science) -- Periodicals, Stany Zjednoczone, États-Unis Politique et gouvernement Périodiques, United States Politics and government Periodicals, Social conditions, hetilap, global issues, Census data, Sciences sociales, Political science. , Statele Unite ale Americii, Annotations (Provenance), Relations internationales, Political Commentary & Opinion, Magazines, Social sciences Periodicals, Tijdschrift, Politica de guvernare, Ciencias sociales Revistas, Sciences sociales Périodiques, Sociology, Politica de Estados Unidos, Maseru (Lesotho), Political issues, Politica sociala, United States -- Periodicals. -- Social policy , Istorie moderna</subjects>
+<language>English</language>
+<chunks>
+
+<chunk>
+<item_id>25091472</item_id>
+<page>356</page>
+<text>
+The risk is yours. Act
+at once if you want to be one of the first 100,000,000 subscribers.
+The entire cost of this number of Mss. is the printing bill of
+$234 presented by Clarence S. Nathan, Inc., and paid by the
+authors. Each author is solely responsible for what appears
+over his signature. Complaints should be sent to individual
+authors. Subscriptions will be received by Paul Rosenfeld,
+77 Irving Place, New York. Donations of money will be received
+with thanks by the same. For the cover design-apologies to
+American Dada and Marcel Duchamps and Man Ray.
+Within the Drifter finds a sort of drama entitled Gossip,
+containing lines such as these:
+•
+I sing. Lying on my back, I sing. I look up feeling Pres-
+ence. There about me stand seven Cows.
+I sing to them.
+I: O cows, come near.
+Come nearer, cows.
+Cows: What are you doing up here, you who live?
+I: Why should I not live?
+For you live. Come near, for I live.
+There is more of the same, and some exquisite lines, even in
+Gossip. There is prose by Sherwood Anderson, winner of the
+Dial's prize; an enthusiastic review of a book, by one dis-
+ciple of Alfred Stieglitz, by another even more enthusiastic
+disciple; and a poem, printed in seven lines which, ruth-
+lessly compressed into one, read "My luv is like a green-
+glass insulator on a blue sky." But somehow, from a com-
+parison of "mastheads" and "bodies" of these two papers,
+the Drifter comes to a conclusion which he might have
+reached even without that study, that even among the re-
+formers and the super-intelligentsia of America the science
+and technique of advertising, even of self-advertising, has
+reached a far higher level than has the rare art of creative
+writing.
+THE DRIFTER
+Correspondence
+Letters to the Editor should ordinarily not exceed 500 words,
+and shorter communications are more likely to be printed. In
+any case the Editor reserves the right to abridge communications.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15303537</edition_id>
+<title>Dictionary catalog of the Rare Book Division</title>
+<authors>New York Public Library. Rare Book Division</authors>
+<publisher>G. K. Hall</publisher>
+<date>1971-01-01</date>
+<subjects>Bibliographies, Catalog, Livres rares Catalogues, Catalogs, catalogs (documents), New York (State) New York, New York Public Library. Rare Book Division Catalogs, Rare books -- Catalogs, Rare books New York (State) New York Bibliography Catalogs, Catalogues, Livres rares New York (État) New York Bibliographie Catalogues, Bibliography, New York Public Library. Rare Book Division, Rare books, Broadsides -- Bibliography</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>24128500</item_id>
+<page>641</page>
+<text>
+Rochester, Re-
+printed for G. P. Humphrey, 1893)
+196 (i. e. 192) p. incl, front., pl. 21 x 12.
+Pages 184-192 incorrectly numbered 188-196.
+(Continued on next card)
+front.) 4°.
+"This edition of The gallantries of Queen Christina, here reprinted from the 12mo
+edition of 1697, is strictly limited to 450 copies. The illustrations hand-coloured, are by
+Alexina Ogilvie. This copy is no. 146."
+M. Y. P. L.
+(Continued)
+KVD
+... The HISTORY of Jacob Newman, the shipwrecked
+Irish boy. New York, Published by the American tract
+society, 150 Nassau-street [183-1] 36 р. illus.
+At head of title: No. 6. On cover: Series IV. No. VI.
+15cm.
+In original illustrated green paper coven, with publisher's advertisemenn,
+Also has continuous paging: p. [181]-216,
+Includes 4 hymm, p. 33-36.
+L. American tract society.
+RESERVE
+July 18, 1928
+NN RX 1.66 c OC (OS)I
+PC, I SLA RI (RM1, LC1s, Xis)
+The history of Jamaica.
+Franckenstein, Christian Gottfried,, 1661-1717: The history of
+the intrigues & gallantries of Christina, queen of Sweden
+(Continued)
+Dedication of the original translation of 1697 signed by the translator, Phil. Hol-
+Colophon: At the Cayme Press, Kensington, 1927.
+lingworth.
+363621A. 1. Christina, queen of
+worth, Philip, translator. 3. Ogilvie,
+N. Y. P. L.
+Sweden, 1626-1689. 2. Holling-
+July 18, 1928
+Alexina, illustrator. 4. Title.
+The history of the island of Van
+Diemen's Land.
+Melville, Henry, 1803-1873.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24128500</item_id>
+<page>122</page>
+<text>
+Godefroy: Laboureur, 1, 338.
+No. 64 of 115. copies printed.
+In verse.
+Illustrations: 1 engraving by Laboureur.
+In original covers.
+Gülich, Ludwig von. Erb-Huldigung... 1705, (Card 2)
+Nid. Oest. Landschafft Syndicum Ludwig von Gülich... Wienn,
+Gedruckt bey Johann Jacob Kürner (1705) 1 p.l., 46 p. plates.
+45cm. (f°.)
+Vinet: Bibliographie...des beaux-arts, 675. 1.ipperheide: Katalog der...Kostüm-
+bibliothek, 2624.
+Illustrations: 12 large etchings (including 6 double and 1 folded). The frontispiece
+is by J. A. Plefíel and Christian Engelbrecht after M. Steinl. The other etchings
+(procession, church ceremonies and banquets) are by Píeffel and Engelbrecht after
+J. C. Hackhofer.
+Gienes y Horcasitas, Juan Francisco, conde de
+Revilla Gigedo.
+See
+Revilla Gigedo, Juan Francisco Gtienes y Hor-
+casitas, conde de, 16827-1766.
+1. Title.
+C
+KESERVE
+NN
+(Continued)
+MN 6.54 OC PCS AH E
+G
+KD
+1745
+Gueldene Aepffel in silbern Schalen oder: Schöne und nutzliche
+Worte und Warheiten zur Gottseligkeit. Enthalten in sieben
+Haupt-Theilen, die in diesem Buch zusamen gestellet sind; nem-
+lich, in: (1) Michael Sattlers Send-Briefen u. Acten; (2) Thoma
+von Imbroichs Bekantniss und Briefen; (3) Susanna von Holtz
+Testament und Brief; (4) Matthia Cervas und Conrad Rochs Send-
+Briefen; (welche alle aus den Gelångnussen geschrieben.)
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15251022</edition_id>
+<title>Books added : five-year cumulation of the Book bulletin of the Chicago Public Library</title>
+<authors>Chicago Public Library</authors>
+<publisher>The Library, The Chicago public library,</publisher>
+<date>1916-01-01</date>
+<subjects>Catalogues systématiques (Classification décimale de Dewey), Periodicals, Classified catalogs (Dewey decimal) -- Periodicals, Classified catalogs (Dewey decimal)</subjects>
+<language>English</language>
+<chunks>
+
+<chunk>
+<item_id>23863694</item_id>
+<page>522</page>
+<text>
+Alexina Mackay Ruthquist; Mrs.
+Bowen Thompson; Dr. Mary McGeorge; Miss Mary
+Louisa Whately.
+Pomeroy, S. G. Little-known sisters of
+well-known men. 1912.
+C 19891
+Contents: Introduction; Some brothers and their
+sisters; Mary Sidney (the Countess of Pembroke);
+Mary Ann Lamb; Dorothy Wordsworth; Elizabeth
+Whittier; Sarianna Browning; Hannah Macaulay
+(Lady Trevelyan); Sarah Disraeli; Sophia Thoreau;
+Eliza W. S. Parkman.
+Portland. Oregon. Chamber of Commerce
+Bulletin, pub. "Men of Oregon"; a gallery
+of likenesses of representative men, together
+with brief sketches of their lives. 1911.
+Powell, E. A. Gentlemen
+rovers.
+C 19894
+1913.
+C 19896
+Contents: For rent: an army on elephants;
+When we fought Napoleon; When we captured an
+African kingdom; The last fight of the "General
+Armstrong"; The pirate who turned patriot; The
+man who dared to cross the ranges; The flag of
+the bear; The king of the filibusters; Cities cap-
+tured by contract.
+Press reference library (Southwest ed.);
+being the portraits and biographies of
+progressive men of the Southwest. 1912.
+*R 577
+Press reference library (Western ed.). Nota-
+bles of the West; being the portraits and
+biographies of the progressive men
+of
+the West who have helped in the devel-
+opment and history making of this won-
+derful country. 1913.
+*R 576
+Reed, G. I., ed. Bench and bar of Michigan;
+a volume of history and biography. 1897.
+*R 2713
+-and Glover, E. S., ed. Century cyclo-
+pedia of history and biography; Pennsyl-
+vania. 2v. 1906.
+*R 2717
+Reed, M. Happy women. Dolly Madison,
+Dorothy Wordsworth, Queen Louise,
+Caroline Herschel, Elizabeth Browning,
+Charlotte Cushman, Lucretia Mott, Flor-
+ence Nightingale, Sister Dora, Jenny
+Lind, Louisa Alcott, Queen Victoria,
+1913.
+</text>
+</chunk>
+
+<chunk>
+<item_id>23863694</item_id>
+<page>521-522</page>
+<text>
+1911.
+C 19875
+Patmore, K. A. The seven Edwards of
+England. 1911.
+C 19876
+Payne, W. M. Leading American essayists.
+1910.
+C 10436
+Contents: Biographical note (p. vii-viii); Intro-
+duction; Washington Irving; Ralph Waldo Emer-
+son; Henry David Thoreau; George William Curtis.
+
+438
+CHICAGO PUBLIC LIBRARY
+Pearson, N. Society sketches in the
+eighteenth century. 1911.
+I 10142
+Contents: The scowrers and the Mohocks; The
+virtuosi; A great proconsul (Governor Pitt); The
+wits; An eccentric beauty (the Duchess of Queens-
+berry); A lady wit (Lady Townshend); A male
+bluestocking (Soame Jenyns); The serious side of
+a worldly man (Horace Walpole); The lighter side
+of a serious woman (Hannah More); The maca-
+ronis; Gentlemen of the road.
+Pickett, L. C. (Mrs. G. E. Pickett.) Liter-
+ary hearthstones of Dixie. 1912. C 19880
+Contents: "The poet of the night," Edgar Allan
+Poe; "The Sunrise poet," Sidney Lanier; "The
+poet of the pines," Paul Hamilton Hayne; "The
+flame-born poet," Henry Timrod; "Father Abbot,"
+William Gilmore Simms; "Uncle Remus," Joel
+Chandler Harris; "The poet of the flag," Francis
+Scott Key; "The poet-priest," Father Ryan; "Bacon
+and greens," Dr. George William Bagby; "Woman
+and poet," Margaret Junkin Preston; "The 'mother'
+of 'St. Elmo," Augusta Evans Wilson.
+Pitman, Mrs. E. R. Missionary heroines in
+eastern lands: Woman's work in mis-
+sion fields. 1895.
+C 19884
+Contents: Mrs. Alexina Mackay Ruthquist; Mrs.
+Bowen Thompson; Dr. Mary McGeorge; Miss Mary
+Louisa Whately.
+Pomeroy, S. G. Little-known sisters of
+well-known men. 1912.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+</search_results>
