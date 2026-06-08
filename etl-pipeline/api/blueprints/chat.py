@@ -157,7 +157,6 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 
 @chat_blueprint.route("", methods=["POST"])
 @require_api_key
-@require_basic_authentication
 @require_session_jwt
 @timer(logger)
 def chat(session_id):
