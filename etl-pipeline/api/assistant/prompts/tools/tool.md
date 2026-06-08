@@ -99,7 +99,7 @@ Each chunk has the following allowed field names and allowed filter operations f
     <field_name>subject</field_name>
     <data_type>array of strings</data_type>
     <description>A list of subject strings associated with the book. Includes topic, genre, publication type, literary classification, etc.</description>
-    <allowed_operations>Contains, ContainsAny, ContainsAllTokens, ContainsTokenSequence, ContainsAnyToken</allowed_operations>
+    <allowed_operations>ContainsAllTokens, ContainsTokenSequence, ContainsAnyToken</allowed_operations>
   </field>
   <field>
     <field_name>title</field_name>
@@ -111,7 +111,7 @@ Each chunk has the following allowed field names and allowed filter operations f
     <field_name>author</field_name>
     <data_type>array of strings</data_type>
     <description>All authors who contributed to the book.</description>
-    <allowed_operations>Contains, ContainsAny</allowed_operations>
+    <allowed_operations>ContainsAllTokens, ContainsTokenSequence, ContainsAnyToken</allowed_operations>
   </field>
   <field>
     <field_name>language</field_name>

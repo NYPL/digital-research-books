@@ -620,6 +620,7 @@ async def update_chat(
 
 def get_session_messages(session_id):
     """Read message data for session ID as ND-JSON"""
+    # TODO: replace with Session.get_items()
     engine = get_engine()
     with engine.connect() as conn:
         rows = conn.execute(
@@ -632,6 +633,7 @@ def get_session_messages(session_id):
 
 def delete_session_data(session_id: str) -> None:
     """Delete all rows in agent_messages and agent_sessions for the given session_id."""
+    # TODO: replace with Session.clear_session()
     engine = get_engine()
     with engine.connect() as conn:
         with conn.begin():
