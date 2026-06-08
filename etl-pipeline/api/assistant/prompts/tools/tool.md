@@ -11,12 +11,17 @@ The catalog uses a Turbopuffer search index, so use Turbopuffer filters syntax.
 ### Filter Syntax
 
 ```
-// Type definitions
+// Base Types
 Condition  = [field, operation, value]
-And        = ["And", [Condition | And | Or | Not, ...]]   // 2+ elements
-Or         = ["Or",  [Condition | And | Or | Not, ...]]   // 2+ elements
-Not        = ["Not",  Condition | And | Or | Not]
 Filter     = Condition | And | Or | Not
+
+// Collections
+FilterList = [Filter, Filter, ...Filter]
+
+// Logical Operators
+And        = ["And", FilterList]
+Or         = ["Or",  FilterList]
+Not        = ["Not", Filter]
 ```
 
 All fields are nullable (value = `null`).
