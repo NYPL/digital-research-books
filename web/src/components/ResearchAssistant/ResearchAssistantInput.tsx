@@ -83,7 +83,7 @@ const ResearchAssistantInput: React.FC = () => {
       gap="xs"
     >
       {/* TODO: Replace with actual related items and logic when available */}
-      {messages.length > 1 && (
+      {/* {messages.length > 1 && (
         <Box
           display="flex"
           justifyContent="flex-end"
@@ -108,7 +108,7 @@ const ResearchAssistantInput: React.FC = () => {
             </Button>
           ))}
         </Box>
-      )}
+      )} */}
       <Box
         alignItems="center"
         border="1px solid"

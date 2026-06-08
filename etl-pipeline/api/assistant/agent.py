@@ -1,12 +1,14 @@
 import json
 import os
-import sys
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Tuple, Union
+from typing_extensions import TypedDict
 
+
+import newrelic.agent
 import numpy as np
 import pandas as pd
 from agents import (
@@ -28,30 +30,30 @@ from agents.models.chatcmpl_converter import Converter
 from agents.run_config import DEFAULT_MAX_TURNS
 from agents.tool_context import ToolContext
 from jinja2 import Template
-from logger import create_log
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 from sqlalchemy import text
-from typing_extensions import TypedDict
-from utils.common import require_env, wrap
-from utils.timer import timer
-from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
+
 
 # shared code
 from vector_indexing.components.embedders.google import GoogleEmbedder
+from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
 from vector_indexing.core.utils import Timer
+from logger import create_log
+from utils.common import require_env, wrap
+from utils.timer import timer
 
+# api code
+from ..utils import remove_markdown_comments
+from .search import ReciprocalRankFuser, ScoredHit, hybrid_search
+from .types import CatalogSearchResult, ContentSearchResult
+from ..newrelic_llm_events import record_llm_events
 from ..db import (
     get_async_engine,
     get_engine,
     get_frbr_data_by_edition,
     get_readonly_session,
 )
-
-# api code
-from ..utils import remove_markdown_comments
-from .search import ReciprocalRankFuser, ScoredHit, hybrid_search
-from .types import CatalogSearchResult, ContentSearchResult
 
 logger = create_log(__name__)
 
@@ -247,6 +249,8 @@ class CatalogSearchExecutionContext:
 
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
+    session_id: str
+    conversation_type: str = "catalogSearch"
     search_results: Dict = field(default_factory=dict)
 
 
@@ -256,7 +260,9 @@ class ContentSearchExecutionContext:
 
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
+    session_id: str
     edition_id: int
+    conversation_type: str = "contentSearch"
     search_results: Dict = field(default_factory=dict)
     frbr_fields: Dict = field(default_factory=dict)
 
@@ -266,9 +272,24 @@ class ContentSearchExecutionContext:
 class LLMLoggingHooks(RunHooks):
     """Agent lifecycle hooks that log LLM call start/end with timing and response."""
 
-    def __init__(self):
+    def __init__(
+        self, session_id: str, conversation_type: str, edition_id: Optional[int] = None
+    ):
+        self.session_id = session_id
+        self.conversation_type = conversation_type
+        self.edition_id = edition_id
+
         self._llm_start_time: Optional[float] = None
         self._tool_start_time: Optional[float] = None
+
+        self.num_llm_calls = 0
+        self.total_input_tokens = 0
+        self.total_output_tokens = 0
+        self.total_llm_elapsed = 0.0
+
+        self._last_system_prompt: Optional[str] = None
+        self._last_input_items: list = []
+        self._last_response: Optional[ModelResponse] = None
 
     async def on_llm_start(
         self,
@@ -279,6 +300,9 @@ class LLMLoggingHooks(RunHooks):
     ) -> None:
         self._llm_start_time = time.perf_counter()
 
+        self._last_system_prompt = system_prompt
+        self._last_input_items = input_items
+
     async def on_llm_end(
         self,
         context: RunContextWrapper,
@@ -288,12 +312,20 @@ class LLMLoggingHooks(RunHooks):
         elapsed = (
             time.perf_counter() - self._llm_start_time
             if self._llm_start_time is not None
-            else None
+            else 0.0
         )
         self._llm_start_time = None
-        elapsed_str = f"{elapsed:.3f}s" if elapsed is not None else "unknown"
 
-        output_types = [o.type for o in response.output]
+        self.num_llm_calls += 1
+        self.total_llm_elapsed += elapsed
+        self._last_response = response
+
+        if response.usage:
+            self.total_input_tokens += response.usage.input_tokens or 0
+            self.total_output_tokens += response.usage.output_tokens or 0
+
+        elapsed_str = f"{elapsed:.3f}s"
+        output_types = [o.type for o in response.output] if response.output else []
         logger.info(
             f"LLM response received | elapsed: {elapsed_str} | output types: {output_types} | token usage: input={response.usage.input_tokens} output={response.usage.output_tokens}"
         )
@@ -471,7 +503,7 @@ async def update_chat(
     # request workers/threads)
 
     backend = TurbopufferBackend(index_name=INDEX_NAME)
-    embedder = GoogleEmbedder(task_type="RETRIEVAL_QUERY")
+    embedder = GoogleEmbedder()
 
     # NOTE: litellm has a bug converting `list | None = None` in agents sdk @functol_tool
     # param type annotations into gemini API compatible format
@@ -510,6 +542,7 @@ async def update_chat(
             backend=backend,
             embedder=embedder,
             edition_id=edition_id,
+            session_id=session_id,
             frbr_fields=frbr_fields,
         )
 
@@ -520,7 +553,9 @@ async def update_chat(
 
     # Search for books in catalog
     else:  # conversation_type == "catalogSearch":
-        exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
+        exec_context = CatalogSearchExecutionContext(
+            backend=backend, embedder=embedder, session_id=session_id
+        )
         system_prompt = remove_markdown_comments(
             system_prompt_template.render(conversation_type="catalogSearch")
         )
@@ -535,22 +570,50 @@ async def update_chat(
 
     session = SQLAlchemySession(session_id, engine=get_async_engine())
 
-    run_result = await Runner.run(
-        starting_agent=agent,
-        input=message,
-        context=exec_context,
-        hooks=LLMLoggingHooks(),
-        max_turns=max_turns,
-        error_handlers={"max_turns": _on_max_turns},
-        session=session,
-        run_config=RunConfig(
-            tracing_disabled=True,
-            model_settings=ModelSettings(
-                temperature=0.0,
-                reasoning=Reasoning(effort="none"),
-                # include_usage=True, # TODO: research if this returns loggable usage info
+    # Add conversation metadata to New Relic transaction for grouping and filtering
+    newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
+    newrelic.agent.add_custom_attribute("llm.conversation_type", conversation_type)
+    newrelic.agent.add_custom_attribute(
+        "llm.edition_id", edition_id if conversation_type == "contentSearch" else None
+    )
+
+    logging_hooks = LLMLoggingHooks(
+        session_id=session_id,
+        conversation_type=conversation_type,
+        edition_id=edition_id if conversation_type == "contentSearch" else None,
+    )
+
+    # Wrap agent exec loop in NR APM trace for AI monitoring dashboard compatibility
+    with newrelic.agent.FunctionTrace(name="create", group="Llm/completion/OpenAI"):
+        run_result = await Runner.run(
+            starting_agent=agent,
+            input=message,
+            context=exec_context,
+            hooks=logging_hooks,
+            max_turns=max_turns,
+            error_handlers={"max_turns": _on_max_turns},
+            session=session,
+            run_config=RunConfig(
+                tracing_disabled=True,
+                model_settings=ModelSettings(
+                    temperature=0.0,
+                    reasoning=Reasoning(effort="none"),
+                    include_usage=True,
+                ),
             ),
-        ),
+        )
+
+    record_llm_events(
+        agent,
+        session_id=logging_hooks.session_id,
+        conversation_type=logging_hooks.conversation_type,
+        edition_id=logging_hooks.edition_id,
+        last_response=logging_hooks._last_response,
+        last_system_prompt=logging_hooks._last_system_prompt,
+        last_input_items=logging_hooks._last_input_items,
+        total_input_tokens=logging_hooks.total_input_tokens,
+        total_output_tokens=logging_hooks.total_output_tokens,
+        total_llm_elapsed=logging_hooks.total_llm_elapsed,
     )
 
     return run_result
@@ -670,7 +733,7 @@ def search_catalog(
         )
 
         # Embed the query for semantic search
-        query_vector = ctx.context.embedder.embed_one(ranking_query)
+        query_vector = ctx.context.embedder.embed_query(ranking_query)
 
         # Execute hybrid search (vector + BM25) with RRF
         results = hybrid_search(
@@ -826,7 +889,7 @@ def search_book(
             combined_filters = book_filter
 
         # Embed the query for semantic search
-        query_vector = ctx.context.embedder.embed_one(ranking_query)
+        query_vector = ctx.context.embedder.embed_query(ranking_query)
 
         # Execute hybrid search (vector + BM25) with RRF fusion
         results = hybrid_search(

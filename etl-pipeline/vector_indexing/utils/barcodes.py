@@ -45,7 +45,7 @@ def get_last_indexed_barcode(index_name: str) -> str | None:
     return chunk.barcode
 
 
-# TODO: some modularization so we can "scan()" with arbitrary queries like the one used here
+# TODO: modularize this to make "TurbopufferBackend.scan()" with arbitrary queries like the one used here
 def write_non_indexed_10k_barcodes(index_name: str, output_path: Path | str) -> Path:
     """Write 10k barcodes not yet indexed in the target turbopuffer namespace.
 

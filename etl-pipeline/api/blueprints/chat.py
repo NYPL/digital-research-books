@@ -20,7 +20,7 @@ from ..utils import APIUtils, orm_to_dict
 from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
-from ..decorators import require_basic_authentication, require_session_jwt
+from ..decorators import require_session_jwt
 from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
 from ..assistant.snippets import get_relevant_snippets
 
@@ -157,10 +157,9 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 
 @chat_blueprint.route("", methods=["POST"])
 @require_api_key
-@require_basic_authentication
 @require_session_jwt
 @timer(logger)
-def chat(user, session_id):
+def chat(session_id):
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
@@ -176,10 +175,10 @@ def chat(user, session_id):
         newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
 
     with LogContextVars(get_app_logger(), context=log_context):
-        return _chat_handler(user, session_id, conversation_type, message, edition_id)
+        return _chat_handler(session_id, conversation_type, message, edition_id)
 
 
-def _chat_handler(user, session_id, conversation_type, message, edition_id):
+def _chat_handler(session_id, conversation_type, message, edition_id):
     """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
 
     logger.info(f"Chat request received: {message[:20]}...")
@@ -219,6 +218,9 @@ def _chat_handler(user, session_id, conversation_type, message, edition_id):
             update_chat(message, conversation_type, session_id, edition_id=edition_id)
         )
     except ValueError as e:
+        # Intended to catch "No edition found with id=XXX"
+        # TODO: make error filter specific to intended error, even tho its the \
+        # only ValueError intentionlly raided in the update_chat() boundary
         return APIUtils.formatResponseObject(404, RESPONSE_TYPE, {"message": str(e)})
 
     # Add relevant snippets to search result, if search was executed in this agent turn

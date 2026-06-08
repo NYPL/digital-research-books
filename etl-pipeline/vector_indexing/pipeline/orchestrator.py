@@ -43,7 +43,7 @@ class IndexingResult:
 
     def __repr__(self) -> str:
         status = "y" if self.success else "n"
-        return f"IndexingResult({status} {self.barcode}, {self.chunks_inserted}/{self.chunks_created} chunks)"
+        return f"IndexingResult({status} {self.barcode}, {self.chunks_inserted}/{self.chunks_created} chunks inserted/created)"
 
     def to_dict(self) -> dict:
         return dataclasses.asdict(self)
@@ -121,9 +121,9 @@ ProgressCallback = Callable[[IndexingResult], None]
 
 def _default_on_progress(result: IndexingResult) -> None:
     """Default progress callback that prints indexing results."""
-    status = "y" if result.success else "n"
-    print(
-        f"  {status} {result.barcode}: {result.chunks_inserted} chunks"
+    status = "success" if result.success else "failure"
+    logger.info(
+        f"Processed {result.barcode}:  {status} - {result.chunks_inserted} chunks inserted"
         + (f" ({result.error})" if result.error else "")
     )
 
@@ -189,9 +189,13 @@ class Pipeline:
         - Fetching metadata for all books in one DB query
         - Embedding all chunks together in batched API calls
 
-        The on_progress callback, if provided, is called after each book is processed.
-        NOTE: we may need to reconsider the on_progress design here since it only begins
-        being called at the final step.
+        The on_progress callback, if provided, is called on the IndexingResult
+        after each book is processed.
+
+        TODO: refactor on_progress callback, so it fires directly when a book
+        completes processing, whether an intermediate stage failure or a final
+        stage failure or success. Currently it is called for all books after the
+        batch is completed.
 
         Returns a BatchResult containing individual results for each book.
         """
@@ -218,7 +222,7 @@ class Pipeline:
                     )
 
             logger.info(
-                f"Stage 1 (Load): {len(books)} loaded, {len(book_errors)} errors"
+                f"Stage 1 (Load) Complete: {len(books)} loaded, {len(book_errors)} errors"
             )
 
             # Stage 2: Fetch metadata for all books in one query (keyed by barcode)
@@ -255,7 +259,7 @@ class Pipeline:
                             book_errors[barcode] = "Metadata retrieval failed"
 
             logger.info(
-                f"Stage 2 (Metadata): {len(metadata_map)} fetched, {len(book_errors)} errors"
+                f"Stage 2 (Metadata) Complete: {len(metadata_map)} fetched, {len(book_errors)} errors"
             )
 
             # Stage 3: Chunk all books
@@ -272,18 +276,18 @@ class Pipeline:
                     )
 
             logger.info(
-                f"Stage 3 (Chunk): {len(all_chunks)} chunks from {len(chunks_by_barcode)} books, {len(book_errors)} errors"
+                f"Stage 3 (Chunk) Complete: {len(all_chunks)} chunks from {len(chunks_by_barcode)} books, {len(book_errors)} errors"
             )
 
             # Stage 4: Embed all chunks together (most efficient)
             if all_chunks:
                 try:
                     texts = [c.text for c in all_chunks]
-                    vectors = self._embedder.embed_batch(texts)
+                    vectors = self._embedder.embed_document_batch(texts)
                     for chunk, vector in zip(all_chunks, vectors):
                         chunk.vector = vector
                 except Exception as e:
-                    # If embedding fails entirely, mark all remaining books as failed
+                    # If batch embedding fails, set all books as failed.
                     for barcode in chunks_by_barcode:
                         if barcode not in book_errors:
                             book_errors[barcode] = (
@@ -292,60 +296,62 @@ class Pipeline:
                     chunks_by_barcode.clear()
 
             logger.info(
-                f"Stage 4 (Embed): {len(all_chunks)} embedded, {len(book_errors)} errors"
+                f"Stage 4 (Embed) Complete: {len(all_chunks)} embedded, {len(book_errors)} errors"
             )
 
-            # Stage 5: Insert chunks per book (record per-book indexing results)
-            for barcode, chunks in chunks_by_barcode.items():
-                book = books[barcode]
-                try:
-                    insert_result = self._backend.insert(chunks)
-                    result = IndexingResult(
-                        barcode=barcode,
-                        book_id=book.book_id,
-                        success=insert_result.failed == 0,
-                        chunks_created=len(chunks),
-                        chunks_inserted=insert_result.inserted,
-                        error=insert_result.errors[0] if insert_result.errors else None,
-                    )
-                except Exception as e:
-                    err_str = f"Insert error:  {type(e).__module__}.{type(e).__qualname__}: {e}"
-                    result = IndexingResult(
-                        barcode=barcode,
-                        book_id=book.book_id,
-                        success=False,
-                        chunks_created=len(chunks),
-                        chunks_inserted=0,
-                        error=err_str,
-                    )
-                    book_errors[barcode] = err_str
-
-                batch_result.results.append(result)
-                if on_progress:
-                    on_progress(result)
-
-            logger.info(f"Stage 5 (Insert): {len(book_errors)} errors")
-
-            # Add book indexing result for each book that failed earlier
-            for barcode, error in book_errors.items():
+            # Stage 5: Insert chunks per book (+ record per-book indexing results)
+            for barcode in barcodes:
                 book = books.get(barcode)
-                result = IndexingResult(
-                    barcode=barcode,
-                    book_id=book.book_id if book else None,
-                    success=False,
-                    chunks_created=0,
-                    chunks_inserted=0,
-                    error=error,
-                )
+                if barcode in chunks_by_barcode:
+                    chunks = chunks_by_barcode[barcode]
+                    try:
+                        # Insert chunk documents, one book at a time
+                        insert_result = self._backend.insert(chunks)
+                        result = IndexingResult(
+                            barcode=barcode,
+                            book_id=book.book_id,
+                            success=insert_result.failed == 0,
+                            chunks_created=len(chunks),
+                            chunks_inserted=insert_result.inserted,
+                            error=insert_result.errors[0]
+                            if insert_result.errors
+                            else None,
+                        )
+                    except Exception as e:
+                        # Record result for stage 5/indexing errors
+                        err_str = f"Insert error:  {type(e).__module__}.{type(e).__qualname__}: {e}"
+                        result = IndexingResult(
+                            barcode=barcode,
+                            book_id=book.book_id if book else None,
+                            success=False,
+                            chunks_created=len(chunks),
+                            chunks_inserted=0,
+                            error=err_str,
+                        )
+                        book_errors[barcode] = err_str
+                else:
+                    # Record result for previous stage errors
+                    result = IndexingResult(
+                        barcode=barcode,
+                        book_id=book.book_id if book else None,
+                        success=False,
+                        chunks_created=0,
+                        chunks_inserted=0,
+                        error=book_errors.get(barcode),
+                    )
+
+                # Log per-book result
                 batch_result.results.append(result)
                 if on_progress:
                     on_progress(result)
+
+            logger.info(f"Stage 5 (Insert) Complete: {len(book_errors)} errors")
 
         batch_result.total_time = timer.elapsed
         return batch_result
 
 
-# TODO: remove
+# NOTE: old and mostly redundant to scripts/index_books.py
 def main(barcodes: list[str] | None = None) -> BatchResult:
     """Run the indexing pipeline with default components. Takes in a list of barcodes to index.
     Returns a BatchResult with indexing outcomes.

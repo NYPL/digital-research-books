@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { ResultPageProvider } from "~/src/context/ResultPageContext";
 import { PageType } from "~/src/types/ResearchAssistant";
-import PreviewLink from "../Ctas/PreviewLink";
+import OcrReadLink from "../Ctas/OcrReadLink";
 
-const previewLink = {
+const readLink = {
   link_id: 1,
   mediaType: "text/html",
   url: "preview",
@@ -13,25 +13,28 @@ const previewLink = {
     reader: false,
   },
 };
+
 const workId = "work1";
 const editionId = 123;
+const title = "Test Book";
 
 const renderWithProvider = (page: PageType) =>
   render(
     <ResultPageProvider value={{ page }}>
-      <PreviewLink
-        previewLink={previewLink}
+      <OcrReadLink
+        readLink={readLink}
         workId={workId}
         editionId={editionId}
+        title={title}
       />
     </ResultPageProvider>
   );
 
-describe("PreviewLink", () => {
+describe("EnhancedSearchReadLink", () => {
   test("renders preview button in VRA context", () => {
     renderWithProvider("vra");
     expect(
-      screen.getByRole("link", { name: /Preview item/i })
+      screen.getByRole("link", { name: /Read online/i })
     ).toBeInTheDocument();
   });
 

@@ -1,86 +1,94 @@
 import { expect, Page, test } from "@playwright/test";
 import { ResearchAssistantLandingPage } from "./research-assistant-landing-page";
 
-test.describe("Research Assistant Landing Page UI", { tag: "@vra" }, () => {
-  let page: Page;
-  let researchAssistantLandingPage: ResearchAssistantLandingPage;
+test.describe(
+  "Research Assistant Landing Page UI",
+  { tag: "@enhanced-search" },
+  () => {
+    let page: Page;
+    let researchAssistantLandingPage: ResearchAssistantLandingPage;
 
-  test.beforeAll(async ({ browser }) => {
-    page = await browser.newPage();
-    researchAssistantLandingPage = new ResearchAssistantLandingPage(page);
-    await researchAssistantLandingPage.navigateTo();
-  });
+    test.beforeAll(async ({ browser }) => {
+      page = await browser.newPage();
+      researchAssistantLandingPage = new ResearchAssistantLandingPage(page);
+      await researchAssistantLandingPage.navigateTo();
+    });
 
-  test.afterAll(async () => {
-    await page.close();
-  });
+    test.afterAll(async () => {
+      await page.close();
+    });
 
-  test("Hero heading is visible", async () => {
-    await expect(researchAssistantLandingPage.heroHeading).toBeVisible();
-  });
+    test("Hero heading is visible", async () => {
+      await expect(researchAssistantLandingPage.heroHeading).toBeVisible();
+    });
 
-  test("Hero subheading is visible", async () => {
-    await expect(researchAssistantLandingPage.heroSubheading).toBeVisible();
-  });
+    test("Hero subheading is visible", async () => {
+      await expect(researchAssistantLandingPage.heroSubheading).toBeVisible();
+    });
 
-  test("Subnav is visible", async () => {
-    await expect(researchAssistantLandingPage.subNav).toBeVisible();
-  });
+    test("Subnav is visible", async () => {
+      await expect(researchAssistantLandingPage.subNav).toBeVisible();
+    });
 
-  test("Search text box is visible", async () => {
-    await expect(researchAssistantLandingPage.searchTextBox).toBeVisible();
-  });
+    test("Search text box is visible", async () => {
+      await expect(researchAssistantLandingPage.searchTextBox).toBeVisible();
+    });
 
-  test("Search submit button is visible", async () => {
-    await expect(researchAssistantLandingPage.searchSubmitBtn).toBeVisible();
-  });
+    test("Search submit button is visible", async () => {
+      await expect(researchAssistantLandingPage.searchSubmitBtn).toBeVisible();
+    });
 
-  test("Search suggestions are visible", async () => {
-    await expect(
-      researchAssistantLandingPage.suggestBtnAncientRome
-    ).toBeVisible();
-    await expect(
-      researchAssistantLandingPage.suggestButtonMedievalWarfare
-    ).toBeVisible();
-    await expect(
-      researchAssistantLandingPage.suggestBtnOrnithology
-    ).toBeVisible();
-    await expect(
-      researchAssistantLandingPage.suggestBtnShipbuilding
-    ).toBeVisible();
-  });
+    test("Search suggestions are visible", async () => {
+      await expect(
+        researchAssistantLandingPage.suggestBtnAncientRome
+      ).toBeVisible();
+      await expect(
+        researchAssistantLandingPage.suggestButtonMedievalWarfare
+      ).toBeVisible();
+      await expect(
+        researchAssistantLandingPage.suggestBtnOrnithology
+      ).toBeVisible();
+      await expect(
+        researchAssistantLandingPage.suggestBtnShipbuilding
+      ).toBeVisible();
+    });
 
-  test("'Learn more' buttons are visible", async () => {
-    await expect(researchAssistantLandingPage.learnMoreBtns).toHaveCount(3);
-    for (const btn of await researchAssistantLandingPage.learnMoreBtns.all()) {
-      await expect(btn).toBeVisible();
-    }
-  });
+    test("'Learn more' buttons are visible", async () => {
+      await expect(researchAssistantLandingPage.learnMoreBtns).toHaveCount(3);
+      for (const btn of await researchAssistantLandingPage.learnMoreBtns.all()) {
+        await expect(btn).toBeVisible();
+      }
+    });
 
-  test("Features section heading is visible", async () => {
-    await expect(
-      researchAssistantLandingPage.featuresSectionHeading
-    ).toBeVisible();
-  });
+    test("Features section heading is visible", async () => {
+      await expect(
+        researchAssistantLandingPage.featuresSectionHeading
+      ).toBeVisible();
+    });
 
-  test("Access section heading is visible", async () => {
-    await expect(
-      researchAssistantLandingPage.accessSectionHeading
-    ).toBeVisible();
-  });
+    test("Access section heading is visible", async () => {
+      await expect(
+        researchAssistantLandingPage.accessSectionHeading
+      ).toBeVisible();
+    });
 
-  test("FAQ section heading is visible", async () => {
-    await expect(researchAssistantLandingPage.faqSectionHeading).toBeVisible();
-  });
+    test("FAQ section heading is visible", async () => {
+      await expect(
+        researchAssistantLandingPage.faqSectionHeading
+      ).toBeVisible();
+    });
 
-  test("Help section heading is visible", async () => {
-    await expect(researchAssistantLandingPage.helpSectionHeading).toBeVisible();
-  });
-});
+    test("Help section heading is visible", async () => {
+      await expect(
+        researchAssistantLandingPage.helpSectionHeading
+      ).toBeVisible();
+    });
+  }
+);
 
 test.describe(
   "Research Assistant Landing Page Functionality",
-  { tag: "@vra" },
+  { tag: "@enhanced-search" },
   () => {
     let researchAssistantLandingPage: ResearchAssistantLandingPage;
 

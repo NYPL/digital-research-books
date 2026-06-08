@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 """Run the vector indexing pipeline on a list of barcodes.
 
+The pipeline results in the insertion of embedding + metadata ChunkDocuments
+into the specified index. Each document insertion overwrites the inserted
+document id in the index, other existing document ids are unaffected.
+
 An error will be raised if --index-name not already configured in vector_indexing/core/config.py
 
 Indexing is run in batches. Results are saved in a Job>Batches hierarchy in --results-dir.
-By default, each invocation creates a new job. Use --resume-latest to resume the most
-recent matching job for a given --index-name + barcode input.
-For resumed runs, later batches may rerun barcodes from previous batches if they failed.
+
+By default, each invocation creates a new job. Use --resume-latest to resume the
+most recent job for a given --index-name from the first never succeeded
+barcode in the sort order. If the barcode input from the job being resumed does
+not match the input specified on resumption, an error will occur.
+For resumed runs, later batches may rerun barcodes from previous batches.
 
 Usage:
     # From barcodes:
@@ -82,7 +89,7 @@ class MockEmbedder:
         self.dimensions = dimensions or 768
         # TODO: think about how to mock for index with different dims
 
-    def embed_batch(self, texts: list[str]) -> list[list[float]]:
+    def embed_document_batch(self, texts: list[str]) -> list[list[float]]:
         import random
 
         return [[random.random() for _ in range(self.dimensions)] for _ in texts]
@@ -172,15 +179,27 @@ def read_job_metadata(job_dir: Path) -> dict[str, Any]:
 def read_job_state(job_dir: Path) -> dict[str, Any]:
     path = job_dir / JOB_STATE_FILE
     if not path.exists():
-        return {"total_succeeded": 0, "total_elapsed_seconds": 0.0}
+        return {
+            "n_barcodes": 0,
+            "total_attempts": 0,
+            "total_successes": 0,
+            "total_elapsed_seconds": 0.0,
+        }
     return json.loads(path.read_text())
 
 
+# TODO: move n_barcodes to job_metadata as it is fixed
 def write_job_state(
-    job_dir: Path, total_succeeded: int, total_elapsed_seconds: float
+    job_dir: Path,
+    n_barcodes: int,  # TODO: since n_barcodes is set on job init, move to job_metadata
+    total_attempts: int,
+    total_successes: int,
+    total_elapsed_seconds: float,
 ) -> None:
     state = {
-        "total_succeeded": total_succeeded,
+        "n_barcodes": n_barcodes,
+        "total_attempts": total_attempts,
+        "total_successes": total_successes,
         "total_elapsed_seconds": total_elapsed_seconds,
     }
     (job_dir / JOB_STATE_FILE).write_text(json.dumps(state, indent=2))
@@ -216,64 +235,31 @@ def find_latest_job(results_dir: Path, index_name: str) -> Path | None:
 ##############################
 
 
-def start_from_job(job_dir: Path) -> tuple[str | None, bool]:
-    """Return first failed barcode in a indexing job folder, distinguishing
-    between no barcodes attempted and all barcodes succeeded.
-
-    Returns (<barcode>, <all_succeeded>).
-        <barcode> is the first failed barcode in chronological batch order.
-        If batch results exist and all records succeeded, returns ``(None, True)``.
-        If no batch results exist, returns ``(None, False)``.
-    """
-    batch_dirs = sorted(p for p in job_dir.glob("batch_*") if p.is_dir())
-    if not batch_dirs:
-        return None, False
-
-    found_any_batch_result = False
-    for batch_dir in batch_dirs:
+def ever_succeeded(job_dir: Path) -> set[str]:
+    """Return the set of barcodes that have ever succeeded in the given job directory."""
+    succeeded: set[str] = set()
+    for batch_dir in sorted(p for p in job_dir.glob("batch_*") if p.is_dir()):
         for path in sorted(batch_dir.glob("batch_result_*.json")):
-            found_any_batch_result = True
-            batch_result = BatchResult.load(path)
-            for result in batch_result.results:
-                if not result.success:
-                    return result.barcode, False
-
-    if not found_any_batch_result:
-        return None, False
-    return None, True
+            for result in BatchResult.load(path).results:
+                if result.success:
+                    succeeded.add(result.barcode)
+    return succeeded
 
 
-def failed_from_job(results_dir: Path) -> Iterator[str]:
-    """Generate failed barcodes from saved batch results in an indexing
-    run results directory
+def filter_from_job(job_dir: Path, all_barcodes: list[str]) -> list[str]:
+    """Return barcodes from all_barcodes that have never succeeded in the given
+    job directory, preserving input order.
     """
-    # TODO: add length (optional) for progress
-    from vector_indexing.pipeline.orchestrator import BatchResult
-
-    for path in sorted(results_dir.glob("batch_result_*.json")):
-        batch_result = BatchResult.load(path)
-        yield from (r.barcode for r in batch_result.results if not r.success)
+    succeeded = ever_succeeded(job_dir)
+    return [b for b in all_barcodes if b not in succeeded]
 
 
-def _apply_start_from(barcodes: list[str], start_from: str | None) -> list[str]:
-    if start_from is None:
-        return barcodes
-    try:
-        start_idx = barcodes.index(start_from)
-    except ValueError as exc:
-        raise SystemExit(
-            f"Cannot resume: failed barcode {start_from!r} is not present in the selected barcode input."
-        ) from exc
-    return barcodes[start_idx:]
-
-
-def resolve_barcodes(args: argparse.Namespace, start_from: str | None) -> list[str]:
+def resolve_barcodes(args: argparse.Namespace) -> list[str]:
     if args.ten_k:
-        return list_10k_barcodes(start_from=start_from)
+        return list_10k_barcodes()
     if args.barcodes:
-        return _apply_start_from(sorted(args.barcodes), start_from)
-    file_barcodes = sorted(load_barcodes_from_file(args.file))
-    return _apply_start_from(file_barcodes, start_from)
+        return sorted(args.barcodes)
+    return sorted(load_barcodes_from_file(args.file))
 
 
 def load_barcodes_from_file(file_path: Path) -> list[str]:
@@ -288,9 +274,11 @@ def parse_json_object_arg(raw: str, arg_name: str) -> dict[str, Any]:
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError as exc:
-        raise ValueError(f"Invalid JSON for --{arg_name}:  {exc}") from exc
+        raise argparse.ArgumentTypeError(
+            f"Invalid JSON object. json.JSONDecodeError: {exc}."
+        ) from exc
     if not isinstance(parsed, dict):
-        raise ValueError(f"--{arg_name} must deserialize to a JSON object")
+        raise argparse.ArgumentTypeError("Must deserialize to a JSON object.")
     return parsed
 
 
@@ -298,6 +286,10 @@ def parse_config_overrides(raw: str) -> dict[str, Any]:
     """Parse --config-overrides JSON, mapping the string "DELETE" to the DELETE sentinel."""
     parsed = parse_json_object_arg(raw, "config-overrides")
     return {k: DELETE if v == "DELETE" else v for k, v in parsed.items()}
+
+
+def parse_loader_args(raw: str) -> dict[str, Any]:
+    return parse_json_object_arg(raw, "loader-args")
 
 
 def parse_args():
@@ -352,15 +344,14 @@ def parse_args():
     parser.add_argument(
         "--batch-size",
         type=int,
-        default=100,
+        default=10,
         help="Batch size for pipeline runs. Use 0 for a single batch.",
     )
-    # TODO: resolve relative paths to __file__
     parser.add_argument(
         "--results-dir",
         type=Path,
         default=DEFAULT_RESULTS_DIR,
-        help="Base directory for indexing job artifacts",
+        help="Base directory for indexing job artifacts. If relative, path is resolved relative to etl-pipeline/",
     )
 
     # Index Config
@@ -395,9 +386,12 @@ def parse_args():
     )
     parser.add_argument(
         "--loader-args",
-        type=lambda raw: parse_json_object_arg(raw, "loader-args"),
+        type=parse_loader_args,
         default={},
-        help="JSON object with constructor kwargs for the selected loader",
+        help=(
+            "JSON object with constructor kwargs for the selected loader "
+            'e.g. \'{"data_dir": "/path/to/books"}\''
+        ),
     )
     parser.add_argument(
         "--mock-embedder",
@@ -432,26 +426,39 @@ def main():
     job_dir = None
     if args.resume_latest:
         job_dir = find_latest_job(results_dir, args.index_name)
-    start_from = None
+
+    all_barcodes = resolve_barcodes(args)
 
     if job_dir is None:
-        # Start new job
+        # Start new job (including resuming job that does not exist)
         job_dir = create_job_dir(results_dir, args.index_name)
         write_job_metadata(job_dir, current_job_metadata)
-        write_job_state(job_dir, total_succeeded=0, total_elapsed_seconds=0.0)
+        write_job_state(
+            job_dir,
+            n_barcodes=len(all_barcodes),
+            total_attempts=0,
+            total_successes=0,
+            total_elapsed_seconds=0.0,
+        )
+        barcodes = all_barcodes
+        if args.resume_latest:
+            print("No job available to resume, starting new job...")
+        else:
+            print("Starting new job...")
     else:
-        # Resume job: find barcode to resume from + validate metadata continuity
+        # Resume job: validate metadata continuity, then filter to never-succeeded
 
         saved_job_metadata = read_job_metadata(job_dir)
-        index_match, barcode_input_match = compare_job_metadata(
+        index_config_match, barcode_input_match = compare_job_metadata(
             saved_job_metadata, current_job_metadata
         )
         if not barcode_input_match:
+            # TODO: more error details including job_dir and the 2 barcode inputs
             raise SystemExit(
-                "Barcode input mismatch with latest job. Start a new job (different --results-dir or --index-name) for a different barcode source."
+                "Barcode input mismatch with latest job. Remove --resume-latest or use a different --results-dir or --index-name"
             )
 
-        if not index_match:
+        if not index_config_match:
             if not args.force:
                 raise SystemExit(
                     "Index config mismatch with latest job. Use --force to overwrite saved index_config."
@@ -459,16 +466,21 @@ def main():
             saved_job_metadata["index_config"] = current_job_metadata["index_config"]
             write_job_metadata(job_dir, saved_job_metadata)
 
-        start_from, all_succeeded = start_from_job(job_dir)
-        if all_succeeded:
-            print("No failed barcodes found in latest job. All done already.")
+        barcodes = filter_from_job(job_dir, all_barcodes)
+        # TODO: future: on error/complete save metadata to allow read of \
+        # start_from from job metadata (without having to read all barcodes into\
+        # memory first)
+        if not barcodes:
+            print("All barcodes already succeeded. All done.")
             return
+        print(
+            f"Resuming job from barcode '{barcodes[0]}': {len(barcodes)}/{len(all_barcodes)} remaining..."
+        )
 
     job_state = read_job_state(job_dir)
-    cumulative_succeeded = job_state["total_succeeded"]
+    cumulative_attempts = job_state["total_attempts"]
+    cumulative_successes = job_state["total_successes"]
     cumulative_elapsed = job_state["total_elapsed_seconds"]
-
-    barcodes = resolve_barcodes(args, start_from)
 
     print(f"Processing {len(barcodes)} barcodes")
     print(f"Job directory: {job_dir}")
@@ -512,8 +524,6 @@ def main():
     else:
         print("Using MetadataProvider (default)")
 
-    print(f"\nIndexing {len(barcodes)} books...")
-
     batch_size = None if args.batch_size == 0 else args.batch_size
     if batch_size is not None and batch_size <= 0:
         raise ValueError("batch_size must be positive or None")
@@ -538,15 +548,25 @@ def main():
         this_run_succeeded += result.succeeded
         this_run_failed += result.failed
 
-        # Update and persist cumulative job state
-        cumulative_succeeded += result.succeeded
-        cumulative_elapsed += result.total_time or 0.0
-        write_job_state(job_dir, cumulative_succeeded, cumulative_elapsed)
-
         # Save batch result
+        # (batch results are the source of truth for resume; job state is for reporting)
         batch_dir = job_dir / f"batch_{_iso_utc_now()}"
         batch_dir.mkdir(parents=True, exist_ok=False)
         saved_path = result.save(batch_dir)
+
+        # Update and persist cumulative job state
+        # TODO: maybe these cumulative counts are pointless, remove
+        cumulative_attempts += result.total
+        cumulative_successes += result.succeeded
+        cumulative_elapsed += result.total_time or 0.0
+        write_job_state(
+            job_dir,
+            n_barcodes=len(all_barcodes),
+            # TODO: save cumulatove_ not total_
+            total_attempts=cumulative_attempts,
+            total_successes=cumulative_successes,
+            total_elapsed_seconds=cumulative_elapsed,
+        )
 
         batch_pct = 100.0 * batch_index / total_batches
         print(
@@ -555,18 +575,21 @@ def main():
 
         if result.failed > 0:
             print("Fail-fast: encountered failed records, stopping.")
-            for r in result.results:
-                if not r.success:
-                    print(f"  {r.barcode}: {r.error}")
             break
 
-    prior_succeeded = cumulative_succeeded - this_run_succeeded
+    prior_successes = cumulative_successes - this_run_succeeded
     print("\nDone:")
     print(f"  This run:  {this_run_succeeded}/{this_run_processed} books succeeded")
-    if prior_succeeded > 0:
+    # TODO: print batch timing and per book timing
+    if prior_successes > 0:
         print(
-            f"  Job total: {cumulative_succeeded} succeeded ({prior_succeeded} from prior runs)"
+            f"  Job cumulative: {cumulative_successes} books succeed / {cumulative_attempts} books attempted"
         )
+    # Final report of n completed
+    n_ever_succeeded = len(ever_succeeded(job_dir))
+    print(
+        f"  Job total: {n_ever_succeeded}/{len(all_barcodes)} barcodes ever succeeded"
+    )
 
     if this_run_failed > 0:
         raise SystemExit(1)

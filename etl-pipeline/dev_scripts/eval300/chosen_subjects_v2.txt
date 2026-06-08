@@ -1,0 +1,36 @@
+9 Chosen Subjects v2 — GRIN 10k Sample (Structural Subject Diversity)
+========================================================================
+
+Designed to complement v1 by targeting structural diversity *within* the
+subjects field itself: named person headings, pure geographic headings,
+previously unrepresented form subdivisions, and deeply subdivided strings.
+All 9 subjects are topically distinct from v1.
+
+Subject                                                  | Barcodes | Structural type            | Topic domain
+---------------------------------------------------------|----------|----------------------------|---------------------------------
+Napoleon 1769-1821                                       |       14 | Named person as subject    | French/European history
+France -- History                                        |       25 | Geographic primary heading | French history (place as entry)
+United States -- Biography                               |       12 | Form subdivision: Biography| American biography (new form)
+Meteorology -- Periodicals -- Statistics -- United States|       12 | Deeply subdivided (4 lvls) | Meteorological data serials
+Church history                                           |       16 | Topical (v1-new)           | Religion / ecclesiastical history
+Natural history                                          |       16 | Topical (v1-new)           | Biology / natural sciences
+Voyages and travels                                      |       12 | Topical (v1-new)           | Travel literature / exploration
+Agriculture -- Periodicals                               |       20 | Topical serial (v1-new)    | Applied agricultural science
+Political science                                        |       14 | Topical (v1-new)           | Social sciences / governance
+
+Structural diversity notes:
+- Named person: "Napoleon 1769-1821" is a personal name heading with birth/death
+  dates — exercises person-as-subject indexing and display.
+- Geographic heading: "France -- History" has a place name as the PRIMARY heading
+  entry (not a geographic subdivision), distinct from v1's place-as-subdivision
+  subjects like "United States -- History -- Civil War, 1861-1865".
+- New form subdivision: "-- Biography" has not appeared in v1; v1 used
+  "-- Periodicals" and "-- Maps". Exercises form-facet handling.
+- Deeply subdivided: "Meteorology -- Periodicals -- Statistics -- United States"
+  has 4 components (3 " -- " separators), the maximum observed in GRIN 10k with
+  a usable barcode count. Tests subject string parsing at depth.
+
+V1 subjects (not repeated here):
+  English fiction, English poetry, Administrative law -- United States,
+  Science -- Periodicals, Engineering -- Periodicals, United States -- Periodicals,
+  History -- Periodicals, Encyclopedias and dictionaries, French fiction

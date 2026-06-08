@@ -28,15 +28,15 @@ from transformers import AutoTokenizer
 # ---------------------------------------------------------------------------
 
 ENDPOINT_NAME = (
-    # "tei-pplx-embed-v1-4b-ml-g6e-xlarge-20260506233640"  # pragma: allowlist secret
-    "hf-tei-qwen3-embedding-4b-ml-g5-2xlarge-20260507-181318"  # pragma: allowlist secret
+    "hf-tei-qwen3-embedding-8b-ml-g6-2xlarge-20260507-231343"  # pragma: allowlist secret
+    # "hf-tei-qwen3-embedding-4b-ml-g5-2xlarge-20260507-181318"  # pragma: allowlist secret
 )
 AWS_PROFILE = "vra-sandbox"
 
 TOTAL_REQUESTS = 200  # requests at each concurrency level
 # CONCURRENCY_LEVELS = [1, 16, 32, 64]
-# CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
-CONCURRENCY_LEVELS = [15, 20, 25, 30, 35]
+CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
+# CONCURRENCY_LEVELS = [15, 20, 25, 30, 35]
 
 # TODO: for higher thruput. try  {inputs: [<str>, <str>]} (this works!),  batch_transform, async inference endpoint
 
@@ -167,6 +167,8 @@ async def run_benchmark(
     """
     Send *total_requests* embedding requests capped at *concurrency* in-flight at once.
     Return summary of throughput.
+
+    Latency calculations exclude requests that raised errors.
     """
 
     semaphore = asyncio.Semaphore(concurrency)
@@ -194,6 +196,8 @@ async def run_benchmark(
         concurrency=concurrency,
         total_requests=total_requests,
         total_time_s=wall_time,
+        # BUG: `latencies` accounts for only non-error requests, but tokens_per_s \
+        # (also reqs_per_s) counts error and success requests a like.
         req_per_s=total_requests / wall_time,
         tokens_per_s=(total_requests * token_count) / wall_time,
         avg_latency_ms=float(np.mean(latencies_ms)) if latencies_ms.size else 0.0,
