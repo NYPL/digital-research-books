@@ -30,14 +30,15 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
       borderRadius={{ base: "0px", md: "32px" }}
       border="1px solid"
       borderColor="section.research.primary-10"
-      padding={{ base: "m", md: "l" }}
+      paddingY={{ base: "m", md: "l" }}
+      paddingX={{ base: "s", md: "l" }}
     >
       <Flex
         gap={{ base: "m", md: "l" }}
         flexDir={{ base: "column", md: "row" }}
       >
         <Box flex="1">
-          <Flex flexDir="column" gap="s" textAlign="left">
+          <Flex flexDir="column" gap={{ base: "xs", md: "s" }} textAlign="left">
             <Heading
               level="h3"
               fontSize={{

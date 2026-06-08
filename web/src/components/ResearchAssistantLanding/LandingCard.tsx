@@ -5,29 +5,37 @@ interface LandingCardProps {
   icon: React.ReactNode;
   heading: React.ReactNode;
   body: React.ReactNode;
-  gap?: string;
+  gap?: string | { base?: string; md?: string };
 }
 
 const LandingCard: React.FC<LandingCardProps> = ({
   icon,
   heading,
   body,
-  gap = "xl",
+  gap = { base: "m", md: "xl" },
 }) => {
   return (
     <Flex
       bgColor="#FEF9EA"
       border="1px solid"
       borderColor="section.research.primary-10"
-      borderRadius="24px"
+      borderRadius={{ base: "0px", md: "24px" }}
       flexDir="column"
+      justifyContent={{ base: "center", md: "flex-start" }}
+      alignItems={{ base: "center", md: "stretch" }}
       gap={gap}
-      padding="l"
-      textAlign="left"
+      paddingY={{ base: "m", md: "l" }}
+      paddingX={{ base: "s", md: "l" }}
+      textAlign={{ base: "center", md: "left" }}
       flex="1"
     >
-      <Flex flexDir="column" gap="s">
-        {icon}
+      <Flex gap="s" flexDir="column">
+        <Flex
+          width="100%"
+          justifyContent={{ base: "center", md: "flex-start" }}
+        >
+          {icon}
+        </Flex>
         {heading}
       </Flex>
       <Box

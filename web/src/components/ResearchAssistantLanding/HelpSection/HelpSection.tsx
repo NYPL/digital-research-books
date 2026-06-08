@@ -34,19 +34,26 @@ const HelpSection: React.FC<HelpSectionProps> = ({
       display="flex"
       flexDir="column"
       alignItems="center"
+      paddingX={{ base: "none", md: "s" }}
     >
       <Heading
         level="h2"
-        size="heading2"
+        fontSize={{
+          base: "mobile.heading.heading3",
+          md: "desktop.heading.heading2",
+        }}
         fontFamily="Domine"
         fontWeight="bold"
-        marginBottom="xxl"
+        marginBottom={{ base: "l", md: "xxl" }}
       >
         Have more questions?
       </Heading>
-      <Flex gap="l">
+      <Flex
+        gap={{ base: "s", md: "l" }}
+        flexDir={{ base: "column", md: "row" }}
+      >
         <LandingCard
-          gap="l"
+          gap={{ base: "m", md: "l" }}
           icon={<MailIcon />}
           heading={
             <Heading level="h3" size="heading4">
@@ -67,6 +74,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                 fontWeight="bold"
                 display="flex"
                 alignItems="center"
+                justifyContent={{ base: "center", md: "left" }}
                 gap="xxs"
                 _hover={{
                   color: "section.research.primary",
@@ -101,6 +109,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                 fontWeight="bold"
                 display="flex"
                 alignItems="center"
+                justifyContent={{ base: "center", md: "left" }}
                 gap="xxs"
                 _hover={{
                   color: "section.research.primary",

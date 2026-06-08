@@ -141,12 +141,15 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
 
       <Box
         display="grid"
-        gridTemplateColumns="repeat(2, 1fr)"
         gap="s"
         sx={{
           marginBottom: {
             base: "l",
             md: "xl",
+          },
+          gridTemplateColumns: {
+            base: "repeat(1, 1fr)",
+            sm: "repeat(2, 1fr)",
           },
         }}
       >
@@ -162,7 +165,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
             borderRadius="8px"
             fontWeight="medium"
             gap="xs"
-            alignItems="left"
+            alignItems="center"
             justifyContent="flex-start"
             textAlign="left"
             height="auto"

@@ -27,26 +27,42 @@ const HowItWorksSection: React.FC = () => {
       backgroundSize="16px 16px"
       backgroundPosition="center"
       color="ui.typography.body"
+      paddingX={{ base: "none", md: "s" }}
     >
       <Heading
         level="h2"
-        size="heading2"
+        fontSize={{
+          base: "mobile.heading.heading3",
+          md: "desktop.heading.heading2",
+        }}
         fontFamily="Domine"
         fontWeight="bold"
         marginBottom="xs"
+        paddingX={{ base: "s", md: "none" }}
       >
         How does Enhanced Search work?
       </Heading>
       <Text
+        fontSize={{
+          base: "mobile.heading.heading5",
+          md: "desktop.heading.heading5",
+        }}
         color="ui.gray.dark"
-        fontSize="desktop.heading.heading5"
-        fontWeight="semibold"
-        marginBottom="xxl"
+        fontWeight={{ base: "590", md: "semibold" }}
+        marginBottom={{ base: "l", md: "xxl" }}
+        paddingX={{ base: "s", md: "none" }}
       >
         The power of technology backed by the stewardship of the New York Public
         Library
       </Text>
-      <Grid gridTemplateColumns="repeat(2, 1fr)" gap="l" marginBottom="xxl">
+      <Grid
+        gridTemplateColumns={{
+          base: "repeat(1, 1fr)",
+          md: "repeat(2, 1fr)",
+        }}
+        gap="l"
+        marginBottom={{ base: "0px", md: "xxl" }}
+      >
         <LandingCard
           icon={<MessageIcon />}
           heading={

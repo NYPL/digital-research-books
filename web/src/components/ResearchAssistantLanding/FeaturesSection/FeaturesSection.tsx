@@ -27,6 +27,7 @@ const FeaturesSection: React.ForwardRefExoticComponent<
         color="ui.typography.body"
         tabIndex={-1}
         ref={ref}
+        paddingX={{ base: "none", md: "xs" }}
       >
         <Heading
           level="h2"
@@ -37,6 +38,7 @@ const FeaturesSection: React.ForwardRefExoticComponent<
           fontFamily="Domine"
           fontWeight="bold"
           marginBottom="xs"
+          paddingX={{ base: "s", md: "none" }}
         >
           What can Enhanced Search help you do?
         </Heading>
@@ -48,6 +50,7 @@ const FeaturesSection: React.ForwardRefExoticComponent<
           color="ui.gray.dark"
           fontWeight={{ base: "590", md: "semibold" }}
           marginBottom={{ base: "l", md: "xxl" }}
+          paddingX={{ base: "s", md: "none" }}
         >
           A collaborative discovery tool designed to support your research
         </Text>

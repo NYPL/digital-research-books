@@ -11,14 +11,18 @@ const FaqSection: React.FC = () => {
       <Flex
         flexDir="column"
         gap="l"
-        marginY="128px"
+        marginY={{ base: "0px", md: "128px" }}
+        paddingX={{ base: "s", sm: "m" }}
         backgroundColor="#FAFDFD"
         alignItems="center"
       >
         <Text
           as="blockquote"
           color="ui.typography.heading"
-          fontSize="desktop.heading.heading3"
+          fontSize={{
+            base: "mobile.heading.heading4",
+            md: "desktop.heading.heading3",
+          }}
           fontFamily="Domine"
           lineHeight="1"
           maxWidth="765px"
@@ -29,14 +33,14 @@ const FaqSection: React.FC = () => {
         <Box>
           <Text
             color="section.research.secondary"
-            fontSize="desktop.body.body1"
+            fontSize={{ base: "mobile.body.body1", md: "desktop.body.body1" }}
             fontWeight="bold"
           >
             JENNIFER LOPEZ
           </Text>
           <Text
             color="ui.gray.dark"
-            fontSize="desktop.body.body1"
+            fontSize={{ base: "mobile.body.body1", md: "desktop.body.body1" }}
             fontWeight="bold"
           >
             CHIEF DIGITAL OFFICER
