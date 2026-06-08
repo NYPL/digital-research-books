@@ -77,7 +77,9 @@ const MessageBubble = memo(
                     </Box>
                   )}
                   <Box>
-                    <HiddenAria>Enhanced Search says:</HiddenAria>
+                    <HiddenAria ariaLive="off" ariaAtomic={false}>
+                      Enhanced Search says:
+                    </HiddenAria>
                     {renderMarkdownContent(
                       contentItem.text,
                       handleEditionClick

@@ -3,7 +3,7 @@ import { useCookies } from "react-cookie";
 import { NYPL_SESSION_ID } from "~/src/constants/auth";
 import { Agent, ApiItem } from "~/src/types/DataModel";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
-import PreviewLink from "../ResultCard/Ctas/PreviewLink";
+import OcrReadLink from "../ResultCard/Ctas/OcrReadLink";
 import DownloadLink from "./DownloadLink";
 import EddLink from "./EddLink";
 import ReadOnlineLink from "./ReadOnlineLink";
@@ -35,7 +35,7 @@ const Ctas: React.FC<{
               title={title}
             />
           ) : (
-            <PreviewLink previewLink={readOnlineLink} />
+            <OcrReadLink readLink={readOnlineLink} />
           ))}
         {downloadLink && (
           <DownloadLink

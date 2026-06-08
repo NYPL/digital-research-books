@@ -185,12 +185,19 @@ export default class EditionCardUtils {
   }
 
   // return first item if links are available
-  static getPreviewItem(items: ApiItem[] | undefined) {
+  static getPreviewItem(
+    items: ApiItem[] | undefined,
+    isEnhancedSearch: boolean = false
+  ) {
     if (!items) return undefined;
 
     const firstItem = items[0];
 
-    return firstItem && firstItem.links ? firstItem : undefined;
+    const previewItem = isEnhancedSearch
+      ? items.find((item) => item.source === "grin" && item.links) ?? firstItem
+      : firstItem;
+
+    return previewItem && previewItem.links ? previewItem : undefined;
   }
 
   static isAvailableOnline(item: ApiItem) {

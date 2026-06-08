@@ -6,7 +6,7 @@ import { CatalogItem } from "~/src/types/ResearchAssistant";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
 import DownloadLink from "./DownloadLink";
 import EddLink from "./EddLink";
-import PreviewLink from "./PreviewLink";
+import OcrReadLink from "./OcrReadLink";
 import ReadOnlineLink from "./ReadOnlineLink";
 
 interface CtasProps {
@@ -56,10 +56,11 @@ const Ctas: React.FC<CtasProps> = ({
               title={title}
             />
           ) : (
-            <PreviewLink
-              previewLink={readOnlineLink}
+            <OcrReadLink
+              readLink={readOnlineLink}
               workId={workId}
               editionId={editionId}
+              title={title}
             />
           ))}
         {downloadLink && (

@@ -22,7 +22,7 @@ from ..utils import APIUtils, orm_to_dict
 from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
-from ..decorators import require_basic_authentication, require_session_jwt
+from ..decorators import require_session_jwt
 from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
 from ..assistant.snippets import get_relevant_snippets
 from ..assistant.streaming_utils import (
@@ -164,10 +164,9 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 
 @chat_blueprint.route("", methods=["POST"])
 @require_api_key
-@require_basic_authentication
 @require_session_jwt
 @timer(logger)
-def chat(user, session_id):
+def chat(session_id):
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
@@ -187,7 +186,7 @@ def chat(user, session_id):
         def generate_streaming_response():
             try:
                 yield from _chat_stream_handler(
-                    user, session_id, conversation_type, message, edition_id
+                    session_id, conversation_type, message, edition_id
                 )
             except Exception as e:
                 logger.exception("Error in streaming chat handler")
@@ -200,11 +199,18 @@ def chat(user, session_id):
         )
 
 
-def _chat_stream_handler(user, session_id, conversation_type, message, edition_id):
+def _chat_stream_handler(session_id, conversation_type, message, edition_id):
     """
     Generator that yields NDJSON events during chat processing.
     Validates input, processes chat, and yields progress/result events.
     """
+    return _chat_handler(session_id, conversation_type, message, edition_id)
+
+
+def _chat_handler(session_id, conversation_type, message, edition_id):
+    """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
+
+    logger.info(f"Chat request received: {message[:20]}...")
 
     if not message:
         yield format_error("message is required", code="validation_error")

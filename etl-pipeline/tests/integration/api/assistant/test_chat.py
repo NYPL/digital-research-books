@@ -30,7 +30,12 @@ def test_chat(conversation_type, message, edition_id, vra_test_user):
     if edition_id is not None:
         payload["editionId"] = edition_id
 
-    response = requests.post(url, json=payload, headers=get_vra_auth_headers())
+    response = requests.post(
+        url,
+        json=payload,
+        headers=get_vra_auth_headers(),
+        timeout=90,  # 30s faster than pytest timeout to catch API timeouts explicitly
+    )
 
     # Verify HTTP status code is returned and is 200 OK
     assert response.status_code is not None
