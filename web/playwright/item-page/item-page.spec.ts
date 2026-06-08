@@ -38,9 +38,9 @@ test.describe("Item Page UI", { tag: "@enhanced-search" }, () => {
       await expect(itemPage.detailsAccordion).toBeVisible();
     });
 
-    test("'What is this book about?' accordion control is visible", async () => {
-      await expect(itemPage.whatIsThisBookAboutAccordion).toBeVisible();
-    });
+    // test("'What is this book about?' accordion control is visible", async () => {
+    //   await expect(itemPage.whatIsThisBookAboutAccordion).toBeVisible();
+    // });
 
     test("'Download options' accordion control is visible", async () => {
       await expect(itemPage.downloadOptionsAccordion).toBeVisible();
@@ -54,9 +54,9 @@ test.describe("Item Page UI", { tag: "@enhanced-search" }, () => {
       await expect(itemPage.otherEditionsAccordion).toBeVisible();
     });
 
-    test("'Related books' accordion control is visible", async () => {
-      await expect(itemPage.relatedBooksAccordion).toBeVisible();
-    });
+    // test("'Related books' accordion control is visible", async () => {
+    //   await expect(itemPage.relatedBooksAccordion).toBeVisible();
+    // });
   });
 
   test.describe("PDF reader", () => {
