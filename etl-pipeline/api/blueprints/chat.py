@@ -230,7 +230,7 @@ def _chat_handler(user, session_id, conversation_type, message, edition_id, barc
                 edition_id=edition_id,
                 barcode=barcode,
             )
-    )
+        )
     except ValueError as e:
         # Intended to catch "No edition found with id=XXX"
         # TODO: make error filter specific to intended error, even tho its the \
