@@ -576,7 +576,8 @@ async def update_chat(
         exec_context = CatalogSearchExecutionContext(
             backend=backend,
             embedder=embedder,
-            event_callback=event_callback,
+            session_id=session_id,
+            event_callback=event_callback
         )
         system_prompt = remove_markdown_comments(
             system_prompt_template.render(conversation_type="catalogSearch")
