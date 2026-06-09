@@ -179,11 +179,11 @@ def chat(session_id):
 
     with LogContextVars(get_app_logger(), context=log_context):
         return _chat_handler(
-            user, session_id, conversation_type, message, edition_id, barcode
+            session_id, conversation_type, message, edition_id, barcode
         )
 
 
-def _chat_handler(user, session_id, conversation_type, message, edition_id, barcode):
+def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
     """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
 
     logger.info(f"Chat request received: {message[:20]}...")
