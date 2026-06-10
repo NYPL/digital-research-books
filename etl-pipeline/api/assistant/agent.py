@@ -24,8 +24,8 @@ from agents import (
     RunResult,
     function_tool,
 )
-from agents.extensions.memory import SQLAlchemySession
 from agents.items import ModelResponse
+from agents.memory import SessionABC
 from agents.models.chatcmpl_converter import Converter
 from agents.run_config import DEFAULT_MAX_TURNS
 from agents.tool_context import ToolContext
@@ -41,7 +41,6 @@ from ..db import (
     get_frbr_data_by_barcode,
     get_frbr_data_by_edition,
     get_readonly_session,
-    get_async_engine,
     get_engine,
 )
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
@@ -61,7 +60,6 @@ from .search import ReciprocalRankFuser, ScoredHit, hybrid_search
 from .types import CatalogSearchResult, ContentSearchResult
 from ..newrelic_llm_events import record_llm_events
 from ..db import (
-    get_async_engine,
     get_engine,
     get_frbr_data_by_edition,
     get_readonly_session,
@@ -486,6 +484,7 @@ async def update_chat(
     message: str,
     conversation_type: str,
     session_id: str,
+    session: SessionABC,
     edition_id=None,
     barcode=None,
     max_turns: int = DEFAULT_MAX_TURNS,
@@ -617,8 +616,6 @@ async def update_chat(
         instructions=system_prompt,
         tools=tools,
     )
-
-    session = SQLAlchemySession(session_id, engine=get_async_engine())
 
     # Add conversation metadata to New Relic transaction for grouping and filtering
     newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)

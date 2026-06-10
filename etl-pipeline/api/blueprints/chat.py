@@ -18,10 +18,11 @@ from utils.timer import timer
 # API code
 from ..utils import APIUtils, orm_to_dict
 from ..elastic import ElasticClient
-from ..db import DBClient
+from ..db import DBClient, get_async_engine
 from ..auth import require_api_key
 from ..decorators import require_session_jwt
 from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
+from ..assistant.session import CustomSQLAlchemySession
 from ..assistant.snippets import get_relevant_snippets
 
 
@@ -220,6 +221,7 @@ def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
     # TODO: inside update_chat make sure than any errors are handled by a polite \
     # llm generated response (except no connectivity to LLM) (just handle the \
     # high level openai agents sdk errors)
+    session = CustomSQLAlchemySession(session_id, engine=get_async_engine())
     try:
         run_result = asyncio.run(
             update_chat(
@@ -228,6 +230,7 @@ def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
                 session_id,
                 edition_id=edition_id,
                 barcode=barcode,
+                session=session,
             )
         )
     except ValueError as e:
@@ -242,9 +245,14 @@ def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
 
     ## Build API response
 
-    # Extract new messages
-    messages = [item.to_input_item() for item in run_result.new_items]
-    logger.info(f"Agent generated {len(run_result.new_items)} new message items")
+    # inserted_items includes the user input + all agent items (tool calls, outputs, final
+    # response), each with its stable agent_messages.id from the DB.
+    messages = [
+        {"db_id": db_id, **item}
+        for db_id, item in session.inserted_items
+        if item.get("role") != "user"
+    ]
+    logger.info(f"Agent persisted {len(session.inserted_items)} message items")
 
     # Format search results
     result_type, formatted_search_result = prepare_search_response(
