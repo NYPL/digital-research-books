@@ -675,6 +675,10 @@ def test_session_id():
     delete_session_data(TEST_SESSION_ID)
 
 
+# TODO: in all places where this is used simply replace this by mocking Session \
+# with an in-memory `SQLiteSession`. That way no clean up is even needed bc DB \
+# writes are never made. Future tests that test `CustomSQLAlchemySession.inserted_items` \
+# usage in /chat would still need this fixture.
 @pytest.fixture
 def test_session(test_session_id):
     """
