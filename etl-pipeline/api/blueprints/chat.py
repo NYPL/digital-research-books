@@ -252,7 +252,8 @@ def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
         for db_id, item in session.inserted_items
         if item.get("role") != "user"
     ]
-    logger.info(f"Agent persisted {len(session.inserted_items)} message items")
+    # `len(run_result.new_items)` should be `len(session.inserted_items)` - 1 (new user message)
+    logger.info(f"Agent generated {len(run_result.new_items)} new message items")
 
     # Format search results
     result_type, formatted_search_result = prepare_search_response(
