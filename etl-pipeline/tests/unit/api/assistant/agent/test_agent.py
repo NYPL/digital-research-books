@@ -21,8 +21,6 @@ class TestAgent:
 
         # Mock external resource dependencies
         mocker.patch("api.assistant.agent.TurbopufferBackend")
-        mocker.patch("api.assistant.agent.get_async_engine")
-        mocker.patch("api.assistant.agent.SQLAlchemySession")
         mocker.patch.dict(os.environ, {"GOOGLE_API_KEY": "fake-key"})
         # Q: the pattern seems to be mock everything implemented in the top-level \
         # of the function, so why not mock `OpenAIChatCompletionsModel` instead \
@@ -40,9 +38,11 @@ class TestAgent:
         mock_template.return_value = mock_template_instance
         mock_template_instance.render.return_value = "system prompt"
 
+        mock_session = MagicMock()
+
         # Execute a catalog search using a simple user prompt
         result = asyncio.run(
-            update_chat("Some query", "catalogSearch", "test-session-id")
+            update_chat("Some query", "catalogSearch", "test-session-id", mock_session)
         )
 
         # Verify result and that the runner was called just once
