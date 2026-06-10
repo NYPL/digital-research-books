@@ -177,6 +177,12 @@ def chat(session_id):
     if session_id:
         newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
 
+    # TODO: switch to a setup where you can add and remove log context vars inside \
+    # the log context vars context while scoping the context to the entire view \
+    # function. This allows the 500 error catch all log to get context vars if \
+    # available while also starting from the very top of the view function or \
+    # even being a global error handler with logger defined in a different module. \
+    # something like https://www.structlog.org/en/stable/contextvars.html
     with LogContextVars(get_app_logger(), context=log_context):
         try:
             logger.info(f"Chat request received: {message[:20]}...")
