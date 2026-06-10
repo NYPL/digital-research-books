@@ -45,6 +45,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
         fontFamily="Domine"
         fontWeight="bold"
         marginBottom={{ base: "l", md: "xxl" }}
+        paddingX={{ base: "s", md: "none" }}
       >
         Have more questions?
       </Heading>

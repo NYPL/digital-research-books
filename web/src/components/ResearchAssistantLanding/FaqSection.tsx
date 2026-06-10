@@ -19,6 +19,7 @@ const FaqSection: React.FC = () => {
         fontFamily="Domine"
         fontWeight="bold"
         marginBottom={{ base: "s", md: "xxl" }}
+        paddingX={{ base: "s", md: "none" }}
       >
         Frequently asked questions
       </Heading>
@@ -38,6 +39,7 @@ const FaqSection: React.FC = () => {
               fontFamily="Domine"
               width={{ base: "100%", md: "20%" }}
               textAlign={{ base: "center", md: "left" }}
+              paddingX={{ base: "s", md: "none" }}
             >
               {section.title}
             </Heading>
