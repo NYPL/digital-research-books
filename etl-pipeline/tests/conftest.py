@@ -673,3 +673,16 @@ def test_session_id():
     print("--- End of conversation ---\n")
 
     delete_session_data(TEST_SESSION_ID)
+
+
+@pytest.fixture
+def test_session(test_session_id):
+    """
+    A CustomSQLAlchemySession using `test_session_id` fixture for cleanup and isolation.
+
+    Mostly a light wrapper of `test_session_id`
+    """
+    from api.db import get_async_engine
+    from api.assistant.session import CustomSQLAlchemySession
+
+    return CustomSQLAlchemySession(test_session_id, engine=get_async_engine())

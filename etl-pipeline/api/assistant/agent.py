@@ -257,7 +257,6 @@ class CatalogSearchExecutionContext:
 
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
-    session_id: str
     conversation_type: str = "catalogSearch"
     search_results: Dict = field(default_factory=dict)
 
@@ -273,7 +272,6 @@ class ContentSearchExecutionContext:
 
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
-    session_id: str
     edition_id: int
     barcode: Optional[str] = None
     conversation_type: str = "contentSearch"
@@ -483,7 +481,6 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
 async def update_chat(
     message: str,
     conversation_type: str,
-    session_id: str,
     session: SessionABC,
     edition_id=None,
     barcode=None,
@@ -492,9 +489,8 @@ async def update_chat(
     """
     Send a message to the conversation and get the agent's response.
 
-    Conversation history is managed server-side via SQLAlchemySession keyed on
-    session_id. The caller sends only the new user message; the SDK loads prior
-    turns from the database automatically.
+    Conversation history is accessed via and managed by `session`, only the new
+    user `message` is needed separately.
 
     The raw search results will be available in self.context.search_data
     for any post-processing or enrichment needed.
@@ -502,8 +498,7 @@ async def update_chat(
     Args:
         message: The new user message text.
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
-        session_id: Client-supplied session ID. History is persisted to and loaded
-                    from the database using this key.
+        session: Session object that manages conversation history persistence.
         edition_id: Identifies the book for content search. Either this or
             ``barcode`` must be provided when conversation_type is
             "contentSearch". If both are provided, ``barcode`` takes
@@ -520,6 +515,8 @@ async def update_chat(
     # TODO: figure out how to do thread safe  module level instantiations for \
     # some reused objs (backend, system prompts, async loop, etc...) (for sharing btw server \
     # request workers/threads)
+
+    session_id = session.session_id
 
     backend = TurbopufferBackend(index_name=require_env("TURBOPUFFER_NAMESPACE"))
     embedder = GoogleEmbedder()
@@ -590,7 +587,6 @@ async def update_chat(
             backend=backend,
             embedder=embedder,
             edition_id=resolved_edition_id,
-            session_id=session_id,
             barcode=barcode,
             frbr_fields=frbr_fields,
         )
@@ -602,9 +598,7 @@ async def update_chat(
 
     # Search for books in catalog
     else:  # conversation_type == "catalogSearch":
-        exec_context = CatalogSearchExecutionContext(
-            backend=backend, embedder=embedder, session_id=session_id
-        )
+        exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
         system_prompt = remove_markdown_comments(
             system_prompt_template.render(conversation_type="catalogSearch")
         )

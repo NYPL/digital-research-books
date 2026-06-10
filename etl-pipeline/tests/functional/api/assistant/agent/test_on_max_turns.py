@@ -39,7 +39,6 @@ class TestOnMaxTurns:
         run_result = await update_chat(
             message="find me books about climate change",
             conversation_type="catalogSearch",
-            session_id="test",
             session=session,
             max_turns=2,
         )

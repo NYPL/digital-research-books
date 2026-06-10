@@ -127,7 +127,7 @@ class TestCatalogSearchFilterConstruction:
 
     @pytest.mark.xfail
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_no_filter_for_generic_search(self, test_session_id):
+    async def test_no_filter_for_generic_search(self, test_session):
         """
         Test: No filter is used when not needed (shipbuilding example).
 
@@ -137,7 +137,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             "I want to learn about shipbuilding",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -149,7 +149,7 @@ class TestCatalogSearchFilterConstruction:
         assert filters is None
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_filters_used_for_metadata_search(self, test_session_id):
+    async def test_filters_used_for_metadata_search(self, test_session):
         """
         Test: Filter is used when needed (poetry with mother-daughter themes).
 
@@ -159,7 +159,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             "I want to find poetry that deals with mother daughter themes",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -175,7 +175,7 @@ class TestCatalogSearchFilterConstruction:
         )
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_negative_filter_construction(self, test_session_id):
+    async def test_negative_filter_construction(self, test_session):
         """
         Test: A negative filter is used when appropriate.
 
@@ -186,7 +186,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             "I want books about history but not military history",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -201,14 +201,14 @@ class TestCatalogSearchFilterConstruction:
         )
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_language_filter(self, test_session_id):
+    async def test_language_filter(self, test_session):
         """
         Test: Language filter construction uses ContainsAny for multiple languages.
         """
         run_result = await update_chat(
             "I want books written English or French about philosophy",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -235,7 +235,7 @@ class TestCatalogSearchFilterConstruction:
         ), f"filters do not match expected criteria: {filters}"
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_date_range_filter_construction(self, test_session_id):
+    async def test_date_range_filter_construction(self, test_session):
         """
         Test: Date range filters for publication dates.
 
@@ -245,7 +245,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             "Find books published between 2000 and 2010 about technology",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -291,7 +291,7 @@ class TestCatalogSearchFilterConstruction:
 
     @pytest.mark.xfail(reason="behavior unstable")
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_author_filter_construction(self, test_session_id):
+    async def test_author_filter_construction(self, test_session):
         """
         Test: Author filter for books by specific authors.
 
@@ -301,7 +301,7 @@ class TestCatalogSearchFilterConstruction:
         run_result = await update_chat(
             "Find books written by Jane Austen",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -377,7 +377,7 @@ class TestCatalogSearchFilterConstruction:
         ],
     )
     async def test_no_filter_construction_errors(
-        self, test_session_id, query, prior_history
+        self, test_session, query, prior_history
     ):
         """
         Test: No filter construction errors.
@@ -389,17 +389,13 @@ class TestCatalogSearchFilterConstruction:
         (see inline comments on each pytest.param).
         """
         if prior_history is not None:
-            from agents.extensions.memory.sqlalchemy_session import SQLAlchemySession
-            from api.assistant.agent import get_async_engine
-
-            session = SQLAlchemySession(test_session_id, engine=get_async_engine())
-            # prior_history = _load_conversation_fixture() on extracted convo history
-            await session.add_items(prior_history)
+            # prior_history = _load_conversation_fixture() on export from agent_messages
+            await test_session.add_items(prior_history)
 
         run_result = await update_chat(
             query,
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         tool_call_items = [

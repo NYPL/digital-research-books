@@ -227,7 +227,6 @@ def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
             update_chat(
                 message,
                 conversation_type,
-                session_id,
                 edition_id=edition_id,
                 barcode=barcode,
                 session=session,

@@ -41,9 +41,7 @@ class TestAgent:
         mock_session = MagicMock()
 
         # Execute a catalog search using a simple user prompt
-        result = asyncio.run(
-            update_chat("Some query", "catalogSearch", "test-session-id", mock_session)
-        )
+        result = asyncio.run(update_chat("Some query", "catalogSearch", mock_session))
 
         # Verify result and that the runner was called just once
         assert result == mock_run_result
