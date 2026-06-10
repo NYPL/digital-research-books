@@ -12,11 +12,11 @@ const StatisticRow: React.FC = () => {
     <Box
       color="ui.typography.body"
       display="flex"
-      flexDir={{ base: "column", md: "row" }}
+      flexDir={{ base: "column", sm: "row" }}
       justifyContent="center"
       alignItems="center"
       margin="0 auto"
-      marginBottom="50.5px"
+      marginBottom={{ base: "l", md: "50.5px" }}
       width="100%"
     >
       {statisticsData.map((stat, index) => {
@@ -29,19 +29,22 @@ const StatisticRow: React.FC = () => {
             alignItems="center"
             flex="1"
             maxWidth="274px"
-            py={{ base: isMiddle ? "20px" : "20px", md: "0" }}
-            px={{ base: "20px", md: isMiddle ? "0px" : "0" }}
-            borderLeft={{ md: isMiddle ? "1px dashed" : "none" }}
-            borderRight={{ md: isMiddle ? "1px dashed" : "none" }}
-            borderTop={{ base: isMiddle ? "1px dashed" : "none", md: "none" }}
+            py={{ base: isMiddle ? "20px" : "20px", sm: "0" }}
+            px={{ base: "20px", sm: isMiddle ? "0px" : "0" }}
+            borderLeft={{ sm: isMiddle ? "1px dashed" : "none" }}
+            borderRight={{ sm: isMiddle ? "1px dashed" : "none" }}
+            borderTop={{ base: isMiddle ? "1px dashed" : "none", sm: "none" }}
             borderBottom={{
               base: isMiddle ? "1px dashed" : "none",
-              md: "none",
+              sm: "none",
             }}
             borderColor="ui.black"
           >
             <Text
-              fontSize="desktop.heading.heading1"
+              fontSize={{
+                base: "mobile.heading.heading1",
+                md: "desktop.heading.heading1",
+              }}
               fontWeight="semibold"
               lineHeight="120%"
               color="section.research.secondary"
@@ -49,7 +52,10 @@ const StatisticRow: React.FC = () => {
               {stat.value}
             </Text>
             <Text
-              fontSize="desktop.heading.heading5"
+              fontSize={{
+                base: "mobile.heading.heading5",
+                md: "desktop.heading.heading5",
+              }}
               fontWeight="semibold"
               lineHeight="135%"
             >

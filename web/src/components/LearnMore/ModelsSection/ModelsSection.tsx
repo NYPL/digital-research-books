@@ -29,22 +29,32 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
       <Box maxWidth="55rem" margin="0 auto">
         <Heading
           level="h2"
-          size="heading2"
+          fontSize={{ base: "mobile.heading.heading3", md: "heading2" }}
           fontFamily="Domine"
           fontWeight="bold"
           marginBottom="xs"
+          paddingX={{ base: "s", md: "none" }}
         >
           Our AI models
         </Heading>
         <Text
-          fontSize="desktop.heading.heading5"
+          fontSize={{
+            base: "mobile.heading.heading5",
+            md: "desktop.heading.heading5",
+          }}
           color="ui.gray.dark"
           fontWeight="semibold"
+          paddingX={{ base: "s", md: "none" }}
         >
           Selected to balance speed, cost, performance, and environmental
           impact.
         </Text>
-        <Flex gap="l" marginTop="xxl" marginBottom="xxl">
+        <Flex
+          gap={{ base: "s", md: "l" }}
+          marginTop={{ base: "l", md: "xxl" }}
+          marginBottom={{ base: "none", md: "xxl" }}
+          flexDir={{ base: "column", md: "row" }}
+        >
           <LandingCard
             gap="s"
             icon={

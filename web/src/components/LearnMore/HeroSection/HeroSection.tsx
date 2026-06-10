@@ -31,9 +31,8 @@ const HeroSection: React.ForwardRefExoticComponent<
     return (
       <SectionContainer
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
-        paddingX={{ base: "0", md: "s" }}
-        paddingTop="xxl"
-        paddingBottom="20px"
+        paddingX="s"
+        paddingBottom={{ base: "s", md: "20px" }}
         ref={ref}
         tabIndex={-1}
       >
@@ -47,8 +46,8 @@ const HeroSection: React.ForwardRefExoticComponent<
             level="h1"
             fontWeight="bold"
             maxWidth="740px"
-            marginBottom="63.5px"
-            size="heading1"
+            marginBottom={{ base: "l", md: "63.5px" }}
+            fontSize={{ base: "mobile.heading.heading2", md: "heading1" }}
             fontFamily="Domine"
           >
             AI is more{" "}
@@ -58,7 +57,12 @@ const HeroSection: React.ForwardRefExoticComponent<
             when it helps unlock access to knowledge
           </Heading>
           <StatisticRow />
-          <Text fontSize="md" color="ui.gray.x-dark" marginBottom="xl" isItalic>
+          <Text
+            fontSize="md"
+            color="ui.gray.x-dark"
+            marginBottom={{ base: "l", md: "xl" }}
+            isItalic
+          >
             Our collection of Digitized Research Books accessible through
             Enhanced Search as of June 1, 2026
           </Text>

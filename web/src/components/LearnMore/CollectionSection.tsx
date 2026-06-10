@@ -17,22 +17,25 @@ const CollectionSection: React.FC = () => {
       display="flex"
       flexDir="column"
       textAlign="left"
-      paddingX={{ base: "0px", md: "16px" }}
+      paddingX="s"
     >
       <Box maxWidth="55rem" margin="0 auto">
-        <Flex flexDir="column" marginBottom="xxl">
+        <Flex flexDir="column" marginBottom={{ base: "l", md: "xxl" }}>
           <Heading
             level="h2"
             fontWeight="bold"
-            marginBottom="l"
-            size="heading2"
+            marginBottom={{ base: "s", md: "l" }}
+            fontSize={{ base: "mobile.heading.heading3", md: "heading2" }}
             fontFamily="Domine"
           >
             The collection
           </Heading>
           <Flex flexDir="column" gap="s">
             <Text
-              fontSize="desktop.heading.heading5"
+              fontSize={{
+                base: "mobile.heading.heading5",
+                md: "desktop.heading.heading5",
+              }}
               color="ui.gray.dark"
               fontWeight="medium"
             >
@@ -77,25 +80,25 @@ const CollectionSection: React.FC = () => {
         </Flex>
         <Flex
           flexDir="column"
-          marginBottom="l"
-          paddingTop="l"
+          marginBottom={{ base: "s", md: "l" }}
+          paddingTop={{ base: "s", md: "l" }}
           borderTop="1px dashed"
           borderColor="section.research.secondary"
         >
           <Heading
             level="h3"
-            marginBottom="s"
-            size="heading3"
+            marginBottom={{ base: "xs", md: "s" }}
+            fontSize={{ base: "mobile.heading.heading4", md: "heading3" }}
             fontWeight="400"
             fontFamily="Domine"
           >
             Languages
           </Heading>
           <Text
-            fontSize="lg"
+            fontSize={{ base: "mobile.subtitle.subtitle", md: "lg" }}
             color="ui.gray.dark"
             marginBottom="s"
-            paddingBottom="l"
+            paddingBottom={{ base: "none", md: "l" }}
           >
             The collection currently contains 136 unique languages. English and
             other Western European languages make up the bulk of the material.
@@ -111,25 +114,25 @@ const CollectionSection: React.FC = () => {
         </Flex>
         <Flex
           flexDir="column"
-          marginBottom="l"
-          paddingTop="l"
+          marginBottom={{ base: "s", md: "l" }}
+          paddingTop={{ base: "s", md: "l" }}
           borderTop="1px dashed"
           borderColor="section.research.secondary"
         >
           <Heading
             level="h3"
-            marginBottom="s"
-            size="heading3"
+            marginBottom={{ base: "xs", md: "s" }}
+            fontSize={{ base: "mobile.heading.heading4", md: "heading3" }}
             fontWeight="400"
             fontFamily="Domine"
           >
             Subjects
           </Heading>
           <Text
-            fontSize="lg"
+            fontSize={{ base: "mobile.subtitle.subtitle", md: "lg" }}
             color="ui.gray.dark"
             marginBottom="s"
-            paddingBottom="l"
+            paddingBottom={{ base: "none", md: "l" }}
           >
             The collection currently contains over 10,000 unique subjects
             classified using the first level of{" "}
@@ -160,24 +163,24 @@ const CollectionSection: React.FC = () => {
         </Flex>
         <Flex
           flexDir="column"
-          paddingTop="l"
+          paddingTop={{ base: "s", md: "l" }}
           borderTop="1px dashed"
           borderColor="section.research.secondary"
         >
           <Heading
             level="h3"
-            marginBottom="s"
-            size="heading3"
+            marginBottom={{ base: "xs", md: "s" }}
+            fontSize={{ base: "mobile.heading.heading4", md: "heading3" }}
             fontWeight="400"
             fontFamily="Domine"
           >
             Dates
           </Heading>
           <Text
-            fontSize="lg"
+            fontSize={{ base: "mobile.subtitle.subtitle", md: "lg" }}
             color="ui.gray.dark"
             marginBottom="s"
-            paddingBottom="l"
+            paddingBottom={{ base: "none", md: "l" }}
           >
             72% of books in the current collection have a precise date of
             publication. Most books were published prior to 1930.

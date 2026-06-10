@@ -16,7 +16,7 @@ const NumberCircle = ({ number }: NumberCircleProps) => {
       alignItems="center"
       justifyContent="center"
       fontWeight="bold"
-      fontSize="lg"
+      fontSize={{ base: "xl", md: "lg" }}
       margin="0 auto"
       marginBottom="xs"
     >

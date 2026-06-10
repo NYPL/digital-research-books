@@ -10,8 +10,8 @@ const MissionDiagram = () => {
       justifyContent="center"
       alignItems="flex-start"
       flexDir="row"
-      marginTop="xxxl"
-      marginBottom="xl"
+      marginTop={{ base: "xxl", md: "xxxl" }}
+      marginBottom={{ base: "l", md: "xl" }}
     >
       <Box
         position="absolute"

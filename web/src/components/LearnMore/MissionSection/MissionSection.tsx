@@ -1,4 +1,4 @@
-import { Heading, Text } from "@nypl/design-system-react-components";
+import { Flex, Heading, Text } from "@nypl/design-system-react-components";
 import { forwardRef } from "react";
 import SectionContainer from "../../ResearchAssistantLanding/SectionContainer";
 import MissionDiagram from "./MissionDiagram";
@@ -23,51 +23,68 @@ const MissionSection: React.ForwardRefExoticComponent<
         margin="0 auto"
         width="100%"
         tabIndex={-1}
-        paddingX={{ base: "0", md: "s" }}
+        paddingX="s"
         ref={ref}
       >
-        <Heading
-          level="h2"
-          size="heading2"
-          fontFamily="Domine"
-          fontWeight="bold"
-          marginBottom="xxl"
-        >
-          Our mission
-        </Heading>
-        <NumberCircle number={1} />
-        <Text
-          fontSize="desktop.heading.heading5"
-          color="ui.gray.dark"
-          fontWeight="semibold"
-          marginBottom="l"
-        >
-          To make Digitized Research Books available to anyone, anywhere, for
-          free
-        </Text>
-        <NumberCircle number={2} />
+        <Flex flexDir="column" justifyContent="center" alignItems="center">
+          <Heading
+            level="h2"
+            fontSize={{ base: "mobile.heading.heading3", md: "heading2" }}
+            fontFamily="Domine"
+            fontWeight="bold"
+            marginBottom={{ base: "l", md: "xxl" }}
+            textAlign="center"
+          >
+            Our mission
+          </Heading>
+          <NumberCircle number={1} />
+          <Text
+            fontSize={{
+              base: "mobile.heading.heading5",
+              md: "desktop.heading.heading5",
+            }}
+            color="ui.gray.dark"
+            fontWeight="semibold"
+            marginBottom="l"
+            maxWidth={{ base: "485px", md: "none" }}
+            textAlign="center"
+          >
+            To make Digitized Research Books available to anyone, anywhere, for
+            free
+          </Text>
+          <NumberCircle number={2} />
+          <Text
+            fontSize={{
+              base: "mobile.heading.heading5",
+              md: "desktop.heading.heading5",
+            }}
+            color="ui.gray.dark"
+            fontWeight="semibold"
+            marginBottom="l"
+            maxWidth={{ base: "485px", md: "none" }}
+            textAlign="center"
+          >
+            To leverage AI in making this collection highly discoverable and
+            accessible
+          </Text>
+          <NumberCircle number={3} />
+          <Text
+            fontSize={{
+              base: "mobile.heading.heading5",
+              md: "desktop.heading.heading5",
+            }}
+            color="ui.gray.dark"
+            fontWeight="semibold"
+            marginBottom={{ base: "none", md: "s" }}
+            maxWidth={{ base: "485px", md: "none" }}
+            textAlign="center"
+          >
+            To steward this project as ethically and responsibly as possible
+          </Text>
+        </Flex>
 
-        <Text
-          fontSize="desktop.heading.heading5"
-          color="ui.gray.dark"
-          fontWeight="semibold"
-          marginBottom="l"
-        >
-          To leverage AI in making this collection highly discoverable and
-          accessible
-        </Text>
-        <NumberCircle number={3} />
-
-        <Text
-          fontSize="desktop.heading.heading5"
-          color="ui.gray.dark"
-          fontWeight="semibold"
-          marginBottom="s"
-        >
-          To steward this project as ethically and responsibly as possible
-        </Text>
         <MissionDiagram />
-        <Text color="ui.gray.x-dark" isItalic>
+        <Text color="ui.gray.x-dark" isItalic textAlign="center">
           Enhanced Search uses AI to make Digitized Research Books accessible to
           all
         </Text>

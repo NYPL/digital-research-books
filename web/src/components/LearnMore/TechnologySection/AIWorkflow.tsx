@@ -40,10 +40,21 @@ const AiWorkflow = () => {
     },
   ];
   return (
-    <Box display="flex" flexDir="row" gap="58px" margin="0 auto" marginTop="xl">
-      <Flex flexDir="column">
-        {workflowSteps.map((stage, index) => (
-          <Box key={index}>
+    <Box
+      display="flex"
+      flexDir="column"
+      margin="0 auto"
+      marginTop={{ base: "s", md: "xl" }}
+    >
+      {workflowSteps.map((stage, index) => (
+        <Flex
+          key={index}
+          flexDir="row"
+          gap={{ base: "s", md: "58px" }}
+          alignItems="stretch"
+        >
+          {/* Left: icon + stretchy arrow below */}
+          <Flex flexDir="column" alignItems="center" flexShrink={0}>
             <Box
               background="ui.white"
               border="2px solid"
@@ -55,16 +66,16 @@ const AiWorkflow = () => {
               {stage.icon}
             </Box>
             {index < workflowSteps.length - 1 && (
-              <Flex justifyContent="center">
+              <Box flex="1" display="flex" justifyContent="center">
                 <ArrowSVG />
-              </Flex>
+              </Box>
             )}
-          </Box>
-        ))}
-      </Flex>
-      <Flex flexDir="column" gap="xl">
-        {workflowSteps.map((stage, index) => (
-          <Box key={index} maxWidth="395px">
+          </Flex>
+          {/* Right: text */}
+          <Box
+            maxWidth="395px"
+            paddingBottom={index < workflowSteps.length - 1 ? "xl" : "0"}
+          >
             <Heading
               size="heading8"
               fontWeight="700"
@@ -81,8 +92,8 @@ const AiWorkflow = () => {
               {stage.description}
             </Text>
           </Box>
-        ))}
-      </Flex>
+        </Flex>
+      ))}
     </Box>
   );
 };
