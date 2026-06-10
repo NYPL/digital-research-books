@@ -26,7 +26,7 @@ const SectionContainer: React.ForwardRefExoticComponent<
       borderTop,
       paddingTop = { base: "l", md: "xxl" },
       paddingBottom = { base: "l", md: "xxl" },
-      paddingX = { base: "xs", md: "xs" },
+      paddingX = { base: "s", md: "xs" },
       ...rest
     },
     ref

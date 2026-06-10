@@ -24,7 +24,6 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
 }) => {
   return (
     <Box
-      minHeight="602px"
       width="100%"
       backgroundColor="ui.white"
       borderRadius={{ base: "0px", md: "32px" }}
@@ -77,7 +76,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
           src={imageSrc}
           alt={imageAlt}
           width="820px"
-          height="540px"
+          height={{ base: "auto", md: "540px" }}
           borderRadius={{ base: "8px", md: "24px" }}
           border="1px solid"
           borderColor="ui.gray.light-cool"

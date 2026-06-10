@@ -24,7 +24,7 @@ const FaqSection: React.FC = () => {
             md: "desktop.heading.heading3",
           }}
           fontFamily="Domine"
-          lineHeight="1"
+          lineHeight={{ base: "135%", md: "115%" }}
           maxWidth="765px"
         >
           &ldquo;This tool represents a significant leap forward in NYPL&apos;s

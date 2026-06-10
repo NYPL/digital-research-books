@@ -61,7 +61,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
             </Heading>
           }
           body={
-            <Flex gap="l" flexDir="column">
+            <Flex gap={{ base: "m", md: "l" }} flexDir="column">
               <Text fontSize="desktop.subtitle.subtitle1">
                 Do you need support or have more questions about using Enhanced
                 Search? Our staff will be happy to guide you.
@@ -81,7 +81,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                   path: { stroke: "#00838A" },
                 }}
               >
-                Get help <ArrowIcon direction="right" color="#006166" />
+                Contact us <ArrowIcon direction="right" color="#006166" />
               </Link>
             </Flex>
           }
@@ -95,7 +95,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
             </Heading>
           }
           body={
-            <Flex gap="l" flexDir="column">
+            <Flex gap={{ base: "m", md: "l" }} flexDir="column">
               <Text fontSize="desktop.subtitle.subtitle1">
                 Are you interested in finding out more about our mission,
                 collection, models, data pipelines, and technologies?

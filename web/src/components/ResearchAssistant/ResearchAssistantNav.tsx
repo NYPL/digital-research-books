@@ -94,6 +94,10 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
         a: {
           gap: "xxs",
         },
+        "#subnav-my-account": {
+          paddingY: { base: "12px", md: "xxs" },
+          paddingX: { base: "12px", md: "s" },
+        },
         "#keyword-search-icon": {
           fill: "none !important",
         },

@@ -73,9 +73,10 @@ const PrinciplesSection: React.FC<PrinciplesSectionProps> = ({
           sm: "repeat(2, 1fr)",
           md: "repeat(3, 1fr)",
         }}
-        rowGap="xxl"
-        columnGap="l"
-        marginTop="xxl"
+        rowGap={{ base: "l", md: "xxl" }}
+        columnGap={{ base: "s", md: "l" }}
+        marginTop={{ base: "none", md: "xxl" }}
+        marginBottom={{ base: "xxl", md: "none" }}
       >
         {accessCardData.map((card, index) => (
           <AccessCard
