@@ -163,10 +163,13 @@ def chat(session_id):
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
+    barcode = request.json.get("barcode")
 
     log_context = {"session_id": session_id, "conversation_type": conversation_type}
     if edition_id is not None:
         log_context["edition_id"] = edition_id
+    if barcode is not None:
+        log_context["barcode"] = barcode
 
     # New Relic custom attributes and AI monitoring conversation grouping
     for k, v in log_context.items():
@@ -175,10 +178,12 @@ def chat(session_id):
         newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
 
     with LogContextVars(get_app_logger(), context=log_context):
-        return _chat_handler(session_id, conversation_type, message, edition_id)
+        return _chat_handler(
+            session_id, conversation_type, message, edition_id, barcode
+        )
 
 
-def _chat_handler(session_id, conversation_type, message, edition_id):
+def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
     """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
 
     logger.info(f"Chat request received: {message[:20]}...")
@@ -202,11 +207,13 @@ def _chat_handler(session_id, conversation_type, message, edition_id):
             },
         )
 
-    if conversation_type == "contentSearch" and edition_id is None:
+    if conversation_type == "contentSearch" and edition_id is None and barcode is None:
         return APIUtils.formatResponseObject(
             400,
             RESPONSE_TYPE,
-            {"message": "editionId is required for conversationType='contentSearch'"},
+            {
+                "message": "editionId or barcode is required for conversationType='contentSearch'"
+            },
         )
 
     # get LLM response + search results
@@ -215,7 +222,13 @@ def _chat_handler(session_id, conversation_type, message, edition_id):
     # high level openai agents sdk errors)
     try:
         run_result = asyncio.run(
-            update_chat(message, conversation_type, session_id, edition_id=edition_id)
+            update_chat(
+                message,
+                conversation_type,
+                session_id,
+                edition_id=edition_id,
+                barcode=barcode,
+            )
         )
     except ValueError as e:
         # Intended to catch "No edition found with id=XXX"

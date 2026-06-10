@@ -23,6 +23,7 @@ from model import (
     Collection,
     User,
     AutomaticCollection,
+    GRINStatus,
 )
 from managers.db import DBManager
 from utils.common import require_env
@@ -111,13 +112,34 @@ def get_async_engine():
     return _async_engine
 
 
+def _load_editions_with_frbr_data(session, edition_ids):
+    """
+    Fetch Edition rows for the given ids, eager loading Edition.work,
+    Edition.links, Edition.items.links, and Edition.items.rights.
+
+    Uses selectinload to avoid cartesian product explosion from chained outer
+    joins.
+    """
+    if not edition_ids:
+        return []
+    return (
+        session.query(Edition)
+        .filter(Edition.id.in_(edition_ids))
+        .options(
+            selectinload(Edition.work),
+            selectinload(Edition.links),
+            selectinload(Edition.items).selectinload(Item.links),
+            selectinload(Edition.items).selectinload(Item.rights),
+        )
+        .all()
+    )
+
+
 def get_frbr_data_by_edition(edition_ids: List):
     """
     Return list of (Work, Edition) tuples for each of the passed edition_ids.
     Edition includes eager loaded: Edition.items, Edition.items.links,
     Edition.items.rights, Edition.links.
-
-    Uses selectinload to avoid cartesian product explosion from chained outer joins.
     """
     if edition_ids is None or len(edition_ids) == 0:
         return []
@@ -128,18 +150,68 @@ def get_frbr_data_by_edition(edition_ids: List):
 
     Session = get_readonly_session()
     with Session() as session:
-        editions = (
-            session.query(Edition)
-            .filter(Edition.id.in_(edition_ids))
-            .options(
-                selectinload(Edition.work),
-                selectinload(Edition.links),
-                selectinload(Edition.items).selectinload(Item.links),
-                selectinload(Edition.items).selectinload(Item.rights),
+        editions = _load_editions_with_frbr_data(session, edition_ids)
+        return [Row(Work=e.work, Edition=e) for e in editions]
+
+
+def get_frbr_data_by_barcode(barcodes: List):
+    """
+    Return list of Row(Work, Edition, barcode) for each of the passed barcodes
+    by resolving barcode -> grin_statuses.record_id -> items.edition_id ->
+    editions/works.
+
+    A single barcode can map to multiple editions (the same record_id may be
+    referenced by items pointing at different editions when FRBR re-clusters).
+    For each barcode we return the row with the highest edition_id, since that
+    corresponds to the most recently clustered edition. Barcodes with no
+    matching grin_status / record / item / edition are omitted.
+
+    Edition includes eager loaded: Edition.items, Edition.items.links,
+    Edition.items.rights, Edition.links (matching get_frbr_data_by_edition).
+    """
+    if barcodes is None or len(barcodes) == 0:
+        return []
+
+    from collections import namedtuple
+
+    Row = namedtuple("Row", ["Work", "Edition", "barcode"])
+
+    Session = get_readonly_session()
+    with Session() as session:
+        # Resolve barcode -> highest edition_id via grin_statuses + items.
+        # Picks the max edition_id per barcode (most recently clustered).
+        resolution_rows = (
+            session.query(
+                GRINStatus.barcode,
+                func.max(Item.edition_id).label("edition_id"),
             )
+            .join(Item, Item.record_id == GRINStatus.record_id)
+            .filter(GRINStatus.barcode.in_(barcodes))
+            .group_by(GRINStatus.barcode)
             .all()
         )
-        return [Row(Work=e.work, Edition=e) for e in editions]
+        if not resolution_rows:
+            return []
+
+        # Multiple barcodes can resolve to the same edition_id (different GRIN
+        # records pointing at items clustered into the same edition). Keep a
+        # barcode -> edition_id map so each barcode produces its own Row.
+        barcode_to_edition_id = {
+            row.barcode: row.edition_id
+            for row in resolution_rows
+            if row.edition_id is not None
+        }
+        edition_ids = set(barcode_to_edition_id.values())
+
+        editions = _load_editions_with_frbr_data(session, edition_ids)
+        editions_by_id = {e.id: e for e in editions}
+        rows = []
+        for barcode, edition_id in barcode_to_edition_id.items():
+            e = editions_by_id.get(edition_id)
+            if e is None:
+                continue
+            rows.append(Row(Work=e.work, Edition=e, barcode=barcode))
+        return rows
 
 
 class DBClient:
