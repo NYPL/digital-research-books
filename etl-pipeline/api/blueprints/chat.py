@@ -29,8 +29,6 @@ logger = create_log(__name__)
 
 chat_blueprint = Blueprint("chat", __name__, url_prefix="/chat")
 
-RESPONSE_TYPE = "chat"
-
 
 def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, None]:
     """
@@ -160,6 +158,8 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 @require_session_jwt
 @timer(logger)
 def chat(session_id):
+    response_type = "chat"
+
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
@@ -183,18 +183,18 @@ def chat(session_id):
 
             if not message:
                 return APIUtils.formatResponseObject(
-                    400, RESPONSE_TYPE, {"message": "message is required"}
+                    400, response_type, {"message": "message is required"}
                 )
 
             if not conversation_type:
                 return APIUtils.formatResponseObject(
-                    400, RESPONSE_TYPE, {"message": "conversationType is required"}
+                    400, response_type, {"message": "conversationType is required"}
                 )
 
             if conversation_type not in ["contentSearch", "catalogSearch"]:
                 return APIUtils.formatResponseObject(
                     400,
-                    RESPONSE_TYPE,
+                    response_type,
                     {
                         "message": "conversationType must be either 'contentSearch' or 'catalogSearch'"
                     },
@@ -207,7 +207,7 @@ def chat(session_id):
             ):
                 return APIUtils.formatResponseObject(
                     400,
-                    RESPONSE_TYPE,
+                    response_type,
                     {
                         "message": "editionId or barcode is required for conversationType='contentSearch'"
                     },
@@ -232,7 +232,7 @@ def chat(session_id):
                 # TODO: make error filter specific to intended error, even tho its the \
                 # only ValueError intentionlly raided in the update_chat() boundary
                 return APIUtils.formatResponseObject(
-                    404, RESPONSE_TYPE, {"message": str(e)}
+                    404, response_type, {"message": str(e)}
                 )
 
             # Add relevant snippets to search result, if search was executed in this agent turn
@@ -258,10 +258,10 @@ def chat(session_id):
                 "result": formatted_search_result,
                 "session_id": session_id,
             }
-            return APIUtils.formatResponseObject(200, RESPONSE_TYPE, response_data)
+            return APIUtils.formatResponseObject(200, response_type, response_data)
 
         except Exception:
             logger.exception("Unable to execute chat")
             return APIUtils.formatResponseObject(
-                500, RESPONSE_TYPE, {"message": "Unable to execute chat"}
+                500, response_type, {"message": "Unable to execute chat"}
             )
