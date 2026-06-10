@@ -1,12 +1,16 @@
+import Head from "next/head";
 import React from "react";
-import Layout from "~/src/components/Layout/Layout";
 import Edition from "~/src/components/EditionDetail/Edition";
+import Layout from "~/src/components/Layout/Layout";
+import { MAX_PAGE_TITLE_LENGTH } from "~/src/constants/editioncard";
+import { documentTitles } from "~/src/constants/labels";
 import { editionFetcher } from "~/src/lib/api/SearchApi";
 import { EditionQuery, EditionResult } from "~/src/types/EditionQuery";
 import { getBackToSearchUrl } from "~/src/util/LinkUtils";
-import { documentTitles } from "~/src/constants/labels";
-import Head from "next/head";
-import { MAX_PAGE_TITLE_LENGTH } from "~/src/constants/editioncard";
+import {
+  isBlinkClient,
+  normalizeCombiningHalfMarksDeep,
+} from "~/src/util/TextNormalization";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import Error from "../_error";
 
@@ -28,8 +32,20 @@ export async function getServerSideProps(context: any) {
 }
 
 const EditionResults: React.FC<any> = (props) => {
-  if (props.editionResult.status !== 200) {
-    return <Error statusCode={props.editionResult.status} />;
+  const [displayEditionResult, setDisplayEditionResult] = React.useState(
+    props.editionResult
+  );
+
+  React.useEffect(() => {
+    setDisplayEditionResult(
+      isBlinkClient()
+        ? normalizeCombiningHalfMarksDeep(props.editionResult)
+        : props.editionResult
+    );
+  }, [props.editionResult]);
+
+  if (displayEditionResult.status !== 200) {
+    return <Error statusCode={displayEditionResult.status} />;
   }
 
   return (
@@ -37,12 +53,12 @@ const EditionResults: React.FC<any> = (props) => {
       <Head>
         <title>
           {`${truncateStringOnWhitespace(
-            props.editionResult.data.title,
+            displayEditionResult.data.title,
             MAX_PAGE_TITLE_LENGTH
           )} | ${documentTitles.editionItem}`}
         </title>
       </Head>
-      <Edition editionResult={props.editionResult} backUrl={props.backUrl} />
+      <Edition editionResult={displayEditionResult} backUrl={props.backUrl} />
     </Layout>
   );
 };

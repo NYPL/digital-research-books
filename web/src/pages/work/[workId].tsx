@@ -7,6 +7,10 @@ import { documentTitles } from "~/src/constants/labels";
 import { workFetcher } from "~/src/lib/api/SearchApi";
 import { WorkQuery, WorkResult } from "~/src/types/WorkQuery";
 import { getBackToSearchUrl } from "~/src/util/LinkUtils";
+import {
+  isBlinkClient,
+  normalizeCombiningHalfMarksDeep,
+} from "~/src/util/TextNormalization";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import Error from "../_error";
 
@@ -29,8 +33,20 @@ export async function getServerSideProps(context: any) {
 }
 
 const WorkResults: React.FC<any> = (props) => {
-  if (props.workResult.status !== 200) {
-    return <Error statusCode={props.workResult.status} />;
+  const [displayWorkResult, setDisplayWorkResult] = React.useState(
+    props.workResult
+  );
+
+  React.useEffect(() => {
+    setDisplayWorkResult(
+      isBlinkClient()
+        ? normalizeCombiningHalfMarksDeep(props.workResult)
+        : props.workResult
+    );
+  }, [props.workResult]);
+
+  if (displayWorkResult.status !== 200) {
+    return <Error statusCode={displayWorkResult.status} />;
   }
 
   return (
@@ -38,12 +54,12 @@ const WorkResults: React.FC<any> = (props) => {
       <Head>
         <title>
           {`${truncateStringOnWhitespace(
-            props.workResult.data.title,
+            displayWorkResult.data.title,
             MAX_PAGE_TITLE_LENGTH
           )} | ${documentTitles.workItem}`}
         </title>
       </Head>
-      <WorkDetail workResult={props.workResult} backUrl={props.backUrl} />
+      <WorkDetail workResult={displayWorkResult} backUrl={props.backUrl} />
     </Layout>
   );
 };

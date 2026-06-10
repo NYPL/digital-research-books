@@ -10,6 +10,10 @@ import {
   PageType,
 } from "~/src/types/ResearchAssistant";
 import {
+  isBlinkClient,
+  normalizeCombiningHalfMarksDeep,
+} from "~/src/util/TextNormalization";
+import {
   SURVEY_DELAY_MS,
   SURVEY_SESSION_STORAGE_KEY,
 } from "../constants/researchAssistant";
@@ -150,7 +154,10 @@ export const ResearchAssistantProvider: React.FC<{
         );
       }
 
-      const data = await response.json();
+      const rawData = await response.json();
+      const data = isBlinkClient()
+        ? normalizeCombiningHalfMarksDeep(rawData)
+        : rawData;
       setSessionId(data.sessionId);
 
       const newMessagesLength = messages.length + data.messages.length;
