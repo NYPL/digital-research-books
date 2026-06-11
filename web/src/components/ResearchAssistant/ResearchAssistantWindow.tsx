@@ -9,21 +9,23 @@ import {
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { chatAnnouncer } from "~/src/lib/chatAnnouncer/ChatAnnouncer";
 import { ConversationType } from "~/src/types/ResearchAssistant";
+import { markdownToPlainText } from "~/src/util/MarkdownParser";
 import MessageBubble from "./MessageBubble";
 
 const ResearchAssistantWindow: React.FC = () => {
   const { messages, isLoading, error, results } = useResearchAssistant();
+  const announce = chatAnnouncer.announce;
+  const prevMessageCountRef = useRef(0);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const loadingRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      const { scrollX, scrollY } = window;
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-      window.scroll(scrollX, scrollY);
-    }
-  }, [messages]);
+    const target = isLoading ? loadingRef.current : messagesEndRef.current;
+    target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [messages, isLoading]);
 
   const { marginX, paddingX, marginRight } = getPanelLayout();
 
@@ -37,6 +39,33 @@ const ResearchAssistantWindow: React.FC = () => {
     conversationType === ConversationType.Content
       ? CONTENT_INITIAL_MESSAGE
       : CATALOG_INITIAL_MESSAGE;
+
+  useEffect(() => {
+    const prev = prevMessageCountRef.current;
+    const newMessages = messages.slice(prev);
+
+    newMessages.forEach((message) => {
+      if (message.type !== "message") return;
+      const role = message.role === "assistant" ? "Enhanced Search" : "You";
+      const messageContent =
+        message.role === "assistant"
+          ? message.content
+              .map((item) => markdownToPlainText(item.text))
+              .join(" ")
+          : message.content;
+      announce(`${role}: ${messageContent}`);
+    });
+
+    prevMessageCountRef.current = messages.length;
+  }, [messages, announce]);
+
+  useEffect(() => {
+    if (isLoading) announce("Thinking... This may take several seconds.");
+  }, [isLoading, announce]);
+
+  useEffect(() => {
+    if (error) announce(`Error: ${error}`);
+  }, [error, announce]);
 
   return (
     <>
@@ -54,7 +83,7 @@ const ResearchAssistantWindow: React.FC = () => {
         paddingLeft={paddingX}
         paddingRight={`calc(${PADDING_COUNTER} * 2)`}
         role="log"
-        aria-live="polite"
+        aria-live="off"
         aria-label="Chat messages"
       >
         <MessageBubble index={0} message={initialMessage} />
@@ -79,7 +108,7 @@ const ResearchAssistantWindow: React.FC = () => {
         })}
 
         {isLoading && (
-          <Box ref={messagesEndRef}>
+          <Box ref={loadingRef}>
             <MessageBubble
               index={messages.length}
               message={LOADING_MESSAGE}
