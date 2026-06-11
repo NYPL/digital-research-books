@@ -69,6 +69,7 @@ class CustomSQLAlchemySession(SQLAlchemySession):
     @property
     def inserted_items(self) -> list[tuple[int, TResponseInputItem]]:
         """All (db_id, item) pairs written by add_items() during this session object's lifetime."""
+        # NOTE: @property keeps the attr read-only/immutable
         return list(self._inserted_items)
 
 
