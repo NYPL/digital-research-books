@@ -11,15 +11,15 @@
     "test:watch": "jest --watch",
     "lint": "next lint --fix",
     "playwright": "playwright test",
-    "playwright:drb": "playwright test --grep-invert @vra",
-    "playwright:vra": "playwright test --grep @vra"
+    "playwright:drb": "playwright test --grep-invert @enhanced-search",
+    "playwright:enhanced-search": "playwright test --grep @enhanced-search"
   },
   "dependencies": {
     "@chakra-ui/react": "2.5.4",
     "@emotion/react": "11.11.1",
     "@emotion/styled": "11.11.0",
     "@nypl/design-system-react-components": "4.0.1",
-    "@nypl/web-reader": "5.0.2",
+    "@nypl/web-reader": "5.0.3",
     "@types/node": "16.11.6",
     "css-loader": "7.1.1",
     "dotenv": "16.0.3",

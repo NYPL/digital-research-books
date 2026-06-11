@@ -63,7 +63,9 @@ const MessageBubble = memo(
                 )}
                 <Flex flexDir="column" gap="12px">
                   <Box>
-                    <HiddenAria>Enhanced Search says:</HiddenAria>
+                    <HiddenAria ariaLive="off" ariaAtomic={false}>
+                      Enhanced Search says:
+                    </HiddenAria>
                     {renderMarkdownContent(
                       contentItem.text,
                       handleEditionClick

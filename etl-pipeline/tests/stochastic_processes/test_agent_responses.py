@@ -19,7 +19,9 @@ from agents.items import ToolCallItem
 from api.assistant.agent import update_chat
 from utils.common import require_env
 
-from .conftest import make_chunk_doc, stub_search_catalog
+from api.assistant.agent import search_catalog
+
+from .conftest import make_chunk_doc, stub_function_tool
 
 
 pytestmark = pytest.mark.asyncio
@@ -106,7 +108,7 @@ class TestAgentResponses:
     @pytest.mark.xfail(
         reason="The Judge's criteria should probably be loosened to accept the agent response in this case."
     )
-    async def test_grounding(self, test_session_id, mock_search_backend):
+    async def test_grounding_fixture_inline(self, test_session_id, mock_search_backend):
         """
         Verify that the agent response does not include information not grounded
         in the search results.
@@ -192,24 +194,40 @@ class TestAgentResponses:
 
     # TODO: parameterize the 2 grounding tests (bc they are identical besides \
     # the way the source the mocked search result)
+    _GROUNDING_FIXTURE_PARAMS = [
+        pytest.param(
+            "what-is-the-delco-accent-search_catalog-result-2026-04-14.txt",
+            "what is the delco accent",
+            id="delco-accent",
+        ),
+        pytest.param(
+            "tell-me-about-teeny-duchamp-search_catalog-result-2026-06-08.txt",
+            "Tell me about Teeny Duchamp",
+            id="teeny-duchamp",
+        ),
+    ]
+
     @pytest.mark.xfail
-    async def test_grounding_delco_accent(self, test_session_id):
+    @pytest.mark.parametrize("fixture_file,query", _GROUNDING_FIXTURE_PARAMS)
+    async def test_grounding_fixture_file(self, test_session_id, fixture_file, query):
         """
         Verify that the agent response does not include information not grounded
-        in the search results, for a query about the Delco accent.
+        in the search results.
 
-        Search results are stubbed from a fixture file.
+        Search results are stubbed from a fixture file saved from a real search
+        tool response.
         """
 
-        delco_fixture = (
+        fixture_path = (
             Path(__file__).parents[1]
             / "fixtures"
-            / "what-is-the-delco-accent-search_catalog-result-2026-04-14.txt"
+            / "search_catalog_results"
+            / fixture_file
         )
 
-        with stub_search_catalog(delco_fixture.read_text()):
+        with stub_function_tool(search_catalog, fixture_path.read_text()):
             run_result = await update_chat(
-                "what is the delco accent",
+                query,
                 conversation_type="catalogSearch",
                 session_id=test_session_id,
             )
@@ -226,6 +244,7 @@ class TestAgentResponses:
     async def test_irrelevant_results_acknowledged(self, test_session_id):
         """
         Verify that the agent acknowledges search results are irrelevant to the query.
+        All test cases should have no relevant documents in the search index.
 
         The search tool is stubbed to return a fixture containing results
         not related directly to the user query.
@@ -234,10 +253,11 @@ class TestAgentResponses:
         miyazaki_fixture = (
             Path(__file__).parents[1]
             / "fixtures"
+            / "search_catalog_results"
             / "Hayao-Miyazaki-search_catalog-result-2026-04-14.txt"
         )
 
-        with stub_search_catalog(miyazaki_fixture.read_text()):
+        with stub_function_tool(search_catalog, miyazaki_fixture.read_text()):
             run_result = await update_chat(
                 "Hayao Miyazaki",
                 conversation_type="catalogSearch",
@@ -263,7 +283,7 @@ the irrelevant results as if they are relevant to the query.""",
         """
 
         query = "new york"
-        with stub_search_catalog("No results found for your query."):
+        with stub_function_tool(search_catalog, "No results found for your query."):
             run_result = await update_chat(
                 query,
                 conversation_type="catalogSearch",

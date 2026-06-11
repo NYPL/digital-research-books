@@ -10,6 +10,10 @@ import { documentTitles } from "~/src/constants/labels";
 import { workFetcher } from "~/src/lib/api/SearchApi";
 import { WorkQuery, WorkResult } from "~/src/types/WorkQuery";
 import { getBackToVraUrl } from "~/src/util/LinkUtils";
+import {
+  isBlinkClient,
+  normalizeCombiningHalfMarksDeep,
+} from "~/src/util/TextNormalization";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import Error from "../_error";
 
@@ -39,12 +43,24 @@ export async function getServerSideProps(context: any) {
 
 const ItemPage: React.FC<any> = (props) => {
   const router = useRouter();
-  if (props.workResult.status !== 200) {
-    return <Error statusCode={props.workResult.status} />;
+  const [displayWorkResult, setDisplayWorkResult] = React.useState(
+    props.workResult
+  );
+
+  React.useEffect(() => {
+    setDisplayWorkResult(
+      isBlinkClient()
+        ? normalizeCombiningHalfMarksDeep(props.workResult)
+        : props.workResult
+    );
+  }, [props.workResult]);
+
+  if (displayWorkResult.status !== 200) {
+    return <Error statusCode={displayWorkResult.status} />;
   }
 
   const truncatedTitle = truncateStringOnWhitespace(
-    props.workResult.data.title,
+    displayWorkResult.data.title,
     MAX_PAGE_TITLE_LENGTH
   );
 
@@ -57,12 +73,12 @@ const ItemPage: React.FC<any> = (props) => {
         activePage="item"
         breadcrumbsData={[
           {
-            url: `/item/${props.workResult.data.uuid}`,
-            text: props.workResult.data.title,
+            url: `/item/${displayWorkResult.data.uuid}`,
+            text: displayWorkResult.data.title,
           },
         ]}
       >
-        <ItemDetail workResult={props.workResult} backUrl={props.backUrl} />
+        <ItemDetail workResult={displayWorkResult} backUrl={props.backUrl} />
       </VRALayout>
     </Layout>
   );
