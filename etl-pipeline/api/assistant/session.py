@@ -9,12 +9,20 @@ from agents.items import TResponseInputItem
 
 class CustomSQLAlchemySession(SQLAlchemySession):
     """
-    Extends SQLAlchemySession to capture the PostgreSQL-assigned row IDs for every item
-    persisted during a run. Call inserted_items after Runner.run() (or after stream_events()
-    is exhausted for streaming) to get (db_id, item) pairs for the current request.
+    Extends SQLAlchemySession to capture the PostgreSQL-assigned row IDs for
+    every item persisted via .add_items() in the `inserted_items` attribute.
+
+    .inserted_items is a list of (db_id, item) pairs.
+    .add_items() is called once at the end of the agent run in `save_result_to_session`
+    (`agents/run_internal/session_persistence.py` line 286) → `session.add_items()`.
 
     NOTE: PostgreSQL only — uses INSERT ... RETURNING id, which is not supported by SQLite
     or other databases without modification.
+
+    CustomSQLAlchemySession.inserted_items vs RunResult.new_items:
+        - .new_items does not include input items from Runner.run(input=) while
+          .inserted_items does.
+        - .new_items includes tool_approval_item's while .inserted_items does not.
     """
 
     def __init__(self, *args, **kwargs):

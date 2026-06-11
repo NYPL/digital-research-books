@@ -1,10 +1,13 @@
+# builtins
 import asyncio
 from dataclasses import asdict
-from textwrap import indent
-from typing import Any, Dict, Tuple
-from api.assistant.types import CatalogSearchResult
+from typing import Dict, Tuple
+
+# non-built-ins
 from flask import Blueprint, current_app, request
 import newrelic.agent
+from agents import RunResult
+from agents.items import ToolApprovalItem
 
 # shared code
 from logger import create_log, LogContextVars, get_app_logger
@@ -17,7 +20,6 @@ from utils.timer import timer
 
 # API code
 from ..utils import APIUtils, orm_to_dict
-from ..elastic import ElasticClient
 from ..db import DBClient, get_async_engine
 from ..auth import require_api_key
 from ..decorators import require_session_jwt
@@ -161,6 +163,41 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
     return result_type, formatted_search_result
 
 
+def get_new_items_with_ids(
+    run_result: RunResult,
+    session: CustomSQLAlchemySession,
+) -> list[dict]:
+    """
+    Returns items that are in both RunResult.new_items and CustomSQLAlchemySession.inserted_items (converted via .to_input_item()) , with DB `agent_messages.id` added as `db_id`.
+
+    If there are multiple identically valued items in .inserted_items the first
+    db_id for each match in .new_items is used (a pop-on-first-match pool correctly
+    handles duplicate item content.) In case of duplicates, if .add_items()
+    has been called outside of the run that produced RunResult, db_ids might
+    not be correct.
+
+    Note: ToolApprovalItem's are not persisted, thus are not in .inserted_items, and are not returned.
+
+    """
+    new_items = [
+        item.to_input_item()
+        for item in run_result.new_items
+        if not isinstance(item, ToolApprovalItem)
+    ]
+    # calling .to_input_item() on ToolApprovalItem raises (agents/items.py).
+    # And they are not persisted agents/run_internal/session_persistence.py, line 243.
+
+    messages = []
+    for db_id, inserted_item in session.inserted_items:
+        try:
+            idx = new_items.index(inserted_item)  # dict equality check
+            new_items.pop(idx)
+            messages.append({"db_id": db_id, **inserted_item})
+        except ValueError:
+            pass  # if `inserted_item` is not in `new_items` (.e.g. Runner.run(input=) items)
+    return messages
+
+
 @chat_blueprint.route("", methods=["POST"])
 @require_api_key
 @require_session_jwt
@@ -246,15 +283,8 @@ def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
 
     ## Build API response
 
-    # inserted_items includes the user input + all agent items (tool calls, outputs, final
-    # response), each with its stable agent_messages.id from the DB.
-    messages = [
-        {"db_id": db_id, **item}
-        for db_id, item in session.inserted_items
-        if item.get("role") != "user"
-    ]
-    # `len(run_result.new_items)` should be `len(session.inserted_items)` - 1 (new user message)
-    logger.info(f"Agent generated {len(run_result.new_items)} new message items")
+    messages = get_new_items_with_ids(run_result, session)
+    logger.info(f"Agent generated {len(messages)} new message items")
 
     # Format search results
     result_type, formatted_search_result = prepare_search_response(
