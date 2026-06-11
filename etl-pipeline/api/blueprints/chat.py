@@ -6,8 +6,6 @@ from typing import Dict, Tuple
 # non-built-ins
 from flask import Blueprint, current_app, request
 import newrelic.agent
-from agents import RunResult
-from agents.items import ToolApprovalItem
 
 # shared code
 from logger import create_log, LogContextVars, get_app_logger
@@ -29,7 +27,7 @@ from ..assistant.agent import (
     update_chat,
     PAGE_SIZE,
 )
-from ..assistant.session import CustomSQLAlchemySession
+from ..assistant.session import CustomSQLAlchemySession, get_new_items_with_ids
 from ..assistant.snippets import get_relevant_snippets
 
 
@@ -161,41 +159,6 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
             )
 
     return result_type, formatted_search_result
-
-
-def get_new_items_with_ids(
-    run_result: RunResult,
-    session: CustomSQLAlchemySession,
-) -> list[dict]:
-    """
-    Returns items that are in both RunResult.new_items and CustomSQLAlchemySession.inserted_items (converted via .to_input_item()) , with DB `agent_messages.id` added as `db_id`.
-
-    If there are multiple identically valued items in .inserted_items the first
-    db_id for each match in .new_items is used (a pop-on-first-match pool correctly
-    handles duplicate item content.) In case of duplicates, if .add_items()
-    has been called outside of the run that produced RunResult, db_ids might
-    not be correct.
-
-    Note: ToolApprovalItem's are not persisted, thus are not in .inserted_items, and are not returned.
-
-    """
-    new_items = [
-        item.to_input_item()
-        for item in run_result.new_items
-        if not isinstance(item, ToolApprovalItem)
-    ]
-    # calling .to_input_item() on ToolApprovalItem raises (agents/items.py).
-    # And they are not persisted agents/run_internal/session_persistence.py, line 243.
-
-    messages = []
-    for db_id, inserted_item in session.inserted_items:
-        try:
-            idx = new_items.index(inserted_item)  # dict equality check
-            new_items.pop(idx)
-            messages.append({"db_id": db_id, **inserted_item})
-        except ValueError:
-            pass  # if `inserted_item` is not in `new_items` (.e.g. Runner.run(input=) items)
-    return messages
 
 
 @chat_blueprint.route("", methods=["POST"])
