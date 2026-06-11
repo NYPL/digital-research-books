@@ -1,10 +1,4 @@
-import {
-  Box,
-  Flex,
-  Heading,
-  Image,
-  Text,
-} from "@nypl/design-system-react-components";
+import { Box, Flex, Heading, Text } from "@nypl/design-system-react-components";
 import SectionContainer from "../../ResearchAssistantLanding/SectionContainer";
 import AiWorkflow from "./AIWorkflow";
 import IngestionPipeline from "./IngestionPipeline";
@@ -21,7 +15,6 @@ const TechnologySection: React.FC = () => {
       paddingX="s"
       tabIndex={-1}
     >
-      <TechnologyPipeline />
       <Box maxWidth="55rem" margin="0 auto">
         <Heading
           level="h2"
@@ -65,13 +58,14 @@ const TechnologySection: React.FC = () => {
           marginTop={{ base: "l", md: "xxl" }}
           marginBottom={{ base: "xl", md: "xxl" }}
         >
-          <Image
+          <TechnologyPipeline />
+          {/* <Image
             src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/technologyDiagram.png"
             alt="Flow diagram showing an Agentic AI system. A question enters the Agentic AI box, which flows through three stages: Question Processed, Information Retrieved, and Response Generated (linked to a Book Ingestion Pipeline), finally exiting as a Response."
             width="608px"
             flexShrink="0"
             backgroundColor="transparent"
-          />
+          /> */}
         </Flex>
         <Box
           display="flex"

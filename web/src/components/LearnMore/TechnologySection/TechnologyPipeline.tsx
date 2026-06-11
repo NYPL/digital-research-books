@@ -3,20 +3,22 @@ import React from "react";
 import ResearchAssistantIcon from "../../ResearchAssistant/icons/ResearchAssistantIcon";
 import UserIcon from "../icons/UserIcon";
 import ArrowSVG from "./ArrowSVG";
-import InputIcon from "./InputIcon";
+import BookIcon from "./BookIcon";
+import ChatIcon from "./ChatIcon";
+import GearIcon from "./GearIcon";
+import InfoIcon from "./InfoIcon";
 
 const TechnologyPipeline: React.FC = () => {
-  const squareSize = { base: "160px", md: "160px" };
-
   return (
     <>
       <Flex flexDir="column" width="fit-content" margin="0 auto">
         <Flex justifyContent="space-around" width="100%">
-          <Flex flexDir="column">
+          <Flex flexDir="column" alignItems="center">
             <Text
               fontSize="desktop.heading.heading8"
               fontWeight="700"
               fontFamily="Courier New"
+              marginBottom="xs"
             >
               QUESTION
             </Text>
@@ -25,29 +27,20 @@ const TechnologyPipeline: React.FC = () => {
               border="2px solid"
               borderColor="section.research.secondary"
               borderRadius="0 8px 8px 8px"
+              padding="s"
             >
-              <Box
-                boxSizing="content-box"
-                width="36px"
-                height="36px"
-                display="flex"
-                flexDir="column"
-                alignItems="center"
-                borderRadius="50%"
-                borderColor="section.research.secondary"
-                borderWidth="1rem"
-                justifyContent="center"
-              >
+              <Box width="36px" height="36px">
                 <UserIcon size="medium" inCircle={true} />
               </Box>
             </Box>
-            <ArrowSVG />
+            <ArrowSVG length="64px" />
           </Flex>
-          <Flex flexDir="column">
+          <Flex flexDir="column" alignItems="center">
             <Text
               fontSize="desktop.heading.heading8"
               fontWeight="700"
               fontFamily="Courier New"
+              marginBottom="xs"
             >
               RESPONSE
             </Text>
@@ -56,22 +49,21 @@ const TechnologyPipeline: React.FC = () => {
               border="2px solid"
               borderColor="section.research.secondary"
               borderRadius="8px 8px 0px 8px"
+              padding="s"
             >
               <Box
-                boxSizing="content-box"
-                width="36px"
-                height="36px"
+                width="2.25rem"
+                height="2.25rem"
                 borderRadius="50%"
-                borderColor="section.research.secondary"
-                borderWidth="1rem"
+                backgroundColor="#E6F3F3"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
               >
-                <ResearchAssistantIcon size="medium" inCircle={true} />
+                <ResearchAssistantIcon size="large" />
               </Box>
             </Box>
-            <ArrowSVG />
+            <ArrowSVG direction="up" length="64px" />
           </Flex>
         </Flex>
         <Box
@@ -79,7 +71,7 @@ const TechnologyPipeline: React.FC = () => {
           padding="m"
           border="2px solid"
           borderColor="section.research.secondary"
-          borderRadius="16px"
+          borderRadius="24px"
           flexDir="column"
           display="flex"
           alignItems="center"
@@ -87,74 +79,91 @@ const TechnologyPipeline: React.FC = () => {
           margin="0 auto"
         >
           <Flex flexDir={{ base: "column", sm: "row" }} alignItems="center">
+            <Text
+              fontSize="desktop.heading.heading8"
+              fontWeight="700"
+              fontFamily="Courier New"
+              marginBottom="m"
+              display={{ base: "block", sm: "none" }}
+            >
+              AGENTIC AI
+            </Text>
             <Box
               background="#FAFDFD"
               border="2px dashed"
               borderColor="section.research.secondary"
               borderRadius="16px"
-              width={squareSize}
-              height={squareSize}
+              aspectRatio={1}
               display="inline-flex"
               flexDir="column"
               alignItems="center"
               justifyContent="center"
               gap="xs"
             >
-              <InputIcon />
+              <GearIcon />
               <Text
                 fontSize="desktop.heading.heading8"
                 fontWeight="700"
                 fontFamily="Courier New"
                 textAlign="center"
+                width="160px"
               >
                 QUESTION <br />
                 PROCESSED
               </Text>
             </Box>
-            <ArrowSVG />
+            <ArrowSVG
+              direction={{ base: "down", sm: "right" }}
+              length="32px"
+              dashed
+            />
             <Box
               background="#FAFDFD"
               border="2px dashed"
               borderColor="section.research.secondary"
               borderRadius="16px"
-              width={squareSize}
-              height={squareSize}
               display="inline-flex"
               flexDir="column"
               alignItems="center"
               justifyContent="center"
+              aspectRatio={1}
               gap="xs"
             >
-              <InputIcon />
+              <InfoIcon />
               <Text
                 fontSize="desktop.heading.heading8"
                 fontWeight="700"
                 fontFamily="Courier New"
                 textAlign="center"
+                width="160px"
               >
                 INFORMATION <br /> RECIEVED
               </Text>
             </Box>
-            <ArrowSVG />
+            <ArrowSVG
+              direction={{ base: "down", sm: "right" }}
+              length="32px"
+              dashed
+            />
             <Box
               background="#FAFDFD"
               border="2px dashed"
               borderColor="section.research.secondary"
               borderRadius="16px"
-              width={squareSize}
-              height={squareSize}
+              aspectRatio={1}
               display="inline-flex"
               flexDir="column"
               alignItems="center"
               justifyContent="center"
               gap="xs"
             >
-              <InputIcon />
+              <ChatIcon />
               <Text
                 fontSize="desktop.heading.heading8"
                 fontWeight="700"
                 fontFamily="Courier New"
                 textAlign="center"
+                width="160px"
               >
                 RESPONSE <br />
                 GENERATED
@@ -166,38 +175,39 @@ const TechnologyPipeline: React.FC = () => {
             fontWeight="700"
             fontFamily="Courier New"
             marginTop="m"
+            display={{ base: "none", sm: "block" }}
           >
             AGENTIC AI
           </Text>
         </Box>
-      </Flex>
-      <Flex flexDir="column" alignItems="center">
-        <ArrowSVG />
-        <Box
-          background="ui.white"
-          border="2px solid"
-          borderColor="section.research.secondary"
-          borderRadius="16px"
-          display="inline-flex"
-          flexDir="column"
-          width={squareSize}
-          height={squareSize}
-          alignItems="center"
-          justifyContent="center"
-          gap="xs"
-        >
-          <InputIcon />
-          <Text
-            fontSize="desktop.heading.heading8"
-            fontWeight="700"
-            fontFamily="Courier New"
-            textAlign="center"
+        <Flex flexDir="column" alignItems="center">
+          <ArrowSVG direction="up" length="64px" />
+          <Box
+            background="ui.white"
+            border="2px solid"
+            borderColor="section.research.secondary"
+            borderRadius="16px"
+            display="inline-flex"
+            flexDir="column"
+            alignItems="center"
+            justifyContent="center"
+            gap="xs"
+            aspectRatio={1}
           >
-            BOOK <br />
-            INGESTION <br />
-            PIPELINE
-          </Text>
-        </Box>
+            <BookIcon />
+            <Text
+              fontSize="desktop.heading.heading8"
+              fontWeight="700"
+              fontFamily="Courier New"
+              textAlign="center"
+              width="160px"
+            >
+              BOOK <br />
+              INGESTION <br />
+              PIPELINE
+            </Text>
+          </Box>
+        </Flex>
       </Flex>
     </>
   );
