@@ -206,16 +206,9 @@ Below is an example selection of subject strings (one per line). Each book has a
   Clay industries -- Periodicals
 
 
-## Ranking
+### Filter Syntax Examples
 
-The `ranking_query` is used to rank text chunks based on the semantic similarity of the text chunk content and the input query.
-This semantic similarity calculation is done via semantic embedding of the the `ranking_query` and each candidate text chunk into semantic vectors. A vector similarity search is done to find the text chunks with the most relevant semantic content to the query.
-
-
-## Usage Examples
-<!-- MAYBE: move this into main system prompt -->
-
-### `And`/`Or` syntax
+#### `And`/`Or` syntax
 
 `And` and `Or` always have exactly two elements: the operator name and a **single array containing all child conditions**. Every child condition must itself be an array.
 
@@ -254,7 +247,7 @@ This semantic similarity calculation is done via semantic embedding of the the `
 { "filters": ["publication_date", "Gte", "1900-01-01"] }
 ```
 
-### Nested `And` and `Or` filters
+#### Nested `And` and `Or` filters
 
 Using nested And and Or filters:
 
@@ -269,6 +262,17 @@ Using nested And and Or filters:
     ]],
 ]]
 ```
+
+
+## Ranking
+
+The `ranking_query` is used to rank text chunks based on the semantic similarity of the text chunk content and the input query.
+This semantic similarity calculation is done via semantic embedding of the the `ranking_query` and each candidate text chunk into semantic vectors. A vector similarity search is done to find the text chunks with the most relevant semantic content to the query.
+
+
+## Usage Examples
+<!-- MAYBE: move this into main system prompt -->
+
 
 
 ### Keyword match
