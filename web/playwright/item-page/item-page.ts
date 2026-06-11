@@ -96,9 +96,9 @@ class ItemPage {
       name: "Ask your question...",
     });
     this.submitQueryBtn = page.getByLabel("Send");
-    this.loadingIndicator = page.getByText(
-      "Thinking... This may take several seconds."
-    );
+    this.loadingIndicator = page
+      .getByLabel("Chat messages")
+      .getByText("Thinking... This may take several seconds.");
 
     // Details panel — labels
     this.detailsCopyrightLabel = page.getByText("Copyright", { exact: true });
