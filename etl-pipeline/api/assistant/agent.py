@@ -477,6 +477,10 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
     )
 
 
+class EditionNotFoundError(ValueError):
+    pass
+
+
 @timer(logger)
 async def update_chat(
     message: str,
@@ -552,7 +556,7 @@ async def update_chat(
             logger.error(
                 f"FRBR data missing for content search in edition {edition_id}"
             )
-            raise ValueError(f"No edition found with id {edition_id}")
+            raise EditionNotFoundError(f"No edition found with id {edition_id}")
         # Prefer barcode-based lookup when provided. Barcode is stable across
         # FRBR re-clustering, whereas edition_id is not.
         if barcode is not None:

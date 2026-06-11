@@ -21,7 +21,12 @@ from ..elastic import ElasticClient
 from ..db import DBClient, get_async_engine
 from ..auth import require_api_key
 from ..decorators import require_session_jwt
-from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
+from ..assistant.agent import (
+    SCORE_SORT_DIRECTION,
+    EditionNotFoundError,
+    update_chat,
+    PAGE_SIZE,
+)
 from ..assistant.session import CustomSQLAlchemySession
 from ..assistant.snippets import get_relevant_snippets
 
@@ -232,10 +237,7 @@ def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
                 session=session,
             )
         )
-    except ValueError as e:
-        # Intended to catch "No edition found with id=XXX"
-        # TODO: make error filter specific to intended error, even tho its the \
-        # only ValueError intentionlly raided in the update_chat() boundary
+    except EditionNotFoundError as e:
         return APIUtils.formatResponseObject(404, RESPONSE_TYPE, {"message": str(e)})
 
     # Add relevant snippets to search result, if search was executed in this agent turn
