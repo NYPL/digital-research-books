@@ -14,6 +14,10 @@ import {
   StreamEvent,
 } from "~/src/types/ResearchAssistant";
 import {
+  isBlinkClient,
+  normalizeCombiningHalfMarksDeep,
+} from "~/src/util/TextNormalization";
+import {
   SURVEY_DELAY_MS,
   SURVEY_SESSION_STORAGE_KEY,
 } from "../constants/researchAssistant";
@@ -210,12 +214,15 @@ export const ResearchAssistantProvider: React.FC<{
         return;
       }
 
-      const data = {
+      const rawData = {
         messages: finalEvent.messages,
         resultType: finalEvent.result_type,
         results: finalEvent.result,
         sessionId: finalEvent.session_id,
       };
+      const data = isBlinkClient()
+        ? normalizeCombiningHalfMarksDeep(rawData)
+        : rawData;
 
       setSessionId(data.sessionId);
 

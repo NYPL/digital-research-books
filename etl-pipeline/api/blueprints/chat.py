@@ -170,10 +170,13 @@ def chat(session_id):
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
+    barcode = request.json.get("barcode")
 
     log_context = {"session_id": session_id, "conversation_type": conversation_type}
     if edition_id is not None:
         log_context["edition_id"] = edition_id
+    if barcode is not None:
+        log_context["barcode"] = barcode
 
     # New Relic custom attributes and AI monitoring conversation grouping
     for k, v in log_context.items():
@@ -186,7 +189,7 @@ def chat(session_id):
         def generate_streaming_response():
             try:
                 yield from _chat_stream_handler(
-                    session_id, conversation_type, message, edition_id
+                    session_id, conversation_type, message, edition_id, barcode
                 )
             except Exception as e:
                 logger.exception("Error in streaming chat handler")
@@ -199,15 +202,15 @@ def chat(session_id):
         )
 
 
-def _chat_stream_handler(session_id, conversation_type, message, edition_id):
+def _chat_stream_handler(session_id, conversation_type, message, edition_id, barcode):
     """
     Generator that yields NDJSON events during chat processing.
     Validates input, processes chat, and yields progress/result events.
     """
-    return _chat_handler(session_id, conversation_type, message, edition_id)
+    return _chat_handler(session_id, conversation_type, message, edition_id, barcode)
 
 
-def _chat_handler(session_id, conversation_type, message, edition_id):
+def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
     """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
 
     logger.info(f"Chat request received: {message[:20]}...")
@@ -227,9 +230,9 @@ def _chat_handler(session_id, conversation_type, message, edition_id):
         )
         return
 
-    if conversation_type == "contentSearch" and edition_id is None:
+    if conversation_type == "contentSearch" and edition_id is None and barcode is None:
         yield format_error(
-            "editionId is required for conversationType='contentSearch'",
+            "editionId or barcode is required for conversationType='contentSearch'",
             code="validation_error",
         )
         return
@@ -252,6 +255,7 @@ def _chat_handler(session_id, conversation_type, message, edition_id):
                         conversation_type,
                         session_id,
                         edition_id=edition_id,
+                        barcode=barcode,
                         event_callback=on_event,
                     )
                 )

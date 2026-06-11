@@ -1,6 +1,14 @@
 # for default --results-dir in vector_indexing/scripts/index_books.py
 **/indexing_results/
 
+# copilot instructions
+.github/instructions/*
+.github/skills/
+.github/copilot-instructions.md
+
+.deepeval/
+
+
 .DS_Store
 .coverage
 /.vscode/*

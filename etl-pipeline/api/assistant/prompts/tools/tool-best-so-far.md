@@ -1,136 +1,48 @@
+We refer to each text chunk in the search index as a "ChunkDocument".
 
-## Filters
+## ChunkDocument Schema
+<!-- MAYBE: move this into main system prompt -->
 
-<!-- based on https://turbopuffer.com/docs/query#filtering -->
-<!-- Changes from TP docs include: changed "token" to "words", replace document with chunk
- -->
-
-Filters refine search results. Think of them as a SQL WHERE clause.
-The catalog uses a Turbopuffer search index, so use Turbopuffer filters syntax. 
-
-### Filter Syntax
-
-```
-// Type definitions
-Condition  = [field, operation, value]
-And        = ["And", [Condition | And | Or | Not, ...]]   // 2+ elements
-Or         = ["Or",  [Condition | And | Or | Not, ...]]   // 2+ elements
-Not        = ["Not",  Condition | And | Or | Not]
-Filter     = Condition | And | Or | Not
-```
-
-All fields are nullable (value = `null`).
-<!-- null is a raw JSON null value, converted to python None in post-parsing -->
-
-```
-// Condition
-"filters": ["publication_date", "Gte", "1900-01-01"]
-
-// And
-"filters": ["And", [
-  ["author", "ContainsAnyToken", "Twain Hemingway"],
-  ["publication_date", "Gte", "1900-01-01"]
-]]
-
-// Or
-"filters": ["Or", [
-  ["language", "Contains", "French"],
-  ["language", "Contains", "Spanish"]
-]]
-
-// Not
-"filters": ["Not", ["text", "ContainsAnyToken", "redacted censored"]]
-
-// Nested (And > Or)
-"filters": ["And", [
-  ["publication_date", "Gte", "1800-01-01"],
-  ["Or", [
-    ["subject", "ContainsAnyToken", "Science Chemistry Physics"],
-    ["author", "ContainsAllTokens", "Darwin"]
-  ]]
-]]
-```
-
-### Filter Operators
-
-#### Equality Operators
-- Equality operators on string and array of string fields are case sensitive.
-
-`Eq` (value) - Exact match for field value. If value is null, this operation matches chunks missing the field.
-
-`Contains` (value) - Checks whether the selected array field contains the provided value. Only use with array fields, not scalar fields.
-
-`ContainsAny` (array[value]) - Checks whether the selected array field contains any of the values provided (intersection filter). Only use with array fields, not scalar fields.
-
-#### Comparison Operators
-
-`Lt` (value) - less-than 
-
-`Lte` (value) -  less-than-or-equal 
-
-`Gt` (value) - greater-than 
-
-`Gte` (value) - greater-than-or-equal
-
-#### Word Token Operators
-- Word Token operators can only be used on string and array of strings typed fields.  
-- All word token search operators are case insensitive.  <!-- This is because we indexed with case_sensitive=false -->
-- Word Token operators break the query and indexed values into a sequence of word tokens to compare; "Tokens" in the operator names refers to words.
-
-`ContainsAllTokens` (string) - Matches chunks where the field contains all the words present in the value string. If you need the words to be adjacent and in order, use ContainsTokenSequence instead. 
-
-`ContainsTokenSequence` (string) - Matches chunks where the field contains all the words present in the value string, in the exact order and adjacent to each other. 
-
-`ContainsAnyToken` (string) - Matches chunks where the field contains any of the words present in the value string. Requires that the field is configured for full-text search. Supports prefix queries in the same way as ContainsAllTokens.
-
-<!-- excluded operators: NotEq, In, NotIn, NotContains, NotContainsAny, AnyLt, AnyLte, AnyGt, AnyGte, Glob, NotGlob, IGlob, NotIGlob, Regex -->
-
-### Search Index Schema
-Each chunk has the following allowed field names and allowed filter operations for each field:
-
-<filter_schema>
+<fields>
   <field>
-    <field_name>text</field_name>
+    <name>text</name>
     <data_type>string</data_type>
     <description>The full text of the text chunk.</description>
-    <allowed_operations>ContainsAllTokens, ContainsTokenSequence, ContainsAnyToken</allowed_operations>
   </field>
+
   <field>
-    <field_name>subject</field_name>
+    <name>subject</name>
     <data_type>array of strings</data_type>
-    <description>A list of subject strings associated with the book. Includes topic, genre, publication type, literary classification, etc.</description>
-    <allowed_operations>ContainsAllTokens, ContainsTokenSequence, ContainsAnyToken</allowed_operations>
+    <description>A list of subject strings that are associated with the book the text chunk belongs to. Subject strings include information like topic, genre, publication type, literary classification, etc.</description>
   </field>
+
   <field>
-    <field_name>title</field_name>
+    <name>publication_date</name>
+    <data_type>string (iso 8601 formatted date)</data_type>
+    <description>The publication date of the book the text chunk belongs to.</description>
+  </field>
+
+  <field>
+    <name>author</name>
+    <data_type>array of strings</data_type>
+    <description>An array of all the authors who contributed to the book the text chunk belongs to.</description>
+  </field>
+
+  <field>
+    <name>title</name>
     <data_type>string</data_type>
     <description>The title of the book the text chunk belongs to.</description>
-    <allowed_operations>Eq, ContainsAllTokens, ContainsTokenSequence, ContainsAnyToken</allowed_operations>
   </field>
+
   <field>
-    <field_name>author</field_name>
-    <data_type>array of strings</data_type>
-    <description>All authors who contributed to the book.</description>
-    <allowed_operations>ContainsAllTokens, ContainsTokenSequence, ContainsAnyToken</allowed_operations>
-  </field>
-  <field>
-    <field_name>language</field_name>
-    <data_type>array of strings</data_type>
-    <description>Languages the book is written in. ISO 639 full language names, case-sensitive, first letter uppercase (e.g. "English", "French").</description>
+    <name>language</name>
+    <data_type>array of string</data_type>
+    <description>Languages that the book is written in. array of ISO 639 full language names. Case Sensitive. First letter uppercase for each language name.</description>
     <!-- see SFRRecordManager.getLanguage() -->
-    <allowed_operations>Contains, ContainsAny</allowed_operations>
   </field>
-  <field>
-    <field_name>publication_date</field_name>
-    <data_type>string (ISO 8601)</data_type>
-    <description>The publication date of the book.</description>
-    <allowed_operations>Eq, Lt, Lte, Gt, Gte</allowed_operations>
-  </field>
-</filter_schema>
+</fields>
 
-<!-- Filters can also be applied to the id field, which refers to the document ID. -->
-
-#### Subject Examples
+### Subject Examples
 Below is an example selection of subject strings (one per line). Each book has an array of subject strings associated with it: 
   Administrative law -- United States
   American fiction
@@ -200,6 +112,166 @@ Below is an example selection of subject strings (one per line). Each book has a
   Hydraulics
   Clay industries -- Periodicals
 
+# Construct a search
+
+## Filters
+
+<!-- based on https://turbopuffer.com/docs/query#filtering -->
+<!-- Changes from TP docs include: changed "token" to "words", replace document with ChunkDocument -->
+
+Apply filters to ChunkDocument fields to refine search results. Think of them as a SQL WHERE clause.
+
+Filters allow you to narrow down results by applying exact conditions to the returned ChunkDocument fields. 
+
+### Filter Syntax
+**Conditions** are arrays with a **field name**, **operation**, and **value**, for example:
+
+  `["title", "Eq", "The Great Gatsby"]`
+  `["author", "ContainsAnyToken", "Shakespeare Milton"]`
+  `["publication_date", "NotEq", null]`
+
+
+All fields are nullable (value = `null`)
+<!-- null must be represented as raw JSON null value, as all parameters are constructed by the agent as valid JSON -->
+
+Two or more **conditions** can be combined using `{And,Or}` operations. **`And`/`Or` always take exactly two elements: the operator name and a single array `[...]` containing all conditions. Never pass conditions as additional arguments outside that array.**
+
+```
+// And with two conditions — all conditions go inside the inner array
+"filters": ["And", [
+  ["author", "ContainsAnyToken", "Twain Hemingway"],
+  ["publication_date", "Gte", "1900-01-01"]
+]]
+
+// date range (two conditions — both go inside the inner array)
+"filters": ["And", [
+  ["publication_date", "Gte", "1800-01-01"],
+  ["publication_date", "Lt", "1900-01-01"]
+]]
+
+// conditions can be nested
+"filters": ["And", [
+  ["publication_date", "Gte", "1800-01-01"],
+  ["Or", [
+    ["subject", "ContainsAnyToken", "Science Chemistry Physics"],
+    ["author", "ContainsAllTokens", "Darwin"]
+  ]]
+]]
+```
+<!-- Filters can also be applied to the id field, which refers to the document ID. -->
+
+### Allowed Fields and Operations
+Here are the allowed field names and their allowed operations for filtering:
+
+<filter_schema>
+  <field>
+    <field_name>text</field_name>
+    <data_type>string</data_type>
+    <allowed_operations>ContainsAllTokens, ContainsTokenSequence, ContainsAnyToken</allowed_operations>
+  </field>
+  <field>
+    <field_name>subject</field_name>
+    <data_type>array of strings</data_type>
+    <allowed_operations>Contains, ContainsAny, ContainsAllTokens, ContainsTokenSequence, ContainsAnyToken</allowed_operations>
+  </field>
+  <field>
+    <field_name>title</field_name>
+    <data_type>string</data_type>
+    <allowed_operations>Eq, ContainsAllTokens, ContainsTokenSequence, ContainsAnyToken</allowed_operations>
+  </field>
+  <field>
+    <field_name>author</field_name>
+    <data_type>array of strings</data_type>
+    <allowed_operations>Contains, ContainsAny</allowed_operations>
+  </field>
+  <field>
+    <field_name>language</field_name>
+    <data_type>array of strings</data_type>
+    <allowed_operations>Contains, ContainsAny</allowed_operations>
+  </field>
+  <field>
+    <field_name>publication_date</field_name>
+    <data_type>string (ISO 8601)</data_type>
+    <allowed_operations>Eq, Lt, Lte, Gt, Gte</allowed_operations>
+  </field>
+</filter_schema>
+
+
+### Filter Operators
+
+#### Equality Operators
+- Equality operators on string and array of string fields are case sensitive.
+
+`Eq` (value) - Exact match for field value. If value is null, this operation matches ChunkDocuments missing the field.
+
+<!-- 
+`NotEq` (value) - Inverse of Eq, for field values. If value is `null`, matches ChunkDocuments with the field.
+ -->
+<!-- Removing to reduce complexity bc this can be handled with `Or` filter combination. "author" or "language" is the only field were I think this might be used -->
+<!-- `In` (array[value]) - Matches any field values contained in the provided list.
+
+`NotIn` (array[value]) - Inverse of In, matches any field values not contained in the provided list. -->
+
+<!-- #### Array Field Operators -->
+
+`Contains` (value) - Checks whether the selected array field contains the provided value. Only use with array fields, not scalar fields.
+
+<!-- `NotContains` (value) - Inverse of Contains. -->
+
+`ContainsAny` (array[value]) - Checks whether the selected array field contains any of the values provided (intersection filter). Only use with array fields, not scalar fields.
+
+<!-- `NotContainsAny` (array[value]) - Inverse of ContainsAny. -->
+
+#### Comparison Operators
+
+`Lt` (value) - less-than 
+
+`Lte` (value) -  less-than-or-equal 
+
+`Gt` (value) - greater-than 
+
+`Gte` (value) - greater-than-or-equal
+
+<!-- #### Array Attribute Comparison Operators
+
+`AnyLt` (value) - Checks whether any element of an array field is less than the provided value, using the same rules as Lt.
+
+`AnyLte` (value) - Checks whether any element of an array field is less than or equal to the provided value, using the same rules as Lte.
+
+`AnyGt` (value) - Checks whether any element of an array field is greater than the provided value, using the same rules as Gt.
+
+`AnyGte` (value) - Checks whether any element of an array field is greater than or equal to the provided value, using the same rules as Gte. -->
+
+<!-- `Glob` (globset) - Unix-style glob match against string or []string field values. The full syntax is described in the globset documentation. Glob patterns with a concrete prefix like "foo*" internally compile to efficient range queries, while patterns without a concrete prefix (e.g., "*foo*" or "*foo") will perform a full scan of the namespace.
+
+`NotGlob` (globset) - Inverse of Glob, Unix-style glob filters against string or []string field values. The full syntax is described in the globset documentation.
+
+`IGlob` (globset) - Case insensitive version of Glob.
+
+`NotIGlob` (globset) - Case insensitive version of NotGlob.
+
+`Regex` (string) - Regular expression match against string field values. Requires the regex schema field to be enabled before use. Warning: Doesn't support certain advanced features (e.g. look-around, backreferences). Currently requires exhaustive evaluation; not recommended for large namespaces or ANN queries unless used in conjunction with other selective filters. Contact us if you run into performance problems. -->
+
+#### Word Token Operators
+- Word Token operators can only be used on string and array of strings typed fields.  
+- All word token search operators are case insensitive.  <!-- This is because we indexed with case_sensitive=false -->
+- Word Token operators break the query and indexed values into a sequence of word tokens to compare; "Tokens" in the operator names refers to words.
+
+`ContainsAllTokens` (string) - Matches ChunkDocuments that contain all the words present in the filter value string. If you need the words to be adjacent and in order, use ContainsTokenSequence instead. 
+
+`ContainsTokenSequence` (string) - Matches ChunkDocuments that contain all the words present in the filter value string, in the exact order and adjacent to each other. 
+
+`ContainsAnyToken` (string) - Matches ChunkDocuments that contain any of the tokens present in the filter input string. Requires that the field is configured for full-text search. Supports prefix queries in the same way as ContainsAllTokens.
+
+#### Meta Operators (combine and negate filters)
+
+`And` (array[filter]) - Matches if all of the filters match.
+
+`Or` (array[filter]) - Matches if at least one of the filters matches.
+
+`Not` (filter) - Matches if the filter does not match.
+
+
 
 ## Ranking
 
@@ -207,7 +279,7 @@ The `ranking_query` is used to rank text chunks based on the semantic similarity
 This semantic similarity calculation is done via semantic embedding of the the `ranking_query` and each candidate text chunk into semantic vectors. A vector similarity search is done to find the text chunks with the most relevant semantic content to the query.
 
 
-## Usage Examples
+## Examples
 <!-- MAYBE: move this into main system prompt -->
 
 ### `And`/`Or` syntax
@@ -227,7 +299,6 @@ This semantic similarity calculation is done via semantic embedding of the the `
 ]] }
 ```
 - The two `publication_date` conditions are wrapped in their own inner array instead of being placed alongside `language` as siblings. This is not valid — each condition must be a direct element of the single wrapping array.
-<!-- Interestingly, negative examples proved more effective in enforcing behavior for gemini flash 3 in testing -->
 
 ✅ **Correct** — all conditions wrapped together in one array:
 ```json
@@ -247,6 +318,7 @@ This semantic similarity calculation is done via semantic embedding of the the `
 ✅ **Correct** — use the condition directly when there is only one:
 ```json
 { "filters": ["publication_date", "Gte", "1900-01-01"] }
+```
 ```
 
 ### Nested `And` and `Or` filters
@@ -268,7 +340,7 @@ Using nested And and Or filters:
 
 ### Keyword match
 
-If a user is trying to search for information that matches a specific phrase or exact spelling, the `ranking_query` parameter alone will not help because it ranks chunks based on a representation of the semantic meaning of the text, but does not require that a specific phrase or spelling is present. In these cases, use a "String Operator" filter to require that all results match the exact keywords or phrases the user is interested in.
+If a user is trying to search for information that matches a specific phrase or exact spelling, the `ranking_query` parameter alone will not help because it ranks ChunkDocuments based on a representation of the semantic meaning of the text chunk, but does not require that a specific phrase or spelling is present. In these cases, use a "String Operator" filter to require that all results match the exact keywords or phrases the user is interested in.
 
 **Example:** User asks: "Find mentions of the Treaty of Versailles"
 
@@ -299,7 +371,7 @@ This query allows the powerful semantic search to identify relevant passages abo
 
 ### `ranking_query` only searches the "text" field
 
-The `ranking_query` only ranks semantic matches in the "text" field (which represents a chunk of a book's full text). Do not include content in the the `ranking_query` that is intended to match other fields, like publish_date or author's name. The `filters` can match based on other fields, so use the `filters` to search for content in those fields. 
+The `ranking_query` only ranks semantic matches in the "text" field (which represents a chunk of a book's full text). Do not include content in the the `ranking_query` that is intended to match other fields, like publish date or author's name. The `filters` can match based on other ChunkDocument fields, so use the `filters` to search for content in those fields. 
 
 **Example:** The user wants to know about "Uruguayan literature from the 20th century" 
 
@@ -314,7 +386,7 @@ The `ranking_query` should not include "from the 20th century" because the perio
 
 Note how the temporal constraint "20th century" is applied via a publication_date filter rather than included in the semantic `ranking_query`.
 
-### Un-searchable queries
+### Un-searchable content
 
 If the user asks to search for content that isn't available in any of the indexed fields, do not include the information in the constructed search arguments because the request is unsearchable in the current data model. Let the user know what part of their query is unsearchable, and continue to execute a search using whatever is searchable for the user's query
 
@@ -439,9 +511,9 @@ Args:
   ranking_query: The query string used to rank text chunks in the search results. See the "Ranking" section of the tool description for more details.
    
 
-  filters: (optional) The filter to apply to the query. See "Filtering" section of the tool description for syntax details. Remember, always wrap the conditions of an And/Or filter in a wrapping array (e.g. `["And", [["publication_date", "Gte", "1750-01-01"], ["publication_date", "Lt", "1790-01-01"]]]`) !!!!
+  filters: (optional) The filter to apply to the query. See "Filtering" section of the tool description for syntax details.
 
-  filters_match_null: (optional, defaults to True) When True, automatically modifies filters on potentially incomplete fields (subject, language, publication_date, author) to also match chunks where those fields are null. This ensures search results include books with incomplete metadata. For example, a filter like `["subject", "ContainsAnyToken", "poetry"]` is automatically transformed to `["Or", [["subject", "ContainsAnyToken", "poetry"], ["subject", "Eq", null]]]`. Set to False if you specifically want to exclude results with missing metadata for filtered fields.
+  filters_match_null: (optional, defaults to True) When True, automatically modifies filters on potentially incomplete fields (subject, language, publication_date, author) to also match ChunkDocuments where those fields are null. This ensures search results include books with incomplete metadata. For example, a filter like `["subject", "ContainsAnyToken", "poetry"]` is automatically transformed to `["Or", [["subject", "ContainsAnyToken", "poetry"], ["subject", "Eq", null]]]`. Set to False if you specifically want to exclude results with missing metadata for filtered fields.
 
 <!-- 
     Args:
