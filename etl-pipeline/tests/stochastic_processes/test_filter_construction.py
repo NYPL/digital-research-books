@@ -16,6 +16,7 @@ from pathlib import Path
 from agents.items import ToolCallItem, ToolCallOutputItem
 
 from api.assistant.agent import update_chat, META_OPERATORS, search_catalog
+from api.assistant.models.filter import Filter
 from tests.stochastic_processes.conftest import stub_function_tool
 
 
@@ -165,11 +166,14 @@ class TestCatalogSearchFilterUsage:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        # Should have applied some filter
+        # Assert filter exists
         assert filters is not None and filters != [], (
             "Expected filters for subject filter for poetry search"
         )
+        # Assert filter valid
+        filters = Filter.model_validate_json(filters).model_dump()
 
+        # Assert content: subject filter present
         assert filter_match(filters, attribute=["subject"]), (
             f"filters do not match expected criteria: {filters}"
         )
@@ -192,10 +196,12 @@ class TestCatalogSearchFilterUsage:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        # Should have applied some filter for exclusion
+        # Assert filter exists
         assert filters is not None, "Expected filters for exclusion search"
+        # Assert filter valid
+        filters = Filter.model_validate_json(filters).model_dump()
 
-        # At least one Not filter should be present
+        # Assert content: Not operator present
         assert filter_match(filters, operator=["Not"]), (
             f"filters do not match expected criteria: {filters}"
         )
@@ -214,9 +220,12 @@ class TestCatalogSearchFilterUsage:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        # Should have language filter
+        # Assert filter exists
         assert filters is not None, "Expected filters for language search"
+        # Assert filter valid
+        filters = Filter.model_validate_json(filters).model_dump()
 
+        # Assert content: language filter with ContainsAny or two Contains conditions
         assert filter_match(
             filters,
             attribute=["language"],
@@ -251,12 +260,13 @@ class TestCatalogSearchFilterUsage:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        # Should have date filter
+        # Assert filter exists
         assert filters is not None, "Expected filters for date range search"
 
-        # TODO: assert that filter is a valid `filters` object (AND/OR syntax respected)
+        # Assert filter valid
+        filters = Filter.model_validate_json(filters).model_dump()
 
-        # Check for publication_date filter with range operators
+        # Assert content: publication_date filter with range operators
         assert filter_match(
             filters, attribute=["publication_date"], operator=["Gt", "Gte", "Lt", "Lte"]
         ), f"Expected date range filter with comparison operators, got: {filters}"
@@ -309,9 +319,12 @@ class TestCatalogSearchFilterUsage:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        # Should have author filter
+        # Assert filter exists
         assert filters is not None, "Expected filters for author search"
+        # Assert filter valid
+        filters = Filter.model_validate_json(filters).model_dump()
 
+        # Assert content: author filter with ContainsAllTokens
         assert filter_match(
             filters,
             attribute=["author"],

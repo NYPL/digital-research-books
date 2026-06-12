@@ -1,9 +1,8 @@
 
 ## Filters
-
 <!-- based on https://turbopuffer.com/docs/query#filtering -->
-<!-- Changes from TP docs include: changed "token" to "words", replace document with chunk
- -->
+<!-- Changes from TP docs include: changed "token" to "words", replace document with chunk-->
+<!-- TODO: vastly reduce length of tool description. filter json schema removes need for most of the filter content. There are tests for all behaviors, so regressions caused by removing content will be caught -->
 
 Filters refine search results. Think of them as a SQL WHERE clause.
 The chunks are in a Turbopuffer search index, so use Turbopuffer filters syntax. 
@@ -440,6 +439,7 @@ This lets the semantic search surface the most relevant content regardless of su
 
 <!-- `Args` is parsed into the tool call argument definition JSON, the text above is parsed into the Description -->
 <!-- MAYBE: just use the programmatic assignment of the FunctionTool rather than this parsing approach since its so bespoke anyway -->
+<!-- TODO: insert json schema via jinja template as `Filter.model_json_schema()`. What is correct indentation? If necessary handle with, textwrap.indent(). Maybe simpler post FunctionTool style definition -->
 Args:
   ranking_query: The query string used to rank text chunks in the search results. See the "Ranking" section of the tool description for more details.
    
