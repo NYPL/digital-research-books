@@ -126,7 +126,7 @@ def filter_match(filters, attribute=None, operator=None, value=None):
 class TestCatalogSearchFilterUsage:
     """Test that the agent constructs appropriate filters for catalog searches."""
 
-    @pytest.mark.xfail
+    @pytest.mark.xfail(reason="Subject filter gets applied")
     @pytest.mark.usefixtures("patch_search_catalog")
     async def test_no_filter_for_generic_search(self, test_session_id):
         """
@@ -301,7 +301,6 @@ class TestCatalogSearchFilterUsage:
     #             or "french" in filter_str
     #         ), f"Expected combined filters for subject and language, got: {filters}"
 
-    @pytest.mark.xfail(reason="behavior unstable")
     @pytest.mark.usefixtures("patch_search_catalog")
     async def test_author_filter_construction(self, test_session_id):
         """

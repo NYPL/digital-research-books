@@ -722,14 +722,14 @@ SEARCH_CATALOG_DOC = f"""
 # TODO: modularize search_book and search_catalog more. input:  ranking_query+filters, \
 # output: list of editions (the problem is catalog needs the metadata for editions, \
 # book doesn't. maybe be make that optional somehow?)
-# TODO: convert to class FunctionTool def (for more explicit param type definition \
-# and less of a hack for reading tool description from disk). This requires self-\
-# handling errors in the tool execution.
+# TODO: convert to class FunctionTool def (Why? more explicit param type definition \
+# (exact json schema) and less of a hack for reading tool description from disk).
+# This requires self-handling errors in the tool function.
 # The default error handler for @function_tool raw json str parsing returns 'An
 # error occurred while parsing tool arguments. Please try again with valid JSON.
 # Error: Expecting value: line 1 column 1 (char 0)' (from `await search_book.on_invoke_tool(None, 'fsdfs{')`)
-# openai function tool schema spec: https://developers.openai.com/api/docs/guides/function-calling#defining-functions
-# gemeni function tool schema spec (more restrictive): https://ai.google.dev/gemini-api/docs/function-calling#function-declarations
+# NOTE: filters `type` is str bc Gemini does not support arbitrary complex json
+# schema definitions for function tool parameter types.
 @function_tool
 @dynamic_docstring(SEARCH_CATALOG_DOC)
 def search_catalog(
