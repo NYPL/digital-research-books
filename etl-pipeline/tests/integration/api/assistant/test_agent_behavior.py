@@ -75,7 +75,9 @@ async def test_catalog_results_use_edition_markup(cached_catalog_query_result):
     assert _EDITION_TAG_RE.search(run_result.final_output)
 
 
-async def test_catalog_response_has_exactly_three_citations(cached_catalog_query_result):
+async def test_catalog_response_has_exactly_three_citations(
+    cached_catalog_query_result,
+):
     run_result = await cached_catalog_query_result("fall of the Roman Empire")
     citations = _EDITION_TAG_RE.findall(run_result.final_output)
     assert len(citations) == 3, (
@@ -83,7 +85,7 @@ async def test_catalog_response_has_exactly_three_citations(cached_catalog_query
         f"Found {len(citations)} citation(s): {citations}\n"
         f"Response:\n{run_result.final_output}"
     )
-    
+
 
 async def test_one_paragraph_per_book(cached_catalog_query_result):
     run_result = await cached_catalog_query_result("fall of the Roman Empire")
