@@ -119,22 +119,21 @@ def mock_search_backend(mocker):
     return _setup
 
 
-# TODO: make this a generic stub_function_tool()
 @contextmanager
-def stub_search_catalog(return_value: str):
+def stub_function_tool(tool, return_value: str):
     """
-    Context manager that stubs search_catalog.on_invoke_tool with a fixed return value.
-    search_catalog is a openai agents sdk FunctionTool.
+    Generic context manager that stubs any openai agents sdk FunctionTool's
+    on_invoke_tool with a fixed return value.
 
     Usage::
 
         def test_something(test_session_id):
-            with stub_search_catalog("No results found."):
+            with stub_function_tool(search_catalog, "No results found."):
                 run_result = await update_chat(...)
     """
 
     async def _stub(ctx, input) -> str:
         return return_value
 
-    with patch.object(search_catalog, "on_invoke_tool", new=_stub):
+    with patch.object(tool, "on_invoke_tool", new=_stub):
         yield
