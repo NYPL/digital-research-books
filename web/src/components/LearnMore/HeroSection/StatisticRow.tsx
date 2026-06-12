@@ -16,29 +16,18 @@ const StatisticRow: React.FC = () => {
       justifyContent="center"
       alignItems="center"
       margin="0 auto"
-      marginBottom={{ base: "l", md: "50.5px" }}
+      marginBottom={{ base: "12px", sm: "l", md: "50.5px" }}
       width="100%"
     >
-      {statisticsData.map((stat, index) => {
-        const isMiddle = index === 1;
-
-        return (
+      {statisticsData.map((stat, index) => (
+        <React.Fragment key={stat.label}>
           <Flex
-            key={stat.label}
             flexDir="column"
             alignItems="center"
             flex="1"
             maxWidth="274px"
-            py={{ base: isMiddle ? "20px" : "20px", sm: "0" }}
-            px={{ base: "20px", sm: isMiddle ? "0px" : "0" }}
-            borderLeft={{ sm: isMiddle ? "1px dashed" : "none" }}
-            borderRight={{ sm: isMiddle ? "1px dashed" : "none" }}
-            borderTop={{ base: isMiddle ? "1px dashed" : "none", sm: "none" }}
-            borderBottom={{
-              base: isMiddle ? "1px dashed" : "none",
-              sm: "none",
-            }}
-            borderColor="ui.black"
+            py={{ base: "20px", sm: "0" }}
+            px={{ base: "20px", sm: "0" }}
           >
             <Text
               fontSize={{
@@ -62,8 +51,23 @@ const StatisticRow: React.FC = () => {
               {stat.label}
             </Text>
           </Flex>
-        );
-      })}
+
+          {index < statisticsData.length - 1 && (
+            <Box
+              flexShrink={0}
+              color="section.research.secondary"
+              width={{ base: "96px", sm: "1px" }}
+              height={{ base: "1px", sm: "96px" }}
+              backgroundImage={{
+                base:
+                  "repeating-linear-gradient(to right, currentColor 0 4px, transparent 4px 8px)",
+                sm:
+                  "repeating-linear-gradient(to bottom, currentColor 0 4px, transparent 4px 8px)",
+              }}
+            />
+          )}
+        </React.Fragment>
+      ))}
     </Box>
   );
 };

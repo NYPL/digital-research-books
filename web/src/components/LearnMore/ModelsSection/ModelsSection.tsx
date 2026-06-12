@@ -87,6 +87,7 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
                   display="flex"
                   alignItems="center"
                   gap="xxs"
+                  paddingY={{ base: "xs", md: "none" }}
                   _hover={{
                     color: "section.research.primary",
                     path: { stroke: "#00838A" },
@@ -130,6 +131,7 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
                   display="flex"
                   alignItems="center"
                   gap="xxs"
+                  paddingY={{ base: "xs", md: "none" }}
                   _hover={{
                     color: "section.research.primary",
                     path: { stroke: "#00838A" },

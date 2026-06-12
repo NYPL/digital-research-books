@@ -8,9 +8,9 @@ const MissionDiagram = () => {
     <Flex
       position="relative"
       justifyContent="center"
-      alignItems="flex-start"
-      flexDir="row"
-      marginTop={{ base: "xxl", md: "xxxl" }}
+      alignItems={{ base: "center", sm: "flex-start" }}
+      flexDir={{ base: "column", sm: "row" }}
+      marginTop={{ base: "xl", sm: "xxl", md: "xxxl" }}
       marginBottom={{ base: "l", md: "xl" }}
     >
       <Box
@@ -21,15 +21,17 @@ const MissionDiagram = () => {
         borderColor="section.research.secondary"
         transform="translateY(-50%) translateX(-50%)"
         zIndex={0}
+        display={{ base: "none", sm: "block" }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
+          style={{ display: "block" }}
           width="100%"
           height="2"
           viewBox="0 0 500 2"
           fill="none"
         >
-          <path d="M500 1L0 1" stroke="#006166" stroke-width="2" />
+          <path d="M500 1L0 1" stroke="#006166" strokeWidth="2" />
         </svg>
       </Box>
 
@@ -51,6 +53,18 @@ const MissionDiagram = () => {
         </Box>
         <Text fontWeight="bold">USER</Text>
       </Flex>
+      <Box display={{ base: "block", sm: "none" }} lineHeight="0">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ display: "block" }}
+          width="2"
+          height="60"
+          viewBox="0 0 2 60"
+          fill="none"
+        >
+          <path d="M1 60L1 0" stroke="#006166" strokeWidth="2" />
+        </svg>
+      </Box>
 
       <Flex
         justifyContent="center"
@@ -83,6 +97,18 @@ const MissionDiagram = () => {
           </Text>
         </Box>
       </Flex>
+      <Box display={{ base: "block", sm: "none" }} lineHeight="0">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ display: "block" }}
+          width="2"
+          height="60"
+          viewBox="0 0 2 60"
+          fill="none"
+        >
+          <path d="M1 60L1 0" stroke="#006166" strokeWidth="2" />
+        </svg>
+      </Box>
       <Flex
         justifyContent="center"
         alignItems="center"

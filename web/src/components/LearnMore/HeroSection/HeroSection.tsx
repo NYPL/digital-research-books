@@ -46,7 +46,7 @@ const HeroSection: React.ForwardRefExoticComponent<
             level="h1"
             fontWeight="bold"
             maxWidth="740px"
-            marginBottom={{ base: "l", md: "63.5px" }}
+            marginBottom={{ base: "12px", sm: "l", md: "63.5px" }}
             fontSize={{ base: "mobile.heading.heading2", md: "heading1" }}
             fontFamily="Domine"
           >

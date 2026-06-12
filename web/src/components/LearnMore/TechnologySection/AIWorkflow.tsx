@@ -50,7 +50,7 @@ const AiWorkflow = () => {
         <Flex
           key={index}
           flexDir="row"
-          gap={{ base: "s", md: "58px" }}
+          gap={{ base: "s", sm: "xl", md: "58px" }}
           alignItems="stretch"
         >
           {/* Left: icon + stretchy arrow below */}
@@ -86,7 +86,10 @@ const AiWorkflow = () => {
             </Heading>
             <Text
               color="ui.gray.dark"
-              fontSize="desktop.subtitle.subtitle1"
+              fontSize={{
+                base: "mobile.subtitle.subtitle1",
+                md: "desktop.subtitle.subtitle1",
+              }}
               lineHeight="135%;"
             >
               {stage.description}
