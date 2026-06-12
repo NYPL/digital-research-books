@@ -6,7 +6,7 @@
  -->
 
 Filters refine search results. Think of them as a SQL WHERE clause.
-The catalog uses a Turbopuffer search index, so use Turbopuffer filters syntax. 
+The chunks are in a Turbopuffer search index, so use Turbopuffer filters syntax. 
 
 ### Filter Syntax
 
@@ -25,29 +25,31 @@ Not        = ["Not", Filter]
 ```
 
 All fields are nullable (value = `null`).
-<!-- null is a raw JSON null value, converted to python None in post-parsing -->
+<!-- null is a raw JSON null value, converted to python None in JSON parsing -->
+
+The `filters` parameter must be passed as a **JSON-encoded string**. The examples below show the filter structure; when passing to the tool, JSON-encode the array as a string (e.g. `"[\"publication_date\", \"Gte\", \"1900-01-01\"]"`).
 
 ```
 // Condition
-"filters": ["publication_date", "Gte", "1900-01-01"]
+["publication_date", "Gte", "1900-01-01"]
 
 // And
-"filters": ["And", [
+["And", [
   ["author", "ContainsAnyToken", "Twain Hemingway"],
   ["publication_date", "Gte", "1900-01-01"]
 ]]
 
 // Or
-"filters": ["Or", [
+["Or", [
   ["language", "Contains", "French"],
   ["language", "Contains", "Spanish"]
 ]]
 
 // Not
-"filters": ["Not", ["text", "ContainsAnyToken", "redacted censored"]]
+["Not", ["text", "ContainsAnyToken", "redacted censored"]]
 
 // Nested (And > Or)
-"filters": ["And", [
+["And", [
   ["publication_date", "Gte", "1800-01-01"],
   ["Or", [
     ["subject", "ContainsAnyToken", "Science Chemistry Physics"],
@@ -214,52 +216,52 @@ Below is an example selection of subject strings (one per line). Each book has a
 
 ❌ **Incorrect** — conditions passed as extra top-level elements instead of inside one array:
 ```json
-{ "filters": ["And", ["publication_date", "Gte", "1900-01-01"], ["publication_date", "Lt", "2000-01-01"]] }
+["And", ["publication_date", "Gte", "1900-01-01"], ["publication_date", "Lt", "2000-01-01"]]
 ```
 
 ❌ **Incorrect** — nested array used instead of a flat array of conditions:
 ```json
-{ "filters": ["And", [
+["And", [
     [["publication_date", "Gte", "1800-01-01"], ["publication_date", "Lt", "1900-01-01"]],
     ["language", "Contains", "French"]
-]] }
+]]
 ```
 - The two `publication_date` conditions are wrapped in their own inner array instead of being placed alongside `language` as siblings. This is not valid — each condition must be a direct element of the single wrapping array.
 <!-- Interestingly, negative examples proved more effective in enforcing behavior for gemini flash 3 in testing -->
 
 ✅ **Correct** — all conditions wrapped together in one array:
 ```json
-{ "filters": ["And", [
+["And", [
     ["publication_date", "Gte", "1900-01-01"],
     ["publication_date", "Lt", "2000-01-01"]
-]] }
+]]
 ```
 - Notice: The 2 "publication_date" filter conditions are contained in a wrapping array.
 
 
 ❌ **Incorrect** — single condition wrapped in `And`:
 ```json
-{ "filters": ["And", ["publication_date", "Gte", "1900-01-01"]] }
+["And", ["publication_date", "Gte", "1900-01-01"]]
 ```
 
 ✅ **Correct** — use the condition directly when there is only one:
 ```json
-{ "filters": ["publication_date", "Gte", "1900-01-01"] }
+["publication_date", "Gte", "1900-01-01"]
 ```
 
 #### Nested `And` and `Or` filters
 
 Using nested And and Or filters:
 
-```
-"filters": ["And", [
+```json
+["And", [
     ["publication_date", "Gte", "1900-01-01"],
     ["publication_date", "Lt", "2000-01-01"],
     ["Not", ["text", "ContainsAnyToken", "redacted censored"]],
     ["Or", [
         ["subject", "ContainsAnyToken", "American literature English literature"],
-        ["author", "ContainsAnyToken", "Fitzgerald Hemingway Faulkner Steinbeck"],
-    ]],
+        ["author", "ContainsAnyToken", "Fitzgerald Hemingway Faulkner Steinbeck"]
+    ]]
 ]]
 ```
 
@@ -284,7 +286,7 @@ If a user is trying to search for information that matches a specific phrase or 
 ```json
 {
   "ranking_query": "Treaty of Versailles World War I peace agreement",
-  "filters": ["text", "ContainsTokenSequence", "Treaty of Versailles"]
+  "filters": "[\"text\", \"ContainsTokenSequence\", \"Treaty of Versailles\"]"
 }
 ```
 
@@ -299,7 +301,7 @@ In cases where you want exclude certain content, use a `Not` filter. Here is a g
 ```json
 {
   "ranking_query": "ancient south american irrigation techniques water management agriculture",
-  "filters": ["Not", ["text", "ContainsAnyToken", "inca incan"]]
+  "filters": "[\"Not\", [\"text\", \"ContainsAnyToken\", \"inca incan\"]]"
 }
 ```
 
@@ -317,7 +319,7 @@ The `ranking_query` should not include "from the 20th century" because the perio
 ```json
 {
   "ranking_query": "Uruguayan literature authors literary movements writing culture",
-  "filters": ["publication_date", "Gte", "1900-01-01"]
+  "filters": "[\"publication_date\", \"Gte\", \"1900-01-01\"]"
 }
 ```
 
@@ -332,7 +334,7 @@ If the user asks to search for content that isn't available in any of the indexe
 ```json
 {
   "ranking_query": "mystery detective crime suspense thriller investigation",
-  "filters": ["subject", "ContainsAnyToken", "mystery detective novel fiction"]
+  "filters": "[\"subject\", \"ContainsAnyToken\", \"mystery detective novel fiction\"]"
 }
 ```
 In your response, let the user know that you are returning results for a search for mystery books, but that you do not have binding metadata available so you are not able to narrow the search to just mystery books that were first released as paperbacks.
@@ -366,7 +368,7 @@ When filtering for compound phrases (multi-word terms that should be kept togeth
 ```json
 {
   "ranking_query": "shipbuilding naval architecture ship construction",
-  "filters": ["subject", "ContainsAnyToken", "Shipbuilding Ship-building Naval Architecture"]
+  "filters": "[\"subject\", \"ContainsAnyToken\", \"Shipbuilding Ship-building Naval Architecture\"]"
 }
 ```
 This is problematic because `ContainsAnyToken` will match subjects that contain just "Architecture" (like "Gothic Architecture" or "Modern Architecture"), which are unrelated to naval topics.
@@ -375,10 +377,7 @@ This is problematic because `ContainsAnyToken` will match subjects that contain 
 ```json
 {
   "ranking_query": "shipbuilding naval architecture ship construction",
-  "filters": ["Or", [
-    ["subject", "ContainsAnyToken", "Shipbuilding Ship-building Naval"],
-    ["subject", "ContainsAllTokens", "Naval Architecture"]
-  ]]
+  "filters": "[\"Or\", [[\"subject\", \"ContainsAnyToken\", \"Shipbuilding Ship-building Naval\"], [\"subject\", \"ContainsAllTokens\", \"Naval Architecture\"]]]"
 }
 ```
 This ensures "Naval Architecture" is treated as a compound phrase using `ContainsAllTokens`, so a subject must contain both "Naval" AND "Architecture" to match. Alternatively, you could use `ContainsTokenSequence` if the words must be adjacent and in order:
@@ -386,10 +385,7 @@ This ensures "Naval Architecture" is treated as a compound phrase using `Contain
 ```json
 {
   "ranking_query": "shipbuilding naval architecture ship construction",
-  "filters": ["Or", [
-    ["subject", "ContainsAnyToken", "Shipbuilding Ship-building"],
-    ["subject", "ContainsTokenSequence", "Naval Architecture"]
-  ]]
+  "filters": "[\"Or\", [[\"subject\", \"ContainsAnyToken\", \"Shipbuilding Ship-building\"], [\"subject\", \"ContainsTokenSequence\", \"Naval Architecture\"]]]"
 }
 ```
 
@@ -399,17 +395,17 @@ This ensures "Naval Architecture" is treated as a compound phrase using `Contain
 
 ❌ **Incorrect** — `ContainsAnyToken` is not a supported operation on `language`:
 ```json
-{ "filters": ["language", "ContainsAnyToken", "Russian"] }
+["language", "ContainsAnyToken", "Russian"]
 ```
 
 ✅ **Correct** — single language:
 ```json
-{ "filters": ["language", "Contains", "Russian"] }
+["language", "Contains", "Russian"]
 ```
 
 ✅ **Correct** — multiple languages:
 ```json
-{ "filters": ["language", "ContainsAny", ["Russian", "English"]] }
+["language", "ContainsAny", ["Russian", "English"]]
 ```
 
 ### Subject filters
@@ -426,7 +422,7 @@ Use subject filters to filter for meta-descriptors (genre, literary classificati
 ```json
 {
   "ranking_query": "price elasticity of demand economic theory",
-  "filters": ["subject", "ContainsAnyToken", "Economics"]
+  "filters": "[\"subject\", \"ContainsAnyToken\", \"Economics\"]"
 }
 ```
 This unnecessarily restricts results to books classified as "Economics" when relevant content might exist in other types of books.
@@ -448,9 +444,60 @@ Args:
   ranking_query: The query string used to rank text chunks in the search results. See the "Ranking" section of the tool description for more details.
    
 
-  filters: (optional) The filter to apply to the query. See "Filtering" section of the tool description for syntax details. Remember, always wrap the conditions of an And/Or filter in a wrapping array (e.g. `["And", [["publication_date", "Gte", "1750-01-01"], ["publication_date", "Lt", "1790-01-01"]]]`) !!!!
+  filters: (optional) A JSON-encoded string representing the filter to apply to the query. When parsed, the value must conform to the following JSON schema:
+    ```json
+    {
+      "$defs": {
+        "Filter": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {"const": "And", "type": "string"},
+                {"items": {"$ref": "#/$defs/Filter"}, "minItems": 2, "type": "array"}
+              ],
+              "type": "array"
+            },
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {"const": "Or", "type": "string"},
+                {"items": {"$ref": "#/$defs/Filter"}, "minItems": 2, "type": "array"}
+              ],
+              "type": "array"
+            },
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {"const": "Not", "type": "string"},
+                {"$ref": "#/$defs/Filter"}
+              ],
+              "type": "array"
+            },
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {"enum": ["text", "subject", "title", "author", "language", "publication_date"], "type": "string"},
+                {"enum": ["Eq", "Contains", "ContainsAny", "Lt", "Lte", "Gt", "Gte", "ContainsAllTokens", "ContainsTokenSequence", "ContainsAnyToken"], "type": "string"},
+                {"anyOf": [{"type": "string"}, {"items": {"type": "string"}, "type": "array"}, {"type": "null"}]}
+              ],
+              "type": "array"
+            }
+          ],
+          "description": "Recursive model for a TurboPuffer filter expression.\n\nValid shapes:\n  - Condition : [field, operator, value]\n  - And       : [\"And\", [Filter, ...]]\n  - Or        : [\"Or\",  [Filter, ...]]\n  - Not       : [\"Not\", Filter]",
+          "title": "Filter"
+        }
+      },
+      "$ref": "#/$defs/Filter"
+    }
+    ```
+    See the "Filters" section of the tool description for syntax details and examples.
 
-  filters_match_null: (optional, defaults to True) When True, automatically modifies filters on potentially incomplete fields (subject, language, publication_date, author) to also match chunks where those fields are null. This ensures search results include books with incomplete metadata. For example, a filter like `["subject", "ContainsAnyToken", "poetry"]` is automatically transformed to `["Or", [["subject", "ContainsAnyToken", "poetry"], ["subject", "Eq", null]]]`. Set to False if you specifically want to exclude results with missing metadata for filtered fields.
+  filters_match_null: (optional, defaults to True) When True, automatically modifies filters on potentially incomplete fields (subject, language, publication_date, author) to also match chunks where those fields are null. This ensures search results include books with incomplete metadata. For example, a filter like `"[\"subject\", \"ContainsAnyToken\", \"poetry\"]"` is automatically transformed internally to also match chunks where subject is null. Set to False if you specifically want to exclude results with missing metadata for filtered fields.
 
 <!-- 
     Args:

@@ -47,6 +47,7 @@ from utils.timer import timer
 from ..utils import remove_markdown_comments
 from .search import ReciprocalRankFuser, ScoredHit, hybrid_search
 from .types import CatalogSearchResult, ContentSearchResult
+from .models.filter import Filter
 from ..newrelic_llm_events import record_llm_events
 from ..db import (
     get_async_engine,
@@ -211,6 +212,7 @@ def recurse_filters(filter_: Any, processing_func: Callable) -> Any:
     return processing_func(filter_)
 
 
+# TODO convert into a pipeline class that takes a list of transforms
 def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> Any:
     """
     Apply all filter post-processing transformations in sequence.
@@ -223,7 +225,7 @@ def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> A
         apply_null_matching: Whether to add null matching for incomplete attributes
 
     Returns:
-        Processed filters with all transformations applied
+        Processed filters with all transformations applied. None is passed-through.
     """
     if filters is None:
         return None
@@ -717,18 +719,28 @@ SEARCH_CATALOG_DOC = f"""
 """
 
 
+# TODO: modularize search_book and search_catalog more. input:  ranking_query+filters, \
+# output: list of editions (the problem is catalog needs the metadata for editions, \
+# book doesn't. maybe be make that optional somehow?)
+# TODO: convert to class FunctionTool def (for more explicit param type definition \
+# and less of a hack for reading tool description from disk). This requires self-\
+# handling errors in the tool execution.
 @function_tool
 @dynamic_docstring(SEARCH_CATALOG_DOC)
 def search_catalog(
     ctx: ToolContext[CatalogSearchExecutionContext],
     ranking_query: str,
-    filters: List | tuple | None = None,
+    filters: str | None = None,
     filters_match_null: bool = True,
 ) -> str:
     try:
         logger.info(f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}'")
 
-        # Post-process filters through the pipeline
+        # Parse and validate Filter schema
+        if filters is not None:
+            filters = Filter.model_validate_json(filters).model_dump()
+
+        # Post-process filters
         filters = apply_filter_transforms(
             filters, apply_null_matching=filters_match_null
         )
@@ -867,7 +879,7 @@ SEARCH_BOOK_DOC = f"""
 def search_book(
     ctx: ToolContext[ContentSearchExecutionContext],
     ranking_query: str,
-    filters: Optional[Union[List, tuple]] = None,
+    filters: str | None = None,
     filters_match_null: bool = True,
 ) -> str:
     try:
@@ -875,7 +887,11 @@ def search_book(
             f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}', for edition_id = {ctx.context.edition_id}"
         )
 
-        # Post-process filters through the pipeline
+        # Parse and validate Filter schema
+        if filters is not None:
+            filters = Filter.model_validate_json(filters).model_dump()
+
+        # Post-process filters
         filters = apply_filter_transforms(
             filters, apply_null_matching=filters_match_null
         )
