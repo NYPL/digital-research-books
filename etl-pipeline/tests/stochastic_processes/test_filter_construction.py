@@ -434,16 +434,3 @@ async def test_filter_syntax_errors(test_session_id, query, prior_history):
         assert not item.output.startswith("An error occurred while running the tool"), (
             f"Search tool call errored: {item.output}"
         )
-
-
-# add test: "Find books published between 2000 and 2010 about technology"
-
-# "filters\":[7,null]
-
-# \"filters\":[\"And\",[\"subject\\\",\"]]
-# \"filters\":[\"Or\",[\"subject\\\",\"],null]
-
-
-# empasis filters value is a valid JSON string serialized
-# use a json schema to specify syntax
-# tests for all example cases
