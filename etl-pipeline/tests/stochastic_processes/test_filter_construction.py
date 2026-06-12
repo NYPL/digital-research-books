@@ -423,3 +423,8 @@ class TestCatalogSearchFilterConstruction:
             assert not item.output.startswith(
                 "An error occurred while running the tool"
             ), f"Search tool call resulted in error: {item.output}"
+
+
+# TODO: usage test case that authors with multiple spellings get multiple spellings in search e.g. avicenna
+
+# TODO: assertion for teh unsearchable field that teh agent response mentions that teh filter is not in available filter metdata
