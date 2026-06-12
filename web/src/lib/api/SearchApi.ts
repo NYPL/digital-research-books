@@ -1,20 +1,25 @@
-import appConfig from "~/config/appConfig";
-import { WorkQuery, WorkResult } from "~/src/types/WorkQuery";
-import { ApiSearchQuery, ApiSearchResult } from "../../types/SearchQuery";
-import { EditionQuery, EditionResult } from "~/src/types/EditionQuery";
-import { toLocationQuery } from "~/src/util/apiConversion";
-import { LinkResult } from "~/src/types/LinkQuery";
-import { ApiLanguageResponse } from "~/src/types/LanguagesQuery";
-import { LOGIN_LINK_BASE } from "~/src/constants/links";
 import { NextRouter } from "next/router";
+import appConfig from "~/config/appConfig";
+import { LOGIN_LINK_BASE } from "~/src/constants/links";
+import { EditionQuery, EditionResult } from "~/src/types/EditionQuery";
 import { FulfillResult } from "~/src/types/FulfillQuery";
+import { ApiLanguageResponse } from "~/src/types/LanguagesQuery";
+import { LinkResult } from "~/src/types/LinkQuery";
+import { WorkQuery, WorkResult } from "~/src/types/WorkQuery";
+import { toLocationQuery } from "~/src/util/apiConversion";
+import { ApiSearchQuery, ApiSearchResult } from "../../types/SearchQuery";
 import { log } from "../newrelic/NewRelic";
 
 const apiEnv = process.env["APP_ENV"];
 const apiUrl = process.env["API_URL"] || appConfig.api.url[apiEnv];
 
-const { searchPath, recordPath, editionPath, readPath, languagesPath } =
-  appConfig.api;
+const {
+  searchPath,
+  recordPath,
+  editionPath,
+  readPath,
+  languagesPath,
+} = appConfig.api;
 const searchUrl = apiUrl + searchPath;
 const recordUrl = apiUrl + recordPath;
 const editionUrl = apiUrl + editionPath;
