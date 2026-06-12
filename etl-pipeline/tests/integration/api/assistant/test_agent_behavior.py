@@ -1,4 +1,5 @@
 import re
+import hashlib
 
 import pytest
 
@@ -21,6 +22,20 @@ async def run_catalog_query(query: str, session_id: str):
     return await update_chat(
         query, conversation_type="catalogSearch", session_id=session_id
     )
+
+
+@pytest.fixture(scope="module")
+def cached_catalog_query_result():
+    cache = {}
+
+    async def _run(query: str):
+        if query not in cache:
+            query_hash = hashlib.md5(query.encode("utf-8")).hexdigest()
+            session_id = f"assistant-behavior-{query_hash}"
+            cache[query] = await run_catalog_query(query, session_id)
+        return cache[query]
+
+    return _run
 
 
 def tool_calls(run_result):
@@ -50,18 +65,28 @@ FORMAT_SCENARIOS = [
 
 
 @pytest.mark.parametrize("query", FORMAT_SCENARIOS)
-async def test_prose_only_structure(query, test_session_id):
-    run_result = await run_catalog_query(query, test_session_id)
+async def test_prose_only_structure(query, cached_catalog_query_result):
+    run_result = await cached_catalog_query_result(query)
     assert_no_markdown_structure(run_result.final_output)
 
 
-async def test_catalog_results_use_edition_markup(test_session_id):
-    run_result = await run_catalog_query("fall of the Roman Empire", test_session_id)
+async def test_catalog_results_use_edition_markup(cached_catalog_query_result):
+    run_result = await cached_catalog_query_result("fall of the Roman Empire")
     assert _EDITION_TAG_RE.search(run_result.final_output)
 
 
-async def test_one_paragraph_per_book(test_session_id):
-    run_result = await run_catalog_query("fall of the Roman Empire", test_session_id)
+async def test_catalog_response_has_exactly_three_citations(cached_catalog_query_result):
+    run_result = await cached_catalog_query_result("fall of the Roman Empire")
+    citations = _EDITION_TAG_RE.findall(run_result.final_output)
+    assert len(citations) == 3, (
+        "Catalog response must include exactly 3 citations. "
+        f"Found {len(citations)} citation(s): {citations}\n"
+        f"Response:\n{run_result.final_output}"
+    )
+    
+
+async def test_one_paragraph_per_book(cached_catalog_query_result):
+    run_result = await cached_catalog_query_result("fall of the Roman Empire")
     paragraphs = [p for p in run_result.final_output.split("\n\n") if p.strip()]
 
     for paragraph in paragraphs:
@@ -72,9 +97,9 @@ async def test_one_paragraph_per_book(test_session_id):
             )
 
 
-async def test_translation_protocol(test_session_id):
-    run_result = await run_catalog_query(
-        "Find quotes from German historical texts about Caramalca", test_session_id
+async def test_translation_protocol(cached_catalog_query_result):
+    run_result = await cached_catalog_query_result(
+        "Find quotes from German historical texts about Caramalca"
     )
 
     verdict = await llm_judge(
