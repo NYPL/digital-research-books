@@ -1,9 +1,10 @@
 import pytest
+from flask import Flask
 from unittest.mock import MagicMock
 
 from api.assistant.agent import SCORE_SORT_DIRECTION
 from api.assistant.types import CatalogSearchResult, ContentSearchResult, Snippet
-from api.blueprints.chat import prepare_search_response
+from api.blueprints.chat import chat as chat_view, prepare_search_response
 
 
 def make_snippet(text, chunk_score):
@@ -109,3 +110,36 @@ class TestPrepareSearchResponse:
             [s.chunk_score for s in snippets], **SCORE_SORT_DIRECTION
         )
         assert output_scores == expected_scores
+
+
+class TestChatView:
+    @pytest.fixture
+    def test_app(self):
+        return Flask("test")
+
+    def test_unexpected_error_returns_500_and_logs(self, test_app, mocker):
+        mocker.patch("newrelic.agent.add_custom_attribute")
+        mocker.patch(
+            "api.blueprints.chat.update_chat",
+            side_effect=RuntimeError("something went wrong"),
+        )
+        mock_logger = mocker.patch("api.blueprints.chat.logger")
+
+        # Unwrap @require_api_key → @require_session_jwt → @timer to reach the
+        # original view function. All three decorators use functools.wraps so
+        # __wrapped__ is set on each layer.
+        original_chat = chat_view.__wrapped__.__wrapped__.__wrapped__
+
+        with test_app.test_request_context(
+            "/chat",
+            method="POST",
+            json={
+                "message": "tell me about this book",
+                "conversationType": "catalogSearch",
+            },
+        ):
+            response, status = original_chat(session_id="test-session")
+
+        assert status == 500
+        assert response.get_json()["data"]["message"] == "Unable to execute chat"
+        mock_logger.exception.assert_called_once_with("Unable to execute chat")
