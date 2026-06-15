@@ -119,6 +119,33 @@ def filter_match(filters, attribute=None, operator=None, value=None):
     return True
 
 
+_VALID_SCHEMA_FIELDS = frozenset(
+    {"text", "subject", "title", "author", "language", "publication_date"}
+)
+_NEGATIVE_WORDS = frozenset(
+    {"not", "excluding", "except", "without", "avoid", "exclude"}
+)
+
+
+def collect_filter_fields(filters) -> set:
+    """Walk a TurboPuffer filter tree and return all leaf attribute field names."""
+    if not isinstance(filters, (list, tuple)) or len(filters) == 0:
+        return set()
+    op = filters[0]
+    if op == "Not":
+        return collect_filter_fields(filters[1])
+    if op in META_OPERATORS:
+        result = set()
+        for child in filters[1]:
+            result |= collect_filter_fields(child)
+        return result
+    try:
+        f_attr, _, _ = filters
+        return {f_attr}
+    except (ValueError, TypeError):
+        return set()
+
+
 # TODO: mock search backend to just test filter construction
 
 
@@ -204,6 +231,13 @@ class TestCatalogSearchFilterUsage:
         # Assert content: Not operator present
         assert filter_match(filters, operator=["Not"]), (
             f"filters do not match expected criteria: {filters}"
+        )
+
+        # ranking_query should express positive intent; negation belongs in the Not filter
+        ranking_query = search_params.get("ranking_query", "")
+        ranking_tokens = set(ranking_query.lower().split())
+        assert not (ranking_tokens & _NEGATIVE_WORDS), (
+            f"ranking_query contains negative language that should be a filter: {ranking_query!r}"
         )
 
     @pytest.mark.usefixtures("patch_search_catalog")
@@ -330,6 +364,283 @@ class TestCatalogSearchFilterUsage:
             operator=["ContainsAllTokens"],
             value=lambda v: "austen" in v.lower(),
         ), f"filters do not match expected criteria: {filters}"
+
+        # Author name should not appear in ranking_query — it belongs in the author filter
+        ranking_query = search_params.get("ranking_query", "")
+        assert "austen" not in ranking_query.lower(), (
+            f"Author name should not appear in ranking_query (use author filter instead): {ranking_query!r}"
+        )
+
+    @pytest.mark.usefixtures("patch_search_catalog")
+    async def test_exact_phrase_uses_token_sequence(self, test_session_id):
+        """
+        Test: Exact phrase queries use ContainsTokenSequence on the text field.
+
+        When the user asks for a specific named phrase, a ContainsTokenSequence
+        filter on text ensures the phrase must appear verbatim in results rather
+        than relying solely on semantic ranking, which cannot enforce exact spelling.
+        """
+        run_result = await update_chat(
+            "Find passages that mention the Magna Carta",
+            conversation_type="catalogSearch",
+            session_id=test_session_id,
+            max_turns=1,
+        )
+        search_params = get_last_tool_call_args(run_result)
+        filters = search_params.get("filters")
+
+        assert filters is not None, "Expected a filter for exact phrase search"
+        filters = Filter.model_validate_json(filters).model_dump()
+
+        assert filter_match(
+            filters,
+            attribute=["text"],
+            operator=["ContainsTokenSequence"],
+            value=lambda v: "magna carta" in v.lower(),
+        ), f"Expected ContainsTokenSequence on text field for exact phrase: {filters}"
+
+        assert search_params.get("ranking_query"), (
+            "Expected a ranking_query alongside the phrase filter"
+        )
+
+    @pytest.mark.usefixtures("patch_search_catalog")
+    async def test_negative_filter_ranking_query_is_positive(self, test_session_id):
+        """
+        Test: When a Not filter is used for exclusion, ranking_query uses positive framing only.
+
+        Negative language in ranking_query is washed out during semantic embedding and
+        does not exclude content. Exclusion must live entirely in a Not filter.
+        """
+        run_result = await update_chat(
+            "I want books about astronomy but not astrology",
+            conversation_type="catalogSearch",
+            session_id=test_session_id,
+            max_turns=1,
+        )
+        search_params = get_last_tool_call_args(run_result)
+        filters = search_params.get("filters")
+
+        assert filters is not None, "Expected a filter for exclusion search"
+        filters = Filter.model_validate_json(filters).model_dump()
+
+        assert filter_match(filters, operator=["Not"]), (
+            f"Expected a Not filter for the exclusion: {filters}"
+        )
+
+        ranking_query = search_params.get("ranking_query", "")
+        ranking_tokens = set(ranking_query.lower().split())
+        assert not (ranking_tokens & _NEGATIVE_WORDS), (
+            f"ranking_query contains negative language that should be a filter: {ranking_query!r}"
+        )
+
+    @pytest.mark.usefixtures("patch_search_catalog")
+    async def test_temporal_constraint_in_filter_not_ranking_query(
+        self, test_session_id
+    ):
+        """
+        Test: Temporal constraints go in publication_date filter, not in ranking_query.
+
+        ranking_query only performs semantic search over text content. Publication period
+        constraints should be expressed as publication_date filters on the metadata field.
+        """
+        run_result = await update_chat(
+            "I want American poetry published before the Civil War",
+            conversation_type="catalogSearch",
+            session_id=test_session_id,
+            max_turns=1,
+        )
+        search_params = get_last_tool_call_args(run_result)
+        filters = search_params.get("filters")
+
+        assert filters is not None, (
+            "Expected a publication_date filter for temporal constraint"
+        )
+        filters = Filter.model_validate_json(filters).model_dump()
+
+        assert filter_match(
+            filters, attribute=["publication_date"], operator=["Lt", "Lte", "Gt", "Gte"]
+        ), f"Expected a publication_date comparison filter: {filters}"
+
+    @pytest.mark.usefixtures("patch_search_catalog")
+    async def test_author_name_not_in_ranking_query(self, test_session_id):
+        """
+        Test: Author name goes in author filter, not ranking_query.
+
+        ranking_query only performs semantic search over text content. Author attribution
+        should be captured by an author filter on the structured metadata field.
+        """
+        run_result = await update_chat(
+            "I want Walt Whitman's writing about democracy and the American spirit",
+            conversation_type="catalogSearch",
+            session_id=test_session_id,
+            max_turns=1,
+        )
+        search_params = get_last_tool_call_args(run_result)
+        filters = search_params.get("filters")
+
+        assert filters is not None, "Expected an author filter"
+        filters = Filter.model_validate_json(filters).model_dump()
+
+        assert filter_match(
+            filters,
+            attribute=["author"],
+            value=lambda v: isinstance(v, str) and "whitman" in v.lower(),
+        ), f"Expected an author filter matching 'Whitman': {filters}"
+
+        ranking_query = search_params.get("ranking_query", "")
+        assert "whitman" not in ranking_query.lower(), (
+            f"Author name should not appear in ranking_query (use author filter instead): {ranking_query!r}"
+        )
+
+    @pytest.mark.usefixtures("patch_search_catalog")
+    async def test_unsearchable_field_no_hallucinated_filter(self, test_session_id):
+        """
+        Test: Queries involving data not in the schema do not produce hallucinated filter fields.
+
+        When the user requests content based on a property not in any indexed field (e.g.
+        illustration metadata), the agent should execute a partial search using valid fields
+        only, without inventing non-existent field names.
+        """
+        run_result = await update_chat(
+            "I want books that contain original maps or illustrations",
+            conversation_type="catalogSearch",
+            session_id=test_session_id,
+            max_turns=1,
+        )
+        tool_call_items = [
+            item for item in run_result.new_items if isinstance(item, ToolCallItem)
+        ]
+        assert len(tool_call_items) > 0, (
+            "Expected a search to be attempted even for a partially unsearchable query"
+        )
+
+        search_params = get_last_tool_call_args(run_result)
+        filters = search_params.get("filters")
+
+        if filters is not None:
+            parsed = Filter.model_validate_json(filters).model_dump()
+            used_fields = collect_filter_fields(parsed)
+            assert used_fields <= _VALID_SCHEMA_FIELDS, (
+                f"Filter references non-schema fields: {used_fields - _VALID_SCHEMA_FIELDS}"
+            )
+
+    @pytest.mark.usefixtures("patch_search_catalog")
+    async def test_compound_phrase_not_any_token_alone(self, test_session_id):
+        """
+        Test: Multi-word subject terms use ContainsAllTokens/ContainsTokenSequence, not ContainsAnyToken.
+
+        ContainsAnyToken splits the value string and matches if ANY token appears, so applying
+        it to a compound phrase like "social contract" would match unrelated subjects containing
+        only "social" or only "contract".
+        """
+        run_result = await update_chat(
+            "Find books on social contract theory",
+            conversation_type="catalogSearch",
+            session_id=test_session_id,
+            max_turns=1,
+        )
+        search_params = get_last_tool_call_args(run_result)
+        filters = search_params.get("filters")
+
+        if filters is None:
+            return  # No filter is acceptable — ranking_query handles it
+
+        filters = Filter.model_validate_json(filters).model_dump()
+
+        assert not filter_match(
+            filters,
+            attribute=["subject"],
+            operator=["ContainsAnyToken"],
+            value=lambda v: isinstance(v, str)
+            and "social" in v.lower().split()
+            and "contract" in v.lower().split(),
+        ), (
+            f"Subject filter must not use ContainsAnyToken on compound phrase tokens "
+            f"(use ContainsAllTokens or ContainsTokenSequence instead): {filters}"
+        )
+
+    @pytest.mark.usefixtures("patch_search_catalog")
+    async def test_single_language_uses_contains(self, test_session_id):
+        """
+        Test: A single-language filter uses 'Contains', not word token operators.
+
+        The language field only supports Contains and ContainsAny. Token operators
+        (ContainsAnyToken, ContainsAllTokens, ContainsTokenSequence) are not valid
+        for the language field.
+        """
+        run_result = await update_chat(
+            "I want to find books written in German about philosophy",
+            conversation_type="catalogSearch",
+            session_id=test_session_id,
+            max_turns=1,
+        )
+        search_params = get_last_tool_call_args(run_result)
+        filters = search_params.get("filters")
+
+        assert filters is not None, "Expected a language filter"
+        filters = Filter.model_validate_json(filters).model_dump()
+
+        assert filter_match(
+            filters, attribute=["language"], operator=["Contains"], value=["German"]
+        ), f"Expected ['language', 'Contains', 'German']: {filters}"
+
+        assert not filter_match(
+            filters,
+            attribute=["language"],
+            operator=["ContainsAnyToken", "ContainsAllTokens", "ContainsTokenSequence"],
+        ), f"Language filter must not use token operators: {filters}"
+
+    @pytest.mark.usefixtures("patch_search_catalog")
+    async def test_language_value_properly_cased(self, test_session_id):
+        """
+        Test: Language filter values use ISO 639 full names with proper casing.
+
+        Language values are case-sensitive in the search index. 'japanese' and 'JAPANESE'
+        will not match; the correct form is 'Japanese'.
+        """
+        run_result = await update_chat(
+            "show me books in japanese about art",
+            conversation_type="catalogSearch",
+            session_id=test_session_id,
+            max_turns=1,
+        )
+        search_params = get_last_tool_call_args(run_result)
+        filters = search_params.get("filters")
+
+        assert filters is not None, "Expected a language filter"
+        filters = Filter.model_validate_json(filters).model_dump()
+
+        assert filter_match(
+            filters,
+            attribute=["language"],
+            operator=["Contains", "ContainsAny"],
+            value=lambda v: "Japanese" in v if isinstance(v, list) else v == "Japanese",
+        ), f"Expected language value 'Japanese' (capital J, full ISO name): {filters}"
+
+    @pytest.mark.usefixtures("patch_search_catalog")
+    async def test_no_subject_filter_for_content_search(self, test_session_id):
+        """
+        Test: Pure content queries do not use subject filters.
+
+        Subject filters are for genre/classification metadata (e.g. "poetry", "fiction").
+        Content topic searches should rely on ranking_query so that relevant books are
+        surfaced regardless of how they are catalogued under subject headings.
+        """
+        run_result = await update_chat(
+            "I want to learn about the causes of the French Revolution",
+            conversation_type="catalogSearch",
+            session_id=test_session_id,
+            max_turns=1,
+        )
+        search_params = get_last_tool_call_args(run_result)
+        filters = search_params.get("filters")
+
+        if filters is not None:
+            parsed = Filter.model_validate_json(filters).model_dump()
+            assert not filter_match(parsed, attribute=["subject"]), (
+                f"Content topic query should not use subject filter "
+                f"(use ranking_query instead): {filters}"
+            )
 
 
 @pytest.mark.parametrize(
