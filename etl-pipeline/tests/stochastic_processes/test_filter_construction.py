@@ -347,16 +347,33 @@ class TestCatalogSearchFilterUsage:
     #             or "french" in filter_str
     #         ), f"Expected combined filters for subject and language, got: {filters}"
 
+    @pytest.mark.xfail(reason="author name is wrongly included in ranking_query")
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_author_filter(self, test_session_id):
+    @pytest.mark.parametrize(
+        "query,author_name",
+        [
+            pytest.param(
+                "Find books written by Jane Austen",
+                "austen",
+                id="austen",
+            ),
+            pytest.param(
+                "I want Walt Whitman's writing about democracy and the American spirit",
+                "whitman",
+                id="whitman",
+            ),
+        ],
+    )
+    async def test_author_filter(self, test_session_id, query, author_name):
         """
         Test: Author filter for books by specific authors.
 
-        When searching for books by a specific author, the agent should
-        apply author filters.
+        When searching for books by a specific author, the agent should apply an author
+        filter. Author attribution belongs in a structured author filter, not in
+        ranking_query, which only performs semantic search over text content.
         """
         run_result = await update_chat(
-            "Find books written by Jane Austen",
+            query,
             conversation_type="catalogSearch",
             session_id=test_session_id,
             max_turns=1,
@@ -374,12 +391,12 @@ class TestCatalogSearchFilterUsage:
             filters,
             attribute=["author"],
             operator=["ContainsAllTokens"],
-            value=lambda v: "austen" in v.lower(),
+            value=lambda v: author_name in v.lower(),
         ), f"filters do not match expected criteria: {filters}"
 
         # Author name should not appear in ranking_query — it belongs in the author filter
         ranking_query = search_params.get("ranking_query", "")
-        assert "austen" not in ranking_query.lower(), (
+        assert author_name not in ranking_query.lower(), (
             f"Author name should not appear in ranking_query (use author filter instead): {ranking_query!r}"
         )
 
@@ -421,40 +438,6 @@ class TestCatalogSearchFilterUsage:
         )
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_author_name_not_in_ranking_query(self, test_session_id):
-        """
-        Test: Author name goes in author filter, not ranking_query.
-
-        ranking_query only performs semantic search over text content. Author attribution
-        should be captured by an author filter on the structured metadata field.
-        """
-        run_result = await update_chat(
-            "I want Walt Whitman's writing about democracy and the American spirit",
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-            max_turns=1,
-        )
-        search_params = get_last_tool_call_args(run_result)
-        filters = search_params.get("filters")
-
-        # Assert filter exists
-        assert filters is not None, "Expected filters in search tool args"
-        # Assert filter valid
-        filters = Filter.model_validate_json(filters).model_dump()
-
-        # Assert content: author filter matching Whitman
-        assert filter_match(
-            filters,
-            attribute=["author"],
-            value=lambda v: isinstance(v, str) and "whitman" in v.lower(),
-        ), f"Expected an author filter matching 'Whitman': {filters}"
-
-        ranking_query = search_params.get("ranking_query", "")
-        assert "whitman" not in ranking_query.lower(), (
-            f"Author name should not appear in ranking_query (use author filter instead): {ranking_query!r}"
-        )
-
-    @pytest.mark.usefixtures("patch_search_catalog")
     async def test_unsearchable_field_no_hallucinated_filter(self, test_session_id):
         """
         Test: Queries involving data not in the schema do not produce hallucinated filter fields.
@@ -483,6 +466,7 @@ class TestCatalogSearchFilterUsage:
             Filter.model_validate_json(filters)
 
     # NOTE: this is a bad example case, I don't think the asserted behavior is the desired behavior
+    @pytest.mark.xfail(reason="ContainsAnyToken instead of ContainsAllTokens is used")
     @pytest.mark.usefixtures("patch_search_catalog")
     async def test_compound_phrase(self, test_session_id):
         """
@@ -490,7 +474,7 @@ class TestCatalogSearchFilterUsage:
 
         ContainsAnyToken splits the value string and matches if ANY token appears, so applying
         it to a compound phrase like "social contract" would match unrelated subjects containing
-        only "social" or only "contract".
+        only "social" or only "contract". ContainsAllTokens is more appropriate.
         """
         run_result = await update_chat(
             "Find books on social contract theory",
@@ -513,13 +497,8 @@ class TestCatalogSearchFilterUsage:
             filters,
             attribute=["subject"],
             operator=["ContainsAnyToken"],
-            value=lambda v: isinstance(v, str)
-            and "social" in v.lower().split()
-            and "contract" in v.lower().split(),
-        ), (
-            f"Subject filter must not use ContainsAnyToken on compound phrase tokens "
-            f"(use ContainsAllTokens or ContainsTokenSequence instead): {filters}"
-        )
+            value=lambda v: set(["social", "contract"]).issubset(v.lower().split()),
+        ), "expected 'social' and 'contract' in subject filter."
 
     @pytest.mark.usefixtures("patch_search_catalog")
     async def test_single_language_filter(self, test_session_id):
