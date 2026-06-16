@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 from api.assistant.agent import SCORE_SORT_DIRECTION
 from api.assistant.types import CatalogSearchResult, ContentSearchResult, Snippet
-from api.blueprints.chat import chat as chat_view, prepare_search_response
+from api.blueprints.chat import chat_blueprint, prepare_search_response
 
 
 def make_snippet(text, chunk_score):
@@ -115,31 +115,37 @@ class TestPrepareSearchResponse:
 class TestChatView:
     @pytest.fixture
     def test_app(self):
-        return Flask("test")
+        app = Flask("test")
+        app.config["TESTING"] = True
+        app.register_blueprint(chat_blueprint)
+        return app
 
-    def test_unexpected_error_returns_500_and_logs(self, test_app, mocker):
+    @pytest.fixture
+    def client(self, test_app):
+        return test_app.test_client()
+
+    def test_unexpected_error_returns_500_and_logs(self, client, mocker):
         mocker.patch("newrelic.agent.add_custom_attribute")
         mocker.patch(
             "api.blueprints.chat.update_chat",
             side_effect=RuntimeError("something went wrong"),
         )
         mock_logger = mocker.patch("api.blueprints.chat.logger")
+        mocker.patch(
+            "api.auth.require_env", return_value="test-key"
+        )  # VRA_API_KEY to match header
+        mocker.patch("api.decorators.verify_session", return_value="test-session")
 
-        # Unwrap @require_api_key → @require_session_jwt → @timer to reach the
-        # original view function. All three decorators use functools.wraps so
-        # __wrapped__ is set on each layer.
-        original_chat = chat_view.__wrapped__.__wrapped__.__wrapped__
-
-        with test_app.test_request_context(
+        client.set_cookie("vra_session", "test-token")
+        response = client.post(
             "/chat",
-            method="POST",
             json={
                 "message": "tell me about this book",
                 "conversationType": "catalogSearch",
             },
-        ):
-            response, status = original_chat(session_id="test-session")
+            headers={"X-API-Key": "test-key"},
+        )
 
-        assert status == 500
+        assert response.status_code == 500
         assert response.get_json()["data"]["message"] == "Unable to execute chat"
         mock_logger.exception.assert_called_once_with("Unable to execute chat")
