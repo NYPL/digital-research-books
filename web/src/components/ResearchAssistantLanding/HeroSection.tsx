@@ -34,7 +34,7 @@ const HeroSection: React.ForwardRefExoticComponent<
       <SectionContainer
         display="flex"
         flexDir="column"
-        paddingBottom={{ base: "16px", md: "20px" }}
+        paddingBottom={{ base: "s", md: "20px" }}
         ref={ref}
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
       >
@@ -78,7 +78,7 @@ const HeroSection: React.ForwardRefExoticComponent<
               md: "none",
             }}
             fontWeight={{
-              base: "590",
+              base: "semibold",
               md: "medium",
             }}
           >

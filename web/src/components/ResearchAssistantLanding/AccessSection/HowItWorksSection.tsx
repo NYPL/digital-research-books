@@ -48,7 +48,7 @@ const HowItWorksSection: React.FC = () => {
           md: "desktop.heading.heading5",
         }}
         color="ui.gray.dark"
-        fontWeight={{ base: "590", md: "semibold" }}
+        fontWeight="semibold"
         marginBottom={{ base: "l", md: "xxl" }}
         paddingX={{ base: "s", md: "none" }}
       >
