@@ -119,6 +119,9 @@ def chat_test_client(mocker):
     """Flask test client for the /chat route with (a) low level external deps,
     (b) Runner.run(), and (c) Session mocked out.
 
+    POST requests to the returned client must add header
+    {"X-API-Key": "test-api-key"} to avoid errors raised by @require_api_key
+
     Yields (client, mock_runner_run, mock_session_instance).
     """
     mocker.patch.dict(
@@ -144,6 +147,15 @@ def chat_test_client(mocker):
         "api.assistant.agent.Runner.run",
         new_callable=AsyncMock,
         return_value=mock_run_result,
+    )
+
+    mocker.patch(
+        "api.assistant.agent.get_frbr_data_by_edition",
+        side_effect=NotImplementedError("patch get_frbr_data_by_edition in your test"),
+    )
+    mocker.patch(
+        "api.assistant.agent.get_frbr_data_by_barcode",
+        side_effect=NotImplementedError("patch get_frbr_data_by_barcode in your test"),
     )
 
     mocker.patch("api.blueprints.chat.get_async_engine")
@@ -196,3 +208,35 @@ def test_chat_passes_message_str_as_runner_input(chat_test_client):
     call_kwargs = mock_runner_run.call_args.kwargs
     assert call_kwargs["input"] == message
     assert isinstance(call_kwargs["input"], str)
+
+
+def test_content_search_unknown_edition_returns_404(chat_test_client, mocker):
+    """Assert that a contentSearch request with an unknown editionId returns 404."""
+    FAKE_EDITION_ID = 99999
+
+    # Empty return triggers the 404 response
+    def fake_get_frbr_data_by_edition(edition_ids):
+        assert edition_ids == [FAKE_EDITION_ID], (
+            f"get_frbr_data_by_edition called with unexpected args: {edition_ids}"
+        )
+        return []
+
+    mocker.patch(
+        "api.assistant.agent.get_frbr_data_by_edition",
+        side_effect=fake_get_frbr_data_by_edition,
+    )
+
+    client, _, _ = chat_test_client
+    response = client.post(
+        "/chat",
+        json={
+            "message": "Find something in this book",
+            "conversationType": "contentSearch",
+            "editionId": FAKE_EDITION_ID,
+        },
+        headers={"X-API-Key": "test-api-key"},
+    )
+
+    assert response.status_code == 404
+    data = response.get_json()
+    assert str(FAKE_EDITION_ID) in data["data"]["message"]

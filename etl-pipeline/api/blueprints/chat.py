@@ -23,7 +23,7 @@ from ..auth import require_api_key
 from ..decorators import require_session_jwt
 from ..assistant.agent import (
     SCORE_SORT_DIRECTION,
-    EditionNotFoundError,
+    BookNotFoundError,
     update_chat,
     PAGE_SIZE,
 )
@@ -241,7 +241,7 @@ def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
                 session=session,
             )
         )
-    except EditionNotFoundError as e:
+    except BookNotFoundError as e:
         return APIUtils.formatResponseObject(404, RESPONSE_TYPE, {"message": str(e)})
 
     # Add relevant snippets to search result, if search was executed in this agent turn

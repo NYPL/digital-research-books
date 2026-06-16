@@ -479,7 +479,7 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
     )
 
 
-class EditionNotFoundError(ValueError):
+class BookNotFoundError(ValueError):
     pass
 
 
@@ -547,19 +547,7 @@ async def update_chat(
     # Search within single book
     if conversation_type == "contentSearch":
         # Fetch FRBR data for the book
-        with Timer(
-            "get_frbr_data_by_edition",
-            on_exit=lambda name, elapsed: logger.info(
-                f"{name} took {elapsed:.3f}s for 1 edition"
-            ),
-        ):
-            frbr_data = get_frbr_data_by_edition([edition_id])
-        if not frbr_data:
-            logger.error(
-                f"FRBR data missing for content search in edition {edition_id}"
-            )
-            raise EditionNotFoundError(f"No edition found with id {edition_id}")
-        # Prefer barcode-based lookup when provided. Barcode is stable across
+        # Note: Prefer barcode-based lookup when provided. Barcode is stable across
         # FRBR re-clustering, whereas edition_id is not.
         if barcode is not None:
             with Timer(
@@ -571,7 +559,7 @@ async def update_chat(
                 frbr_data = get_frbr_data_by_barcode([barcode])
             if not frbr_data:
                 logger.error(
-                    f"FRBR data missing for content search by barcode {barcode}"
+                    f"FRBR data missing for content search in barcode={barcode}"
                 )
             resolved_edition_id = frbr_data[0].Edition.id if frbr_data else None
         else:
@@ -584,9 +572,13 @@ async def update_chat(
                 frbr_data = get_frbr_data_by_edition([edition_id])
             if not frbr_data:
                 logger.error(
-                    f"FRBR data missing for content search in edition {edition_id}"
+                    f"FRBR data missing for content search in edition={edition_id}"
                 )
-            resolved_edition_id = edition_id
+            resolved_edition_id = edition_id if frbr_data else None
+
+        if resolved_edition_id is None:
+            raise BookNotFoundError(f"No edition found with id {edition_id}")
+
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
         exec_context = ContentSearchExecutionContext(
