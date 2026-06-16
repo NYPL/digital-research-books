@@ -15,37 +15,43 @@ from openai.types.chat.chat_completion_message_tool_call import (
 )
 
 
+def _make_mocked_update_chat_env(mocker):
+    """Patch all external dependencies of update_chat and return the mock Runner."""
+    mocker.patch("api.assistant.agent.TurbopufferBackend")
+    mocker.patch.dict(os.environ, {"GOOGLE_API_KEY": "fake-key"})
+    mocker.patch("api.assistant.agent.Agent")
+    mock_runner = mocker.patch("api.assistant.agent.Runner")
+    mock_run_result = MagicMock()
+    mock_runner.run = AsyncMock(return_value=mock_run_result)
+    mock_template = mocker.patch("api.assistant.agent.Template")
+    mock_template_instance = MagicMock()
+    mock_template.return_value = mock_template_instance
+    mock_template_instance.render.return_value = "system prompt"
+    return mock_runner, mock_run_result
+
+
 class TestAgent:
     def test_update_chat_catalog_search(self, mocker):
         """Test update_chat in catalogSearch mode returns run_result."""
-
-        # Mock external resource dependencies
-        mocker.patch("api.assistant.agent.TurbopufferBackend")
-        mocker.patch.dict(os.environ, {"GOOGLE_API_KEY": "fake-key"})
-        # Q: the pattern seems to be mock everything implemented in the top-level \
-        # of the function, so why not mock `OpenAIChatCompletionsModel` instead \
-        # of patch just the env var that it uses?
-
-        # Mock the agent and its runner to simulate execution
-        mocker.patch("api.assistant.agent.Agent")
-        mock_runner = mocker.patch("api.assistant.agent.Runner")
-        mock_run_result = MagicMock()
-        mock_runner.run = AsyncMock(return_value=mock_run_result)
-
-        # Mock prompt template rendering
-        mock_template = mocker.patch("api.assistant.agent.Template")
-        mock_template_instance = MagicMock()
-        mock_template.return_value = mock_template_instance
-        mock_template_instance.render.return_value = "system prompt"
-
+        mock_runner, mock_run_result = _make_mocked_update_chat_env(mocker)
         mock_session = MagicMock()
 
-        # Execute a catalog search using a simple user prompt
         result = asyncio.run(update_chat("Some query", "catalogSearch", mock_session))
 
-        # Verify result and that the runner was called just once
         assert result == mock_run_result
         mock_runner.run.assert_called_once()
+
+    def test_update_chat_passes_message_str_as_runner_input(self, mocker):
+        """Runner.run must receive the raw message string as its input= kwarg."""
+        mock_runner, _ = _make_mocked_update_chat_env(mocker)
+        mock_session = MagicMock()
+        message = "Some query"
+
+        asyncio.run(update_chat(message, "catalogSearch", mock_session))
+
+        call_kwargs = mock_runner.run.call_args.kwargs
+        assert call_kwargs["input"] == message
+        assert isinstance(call_kwargs["input"], str)
 
 
 def make_mock_data(agent, history=None):
