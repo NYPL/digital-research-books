@@ -29,7 +29,10 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
       <Box maxWidth="55rem" margin="0 auto">
         <Heading
           level="h2"
-          fontSize={{ base: "mobile.heading.heading3", md: "heading2" }}
+          fontSize={{
+            base: "mobile.heading.heading3",
+            md: "desktop.heading.heading2",
+          }}
           fontFamily="Domine"
           fontWeight="bold"
           marginBottom="xs"

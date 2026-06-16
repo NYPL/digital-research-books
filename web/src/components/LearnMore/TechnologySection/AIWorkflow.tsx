@@ -78,7 +78,7 @@ const AiWorkflow = () => {
           >
             <Heading
               size="heading8"
-              fontWeight="700"
+              fontWeight="bold"
               level="h4"
               marginBottom="s"
             >

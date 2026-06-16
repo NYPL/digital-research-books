@@ -25,7 +25,10 @@ const CollectionSection: React.FC = () => {
             level="h2"
             fontWeight="bold"
             marginBottom={{ base: "s", md: "l" }}
-            fontSize={{ base: "mobile.heading.heading3", md: "heading2" }}
+            fontSize={{
+              base: "mobile.heading.heading3",
+              md: "desktop.heading.heading2",
+            }}
             fontFamily="Domine"
           >
             The collection
@@ -88,7 +91,10 @@ const CollectionSection: React.FC = () => {
           <Heading
             level="h3"
             marginBottom={{ base: "xs", md: "s" }}
-            fontSize={{ base: "mobile.heading.heading4", md: "heading3" }}
+            fontSize={{
+              base: "mobile.heading.heading4",
+              md: "desktop.heading.heading3",
+            }}
             fontWeight="400"
             fontFamily="Domine"
           >
@@ -122,7 +128,10 @@ const CollectionSection: React.FC = () => {
           <Heading
             level="h3"
             marginBottom={{ base: "xs", md: "s" }}
-            fontSize={{ base: "mobile.heading.heading4", md: "heading3" }}
+            fontSize={{
+              base: "mobile.heading.heading4",
+              md: "desktop.heading.heading3",
+            }}
             fontWeight="400"
             fontFamily="Domine"
           >
@@ -170,7 +179,10 @@ const CollectionSection: React.FC = () => {
           <Heading
             level="h3"
             marginBottom={{ base: "xs", md: "s" }}
-            fontSize={{ base: "mobile.heading.heading4", md: "heading3" }}
+            fontSize={{
+              base: "mobile.heading.heading4",
+              md: "desktop.heading.heading3",
+            }}
             fontWeight="400"
             fontFamily="Domine"
           >

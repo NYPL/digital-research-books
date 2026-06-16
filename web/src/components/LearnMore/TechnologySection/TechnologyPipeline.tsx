@@ -16,7 +16,7 @@ const TechnologyPipeline: React.FC = () => {
           <Flex flexDir="column" alignItems="center">
             <Text
               fontSize="desktop.heading.heading8"
-              fontWeight="700"
+              fontWeight="bold"
               fontFamily="Courier New"
               marginBottom="xs"
             >
@@ -38,7 +38,7 @@ const TechnologyPipeline: React.FC = () => {
           <Flex flexDir="column" alignItems="center">
             <Text
               fontSize="desktop.heading.heading8"
-              fontWeight="700"
+              fontWeight="bold"
               fontFamily="Courier New"
               marginBottom="xs"
             >
@@ -78,13 +78,13 @@ const TechnologyPipeline: React.FC = () => {
           width="fit-content"
           margin="0 auto"
         >
-          <Flex flexDir={{ base: "column", sm: "row" }} alignItems="center">
+          <Flex flexDir={{ base: "column", md: "row" }} alignItems="center">
             <Text
               fontSize="desktop.heading.heading8"
-              fontWeight="700"
+              fontWeight="bold"
               fontFamily="Courier New"
               marginBottom="m"
-              display={{ base: "block", sm: "none" }}
+              display={{ base: "block", md: "none" }}
             >
               AGENTIC AI
             </Text>
@@ -103,7 +103,7 @@ const TechnologyPipeline: React.FC = () => {
               <GearIcon />
               <Text
                 fontSize="desktop.heading.heading8"
-                fontWeight="700"
+                fontWeight="bold"
                 fontFamily="Courier New"
                 textAlign="center"
                 width="160px"
@@ -113,7 +113,7 @@ const TechnologyPipeline: React.FC = () => {
               </Text>
             </Box>
             <ArrowSVG
-              direction={{ base: "down", sm: "right" }}
+              direction={{ base: "down", md: "right" }}
               length="32px"
               dashed
             />
@@ -132,7 +132,7 @@ const TechnologyPipeline: React.FC = () => {
               <InfoIcon />
               <Text
                 fontSize="desktop.heading.heading8"
-                fontWeight="700"
+                fontWeight="bold"
                 fontFamily="Courier New"
                 textAlign="center"
                 width="160px"
@@ -141,7 +141,7 @@ const TechnologyPipeline: React.FC = () => {
               </Text>
             </Box>
             <ArrowSVG
-              direction={{ base: "down", sm: "right" }}
+              direction={{ base: "down", md: "right" }}
               length="32px"
               dashed
             />
@@ -160,7 +160,7 @@ const TechnologyPipeline: React.FC = () => {
               <ChatIcon />
               <Text
                 fontSize="desktop.heading.heading8"
-                fontWeight="700"
+                fontWeight="bold"
                 fontFamily="Courier New"
                 textAlign="center"
                 width="160px"
@@ -172,10 +172,10 @@ const TechnologyPipeline: React.FC = () => {
           </Flex>
           <Text
             fontSize="desktop.heading.heading8"
-            fontWeight="700"
+            fontWeight="bold"
             fontFamily="Courier New"
             marginTop="m"
-            display={{ base: "none", sm: "block" }}
+            display={{ base: "none", md: "block" }}
           >
             AGENTIC AI
           </Text>
@@ -197,7 +197,7 @@ const TechnologyPipeline: React.FC = () => {
             <BookIcon />
             <Text
               fontSize="desktop.heading.heading8"
-              fontWeight="700"
+              fontWeight="bold"
               fontFamily="Courier New"
               textAlign="center"
               width="160px"

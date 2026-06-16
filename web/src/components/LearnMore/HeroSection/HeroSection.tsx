@@ -47,7 +47,10 @@ const HeroSection: React.ForwardRefExoticComponent<
             fontWeight="bold"
             maxWidth="740px"
             marginBottom={{ base: "12px", sm: "l", md: "63.5px" }}
-            fontSize={{ base: "mobile.heading.heading2", md: "heading1" }}
+            fontSize={{
+              base: "mobile.heading.heading2",
+              md: "desktop.heading.heading1",
+            }}
             fontFamily="Domine"
           >
             AI is more{" "}

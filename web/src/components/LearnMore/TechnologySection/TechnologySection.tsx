@@ -18,7 +18,10 @@ const TechnologySection: React.FC = () => {
       <Box maxWidth="55rem" margin="0 auto">
         <Heading
           level="h2"
-          fontSize={{ base: "mobile.heading.heading3", md: "heading2" }}
+          fontSize={{
+            base: "mobile.heading.heading3",
+            md: "desktop.heading.heading2",
+          }}
           fontFamily="Domine"
           fontWeight="bold"
           marginBottom={{ base: "s", md: "l" }}
@@ -77,7 +80,10 @@ const TechnologySection: React.FC = () => {
             <Heading
               level="h3"
               marginBottom={{ base: "xs", md: "s" }}
-              fontSize={{ base: "mobile.heading.heading4", md: "heading3" }}
+              fontSize={{
+                base: "mobile.heading.heading4",
+                md: "desktop.heading.heading3",
+              }}
               fontFamily="Domine"
             >
               Book ingestion pipeline
@@ -103,7 +109,10 @@ const TechnologySection: React.FC = () => {
             <Heading
               level="h3"
               marginBottom={{ base: "xs", md: "s" }}
-              fontSize={{ base: "mobile.heading.heading4", md: "heading3" }}
+              fontSize={{
+                base: "mobile.heading.heading4",
+                md: "desktop.heading.heading3",
+              }}
               fontFamily="Domine"
             >
               Agentic AI workflow

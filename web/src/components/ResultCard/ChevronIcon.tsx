@@ -18,9 +18,9 @@ const ChevronIcon: React.FC<ChevronIconProps> = ({ iconRotation }) => {
         <path
           d="M12 10L8 6L4 10"
           stroke="#006166"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
       </svg>
     </Flex>
