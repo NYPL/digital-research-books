@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from flask import Flask
 from unittest.mock import MagicMock
@@ -131,9 +133,10 @@ class TestChatView:
             side_effect=RuntimeError("something went wrong"),
         )
         mock_logger = mocker.patch("api.blueprints.chat.logger")
-        mocker.patch(
-            "api.auth.require_env", return_value="test-key"
-        )  # VRA_API_KEY to match header
+        mocker.patch.dict(
+            os.environ,
+            {"VRA_API_KEY": "test-key"},  # pragma: allowlist secret
+        )
         mocker.patch("api.decorators.verify_session", return_value="test-session")
 
         client.set_cookie("vra_session", "test-token")
