@@ -34,19 +34,27 @@ const HelpSection: React.FC<HelpSectionProps> = ({
       display="flex"
       flexDir="column"
       alignItems="center"
+      paddingX={{ base: "none", md: "s" }}
     >
       <Heading
         level="h2"
-        size="heading2"
+        fontSize={{
+          base: "mobile.heading.heading3",
+          md: "desktop.heading.heading2",
+        }}
         fontFamily="Domine"
         fontWeight="bold"
-        marginBottom="xxl"
+        marginBottom={{ base: "l", md: "xxl" }}
+        paddingX={{ base: "s", md: "none" }}
       >
         Have more questions?
       </Heading>
-      <Flex gap="l">
+      <Flex
+        gap={{ base: "s", md: "l" }}
+        flexDir={{ base: "column", md: "row" }}
+      >
         <LandingCard
-          gap="l"
+          gap={{ base: "m", md: "l" }}
           icon={<MailIcon />}
           heading={
             <Heading level="h3" size="heading4">
@@ -54,7 +62,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
             </Heading>
           }
           body={
-            <Flex gap="l" flexDir="column">
+            <Flex gap={{ base: "m", md: "l" }} flexDir="column">
               <Text fontSize="desktop.subtitle.subtitle1">
                 Do you need support or have more questions about using Enhanced
                 Search? Our staff will be happy to guide you.
@@ -67,13 +75,14 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                 fontWeight="bold"
                 display="flex"
                 alignItems="center"
+                justifyContent={{ base: "center", md: "left" }}
                 gap="xxs"
                 _hover={{
                   color: "section.research.primary",
                   path: { stroke: "#00838A" },
                 }}
               >
-                Get help <ArrowIcon direction="right" color="#006166" />
+                Contact us <ArrowIcon direction="right" color="#006166" />
               </Link>
             </Flex>
           }
@@ -87,7 +96,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
             </Heading>
           }
           body={
-            <Flex gap="l" flexDir="column">
+            <Flex gap={{ base: "m", md: "l" }} flexDir="column">
               <Text fontSize="desktop.subtitle.subtitle1">
                 Are you interested in finding out more about our mission,
                 collection, models, data pipelines, and technologies?
@@ -101,6 +110,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                 fontWeight="bold"
                 display="flex"
                 alignItems="center"
+                justifyContent={{ base: "center", md: "left" }}
                 gap="xxs"
                 _hover={{
                   color: "section.research.primary",

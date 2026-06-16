@@ -3,12 +3,19 @@ import {
   Heading,
   Image,
   Text,
+  useNYPLBreakpoints,
 } from "@nypl/design-system-react-components";
 import {
   CONTROL_SUBNAV_IMAGE,
   FEEDBACK_MESSAGE_IMAGE,
+  FEEDBACK_MESSAGE_IMAGE_MOBILE,
+  FEEDBACK_MESSAGE_IMAGE_TABLET,
   NATURAL_LANGUAGE_MESSAGE_IMAGE,
+  NATURAL_LANGUAGE_MESSAGE_IMAGE_MOBILE,
+  NATURAL_LANGUAGE_MESSAGE_IMAGE_TABLET,
   SOURCE_MESSAGE_IMAGE,
+  SOURCE_MESSAGE_IMAGE_MOBILE,
+  SOURCE_MESSAGE_IMAGE_TABLET,
 } from "~/src/constants/researchAssistant";
 import LandingCard from "../LandingCard";
 import SectionContainer from "../SectionContainer";
@@ -18,6 +25,8 @@ import LockIcon from "./LockIcon";
 import MessageIcon from "./MessageIcon";
 
 const HowItWorksSection: React.FC = () => {
+  const { isLargerThanSmall, isLargerThanMedium } = useNYPLBreakpoints();
+
   return (
     <SectionContainer
       borderTop="1px solid"
@@ -27,26 +36,42 @@ const HowItWorksSection: React.FC = () => {
       backgroundSize="16px 16px"
       backgroundPosition="center"
       color="ui.typography.body"
+      paddingX={{ base: "none", md: "s" }}
     >
       <Heading
         level="h2"
-        size="heading2"
+        fontSize={{
+          base: "mobile.heading.heading3",
+          md: "desktop.heading.heading2",
+        }}
         fontFamily="Domine"
         fontWeight="bold"
         marginBottom="xs"
+        paddingX={{ base: "s", md: "none" }}
       >
         How does Enhanced Search work?
       </Heading>
       <Text
+        fontSize={{
+          base: "mobile.heading.heading5",
+          md: "desktop.heading.heading5",
+        }}
         color="ui.gray.dark"
-        fontSize="desktop.heading.heading5"
         fontWeight="semibold"
-        marginBottom="xxl"
+        marginBottom={{ base: "l", md: "xxl" }}
+        paddingX={{ base: "s", md: "none" }}
       >
         The power of technology backed by the stewardship of the New York Public
         Library
       </Text>
-      <Grid gridTemplateColumns="repeat(2, 1fr)" gap="l" marginBottom="xxl">
+      <Grid
+        gridTemplateColumns={{
+          base: "repeat(1, 1fr)",
+          md: "repeat(2, 1fr)",
+        }}
+        gap="l"
+        marginBottom={{ base: "0px", md: "xxl" }}
+      >
         <LandingCard
           icon={<MessageIcon />}
           heading={
@@ -59,9 +84,15 @@ const HowItWorksSection: React.FC = () => {
           }
           body={
             <Image
-              src={NATURAL_LANGUAGE_MESSAGE_IMAGE}
+              src={
+                isLargerThanMedium
+                  ? NATURAL_LANGUAGE_MESSAGE_IMAGE
+                  : isLargerThanSmall
+                  ? NATURAL_LANGUAGE_MESSAGE_IMAGE_TABLET
+                  : NATURAL_LANGUAGE_MESSAGE_IMAGE_MOBILE
+              }
               alt="A chat message from a patron asking: 'Does this book mention Smith's early life and childhood? Where in this book can I find that information?'"
-              maxWidth="512px"
+              maxWidth={{ base: "none", md: "512px" }}
               background="transparent"
               flexShrink="0"
             />
@@ -79,9 +110,15 @@ const HowItWorksSection: React.FC = () => {
           }
           body={
             <Image
-              src={FEEDBACK_MESSAGE_IMAGE}
+              src={
+                isLargerThanMedium
+                  ? FEEDBACK_MESSAGE_IMAGE
+                  : isLargerThanSmall
+                  ? FEEDBACK_MESSAGE_IMAGE_TABLET
+                  : FEEDBACK_MESSAGE_IMAGE_MOBILE
+              }
               alt="A chat message from the VRA stating: 'Here are some books on astronomy in the middle ages.' The message includes interactive thumbs-up and thumbs-down icons for feedback."
-              maxWidth="512px"
+              maxWidth={{ base: "none", md: "512px" }}
               background="transparent"
               flexShrink="0"
             />
@@ -99,9 +136,15 @@ const HowItWorksSection: React.FC = () => {
           }
           body={
             <Image
-              src={SOURCE_MESSAGE_IMAGE}
+              src={
+                isLargerThanMedium
+                  ? SOURCE_MESSAGE_IMAGE
+                  : isLargerThanSmall
+                  ? SOURCE_MESSAGE_IMAGE_TABLET
+                  : SOURCE_MESSAGE_IMAGE_MOBILE
+              }
               alt="A chat message from the VRA stating: 'Yes, this book mentions Smith's childhood (p3). It also describes his college years in Texas (p8).' The page numbers are styled as clickable links."
-              maxWidth="512px"
+              maxWidth={{ base: "none", md: "512px" }}
               background="transparent"
               flexShrink="0"
             />
