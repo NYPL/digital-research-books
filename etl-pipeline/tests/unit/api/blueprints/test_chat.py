@@ -1,9 +1,12 @@
+import os
+
 import pytest
-from unittest.mock import MagicMock
+from flask import Flask
+from unittest.mock import AsyncMock, MagicMock
 
 from api.assistant.agent import SCORE_SORT_DIRECTION
 from api.assistant.types import CatalogSearchResult, ContentSearchResult, Snippet
-from api.blueprints.chat import prepare_search_response
+from api.blueprints.chat import chat_blueprint, prepare_search_response
 
 
 def make_snippet(text, chunk_score):
@@ -109,3 +112,63 @@ class TestPrepareSearchResponse:
             [s.chunk_score for s in snippets], **SCORE_SORT_DIRECTION
         )
         assert output_scores == expected_scores
+
+
+def test_add_items_not_called_outside_agent_loop(mocker):
+    """
+    Assert that .add_items() is only called inside of Runner.run() when /chat view is run.
+
+    Because items are added to  CustomSQLAlchemySession.inserted_items by
+    CustomSQLAlchemySession.add_items(), and the edge case of identical items
+    added outside of Runner.run() before Runner.run() is called could lead to
+    incorrect db_ids being associated to RunResult.new_items via
+    get_new_items_with_ids(), we need to assert that .add_items() is only called
+    inside of Runner.run()
+    """
+    # Env
+    mocker.patch.dict(
+        os.environ,
+        {
+            "VRA_API_KEY": "test-api-key",  # matches "X-API-Key" header # pragma: allowlist secret
+            "TURBOPUFFER_NAMESPACE": "test-namespace",
+            "GOOGLE_API_KEY": "test-key",  # pragma: allowlist secret
+        },
+    )
+    # require_session_jwt (JWT signing)
+    mocker.patch("api.decorators.sign_session", return_value="fake-token")
+
+    # Low-level external deps inside update_chat — avoid real network/credentials
+    mocker.patch("api.assistant.agent.TurbopufferBackend")
+    mocker.patch("api.assistant.agent.GoogleEmbedder")
+    mocker.patch("api.assistant.agent.AsyncOpenAI")
+    mocker.patch("api.assistant.agent.record_llm_events")
+
+    # Runner.run returns a fake RunResult with all internal process mocked
+    mock_run_result = MagicMock()
+    mock_run_result.context_wrapper.context.search_results = {}  # we assume .add_item() calls outside of RunResult.run() are not dependent on search_results being non-empty
+    mocker.patch(
+        "api.assistant.agent.Runner.run",
+        new_callable=AsyncMock,
+        return_value=mock_run_result,
+    )
+
+    # chat.py deps
+    mocker.patch("api.blueprints.chat.get_async_engine")
+    mock_session_cls = mocker.patch("api.blueprints.chat.CustomSQLAlchemySession")
+    mock_session_instance = MagicMock()
+    mock_session_cls.return_value = mock_session_instance
+
+    app = Flask("test")
+    app.register_blueprint(chat_blueprint)
+    with app.test_client() as client:
+        response = client.post(
+            "/chat",
+            json={
+                "message": "Find books about climate",
+                "conversationType": "catalogSearch",
+            },
+            headers={"X-API-Key": "test-api-key"},
+        )
+
+    assert response.status_code == 200
+    mock_session_instance.add_items.assert_not_called()
