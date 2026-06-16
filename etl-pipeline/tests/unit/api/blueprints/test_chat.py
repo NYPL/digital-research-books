@@ -114,18 +114,13 @@ class TestPrepareSearchResponse:
         assert output_scores == expected_scores
 
 
-def test_add_items_not_called_outside_agent_loop(mocker):
-    """
-    Assert that .add_items() is only called inside of Runner.run() when /chat view is run.
+@pytest.fixture
+def chat_test_client(mocker):
+    """Flask test client for the /chat route with (a) low level external deps,
+    (b) Runner.run(), and (c) Session mocked out.
 
-    Because items are added to  CustomSQLAlchemySession.inserted_items by
-    CustomSQLAlchemySession.add_items(), and the edge case of identical items
-    added outside of Runner.run() before Runner.run() is called could lead to
-    incorrect db_ids being associated to RunResult.new_items via
-    get_new_items_with_ids(), we need to assert that .add_items() is only called
-    inside of Runner.run()
+    Yields (client, mock_runner_run, mock_session_instance).
     """
-    # Env
     mocker.patch.dict(
         os.environ,
         {
@@ -137,22 +132,20 @@ def test_add_items_not_called_outside_agent_loop(mocker):
     # require_session_jwt (JWT signing)
     mocker.patch("api.decorators.sign_session", return_value="fake-token")
 
-    # Low-level external deps inside update_chat — avoid real network/credentials
     mocker.patch("api.assistant.agent.TurbopufferBackend")
     mocker.patch("api.assistant.agent.GoogleEmbedder")
     mocker.patch("api.assistant.agent.AsyncOpenAI")
     mocker.patch("api.assistant.agent.record_llm_events")
 
-    # Runner.run returns a fake RunResult with all internal process mocked
+    # Runner.run returns a fake RunResult so all internal processes are mocked
     mock_run_result = MagicMock()
     mock_run_result.context_wrapper.context.search_results = {}  # we assume .add_item() calls outside of RunResult.run() are not dependent on search_results being non-empty
-    mocker.patch(
+    mock_runner_run = mocker.patch(
         "api.assistant.agent.Runner.run",
         new_callable=AsyncMock,
         return_value=mock_run_result,
     )
 
-    # chat.py deps
     mocker.patch("api.blueprints.chat.get_async_engine")
     mock_session_cls = mocker.patch("api.blueprints.chat.CustomSQLAlchemySession")
     mock_session_instance = MagicMock()
@@ -161,14 +154,45 @@ def test_add_items_not_called_outside_agent_loop(mocker):
     app = Flask("test")
     app.register_blueprint(chat_blueprint)
     with app.test_client() as client:
-        response = client.post(
-            "/chat",
-            json={
-                "message": "Find books about climate",
-                "conversationType": "catalogSearch",
-            },
-            headers={"X-API-Key": "test-api-key"},
-        )
+        yield client, mock_runner_run, mock_session_instance
+
+
+def test_add_items_not_called_outside_agent_loop(chat_test_client):
+    """
+    Assert that .add_items() is only called inside of Runner.run() when /chat view is run.
+
+    Because items are added to  CustomSQLAlchemySession.inserted_items by
+    CustomSQLAlchemySession.add_items(), and the edge case of identical items
+    added outside of Runner.run() before Runner.run() is called could lead to
+    incorrect db_ids being associated to RunResult.new_items via
+    get_new_items_with_ids(), we need to assert that .add_items() is only called
+    inside of Runner.run()
+    """
+    client, _, mock_session_instance = chat_test_client
+    response = client.post(
+        "/chat",
+        json={
+            "message": "Find books about climate",
+            "conversationType": "catalogSearch",
+        },
+        headers={"X-API-Key": "test-api-key"},
+    )
 
     assert response.status_code == 200
     mock_session_instance.add_items.assert_not_called()
+
+
+def test_chat_passes_message_str_as_runner_input(chat_test_client):
+    """Assert the raw message string from the request body reaches Runner.run(input=)."""
+    client, mock_runner_run, _ = chat_test_client
+    message = "Find books about climate"
+
+    client.post(
+        "/chat",
+        json={"message": message, "conversationType": "catalogSearch"},
+        headers={"X-API-Key": "test-api-key"},
+    )
+
+    call_kwargs = mock_runner_run.call_args.kwargs
+    assert call_kwargs["input"] == message
+    assert isinstance(call_kwargs["input"], str)

@@ -32,9 +32,9 @@ def mock_update_chat_env(mocker):
     return mock_runner, mock_run_result
 
 
-class TestAgent:
+class TestUpdateChat:
     def test_update_chat_catalog_search(self, mocker):
-        """Test update_chat in catalogSearch mode returns run_result."""
+        """Test update_chat in catalogSearch mode returns value from Runner.run()."""
         mock_runner, mock_run_result = mock_update_chat_env(mocker)
         mock_session = MagicMock()
 
@@ -42,18 +42,6 @@ class TestAgent:
 
         assert result == mock_run_result
         mock_runner.run.assert_called_once()
-
-    def test_update_chat_passes_message_str_as_runner_input(self, mocker):
-        """Runner.run must receive the raw message string as its input= kwarg."""
-        mock_runner, _ = mock_update_chat_env(mocker)
-        mock_session = MagicMock()
-        message = "Some query"
-
-        asyncio.run(update_chat(message, "catalogSearch", mock_session))
-
-        call_kwargs = mock_runner.run.call_args.kwargs
-        assert call_kwargs["input"] == message
-        assert isinstance(call_kwargs["input"], str)
 
 
 def make_mock_data(agent, history=None):
