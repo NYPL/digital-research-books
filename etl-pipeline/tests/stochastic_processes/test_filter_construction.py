@@ -49,13 +49,14 @@ def get_last_tool_call_args(run_result) -> dict:
     return json.loads(tool_call_items[-1].raw_item.arguments)
 
 
-def filter_match(filters, attribute=None, operator=None, value=None):
+# TODO: add dedicated unit tests for filter_match even though it is currently only used as a test helper
+def filter_match(filters, attribute=None, operator=None, value=None) -> bool:
     """
     Recursively search a TurboPuffer-style filter tree for the first meta operator or leaf filter that
     matches all applicable given criteria.
 
     Args:
-        filters: A filter specification (list/tuple).
+        filters: A Filter instance or raw filter data (list/tuple).
         attribute: List of acceptable attribute values, a callable ``(attr) -> bool``, or None to ignore.
         operator: List of acceptable operator values, a callable ``(op) -> bool``, or None to ignore.
             Note:  attribute and value must be None if operator will match 'And', 'Or', or 'Not'.
@@ -74,49 +75,42 @@ def filter_match(filters, attribute=None, operator=None, value=None):
                 f"attribute and value must be None if operator includes any of {META_OPERATORS}"
             )
 
-    if not isinstance(filters, (list, tuple)) or len(filters) == 0:
-        return False
+    if not isinstance(filters, Filter):
+        filters = Filter.model_validate(filters)
 
-    op = filters[0]
-
-    # Check meta operator match
-    if operator is not None:
-        if operator(op) if callable(operator) else op in operator:
-            return True
-
-    # Recurse meta filters
-    if op in META_OPERATORS:
-        if op == "Not":
-            return filter_match(
-                filters[1], attribute=attribute, operator=operator, value=value
-            )
-        else:
-            # ["And"/"Or", [child_filter, ...]]
+    match filters.root:
+        case ("And" | "Or", children):
+            op = filters.root[0]
+            if operator is not None and (
+                operator(op) if callable(operator) else op in operator
+            ):
+                return True
             return any(
                 filter_match(child, attribute=attribute, operator=operator, value=value)
-                for child in filters[1]
+                for child in children
             )
-
-    # Check simple leaf filter: [attribute, operator, value]
-    try:
-        f_attr, f_op, f_val = filters
-    except (ValueError, TypeError) as e:
-        raise ValueError(
-            f"Expecting a simple filter [attribute, operator, value], got: {filters}"
-        ) from e
-
-    if attribute is not None and not (
-        attribute(f_attr) if callable(attribute) else f_attr in attribute
-    ):
-        return False
-    if operator is not None and not (
-        operator(f_op) if callable(operator) else f_op in operator
-    ):
-        return False
-    if value is not None and not (value(f_val) if callable(value) else f_val in value):
-        return False
-
-    return True
+        case ("Not", child):
+            if operator is not None and (
+                operator("Not") if callable(operator) else "Not" in operator
+            ):
+                return True
+            return filter_match(
+                child, attribute=attribute, operator=operator, value=value
+            )
+        case (f_attr, f_op, f_val):
+            if attribute is not None and not (
+                attribute(f_attr) if callable(attribute) else f_attr in attribute
+            ):
+                return False
+            if operator is not None and not (
+                operator(f_op) if callable(operator) else f_op in operator
+            ):
+                return False
+            if value is not None and not (
+                value(f_val) if callable(value) else f_val in value
+            ):
+                return False
+            return True
 
 
 # TODO: mock search backend to just test filter construction
