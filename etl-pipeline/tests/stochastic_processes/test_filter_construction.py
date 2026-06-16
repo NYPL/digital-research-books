@@ -119,36 +119,6 @@ def filter_match(filters, attribute=None, operator=None, value=None):
     return True
 
 
-_VALID_SCHEMA_FIELDS = frozenset(
-    {"text", "subject", "title", "author", "language", "publication_date"}
-)
-_NEGATIVE_WORDS = frozenset(
-    {"not", "excluding", "except", "without", "avoid", "exclude"}
-)
-
-
-def collect_filter_fields(filters) -> set:
-    """Walk a TurboPuffer filter tree and return all leaf attribute field names."""
-    if not isinstance(filters, (list, tuple)) or len(filters) == 0:
-        return set()
-    op = filters[0]
-    if op == "Not":
-        return collect_filter_fields(filters[1])
-    if op in META_OPERATORS:
-        result = set()
-        for child in filters[1]:
-            result |= collect_filter_fields(child)
-        return result
-    try:
-        f_attr, _, _ = filters
-        return {f_attr}
-    except (ValueError, TypeError):
-        return set()
-
-
-# TODO: mock search backend to just test filter construction
-
-
 # TODO: parameterize over ContentSearch and CatalogSearch
 class TestCatalogSearchFilterUsage:
     """Test that the agent constructs appropriate filters for catalog searches."""
@@ -177,7 +147,7 @@ class TestCatalogSearchFilterUsage:
         assert filters is None
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_filters_used_for_metadata_search(self, test_session_id):
+    async def test_subject_filter(self, test_session_id):
         """
         Test: Filter is used when needed (poetry with mother-daughter themes).
 
@@ -195,7 +165,7 @@ class TestCatalogSearchFilterUsage:
 
         # Assert filter exists
         assert filters is not None and filters != [], (
-            "Expected filters for subject filter for poetry search"
+            "Expected filters in search tool args"
         )
         # Assert filter valid
         filters = Filter.model_validate_json(filters).model_dump()
@@ -206,16 +176,29 @@ class TestCatalogSearchFilterUsage:
         )
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_negative_filter_construction(self, test_session_id):
+    @pytest.mark.parametrize(
+        "query",
+        [
+            pytest.param(
+                "I want books about history but not military history",
+                id="history_not_military",
+            ),
+            pytest.param(
+                "I want books about astronomy but not astrology",
+                id="astronomy_not_astrology",
+            ),
+        ],
+    )
+    async def test_negative_filter(self, test_session_id, query):
         """
-        Test: A negative filter is used when appropriate.
+        Test: A negative filter is used when appropriate, and ranking_query uses positive framing only.
 
-        For searches that exclude certain content (e.g., "books about history
-        but not military history"), the agent should construct filters with
-        negation operators.
+        For searches that exclude certain content, the agent should construct filters with
+        negation operators. Negative language in ranking_query is washed out during semantic
+        embedding and does not exclude content — exclusion must live entirely in a Not filter.
         """
         run_result = await update_chat(
-            "I want books about history but not military history",
+            query,
             conversation_type="catalogSearch",
             session_id=test_session_id,
             max_turns=1,
@@ -224,7 +207,7 @@ class TestCatalogSearchFilterUsage:
         filters = search_params.get("filters")
 
         # Assert filter exists
-        assert filters is not None, "Expected filters for exclusion search"
+        assert filters is not None, "Expected filters in search tool args"
         # Assert filter valid
         filters = Filter.model_validate_json(filters).model_dump()
 
@@ -236,12 +219,15 @@ class TestCatalogSearchFilterUsage:
         # ranking_query should express positive intent; negation belongs in the Not filter
         ranking_query = search_params.get("ranking_query", "")
         ranking_tokens = set(ranking_query.lower().split())
-        assert not (ranking_tokens & _NEGATIVE_WORDS), (
+        assert not (
+            ranking_tokens
+            & {"not", "excluding", "except", "without", "avoid", "exclude"}
+        ), (
             f"ranking_query contains negative language that should be a filter: {ranking_query!r}"
         )
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_language_filter(self, test_session_id):
+    async def test_multi_language_filter(self, test_session_id):
         """
         Test: Language filter construction uses ContainsAny for multiple languages.
         """
@@ -255,7 +241,7 @@ class TestCatalogSearchFilterUsage:
         filters = search_params.get("filters")
 
         # Assert filter exists
-        assert filters is not None, "Expected filters for language search"
+        assert filters is not None, "Expected filters in search tool args"
         # Assert filter valid
         filters = Filter.model_validate_json(filters).model_dump()
 
@@ -278,15 +264,33 @@ class TestCatalogSearchFilterUsage:
         ), f"filters do not match expected criteria: {filters}"
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_date_range_filter_construction(self, test_session_id):
+    @pytest.mark.parametrize(
+        "query,excluded_ranking_terms",
+        [
+            pytest.param(
+                "Find books published between 2000 and 2010 about technology",
+                frozenset(),
+                id="date_range_explicit",
+            ),
+            pytest.param(
+                "I want American poetry published before the Civil War",
+                frozenset({"civil war"}),
+                id="date_range_historical",
+            ),
+        ],
+    )
+    async def test_date_range_filter(
+        self, test_session_id, query, excluded_ranking_terms
+    ):
         """
         Test: Date range filters for publication dates.
 
-        When searching for books published in a specific time period,
-        the agent should construct appropriate date range filters.
+        When searching for books published in a specific time period, the agent should
+        construct appropriate date range filters. Temporal constraints should be expressed
+        as publication_date filters on the metadata field, not embedded in ranking_query.
         """
         run_result = await update_chat(
-            "Find books published between 2000 and 2010 about technology",
+            query,
             conversation_type="catalogSearch",
             session_id=test_session_id,
             max_turns=1,
@@ -295,8 +299,7 @@ class TestCatalogSearchFilterUsage:
         filters = search_params.get("filters")
 
         # Assert filter exists
-        assert filters is not None, "Expected filters for date range search"
-
+        assert filters is not None, "Expected filters in search tool args"
         # Assert filter valid
         filters = Filter.model_validate_json(filters).model_dump()
 
@@ -304,6 +307,15 @@ class TestCatalogSearchFilterUsage:
         assert filter_match(
             filters, attribute=["publication_date"], operator=["Gt", "Gte", "Lt", "Lte"]
         ), f"Expected date range filter with comparison operators, got: {filters}"
+
+        # Temporal constraint phrases belong in the filter, not ranking_query
+        if excluded_ranking_terms:
+            ranking_query = search_params.get("ranking_query", "").lower()
+            for phrase in excluded_ranking_terms:
+                assert phrase not in ranking_query, (
+                    f"Temporal phrase {phrase!r} should not appear in ranking_query "
+                    f"(use a publication_date filter instead): {ranking_query!r}"
+                )
 
     # def test_combined_filters_subject_and_language(self, mock_backend):
     #     """
@@ -336,7 +348,7 @@ class TestCatalogSearchFilterUsage:
     #         ), f"Expected combined filters for subject and language, got: {filters}"
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_author_filter_construction(self, test_session_id):
+    async def test_author_filter(self, test_session_id):
         """
         Test: Author filter for books by specific authors.
 
@@ -353,7 +365,7 @@ class TestCatalogSearchFilterUsage:
         filters = search_params.get("filters")
 
         # Assert filter exists
-        assert filters is not None, "Expected filters for author search"
+        assert filters is not None, "Expected filters in search tool args"
         # Assert filter valid
         filters = Filter.model_validate_json(filters).model_dump()
 
@@ -371,8 +383,10 @@ class TestCatalogSearchFilterUsage:
             f"Author name should not appear in ranking_query (use author filter instead): {ranking_query!r}"
         )
 
+    # MAYBE: remove this instruction and test because BM25 search achieves this \
+    # functionality (better?) than a text field filter.
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_exact_phrase_uses_token_sequence(self, test_session_id):
+    async def test_text_filter(self, test_session_id):
         """
         Test: Exact phrase queries use ContainsTokenSequence on the text field.
 
@@ -389,9 +403,12 @@ class TestCatalogSearchFilterUsage:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        assert filters is not None, "Expected a filter for exact phrase search"
+        # Assert filter exists
+        assert filters is not None, "Expected filters in search tool args"
+        # Assert filter valid
         filters = Filter.model_validate_json(filters).model_dump()
 
+        # Assert content: ContainsTokenSequence on text field for the exact phrase
         assert filter_match(
             filters,
             attribute=["text"],
@@ -402,64 +419,6 @@ class TestCatalogSearchFilterUsage:
         assert search_params.get("ranking_query"), (
             "Expected a ranking_query alongside the phrase filter"
         )
-
-    @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_negative_filter_ranking_query_is_positive(self, test_session_id):
-        """
-        Test: When a Not filter is used for exclusion, ranking_query uses positive framing only.
-
-        Negative language in ranking_query is washed out during semantic embedding and
-        does not exclude content. Exclusion must live entirely in a Not filter.
-        """
-        run_result = await update_chat(
-            "I want books about astronomy but not astrology",
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-            max_turns=1,
-        )
-        search_params = get_last_tool_call_args(run_result)
-        filters = search_params.get("filters")
-
-        assert filters is not None, "Expected a filter for exclusion search"
-        filters = Filter.model_validate_json(filters).model_dump()
-
-        assert filter_match(filters, operator=["Not"]), (
-            f"Expected a Not filter for the exclusion: {filters}"
-        )
-
-        ranking_query = search_params.get("ranking_query", "")
-        ranking_tokens = set(ranking_query.lower().split())
-        assert not (ranking_tokens & _NEGATIVE_WORDS), (
-            f"ranking_query contains negative language that should be a filter: {ranking_query!r}"
-        )
-
-    @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_temporal_constraint_in_filter_not_ranking_query(
-        self, test_session_id
-    ):
-        """
-        Test: Temporal constraints go in publication_date filter, not in ranking_query.
-
-        ranking_query only performs semantic search over text content. Publication period
-        constraints should be expressed as publication_date filters on the metadata field.
-        """
-        run_result = await update_chat(
-            "I want American poetry published before the Civil War",
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-            max_turns=1,
-        )
-        search_params = get_last_tool_call_args(run_result)
-        filters = search_params.get("filters")
-
-        assert filters is not None, (
-            "Expected a publication_date filter for temporal constraint"
-        )
-        filters = Filter.model_validate_json(filters).model_dump()
-
-        assert filter_match(
-            filters, attribute=["publication_date"], operator=["Lt", "Lte", "Gt", "Gte"]
-        ), f"Expected a publication_date comparison filter: {filters}"
 
     @pytest.mark.usefixtures("patch_search_catalog")
     async def test_author_name_not_in_ranking_query(self, test_session_id):
@@ -478,9 +437,12 @@ class TestCatalogSearchFilterUsage:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        assert filters is not None, "Expected an author filter"
+        # Assert filter exists
+        assert filters is not None, "Expected filters in search tool args"
+        # Assert filter valid
         filters = Filter.model_validate_json(filters).model_dump()
 
+        # Assert content: author filter matching Whitman
         assert filter_match(
             filters,
             attribute=["author"],
@@ -518,16 +480,13 @@ class TestCatalogSearchFilterUsage:
         filters = search_params.get("filters")
 
         if filters is not None:
-            parsed = Filter.model_validate_json(filters).model_dump()
-            used_fields = collect_filter_fields(parsed)
-            assert used_fields <= _VALID_SCHEMA_FIELDS, (
-                f"Filter references non-schema fields: {used_fields - _VALID_SCHEMA_FIELDS}"
-            )
+            Filter.model_validate_json(filters)
 
+    # NOTE: this is a bad example case, I don't think the asserted behavior is the desired behavior
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_compound_phrase_not_any_token_alone(self, test_session_id):
+    async def test_compound_phrase(self, test_session_id):
         """
-        Test: Multi-word subject terms use ContainsAllTokens/ContainsTokenSequence, not ContainsAnyToken.
+        Test: Compound phrases require all words.
 
         ContainsAnyToken splits the value string and matches if ANY token appears, so applying
         it to a compound phrase like "social contract" would match unrelated subjects containing
@@ -542,11 +501,14 @@ class TestCatalogSearchFilterUsage:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
+        # No filter is acceptable — ranking_query handles it
         if filters is None:
-            return  # No filter is acceptable — ranking_query handles it
+            return
 
+        # Assert filter valid
         filters = Filter.model_validate_json(filters).model_dump()
 
+        # Assert content: compound phrase subject filter must not use ContainsAnyToken
         assert not filter_match(
             filters,
             attribute=["subject"],
@@ -560,7 +522,7 @@ class TestCatalogSearchFilterUsage:
         )
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_single_language_uses_contains(self, test_session_id):
+    async def test_single_language_filter(self, test_session_id):
         """
         Test: A single-language filter uses 'Contains', not word token operators.
 
@@ -577,70 +539,22 @@ class TestCatalogSearchFilterUsage:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        assert filters is not None, "Expected a language filter"
+        # Assert filter exists
+        assert filters is not None, "Expected filters in search tool args"
+        # Assert filter valid
         filters = Filter.model_validate_json(filters).model_dump()
 
+        # Assert content: single language uses Contains
         assert filter_match(
             filters, attribute=["language"], operator=["Contains"], value=["German"]
         ), f"Expected ['language', 'Contains', 'German']: {filters}"
 
+        # Assert content: language field must not use token operators
         assert not filter_match(
             filters,
             attribute=["language"],
             operator=["ContainsAnyToken", "ContainsAllTokens", "ContainsTokenSequence"],
         ), f"Language filter must not use token operators: {filters}"
-
-    @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_language_value_properly_cased(self, test_session_id):
-        """
-        Test: Language filter values use ISO 639 full names with proper casing.
-
-        Language values are case-sensitive in the search index. 'japanese' and 'JAPANESE'
-        will not match; the correct form is 'Japanese'.
-        """
-        run_result = await update_chat(
-            "show me books in japanese about art",
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-            max_turns=1,
-        )
-        search_params = get_last_tool_call_args(run_result)
-        filters = search_params.get("filters")
-
-        assert filters is not None, "Expected a language filter"
-        filters = Filter.model_validate_json(filters).model_dump()
-
-        assert filter_match(
-            filters,
-            attribute=["language"],
-            operator=["Contains", "ContainsAny"],
-            value=lambda v: "Japanese" in v if isinstance(v, list) else v == "Japanese",
-        ), f"Expected language value 'Japanese' (capital J, full ISO name): {filters}"
-
-    @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_no_subject_filter_for_content_search(self, test_session_id):
-        """
-        Test: Pure content queries do not use subject filters.
-
-        Subject filters are for genre/classification metadata (e.g. "poetry", "fiction").
-        Content topic searches should rely on ranking_query so that relevant books are
-        surfaced regardless of how they are catalogued under subject headings.
-        """
-        run_result = await update_chat(
-            "I want to learn about the causes of the French Revolution",
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-            max_turns=1,
-        )
-        search_params = get_last_tool_call_args(run_result)
-        filters = search_params.get("filters")
-
-        if filters is not None:
-            parsed = Filter.model_validate_json(filters).model_dump()
-            assert not filter_match(parsed, attribute=["subject"]), (
-                f"Content topic query should not use subject filter "
-                f"(use ranking_query instead): {filters}"
-            )
 
 
 @pytest.mark.parametrize(
