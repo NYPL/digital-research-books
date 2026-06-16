@@ -16,6 +16,7 @@ from pathlib import Path
 from agents.items import ToolCallItem, ToolCallOutputItem
 
 from api.assistant.agent import update_chat, META_OPERATORS, search_catalog
+from api.assistant.models.filter import Filter
 from tests.stochastic_processes.conftest import stub_function_tool
 
 
@@ -122,10 +123,10 @@ def filter_match(filters, attribute=None, operator=None, value=None):
 
 
 # TODO: parameterize over ContentSearch and CatalogSearch
-class TestCatalogSearchFilterConstruction:
+class TestCatalogSearchFilterUsage:
     """Test that the agent constructs appropriate filters for catalog searches."""
 
-    @pytest.mark.xfail
+    @pytest.mark.xfail(reason="Subject filter gets applied")
     @pytest.mark.usefixtures("patch_search_catalog")
     async def test_no_filter_for_generic_search(self, test_session_id):
         """
@@ -165,11 +166,14 @@ class TestCatalogSearchFilterConstruction:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        # Should have applied some filter
+        # Assert filter exists
         assert filters is not None and filters != [], (
             "Expected filters for subject filter for poetry search"
         )
+        # Assert filter valid
+        filters = Filter.model_validate_json(filters).model_dump()
 
+        # Assert content: subject filter present
         assert filter_match(filters, attribute=["subject"]), (
             f"filters do not match expected criteria: {filters}"
         )
@@ -192,10 +196,12 @@ class TestCatalogSearchFilterConstruction:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        # Should have applied some filter for exclusion
+        # Assert filter exists
         assert filters is not None, "Expected filters for exclusion search"
+        # Assert filter valid
+        filters = Filter.model_validate_json(filters).model_dump()
 
-        # At least one Not filter should be present
+        # Assert content: Not operator present
         assert filter_match(filters, operator=["Not"]), (
             f"filters do not match expected criteria: {filters}"
         )
@@ -214,9 +220,12 @@ class TestCatalogSearchFilterConstruction:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        # Should have language filter
+        # Assert filter exists
         assert filters is not None, "Expected filters for language search"
+        # Assert filter valid
+        filters = Filter.model_validate_json(filters).model_dump()
 
+        # Assert content: language filter with ContainsAny or two Contains conditions
         assert filter_match(
             filters,
             attribute=["language"],
@@ -251,10 +260,13 @@ class TestCatalogSearchFilterConstruction:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        # Should have date filter
+        # Assert filter exists
         assert filters is not None, "Expected filters for date range search"
 
-        # Check for publication_date filter with range operators
+        # Assert filter valid
+        filters = Filter.model_validate_json(filters).model_dump()
+
+        # Assert content: publication_date filter with range operators
         assert filter_match(
             filters, attribute=["publication_date"], operator=["Gt", "Gte", "Lt", "Lte"]
         ), f"Expected date range filter with comparison operators, got: {filters}"
@@ -289,7 +301,6 @@ class TestCatalogSearchFilterConstruction:
     #             or "french" in filter_str
     #         ), f"Expected combined filters for subject and language, got: {filters}"
 
-    @pytest.mark.xfail(reason="behavior unstable")
     @pytest.mark.usefixtures("patch_search_catalog")
     async def test_author_filter_construction(self, test_session_id):
         """
@@ -307,9 +318,12 @@ class TestCatalogSearchFilterConstruction:
         search_params = get_last_tool_call_args(run_result)
         filters = search_params.get("filters")
 
-        # Should have author filter
+        # Assert filter exists
         assert filters is not None, "Expected filters for author search"
+        # Assert filter valid
+        filters = Filter.model_validate_json(filters).model_dump()
 
+        # Assert content: author filter with ContainsAllTokens
         assert filter_match(
             filters,
             attribute=["author"],
@@ -317,114 +331,111 @@ class TestCatalogSearchFilterConstruction:
             value=lambda v: "austen" in v.lower(),
         ), f"filters do not match expected criteria: {filters}"
 
-    @pytest.mark.parametrize(
-        "query,prior_history",
-        [
-            # Target Error: Model writes ["And", cond1, cond2] instead of ["And", [cond1, cond2]] —
-            # child conditions spread as variadic args rather than wrapped in an inner list.
-            pytest.param(
-                "Ornithology in the nineteenth century",
-                None,
-                id="and_or_wrong_nesting_1",
-            ),
-            pytest.param(
-                "Theories of value and labor in 19th century economic thought",
-                None,
-                id="and_or_wrong_nesting_2",
-            ),
-            pytest.param(
-                "The development of calculus and the Newton-Leibniz priority dispute",
-                None,
-                id="and_or_wrong_nesting_3",
-            ),
-            # Target Error: Model uses non-existent field names derived from UI facet labels
-            # (e.g. publication_dateHeader, subjectSelection) instead of real schema fields.
-            pytest.param(
-                "European cartographic traditions before the Age of Exploration",
-                None,
-                id="hallucinated_field_mild",
-            ),
-            # Target Error: Model appends suffixes to both field names AND operators
-            # (e.g. OrScroll, subjectScroll, ContainsAnyTokenScroll), producing
-            # completely undeserializable filter JSON.
-            pytest.param(
-                "How did rapid urbanization affect social structures in 19th century Europe?",
-                None,
-                id="hallucinated_field_severe",
-            ),
-            # Target Error: Model substitutes integers or null in place of filter condition lists
-            # (e.g. ["And", ["Or", 1, 2, 3, ...]]) rather than constructing real conditions.
-            pytest.param(
-                "19th century british poems",
-                None,
-                id="numeric_placeholder",
-            ),
-            # NOTE: this test case does not reproduce a search tool call... delete or replace with alternative json_string_conditions test case
-            # # Target Error: Model correctly identifies the conditions it wants but serializes them as
-            # # JSON strings instead of nested lists (e.g. ["And", ["[\"title\", \"Eq\", \"...\"]"]]).
-            # pytest.param(
-            #     "What is the source of the information of when the ottoman empire was found from?",
-            #     _load_conversation_fixture("ottoman_prior_history_sessionId_e1d603c1-bc8d-4bf9-8c98-bb8133babbea.json"),
-            #     id="json_string_conditions",
-            # ),
-            # Target Error: Model generates And/Or with an empty children list (e.g. ["Or", []]) or
-            # passes a fully empty filter list.
-            pytest.param(
-                "Theories of planetary motion before Newton",
-                None,
-                id="empty_filter",
-            ),
-        ],
+
+# TODO: test authors with multiple spellings get multiple spellings in search/ranking_query e.g. avicenna
+
+# TODO: test that in the unsearchable field case the agent response mentions that the desired filter criteria is not in available in metadata
+
+
+@pytest.mark.parametrize(
+    "query,prior_history",
+    [
+        # Target Error: Model writes ["And", cond1, cond2] instead of ["And", [cond1, cond2]] —
+        # child conditions spread as variadic args rather than wrapped in an inner list.
+        pytest.param(
+            "Ornithology in the nineteenth century",
+            None,
+            id="and_or_wrong_nesting_1",
+        ),
+        pytest.param(
+            "Theories of value and labor in 19th century economic thought",
+            None,
+            id="and_or_wrong_nesting_2",
+        ),
+        pytest.param(
+            "The development of calculus and the Newton-Leibniz priority dispute",
+            None,
+            id="and_or_wrong_nesting_3",
+        ),
+        # Target Error: Model uses non-existent field names derived from UI facet labels
+        # (e.g. publication_dateHeader, subjectSelection) instead of real schema fields.
+        pytest.param(
+            "European cartographic traditions before the Age of Exploration",
+            None,
+            id="hallucinated_field_mild",
+        ),
+        # Target Error: Model appends suffixes to both field names AND operators
+        # (e.g. OrScroll, subjectScroll, ContainsAnyTokenScroll), producing
+        # completely undeserializable filter JSON.
+        pytest.param(
+            "How did rapid urbanization affect social structures in 19th century Europe?",
+            None,
+            id="hallucinated_field_severe",
+        ),
+        # Target Error: Model substitutes integers or null in place of filter condition lists
+        # (e.g. ["And", ["Or", 1, 2, 3, ...]]) rather than constructing real conditions.
+        pytest.param(
+            "19th century british poems",
+            None,
+            id="numeric_placeholder",
+        ),
+        # NOTE: this test case does not reproduce a search tool call... delete or replace with alternative json_string_conditions test case
+        # # Target Error: Model correctly identifies the conditions it wants but serializes them as
+        # # JSON strings instead of nested lists (e.g. ["And", ["[\"title\", \"Eq\", \"...\"]"]]).
+        # pytest.param(
+        #     "What is the source of the information of when the ottoman empire was found from?",
+        #     _load_conversation_fixture("ottoman_prior_history_sessionId_e1d603c1-bc8d-4bf9-8c98-bb8133babbea.json"),
+        #     id="json_string_conditions",
+        # ),
+        # Target Error: Model generates And/Or with an empty children list (e.g. ["Or", []]) or
+        # passes a fully empty filter list.
+        pytest.param(
+            "Theories of planetary motion before Newton",
+            None,
+            id="empty_filter",
+        ),
+    ],
+)
+async def test_filter_syntax_errors(test_session_id, query, prior_history):
+    """
+    Test: agent constructs TP filters with no syntax errors
+
+    The agent should construct valid filters for each query without triggering
+    a backend error.
+    max_turns=1 keeps the agent to one attempt to construct filters without error.
+    Each parametrized case targets an observed error category during testing
+    (see inline comments on each pytest.param).
+    """
+    if prior_history is not None:
+        from agents.extensions.memory.sqlalchemy_session import SQLAlchemySession
+        from api.assistant.agent import get_async_engine
+
+        session = SQLAlchemySession(test_session_id, engine=get_async_engine())
+        # prior_history = _load_conversation_fixture() on extracted convo history
+        await session.add_items(prior_history)
+
+    run_result = await update_chat(
+        query,
+        conversation_type="catalogSearch",
+        session_id=test_session_id,
+        max_turns=1,
     )
-    async def test_no_filter_construction_errors(
-        self, test_session_id, query, prior_history
-    ):
-        """
-        Test: No filter construction errors.
+    tool_call_items = [
+        item for item in run_result.new_items if isinstance(item, ToolCallItem)
+    ]
+    tool_call_output_items = [
+        item for item in run_result.new_items if isinstance(item, ToolCallOutputItem)
+    ]
 
-        The agent should construct valid filters for each query without triggering
-        a backend error.
-        max_turns=1 keeps the agent to one attempt to construct filters without error.
-        Each parametrized case targets an observed error category during testing
-        (see inline comments on each pytest.param).
-        """
-        if prior_history is not None:
-            from agents.extensions.memory.sqlalchemy_session import SQLAlchemySession
-            from api.assistant.agent import get_async_engine
+    assert len(tool_call_items) > 0, (
+        "Expected at least one tool call, but none were made"
+    )
 
-            session = SQLAlchemySession(test_session_id, engine=get_async_engine())
-            # prior_history = _load_conversation_fixture() on extracted convo history
-            await session.add_items(prior_history)
-
-        run_result = await update_chat(
-            query,
-            conversation_type="catalogSearch",
-            session_id=test_session_id,
-            max_turns=1,
+    for item in tool_call_items:
+        assert item.raw_item.name == "search_catalog", (
+            f"Expected tool call to 'search_catalog', got '{item.raw_item.name}'"
         )
-        tool_call_items = [
-            item for item in run_result.new_items if isinstance(item, ToolCallItem)
-        ]
-        tool_call_output_items = [
-            item
-            for item in run_result.new_items
-            if isinstance(item, ToolCallOutputItem)
-        ]
-
-        assert len(tool_call_items) > 0, (
-            "Expected at least one tool call, but none were made"
+    for item in tool_call_output_items:
+        assert not item.output.startswith("An error occurred while running the tool"), (
+            f"Search tool call errored: {item.output}"
         )
-
-        for item in tool_call_items:
-            assert item.raw_item.name == "search_catalog", (
-                f"Expected tool call to 'search_catalog', got '{item.raw_item.name}'"
-            )
-        for item in tool_call_output_items:
-            assert not item.output.startswith(
-                "An error occurred while running the tool"
-            ), f"Search tool call resulted in error: {item.output}"
-
-
-# TODO: usage test case that authors with multiple spellings get multiple spellings in search e.g. avicenna
-
-# TODO: assertion for teh unsearchable field that teh agent response mentions that teh filter is not in available filter metdata
