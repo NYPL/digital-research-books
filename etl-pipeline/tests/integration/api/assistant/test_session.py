@@ -1,3 +1,4 @@
+import asyncio
 import pytest
 from typing import Literal
 from unittest.mock import AsyncMock
@@ -14,10 +15,7 @@ def _msg(role: Literal["user", "assistant"], content: str) -> TResponseInputItem
     return {"role": role, "content": content}
 
 
-# Inspo from: https://github.com/openai/openai-agents-python/blob/main/src/agents/extensions/memory/sqlalchemy_session.py
-# NOTE: the following test coverage from the agents sdk repo is skipped:
-# (a) updated_at is touched on session row when .add_items() is called
-# (b) Second .add_items() call does not add a second agent_sessions row
+# Inspo from: https://github.com/openai/openai-agents-python/blob/main/tests/extensions/memory/test_sqlalchemy_session.py
 class TestCustomSQLAlchemySessionAddItems:
     @pytest.mark.asyncio
     async def test_add_items_persists_to_db(self, test_session):
@@ -55,6 +53,75 @@ class TestCustomSQLAlchemySessionAddItems:
         assert test_session.inserted_items == []
         stored = await test_session.get_items()
         assert stored == []
+
+    @pytest.mark.asyncio
+    async def test_add_items_second_call_does_not_create_duplicate_session_row(
+        self, test_session
+    ):
+        """Second add_items() call must not raise IntegrityError or duplicate the agent_sessions row."""
+        from sqlalchemy import func, select
+
+        await test_session.add_items([_msg("user", "first")])
+        await test_session.add_items([_msg("user", "second")])
+
+        async with test_session._session_factory() as sess:
+            result = await sess.execute(
+                select(func.count())
+                .select_from(test_session._sessions)
+                .where(test_session._sessions.c.session_id == test_session.session_id)
+            )
+            assert result.scalar() == 1
+
+        stored = await test_session.get_items()
+        assert len(stored) == 2
+
+    @pytest.mark.asyncio
+    async def test_add_items_updated_at_is_touched(self, test_session):
+        """add_items() updates the updated_at timestamp on the session row."""
+        from sqlalchemy import select
+
+        await test_session.add_items([_msg("user", "first")])
+
+        async with test_session._session_factory() as sess:
+            result = await sess.execute(
+                select(test_session._sessions.c.updated_at).where(
+                    test_session._sessions.c.session_id == test_session.session_id
+                )
+            )
+            first_updated_at = result.scalar_one()
+
+        await asyncio.sleep(0.05)
+        await test_session.add_items([_msg("user", "second")])
+
+        async with test_session._session_factory() as sess:
+            result = await sess.execute(
+                select(test_session._sessions.c.updated_at).where(
+                    test_session._sessions.c.session_id == test_session.session_id
+                )
+            )
+            second_updated_at = result.scalar_one()
+
+        assert second_updated_at > first_updated_at
+
+    @pytest.mark.asyncio
+    async def test_add_items_concurrent_first_write_does_not_race(self, test_session):
+        """Concurrent first writes should not race parent session creation."""
+        submitted = [f"msg-{i}" for i in range(10)]
+
+        async def worker(content: str) -> None:
+            await test_session.add_items([_msg("user", content)])
+
+        results = await asyncio.gather(
+            *(worker(content) for content in submitted),
+            return_exceptions=True,
+        )
+
+        assert [r for r in results if isinstance(r, Exception)] == []
+
+        stored = await test_session.get_items()
+        assert len(stored) == len(
+            submitted
+        )  # exact equality tested in test_add_items_persists_to_db()
 
 
 class TestCustomSQLAlchemySessionInsertedItems:

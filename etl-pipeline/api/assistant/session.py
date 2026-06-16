@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from sqlalchemy import insert, select, update
 from sqlalchemy import text as sql_text
+from sqlalchemy.exc import IntegrityError
 from agents.extensions.memory import SQLAlchemySession
 from agents.items import TResponseInputItem, ToolApprovalItem
 from agents import RunResult
@@ -11,6 +12,8 @@ class CustomSQLAlchemySession(SQLAlchemySession):
     """
     Extends SQLAlchemySession to capture the PostgreSQL-assigned row IDs for
     every item persisted via .add_items() in the `inserted_items` attribute.
+
+    Based on: https://github.com/openai/openai-agents-python/blob/main/src/agents/extensions/memory/sqlalchemy_session.py
 
     .inserted_items is a list of (db_id, item) pairs.
     .add_items() is called once at the end of the agent run in `save_result_to_session`
@@ -34,30 +37,43 @@ class CustomSQLAlchemySession(SQLAlchemySession):
             return
 
         await self._ensure_tables()
-
-        serialized = [await self._serialize_item(item) for item in items]
         payload = [
-            {"session_id": self.session_id, "message_data": s} for s in serialized
+            {
+                "session_id": self.session_id,
+                "message_data": await self._serialize_item(item),
+            }
+            for item in items
         ]
 
         async with self._session_factory() as sess:
             async with sess.begin():
+                # Avoid check-then-insert races on the first write while keeping
+                # the common path free of avoidable integrity exceptions.
                 existing = await sess.execute(
                     select(self._sessions.c.session_id).where(
                         self._sessions.c.session_id == self.session_id
                     )
                 )
                 if not existing.scalar_one_or_none():
-                    await sess.execute(
-                        insert(self._sessions).values({"session_id": self.session_id})
-                    )
+                    try:
+                        async with sess.begin_nested():
+                            await sess.execute(
+                                insert(self._sessions).values(
+                                    {"session_id": self.session_id}
+                                )
+                            )
+                    except IntegrityError:
+                        # Another concurrent writer created the parent row first.
+                        pass
 
+                # Insert messages in bulk
                 result = await sess.execute(
                     insert(self._messages).returning(self._messages.c.id),
                     payload,
                 )
                 db_ids = [row[0] for row in result.all()]
 
+                # Touch updated_at column
                 await sess.execute(
                     update(self._sessions)
                     .where(self._sessions.c.session_id == self.session_id)
