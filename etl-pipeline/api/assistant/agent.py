@@ -206,22 +206,15 @@ def recurse_filters(filter_: Any, processing_func: Callable) -> Any:
     if len(filter_) == 0:
         raise ValueError("Filter cannot be an empty list or tuple")
 
-    operator = filter_[0]
-
-    if operator in META_OPERATORS:
-        if operator == "Not":
-            # ["Not", child_filter]
-            return [operator, recurse_filters(filter_[1], processing_func)]
-        else:
-            # ["And"/"Or", [child_filter, ...]]
-            return [
-                operator,
-                [recurse_filters(child, processing_func) for child in filter_[1]],
-            ]
-
-    # Simple filter: [attribute, operator, value] — pass whole filter to processing_func.
-    # processing_func returns the filter unchanged if its conditions are not met.
-    return processing_func(filter_)
+    match filter_:
+        case [("And" | "Or") as op, children]:
+            return [op, [recurse_filters(child, processing_func) for child in children]]
+        case ["Not", child]:
+            return ["Not", recurse_filters(child, processing_func)]
+        case _:
+            # Simple filter: [attribute, operator, value] — pass whole filter to processing_func.
+            # processing_func returns the filter unchanged if its conditions are not met.
+            return processing_func(filter_)
 
 
 # TODO convert into a pipeline class that takes a list of transforms
