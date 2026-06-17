@@ -4,7 +4,7 @@ from dataclasses import asdict
 from typing import Dict, Tuple
 
 # non-built-ins
-from flask import Blueprint, current_app, request
+from flask import Blueprint, request
 import newrelic.agent
 
 # shared code
