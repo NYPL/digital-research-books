@@ -50,11 +50,11 @@ class TestBedrockEmbedderContracts(EmbedderContractTests):
 
 
 # ---------------------------------------------------------------------------
-# GoogleEmbedder
+# Gemini001Embedder
 # ---------------------------------------------------------------------------
 
 
-class TestGoogleEmbedderContracts(EmbedderContractTests):
+class TestGemini001EmbedderContracts(EmbedderContractTests):
     """
     TODO: implement fixture — pass a mock `google.genai.Client` instance.
     `client.models.embed_content` should return an object whose `.embeddings`
@@ -64,7 +64,7 @@ class TestGoogleEmbedderContracts(EmbedderContractTests):
 
     @pytest.fixture
     def embedder(self):
-        pytest.skip("TODO: implement GoogleEmbedder fixture")
+        pytest.skip("TODO: implement Gemini001Embedder fixture")
 
 
 # ---------------------------------------------------------------------------

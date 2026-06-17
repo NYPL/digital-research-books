@@ -48,7 +48,7 @@ from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
 from .types import CatalogSearchResult, ContentSearchResult
 
 # shared code
-from vector_indexing.components.embedders.google import GoogleEmbedder
+from vector_indexing.components.embedders.google import Gemini001Embedder
 from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
 from vector_indexing.core.utils import Timer
 from logger import create_log
@@ -260,7 +260,7 @@ class CatalogSearchExecutionContext:
     """Container used to inject objects into each agent run execution."""
 
     backend: TurbopufferBackend
-    embedder: GoogleEmbedder
+    embedder: Gemini001Embedder
     session_id: str
     conversation_type: str = "catalogSearch"
     search_results: Dict = field(default_factory=dict)
@@ -276,7 +276,7 @@ class ContentSearchExecutionContext:
     """
 
     backend: TurbopufferBackend
-    embedder: GoogleEmbedder
+    embedder: Gemini001Embedder
     session_id: str
     edition_id: int
     barcode: Optional[str] = None
@@ -525,7 +525,7 @@ async def update_chat(
     # request workers/threads)
 
     backend = TurbopufferBackend(index_name=require_env("TURBOPUFFER_NAMESPACE"))
-    embedder = GoogleEmbedder()
+    embedder = Gemini001Embedder()
 
     # NOTE: we are not using litellm bc it has a bug converting `list | None = None`
     # in agents sdk @functol_tool param type annotations into gemini API compatible

@@ -2,7 +2,10 @@
 
 from vector_indexing.components.embedders.base import Embedder
 from vector_indexing.components.embedders.bedrock import BedrockEmbedder
-from vector_indexing.components.embedders.google import GoogleEmbedder
+from vector_indexing.components.embedders.google import (
+    Gemini001Embedder,
+    Gemini2Embedder,
+)
 from vector_indexing.components.embedders.openai import OpenAIEmbedder
 from vector_indexing.components.embedders.sagemaker import (
     HarrierEmbedder,
@@ -15,7 +18,8 @@ from vector_indexing.components.embedders.sagemaker import (
 __all__ = [
     "Embedder",
     "BedrockEmbedder",
-    "GoogleEmbedder",
+    "Gemini001Embedder",
+    "Gemini2Embedder",
     "HarrierEmbedder",
     "PplxEmbedder",
     "Qwen38BEmbedder",

@@ -1,10 +1,11 @@
-"""Google Gemini embedding implementation."""
+"""Google Gemini embedding implementations."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from google import genai
+from google.genai import types
 from google.genai.errors import ClientError
 from ratelimit import limits, sleep_and_retry
 from tenacity import (
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
     from google.genai import Client
 
 
-# Default model configuration
+# Gemini-embedding-001 defaults
 DEFAULT_MODEL = "gemini-embedding-001"
 DEFAULT_DIMS = 768
 DEFAULT_BATCH_SIZE = 100
@@ -30,6 +31,11 @@ DEFAULT_BATCH_SIZE = 100
 DEFAULT_RATE_LIMIT_CALLS = 20
 DEFAULT_RATE_LIMIT_PERIOD = 60  # seconds
 
+# Gemini-embedding-2 defaults
+DEFAULT_MODEL_2 = "gemini-embedding-2"
+DEFAULT_DIMS_2 = 768
+DEFAULT_BATCH_SIZE_2 = 100
+
 
 def _is_rate_limit_error(exception: BaseException) -> bool:
     """Check if exception is a rate limit error (HTTP 429)."""
@@ -38,8 +44,8 @@ def _is_rate_limit_error(exception: BaseException) -> bool:
     )
 
 
-class GoogleEmbedder(Embedder):
-    """Google Gemini embedding model implementation.
+class Gemini001Embedder(Embedder):
+    """Google Gemini embedding-001 model implementation.
 
     Uses the google-genai client with built-in rate limiting and
     exponential backoff retry for rate limit errors.
@@ -140,9 +146,102 @@ class GoogleEmbedder(Embedder):
         """Make rate-limited API call with retry on rate limit errors."""
         return self._client.models.embed_content(
             model=self._model,
-            contents=batch,
+            contents=[
+                types.Content(parts=[types.Part.from_text(text=t)]) for t in batch
+            ],
             config={
                 "task_type": task_type,
                 "output_dimensionality": self._dimensions,
             },
+        )
+
+
+class Gemini2Embedder(Embedder):
+    """Google Gemini Embedding 2 model implementation.
+
+    Unlike gemini-embedding-001, this model does not support task_type as a
+    parameter. Task context is specified via instruction prefixes in the input text:
+      - Documents: "title: none | text: {content}"
+      - Queries:   "task: search result | query: {content}"
+
+    For batching, each input is wrapped in a Content object. Passing raw strings
+    in a list produces a single aggregated embedding rather than per-item embeddings.
+
+    Args:
+        model: model name (default: gemini-embedding-2)
+        dimensions: output vector dimensions — 128-3072, recommend 768/1536/3072 (default: 3072)
+        batch_size: max Content objects per API call (default: 100)
+        client: optional pre-configured genai.Client instance
+    """
+
+    def __init__(
+        self,
+        model: str = DEFAULT_MODEL_2,
+        dimensions: int = DEFAULT_DIMS_2,
+        batch_size: int = DEFAULT_BATCH_SIZE_2,
+        client: "Client | None" = None,
+    ):
+        self._model = model
+        self._dimensions = dimensions
+        self._batch_size = batch_size
+        self._client = client or genai.Client()
+
+    @property
+    def dimensions(self) -> int:
+        return self._dimensions
+
+    @property
+    def model_name(self) -> str:
+        return self._model
+
+    @property
+    def batch_size(self) -> int:
+        return self._batch_size
+
+    def embed_one(self, text: str) -> list[float]:
+        result = self._call_api([text])
+        return result.embeddings[0].values
+
+    def embed_batch(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+
+        vectors: list[list[float]] = []
+        for i in range(0, len(texts), self._batch_size):
+            batch = texts[i : i + self._batch_size]
+            result = self._call_api(batch)
+            vectors.extend([emb.values for emb in result.embeddings])
+        return vectors
+
+    def embed_document(self, text: str) -> list[float]:
+        return self.embed_one(f"title: none | text: {text}")
+
+    def embed_document_batch(self, texts: list[str]) -> list[list[float]]:
+        return self.embed_batch([f"title: none | text: {t}" for t in texts])
+
+    def embed_query(self, text: str) -> list[float]:
+        return self.embed_one(f"task: search result | query: {text}")
+
+    def embed_query_batch(self, texts: list[str]) -> list[list[float]]:
+        return self.embed_batch([f"task: search result | query: {t}" for t in texts])
+
+    @retry(
+        stop=stop_after_attempt(7),
+        wait=wait_exponential(multiplier=4, max=70),
+        retry=retry_if_exception(_is_rate_limit_error),
+        before_sleep=lambda retry_state: print(
+            f"Rate limit hit, retrying in {retry_state.next_action.sleep:.1f}s "
+            f"(attempt {retry_state.attempt_number}): {retry_state.outcome.exception()}"
+        ),
+    )
+    @sleep_and_retry
+    @limits(calls=DEFAULT_RATE_LIMIT_CALLS, period=DEFAULT_RATE_LIMIT_PERIOD)
+    def _call_api(self, texts: list[str]):
+        """Make rate-limited API call with retry on rate limit errors."""
+        return self._client.models.embed_content(
+            model=self._model,
+            contents=[
+                types.Content(parts=[types.Part.from_text(text=t)]) for t in texts
+            ],
+            config={"output_dimensionality": self._dimensions},
         )

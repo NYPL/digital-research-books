@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 # These are imported at runtime for default initialization
 from vector_indexing import SentenceSplitterChunker
 from vector_indexing.components.loaders import S3BookLoader
-from vector_indexing.components.embedders import GoogleEmbedder
+from vector_indexing.components.embedders import Gemini001Embedder
 from vector_indexing.components.metadata import MetadataProvider
 from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
 
@@ -160,7 +160,7 @@ class Pipeline:
         # Q: is there compelling reason to define these defaults elsewhere?
         self._loader = loader if loader is not None else S3BookLoader()
         self._chunker = chunker if chunker is not None else SentenceSplitterChunker()
-        self._embedder = embedder if embedder is not None else GoogleEmbedder()
+        self._embedder = embedder if embedder is not None else Gemini001Embedder()
         self._metadata_provider = (
             metadata_provider if metadata_provider is not None else MetadataProvider()
         )
@@ -358,7 +358,7 @@ def main(barcodes: list[str] | None = None) -> BatchResult:
     """
     from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
     from vector_indexing.components.chunkers.sentence import SentenceSplitterChunker
-    from vector_indexing.components.embedders.google import GoogleEmbedder
+    from vector_indexing.components.embedders.google import Gemini001Embedder
     from vector_indexing.components.loaders.s3 import CachedS3BookLoader
     from vector_indexing.components.metadata.provider import MetadataProvider
 
@@ -368,7 +368,7 @@ def main(barcodes: list[str] | None = None) -> BatchResult:
     pipeline = Pipeline(
         loader=CachedS3BookLoader(),
         chunker=SentenceSplitterChunker(),
-        embedder=GoogleEmbedder(),
+        embedder=Gemini001Embedder(),
         metadata_provider=MetadataProvider(),
         backend=TurbopufferBackend(index_name="vra-dev-test"),
     )

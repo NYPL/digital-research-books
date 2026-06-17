@@ -158,17 +158,30 @@ def _index_config_data():
     )
 
     return [
-        {  # Google
+        {  # Gemini-embedding-001
             "names": [
                 "vra-dev",
                 "vra_test-sketches_of_the_north_river-gemini-001",
                 "vra_test-eval300-gemini_001",  # pragma: allowlist secret
             ],
             "embedder": {
-                "class": "GoogleEmbedder",
+                "class": "Gemini001Embedder",
                 "params": {
                     # All are default and unnecessary to specify here
                     "model": "gemini-embedding-001",
+                    "dimensions": 768,
+                },
+            },
+            "schema": load_default_schema(),  # 768 dims
+        },
+        {  # Gemini-embedding-2
+            "names": [
+                "vra-10k-gemini_embedding_2",
+            ],
+            "embedder": {
+                "class": "Gemini2Embedder",
+                "params": {
+                    "model": "gemini-embedding-2",
                     "dimensions": 768,
                 },
             },
