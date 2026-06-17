@@ -76,7 +76,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
             isFocused
               ? {
                   boxShadow: "none",
-                  outline: "3px solid",
+                  outline: "2px solid",
                   outlineColor: "section.research.secondary",
                 }
               : {}
@@ -116,7 +116,11 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
               },
             }}
           />
-          <Flex flexDir="row" paddingY="xs">
+          <Flex
+            flexDir="row"
+            paddingY="xs"
+            paddingLeft={{ base: "xs", md: "0" }}
+          >
             <Button
               onClick={handleLocalSearchSubmit}
               id="research-landing-submit"
