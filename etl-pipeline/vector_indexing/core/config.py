@@ -6,8 +6,10 @@ import os
 from copy import deepcopy
 from dataclasses import dataclass, field, fields
 from pathlib import Path
+from typing import Any
 
 from glom import assign, delete
+from pydantic import BaseModel, ConfigDict, Field
 
 from utils.common import require_env
 
@@ -147,11 +149,29 @@ def load_from_module(obj_name: str, module) -> type:
     return cls
 
 
+class EmbedderConfig(BaseModel):
+    model_config = ConfigDict(validate_by_alias=True)
+
+    class_name: str = Field(alias="class")
+    params: dict[str, Any]
+
+
+class IndexConfigEntry(BaseModel):
+    model_config = ConfigDict(validate_by_alias=True)
+
+    names: list[str]
+    embedder: EmbedderConfig
+    tpuf_schema: dict = Field(alias="schema")
+
+
 QWEN3_EMBEDDING_DIMENSIONS = HARRIER_OSS_V1_DIMENSIONS = PPLX_V1_DIMENSIONS = 1024
 
 
 # MAYBE: add barcode source for each index name
 def _index_config_data():
+    """Each index config entry dict must conform to the `IndexConfigEntry`
+    pydantic model, validated at runtime in get_index_config_dict().
+    """
     from vector_indexing.components.backends.turbopuffer import (
         load_default_schema,
         get_default_schema_with_dims,
@@ -166,11 +186,7 @@ def _index_config_data():
             ],
             "embedder": {
                 "class": "Gemini001Embedder",
-                "params": {
-                    # All are default and unnecessary to specify here
-                    "model": "gemini-embedding-001",
-                    "dimensions": 768,
-                },
+                "params": {},
             },
             "schema": load_default_schema(),  # 768 dims
         },
@@ -180,12 +196,9 @@ def _index_config_data():
             ],
             "embedder": {
                 "class": "Gemini2Embedder",
-                "params": {
-                    "model": "gemini-embedding-2",
-                    "dimensions": 768,
-                },
+                "params": {},
             },
-            "schema": load_default_schema(),
+            "schema": load_default_schema(),  # 768 dims
         },
         {  # Harrier
             "names": [
@@ -288,10 +301,13 @@ def get_index_config_dict(index_name, overrides: dict[str, object] | None = None
     if entry is None:
         raise ValueError(f"No index config found for index name: {index_name!r}")
     copied = deepcopy(entry)
-    return _apply_index_config_overrides(copied, overrides=overrides)
+    result = _apply_index_config_overrides(copied, overrides=overrides)
+    IndexConfigEntry.model_validate(result)
+    return result
 
 
 def get_index_config(index_name, overrides: dict[str, object] | None = None):
+    """Get the embedder and backend configured for a given index."""
     from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
     from vector_indexing.components import embedders as embedders_module
 
