@@ -459,7 +459,7 @@ class TestCatalogSearchFilterUsage:
         if filters is not None:
             Filter.model_validate_json(filters)
 
-    # NOTE: this is a bad example case, I don't think the asserted behavior is the desired behavior
+    # MAYBE: the presence of any subject filter is inappropriate for this query. Change to not rely on subject filter (maybe just relay on bm25 in ranking filter)
     @pytest.mark.xfail(reason="ContainsAnyToken instead of ContainsAllTokens is used")
     @pytest.mark.usefixtures("patch_search_catalog")
     async def test_compound_phrase(self, test_session_id):
