@@ -577,7 +577,9 @@ async def update_chat(
             resolved_edition_id = edition_id if frbr_data else None
 
         if resolved_edition_id is None:
-            raise BookNotFoundError(f"No edition found with id {edition_id}")
+            if barcode is not None:
+                raise BookNotFoundError(f"No book found with barcode {barcode}")
+            raise BookNotFoundError(f"No book found with edition id {edition_id}")
 
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
