@@ -648,31 +648,32 @@ def expected_barcodes_statuses():
     ]
 
 
-TEST_SESSION_ID = "test"
-
-
 @pytest.fixture
 def test_session_id():
     """
-    Provides a fixed session_id="test" for update_chat() with cleanup.
+    Provides a unique session_id per test for isolation across parallel workers.
+
+    Each test is prefixed with "test_".
 
     Setup: deletes any stale data for the session_id.
     Teardown: prints the raw conversation (captured by pytest; shown on failure),
               then always deletes session data.
     """
+    import uuid
     from api.assistant.agent import delete_session_data, get_session_messages
 
-    delete_session_data(TEST_SESSION_ID)
+    session_id = f"test_{uuid.uuid4()}"
+    delete_session_data(session_id)
 
-    yield TEST_SESSION_ID
+    yield session_id
 
     # Print convo history to logs (because it will be deleted)
-    print(f"\n--- Raw agent_messages for session '{TEST_SESSION_ID}' ---")
-    messages = get_session_messages(TEST_SESSION_ID)
+    print(f"\n--- Raw agent_messages for session '{session_id}' ---")
+    messages = get_session_messages(session_id)
     print(json.dumps(messages, indent=2))
     print("--- End of conversation ---\n")
 
-    delete_session_data(TEST_SESSION_ID)
+    delete_session_data(session_id)
 
 
 # TODO: in all places where this is used simply replace this by mocking Session \
