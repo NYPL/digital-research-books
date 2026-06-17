@@ -69,7 +69,7 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
           <SubNavButton onClick={onOpen} id="subnav-contact-us">
             Contact us
           </SubNavButton>
-          <SubNavLink isOutlined href="" id="subnav-my-account">
+          <SubNavLink isOutlined href="#" id="subnav-my-account">
             <Icon name="actionIdentityFilled" size="medium" />
             {"Login"}
           </SubNavLink>
