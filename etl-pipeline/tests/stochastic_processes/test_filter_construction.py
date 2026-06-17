@@ -332,6 +332,11 @@ class TestCatalogSearchFilterUsage:
         ), f"filters do not match expected criteria: {filters}"
 
 
+# TODO: test authors with multiple spellings get multiple spellings in search/ranking_query e.g. avicenna
+
+# TODO: test that in the unsearchable field case the agent response mentions that the desired filter criteria is not in available in metadata
+
+
 @pytest.mark.parametrize(
     "query,prior_history",
     [

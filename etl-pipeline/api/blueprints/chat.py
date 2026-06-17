@@ -29,8 +29,6 @@ logger = create_log(__name__)
 
 chat_blueprint = Blueprint("chat", __name__, url_prefix="/chat")
 
-RESPONSE_TYPE = "chat"
-
 
 def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, None]:
     """
@@ -160,6 +158,8 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 @require_session_jwt
 @timer(logger)
 def chat(session_id):
+    response_type = "chat"
+
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
@@ -177,84 +177,97 @@ def chat(session_id):
     if session_id:
         newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
 
+    # TODO: switch to a setup where you can add and remove log context vars inside \
+    # the log context vars context while scoping the context to the entire view \
+    # function. This allows the 500 error catch all log to get context vars if \
+    # available while also starting from the very top of the view function or \
+    # even being a global error handler with logger defined in a different module. \
+    # something like https://www.structlog.org/en/stable/contextvars.html
     with LogContextVars(get_app_logger(), context=log_context):
-        return _chat_handler(
-            session_id, conversation_type, message, edition_id, barcode
-        )
+        try:
+            logger.info(f"Chat request received: {message[:20]}...")
 
+            if not message:
+                return APIUtils.formatResponseObject(
+                    400, response_type, {"message": "message is required"}
+                )
 
-def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
-    """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
+            if not conversation_type:
+                return APIUtils.formatResponseObject(
+                    400, response_type, {"message": "conversationType is required"}
+                )
 
-    logger.info(f"Chat request received: {message[:20]}...")
+            if conversation_type not in ["contentSearch", "catalogSearch"]:
+                return APIUtils.formatResponseObject(
+                    400,
+                    response_type,
+                    {
+                        "message": "conversationType must be either 'contentSearch' or 'catalogSearch'"
+                    },
+                )
 
-    if not message:
-        return APIUtils.formatResponseObject(
-            400, RESPONSE_TYPE, {"message": "message is required"}
-        )
+            if (
+                conversation_type == "contentSearch"
+                and edition_id is None
+                and barcode is None
+            ):
+                return APIUtils.formatResponseObject(
+                    400,
+                    response_type,
+                    {
+                        "message": "editionId or barcode is required for conversationType='contentSearch'"
+                    },
+                )
 
-    if not conversation_type:
-        return APIUtils.formatResponseObject(
-            400, RESPONSE_TYPE, {"message": "conversationType is required"}
-        )
+            # get LLM response + search results
+            # TODO: inside update_chat make sure than any errors are handled by a polite \
+            # llm generated response (except no connectivity to LLM) (just handle the \
+            # high level openai agents sdk errors)
+            try:
+                run_result = asyncio.run(
+                    update_chat(
+                        message,
+                        conversation_type,
+                        session_id,
+                        edition_id=edition_id,
+                        barcode=barcode,
+                    )
+                )
+            except ValueError as e:
+                # Intended to catch "No edition found with id=XXX"
+                # TODO: make error filter specific to intended error, even tho its the \
+                # only ValueError intentionlly raided in the update_chat() boundary
+                return APIUtils.formatResponseObject(
+                    404, response_type, {"message": str(e)}
+                )
 
-    if conversation_type not in ["contentSearch", "catalogSearch"]:
-        return APIUtils.formatResponseObject(
-            400,
-            RESPONSE_TYPE,
-            {
-                "message": "conversationType must be either 'contentSearch' or 'catalogSearch'"
-            },
-        )
+            # Add relevant snippets to search result, if search was executed in this agent turn
+            # snippets updated in run_result in place
+            asyncio.run(get_relevant_snippets(run_result, approach="naive"))
 
-    if conversation_type == "contentSearch" and edition_id is None and barcode is None:
-        return APIUtils.formatResponseObject(
-            400,
-            RESPONSE_TYPE,
-            {
-                "message": "editionId or barcode is required for conversationType='contentSearch'"
-            },
-        )
+            ## Build API response
 
-    # get LLM response + search results
-    # TODO: inside update_chat make sure than any errors are handled by a polite \
-    # llm generated response (except no connectivity to LLM) (just handle the \
-    # high level openai agents sdk errors)
-    try:
-        run_result = asyncio.run(
-            update_chat(
-                message,
-                conversation_type,
-                session_id,
-                edition_id=edition_id,
-                barcode=barcode,
+            # Extract new messages
+            messages = [item.to_input_item() for item in run_result.new_items]
+            logger.info(
+                f"Agent generated {len(run_result.new_items)} new message items"
             )
-        )
-    except ValueError as e:
-        # Intended to catch "No edition found with id=XXX"
-        # TODO: make error filter specific to intended error, even tho its the \
-        # only ValueError intentionlly raided in the update_chat() boundary
-        return APIUtils.formatResponseObject(404, RESPONSE_TYPE, {"message": str(e)})
 
-    # Add relevant snippets to search result, if search was executed in this agent turn
-    # snippets updated in run_result in place
-    asyncio.run(get_relevant_snippets(run_result, approach="naive"))
+            # Format search results
+            result_type, formatted_search_result = prepare_search_response(
+                run_result.context_wrapper.context.search_results
+            )
 
-    ## Build API response
+            response_data = {
+                "messages": messages,
+                "result_type": result_type,
+                "result": formatted_search_result,
+                "session_id": session_id,
+            }
+            return APIUtils.formatResponseObject(200, response_type, response_data)
 
-    # Extract new messages
-    messages = [item.to_input_item() for item in run_result.new_items]
-    logger.info(f"Agent generated {len(run_result.new_items)} new message items")
-
-    # Format search results
-    result_type, formatted_search_result = prepare_search_response(
-        run_result.context_wrapper.context.search_results
-    )
-
-    response_data = {
-        "messages": messages,
-        "result_type": result_type,
-        "result": formatted_search_result,
-        "session_id": session_id,
-    }
-    return APIUtils.formatResponseObject(200, RESPONSE_TYPE, response_data)
+        except Exception:
+            logger.exception("Unable to execute chat")
+            return APIUtils.formatResponseObject(
+                500, response_type, {"message": "Unable to execute chat"}
+            )
