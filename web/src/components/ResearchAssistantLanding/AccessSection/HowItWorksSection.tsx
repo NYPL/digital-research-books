@@ -164,7 +164,7 @@ const HowItWorksSection: React.FC = () => {
             <Image
               src={CONTROL_SUBNAV_IMAGE}
               alt="A subnavigation bar with two options: 'Enhanced Search' and 'Keyword search.' This illustrates how patrons can maintain control by opting out of the AI tool and switching back to traditional search at any time."
-              maxWidth="512px"
+              maxWidth={{ base: "none", md: "512px" }}
               background="transparent"
               flexShrink="0"
             />
