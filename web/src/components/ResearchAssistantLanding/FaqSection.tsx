@@ -8,25 +8,38 @@ const FaqSection: React.FC = () => {
       backgroundColor="#FAFDFD"
       borderTop="1px solid"
       borderColor="section.research.primary-10"
+      paddingX={{ base: "none", md: "s" }}
     >
       <Heading
         level="h2"
-        size="heading2"
+        fontSize={{
+          base: "mobile.heading.heading3",
+          md: "desktop.heading.heading2",
+        }}
         fontFamily="Domine"
         fontWeight="bold"
-        marginBottom="xxl"
+        marginBottom={{ base: "s", md: "xxl" }}
+        paddingX={{ base: "s", md: "none" }}
       >
         Frequently asked questions
       </Heading>
-      <Flex flexDir="column" gap="l">
+      <Flex flexDir="column" gap={{ base: "s", md: "l" }}>
         {ACCORDION_SECTIONS.map((section, index) => (
-          <Flex key={index} gap="l">
+          <Flex
+            key={index}
+            gap={{ base: "s", md: "l" }}
+            flexDir={{ base: "column", md: "row" }}
+          >
             <Heading
               level="h3"
-              size="heading3"
+              fontSize={{
+                base: "mobile.heading.heading4",
+                md: "desktop.heading.heading3",
+              }}
               fontFamily="Domine"
-              width="20%"
-              textAlign="left"
+              width={{ base: "100%", md: "20%" }}
+              textAlign={{ base: "center", md: "left" }}
+              paddingX={{ base: "s", md: "none" }}
             >
               {section.title}
             </Heading>

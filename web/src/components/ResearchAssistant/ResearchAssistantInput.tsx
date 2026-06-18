@@ -64,7 +64,7 @@ const ResearchAssistantInput: React.FC = () => {
   }, [isDisabled]);
 
   const placeholderValue = isDisabled
-    ? "Processing your query..."
+    ? "Thinking..."
     : messages.length === 0
     ? "Ask your question..."
     : "Type your response here";

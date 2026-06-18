@@ -36,8 +36,6 @@ logger = create_log(__name__)
 
 chat_blueprint = Blueprint("chat", __name__, url_prefix="/chat")
 
-RESPONSE_TYPE = "chat"
-
 
 def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, None]:
     """
@@ -167,6 +165,8 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 @require_session_jwt
 @timer(logger)
 def chat(session_id):
+    response_type = "chat"
+
     conversation_type = request.json.get("conversationType")
     message = request.json.get("message")
     edition_id = request.json.get("editionId")
@@ -184,6 +184,12 @@ def chat(session_id):
     if session_id:
         newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
 
+    # TODO: switch to a setup where you can add and remove log context vars inside \
+    # the log context vars context while scoping the context to the entire view \
+    # function. This allows the 500 error catch all log to get context vars if \
+    # available while also starting from the very top of the view function or \
+    # even being a global error handler with logger defined in a different module. \
+    # something like https://www.structlog.org/en/stable/contextvars.html
     with LogContextVars(get_app_logger(), context=log_context):
 
         def generate_streaming_response():
@@ -212,8 +218,6 @@ def _chat_stream_handler(session_id, conversation_type, message, edition_id, bar
 
 def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
     """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
-
-    logger.info(f"Chat request received: {message[:20]}...")
 
     if not message:
         yield format_error("message is required", code="validation_error")

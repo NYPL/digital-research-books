@@ -1,13 +1,8 @@
-import {
-  Box,
-  Flex,
-  Heading,
-  Image,
-  Text,
-} from "@nypl/design-system-react-components";
+import { Box, Flex, Heading, Text } from "@nypl/design-system-react-components";
 import SectionContainer from "../../ResearchAssistantLanding/SectionContainer";
 import AiWorkflow from "./AIWorkflow";
 import IngestionPipeline from "./IngestionPipeline";
+import TechnologyPipeline from "./TechnologyPipeline";
 
 const TechnologySection: React.FC = () => {
   return (
@@ -17,22 +12,28 @@ const TechnologySection: React.FC = () => {
       borderColor="section.research.primary-10"
       color="ui.typography.body"
       textAlign="left"
-      paddingX={{ base: "0", md: "s" }}
+      paddingX="s"
       tabIndex={-1}
     >
       <Box maxWidth="55rem" margin="0 auto">
         <Heading
           level="h2"
-          size="heading2"
+          fontSize={{
+            base: "mobile.heading.heading3",
+            md: "desktop.heading.heading2",
+          }}
           fontFamily="Domine"
           fontWeight="bold"
-          marginBottom="l"
+          marginBottom={{ base: "s", md: "l" }}
         >
           The technology
         </Heading>
         <Flex flexDir="column" gap="s">
           <Text
-            fontSize="desktop.heading.heading5"
+            fontSize={{
+              base: "mobile.heading.heading5",
+              md: "desktop.heading.heading5",
+            }}
             color="ui.gray.dark"
             fontWeight="medium"
           >
@@ -41,7 +42,10 @@ const TechnologySection: React.FC = () => {
             chat interface.
           </Text>
           <Text
-            fontSize="desktop.heading.heading5"
+            fontSize={{
+              base: "mobile.heading.heading5",
+              md: "desktop.heading.heading5",
+            }}
             color="ui.gray.dark"
             fontWeight="medium"
           >
@@ -51,14 +55,20 @@ const TechnologySection: React.FC = () => {
             trusted scholarly sources.
           </Text>
         </Flex>
-        <Flex margin="0 auto" justifyContent="center" marginY="xxl">
-          <Image
+        <Flex
+          margin="0 auto"
+          justifyContent="center"
+          marginTop={{ base: "l", md: "xxl" }}
+          marginBottom={{ base: "xl", md: "xxl" }}
+        >
+          <TechnologyPipeline />
+          {/* <Image
             src="https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/technologyDiagram.png"
             alt="Flow diagram showing an Agentic AI system. A question enters the Agentic AI box, which flows through three stages: Question Processed, Information Retrieved, and Response Generated (linked to a Book Ingestion Pipeline), finally exiting as a Response."
             width="608px"
             flexShrink="0"
             backgroundColor="transparent"
-          />
+          /> */}
         </Flex>
         <Box
           display="flex"
@@ -66,16 +76,22 @@ const TechnologySection: React.FC = () => {
           borderTop="1px solid"
           borderColor="section.research.primary-10"
         >
-          <Box paddingY="l">
+          <Box paddingY={{ base: "s", md: "l" }}>
             <Heading
               level="h3"
-              marginBottom="s"
-              size="heading3"
+              marginBottom={{ base: "xs", md: "s" }}
+              fontSize={{
+                base: "mobile.heading.heading4",
+                md: "desktop.heading.heading3",
+              }}
               fontFamily="Domine"
             >
               Book ingestion pipeline
             </Heading>
-            <Text fontSize="lg" color="ui.gray.dark">
+            <Text
+              fontSize={{ base: "mobile.subtitle.subtitle1", md: "lg" }}
+              color="ui.gray.dark"
+            >
               Our ingestion pipeline downloads, refines, embeds, and stores data
               from the collection. It prepares the books to be quickly and
               contextually accessed by Enhanced Search.
@@ -89,16 +105,22 @@ const TechnologySection: React.FC = () => {
           borderTop="1px solid"
           borderColor="section.research.primary-10"
         >
-          <Box paddingY="l">
+          <Box paddingY={{ base: "s", md: "l" }}>
             <Heading
               level="h3"
-              marginBottom="s"
-              size="heading3"
+              marginBottom={{ base: "xs", md: "s" }}
+              fontSize={{
+                base: "mobile.heading.heading4",
+                md: "desktop.heading.heading3",
+              }}
               fontFamily="Domine"
             >
               Agentic AI workflow
             </Heading>
-            <Text fontSize="lg" color="ui.gray.dark">
+            <Text
+              fontSize={{ base: "mobile.subtitle.subtitle1", md: "lg" }}
+              color="ui.gray.dark"
+            >
               Enhanced Search is enabled by an agentic AI workflow. Comprised of
               a Large Language Model (LLM) and other tools, it helps users find
               relevant resources through a natural language chat interface.

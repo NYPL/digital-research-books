@@ -59,6 +59,7 @@ from utils.timer import timer
 from ..utils import remove_markdown_comments
 from .search import ReciprocalRankFuser, ScoredHit, hybrid_search
 from .types import CatalogSearchResult, ContentSearchResult
+from .models.filter import Filter
 from ..newrelic_llm_events import record_llm_events
 from ..db import (
     get_async_engine,
@@ -207,24 +208,18 @@ def recurse_filters(filter_: Any, processing_func: Callable) -> Any:
     if len(filter_) == 0:
         raise ValueError("Filter cannot be an empty list or tuple")
 
-    operator = filter_[0]
-
-    if operator in META_OPERATORS:
-        if operator == "Not":
-            # ["Not", child_filter]
-            return [operator, recurse_filters(filter_[1], processing_func)]
-        else:
-            # ["And"/"Or", [child_filter, ...]]
-            return [
-                operator,
-                [recurse_filters(child, processing_func) for child in filter_[1]],
-            ]
-
-    # Simple filter: [attribute, operator, value] — pass whole filter to processing_func.
-    # processing_func returns the filter unchanged if its conditions are not met.
-    return processing_func(filter_)
+    match filter_:
+        case [("And" | "Or") as op, children]:
+            return [op, [recurse_filters(child, processing_func) for child in children]]
+        case ["Not", child]:
+            return ["Not", recurse_filters(child, processing_func)]
+        case _:
+            # Simple filter: [attribute, operator, value] — pass whole filter to processing_func.
+            # processing_func returns the filter unchanged if its conditions are not met.
+            return processing_func(filter_)
 
 
+# TODO convert into a pipeline class that takes a list of transforms
 def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> Any:
     """
     Apply all filter post-processing transformations in sequence.
@@ -237,7 +232,7 @@ def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> A
         apply_null_matching: Whether to add null matching for incomplete attributes
 
     Returns:
-        Processed filters with all transformations applied
+        Processed filters with all transformations applied. None is passed-through.
     """
     if filters is None:
         return None
@@ -544,13 +539,13 @@ async def update_chat(
     backend = TurbopufferBackend(index_name=require_env("TURBOPUFFER_NAMESPACE"))
     embedder = GoogleEmbedder()
 
-    # NOTE: litellm has a bug converting `list | None = None` in agents sdk @functol_tool
-    # param type annotations into gemini API compatible format
+    # NOTE: we are not using litellm bc it has a bug converting `list | None = None`
+    # in agents sdk @functol_tool param type annotations into gemini API compatible
+    # tool definition format
 
     # model = "litellm/gemini/gemini-3-flash-preview"
     model = OpenAIChatCompletionsModel(
-        model="gemini-3-flash-preview",
-        # model="gemini-3.5-flash",
+        model="gemini-3.5-flash",
         openai_client=AsyncOpenAI(
             api_key=require_env("GOOGLE_API_KEY"),
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -791,12 +786,23 @@ SEARCH_CATALOG_DOC = f"""
 """
 
 
+# TODO: modularize search_book and search_catalog more. input:  ranking_query+filters, \
+# output: list of editions (the problem is catalog needs the metadata for editions, \
+# book doesn't. maybe be make that optional somehow?)
+# TODO: convert to class FunctionTool def (Why? more explicit param type definition \
+# (exact json schema) and less of a hack for reading tool description from disk).
+# This requires self-handling errors in the tool function.
+# The default error handler for @function_tool raw json str parsing returns 'An
+# error occurred while parsing tool arguments. Please try again with valid JSON.
+# Error: Expecting value: line 1 column 1 (char 0)' (from `await search_book.on_invoke_tool(None, 'fsdfs{')`)
+# NOTE: filters `type` is str bc Gemini does not support arbitrary complex json
+# schema definitions for function tool parameter types.
 @function_tool
 @dynamic_docstring(SEARCH_CATALOG_DOC)
 def search_catalog(
     ctx: ToolContext[CatalogSearchExecutionContext],
     ranking_query: str,
-    filters: List | tuple | None = None,
+    filters: str | None = None,
     filters_match_null: bool = True,
 ) -> str:
     tool_start = time.perf_counter()
@@ -813,7 +819,11 @@ def search_catalog(
     try:
         logger.info(f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}'")
 
-        # Post-process filters through the pipeline
+        # Parse and validate Filter schema
+        if filters is not None:
+            filters = Filter.model_validate_json(filters).model_dump()
+
+        # Post-process filters
         filters = apply_filter_transforms(
             filters, apply_null_matching=filters_match_null
         )
@@ -964,7 +974,7 @@ SEARCH_BOOK_DOC = f"""
 def search_book(
     ctx: ToolContext[ContentSearchExecutionContext],
     ranking_query: str,
-    filters: Optional[Union[List, tuple]] = None,
+    filters: str | None = None,
     filters_match_null: bool = True,
 ) -> str:
     tool_start = time.perf_counter()
@@ -985,7 +995,11 @@ def search_book(
             f"for edition_id = {ctx.context.edition_id}, barcode = {ctx.context.barcode}"
         )
 
-        # Post-process filters through the pipeline
+        # Parse and validate Filter schema
+        if filters is not None:
+            filters = Filter.model_validate_json(filters).model_dump()
+
+        # Post-process filters
         filters = apply_filter_transforms(
             filters, apply_null_matching=filters_match_null
         )
