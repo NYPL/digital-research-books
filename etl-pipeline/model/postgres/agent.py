@@ -1,5 +1,6 @@
-from sqlalchemy import Column, ForeignKey, Index, Integer, Text, TIMESTAMP
+from sqlalchemy import Column, ForeignKey, Index, Integer, TIMESTAMP
 from sqlalchemy import String
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import text
 
@@ -42,7 +43,7 @@ class AgentMessage(Base):
         ForeignKey("agent_sessions.session_id", ondelete="CASCADE"),
         nullable=False,
     )
-    message_data = Column(Text, nullable=False)
+    message_data = Column(JSONB, nullable=False)
     created_at = Column(
         TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )
@@ -51,6 +52,11 @@ class AgentMessage(Base):
 
     __table_args__ = (
         Index("idx_agent_messages_session_time", "session_id", "created_at"),
+        Index(
+            "idx_agent_messages_message_data_gin",
+            "message_data",
+            postgresql_using="gin",
+        ),
     )
 
     def __repr__(self):
