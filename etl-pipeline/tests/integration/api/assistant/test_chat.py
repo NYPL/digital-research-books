@@ -79,6 +79,7 @@ def test_chat_assistant_messages_have_db_ids_matching_db(vra_test_user):
     )
     assert_response_status(url, response, 200)
 
+    # Collect assistant messages
     messages = response.json()["data"]["messages"]
     assistant_messages = [
         m
@@ -96,6 +97,7 @@ def test_chat_assistant_messages_have_db_ids_matching_db(vra_test_user):
         f"{missing_db_id}"
     )
 
+    # Verify that returned message ids match DB data
     engine = get_engine()
     with engine.connect() as conn:
         for msg in assistant_messages:

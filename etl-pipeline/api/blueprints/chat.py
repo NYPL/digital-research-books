@@ -18,7 +18,7 @@ from utils.timer import timer
 
 # API code
 from ..utils import APIUtils, orm_to_dict
-from agents.extensions.memory import SQLAlchemySession
+from api.assistant.session import JSONBSQLAlchemySession
 
 from ..db import DBClient, get_async_engine
 from ..auth import require_api_key
@@ -237,7 +237,7 @@ def chat(session_id):
             # TODO: inside update_chat make sure than any errors are handled by a polite \
             # llm generated response (except no connectivity to LLM) (just handle the \
             # high level openai agents sdk errors)
-            session = SQLAlchemySession(session_id, engine=get_async_engine())
+            session = JSONBSQLAlchemySession(session_id, engine=get_async_engine())
             max_id = get_max_message_id()
             try:
                 run_result = asyncio.run(
