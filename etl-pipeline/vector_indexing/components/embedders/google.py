@@ -37,6 +37,8 @@ DEFAULT_RATE_LIMIT_PERIOD = 60  # seconds
 # TODO: set RPM and TPM and set up _make_request to have @limits derived from the \
 # RPM and TPM (for configured tokens per chunk = 750). This will require some factory function
 
+# TODO: add batch_concurrency support, and benchmark to id ideal concurrency.
+
 
 def _l2_normalize(vector: list[float]) -> list[float]:
     """L2-normalize a vector. Required for gemini-embedding-001 at non-3072 dims."""
