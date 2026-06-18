@@ -18,7 +18,7 @@ from utils.timer import timer
 
 # API code
 from ..utils import APIUtils, orm_to_dict
-from api.assistant.session import JSONBSQLAlchemySession
+from ..assistant.session import JSONBSQLAlchemySession
 
 from ..db import DBClient, get_async_engine
 from ..auth import require_api_key
