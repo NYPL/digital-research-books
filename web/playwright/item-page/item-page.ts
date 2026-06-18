@@ -89,16 +89,16 @@ class ItemPage {
 
     // Chat panel
     this.chatPanelHeading = page.getByRole("heading", {
-      name: "Enhanced Search",
+      name: /^Enhanced Search$/,
     });
     this.messageBubbles = page.getByTestId("assistant-message-bubble");
     this.chatInputTextBox = page.getByRole("textbox", {
       name: "Ask your question...",
     });
     this.submitQueryBtn = page.getByLabel("Send");
-    this.loadingIndicator = page.getByText(
-      "Thinking... This may take several seconds."
-    );
+    this.loadingIndicator = page
+      .getByLabel("Chat messages")
+      .getByText("Thinking... This may take several seconds.");
 
     // Details panel — labels
     this.detailsCopyrightLabel = page.getByText("Copyright", { exact: true });

@@ -46,16 +46,16 @@ class ResearchAssistantPage {
 
     // Chat interface (right panel)
     this.researchAssistantPanelHeading = page.getByRole("heading", {
-      name: "Enhanced Search",
+      name: /^Enhanced Search$/,
     });
     this.messageBubbles = page.getByTestId("assistant-message-bubble");
     this.chatInputTextBox = page.getByRole("textbox", {
       name: "Ask your question...",
     });
     this.submitQueryBtn = page.getByLabel("Send");
-    this.loadingIndicator = page.getByText(
-      "Thinking... This may take several seconds."
-    );
+    this.loadingIndicator = page
+      .getByLabel("Chat messages")
+      .getByText("Thinking... This may take several seconds.");
     this.resultsBanner = page.getByText(
       "This tool only searches the Digitized Research Books collection"
     );
