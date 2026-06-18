@@ -12,7 +12,7 @@ const AccessCard: React.FC<AccessCardProps> = ({
   description,
 }) => {
   return (
-    <Flex flexDir="column" gap="l">
+    <Flex flexDir="column" gap={{ base: "m", md: "l" }}>
       <Flex
         background="ui.white"
         border="2px solid"
@@ -28,7 +28,13 @@ const AccessCard: React.FC<AccessCardProps> = ({
         <Heading level="h3" size="heading5">
           {title}
         </Heading>
-        <Text color="ui.gray.dark" fontSize="desktop.subtitle.subtitle1">
+        <Text
+          color="ui.gray.dark"
+          fontSize={{
+            base: "mobile.subtitle.subtitle1",
+            md: "desktop.subtitle.subtitle1",
+          }}
+        >
           {description}
         </Text>
       </Flex>

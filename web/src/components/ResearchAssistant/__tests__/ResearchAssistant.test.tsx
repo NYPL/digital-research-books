@@ -45,7 +45,7 @@ describe("ResearchAssistant", () => {
     render(<ResearchAssistant />);
 
     expect(
-      screen.getByRole("heading", { name: /enhanced search/i })
+      screen.getByRole("heading", { name: /^enhanced search$/i })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /start over/i })
@@ -73,7 +73,7 @@ describe("ResearchAssistant", () => {
     });
 
     render(<ResearchAssistant />);
-    expect(screen.getAllByText(/failed to fetch response./i)).toHaveLength(2);
+    expect(screen.getByText(/failed to fetch response./i)).toBeInTheDocument();
   });
 
   test("sends initial message from sessionStorage on first load", () => {

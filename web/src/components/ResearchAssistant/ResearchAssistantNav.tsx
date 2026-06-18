@@ -7,7 +7,7 @@ import {
   SubNavLink,
   Text,
 } from "@nypl/design-system-react-components";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { FeedbackContext } from "~/src/context/FeedbackContext";
 import { PageType } from "~/src/types/ResearchAssistant";
 import KeywordSearchIcon from "./icons/KeywordSearchIcon";
@@ -20,15 +20,7 @@ interface ResearchAssistantNavProps {
 const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
   activePage,
 }) => {
-  const [token, setToken] = useState<string | null>(null);
-
   const { onOpen } = useContext(FeedbackContext);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setToken(localStorage.getItem("authToken"));
-    }
-  }, []);
 
   return (
     <SubNav
@@ -77,13 +69,11 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
           <SubNavButton onClick={onOpen} id="subnav-contact-us">
             Contact us
           </SubNavButton>
-          <SubNavLink
-            isOutlined
-            href={token ? "#account" : "/research-assistant-login"}
-            id="subnav-my-account"
-          >
+          <SubNavLink isOutlined href="#" id="subnav-my-account">
             <Icon name="actionIdentityFilled" size="medium" />
-            {token ? "My account" : "Login"}
+            <Box display={{ base: "none", md: "inline" }}>
+              {"Login"}
+            </Box>
           </SubNavLink>
         </>
       }
@@ -91,6 +81,10 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
       sx={{
         a: {
           gap: "xxs",
+        },
+        "#subnav-my-account": {
+          paddingY: { base: "12px", md: "xxs" },
+          paddingX: { base: "12px", md: "s" },
         },
         "#keyword-search-icon": {
           fill: "none !important",

@@ -34,7 +34,7 @@ const HeroSection: React.ForwardRefExoticComponent<
       <SectionContainer
         display="flex"
         flexDir="column"
-        paddingBottom="20px"
+        paddingBottom={{ base: "s", md: "20px" }}
         ref={ref}
         background="linear-gradient(0deg, #FFF 0%, #FFFEF9 100%)"
       >
@@ -42,23 +42,45 @@ const HeroSection: React.ForwardRefExoticComponent<
           display="flex"
           flexDir="column"
           alignItems="center"
-          marginBottom="xxl"
+          marginBottom={{
+            base: "l",
+            md: "xxl",
+          }}
         >
           <Heading
             level="h1"
             fontWeight="bold"
             marginBottom="s"
-            size="heading1"
             fontFamily="Domine"
-            lineHeight="115%"
+            fontSize={{
+              base: "mobile.heading.heading2",
+              md: "desktop.heading.heading1",
+            }}
+            lineHeight={{
+              base: "125%",
+              md: "115%",
+            }}
           >
             Try our new AI-enabled Enhanced Search
           </Heading>
           <Text
-            fontSize="desktop.heading.heading4"
-            fontWeight="medium"
             color="ui.gray.x-dark"
-            lineHeight="130%"
+            fontSize={{
+              base: "mobile.heading.heading5",
+              md: "desktop.heading.heading4",
+            }}
+            lineHeight={{
+              base: "140%",
+              md: "130%",
+            }}
+            maxWidth={{
+              base: "480px",
+              md: "none",
+            }}
+            fontWeight={{
+              base: "semibold",
+              md: "medium",
+            }}
           >
             Find and discover content using natural language. Now live in
             Digitized Research Books.

@@ -83,3 +83,20 @@ export const renderMarkdownContent = (
     </ReactMarkdown>
   );
 };
+
+/**
+ * Strips markdown and custom edition tags to produce a plain text string
+ * suitable for screen reader announcements.
+ */
+export const markdownToPlainText = (markdownText: string): string => {
+  return markdownText
+    .replace(/<edition id="([^"]+)">([^<]+)<\/edition>/g, "$2")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/(\*\*|__)(.*?)\1/g, "$2")
+    .replace(/(\*|_)(.*?)\1/g, "$2")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/^\s*\d+\.\s+/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+};

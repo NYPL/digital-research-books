@@ -16,6 +16,7 @@ import { documentTitles } from "../constants/labels";
 import { FeatureFlagProvider } from "../context/FeatureFlagContext";
 import { FeedbackProvider } from "../context/FeedbackContext";
 import { ResearchAssistantProvider } from "../context/ResearchAssistantContext";
+import { chatAnnouncer } from "../lib/chatAnnouncer/ChatAnnouncer";
 import NewRelicSnippet from "../lib/newrelic/NewRelic";
 
 if (process.env.APP_ENV === "testing") {
@@ -63,6 +64,12 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
       }
     }
   });
+
+  useEffect(() => {
+    chatAnnouncer.mount();
+
+    return () => chatAnnouncer.unmount();
+  }, []);
 
   return (
     <>
