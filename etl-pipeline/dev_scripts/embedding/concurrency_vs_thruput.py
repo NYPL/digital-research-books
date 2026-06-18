@@ -1,5 +1,8 @@
 """
-Benchmark throughput of the SageMaker deployment of HF TEI container.
+Benchmark throughput of any Embedder implementation.
+
+Configure EMBEDDER at the top of the file, then run with:
+    uv run dev_scripts/embedding/benchmark_throughput_hf_sagemaker.py
 """
 
 import asyncio
@@ -10,32 +13,36 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-import boto3
 import numpy as np
-import sagemaker
 
-# from sagemaker.predictor import Predictor # requires manual passing of JSONSerializer
-# from sagemaker.deserializers import JSONDeserializer
-# from sagemaker.serializers import JSONSerializer
-from sagemaker.huggingface import HuggingFacePredictor
-from transformers import AutoTokenizer
+from logger import configure_loggers, create_log
+from vector_indexing.components.embedders import *
+
+logger = create_log(__name__)
 
 # ---------------------------------------------------------------------------
-# Configuration
+# Configuration - set EMBEDDER to whatever you want to benchmark
 # ---------------------------------------------------------------------------
 
-ENDPOINT_NAME = "hf-tei-20260423-142720"  # Qwen, g6e
-AWS_PROFILE = "sandbox"
-
-TOTAL_REQUESTS = 200  # requests at each concurrency level
-CONCURRENCY_LEVELS = [1, 16, 32, 64]
+CONCURRENCY_LEVELS = [1]
+# CONCURRENCY_LEVELS = [1, 16, 32, 64]
 # CONCURRENCY_LEVELS = [1, 4, 8, 10, 13, 16]
 
-# TODO: for higher thruput. try  {inputs: [<str>, <str>]} (this works!),  batch_transform, async inference endpoint
+# EMBEDDER: Embedder = Qwen38BEmbedder(
+#     endpoint_name="hf-tei-20260423-142720",
+#     aws_profile="sandbox",
+#     concurrency=1,  # benchmark controls concurrency via the semaphore
+# )
+EMBEDDER = Gemini001Embedder()
+# TODO: for sagemaker embedders, for higher thruput. try  {inputs: [<str>, <str>]} (this works!),  batch_transform, async inference endpoint
+
+# TOTAL_REQUESTS = 200
+TOTAL_REQUESTS = 4000
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
+
 
 # ~730 tokens of representative research-book text.
 # At ~4 chars/token this comes to roughly 2 900 characters.
@@ -134,16 +141,110 @@ class BatchResult:
 
 
 # ---------------------------------------------------------------------------
-# Throughput Benchmark logic
+# Token counting
 # ---------------------------------------------------------------------------
 
 
-async def _call_endpoint(predictor: HuggingFacePredictor, semaphore: asyncio.Semaphore):
-    """Run one synchronous predictor.predict() call inside a thread."""
+def _count_tokens_sagemaker(embedder: SageMakerTEIEmbedder, text: str) -> int:
+    """Load the HF tokenizer for the deployed model and count tokens in `text`."""
+    from transformers import AutoTokenizer
+
+    # model_name calls describe_endpoint_config + describe_model on the SM client
+    hf_model_id = embedder.model_name
+    tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
+    return len(tokenizer.encode(text))
+
+
+def _count_tokens_gemini(
+    embedder: Gemini001Embedder | Gemini2Embedder, text: str
+) -> int:
+    """Use the Gemini count_tokens API to count tokens in `text`."""
+    # https://ai.google.dev/gemini-api/docs/tokens
+    response = embedder._client.models.count_tokens(
+        model=embedder.model_name,
+        contents=text,
+    )
+    return response.total_tokens
+
+
+def _count_tokens_sentence_transformers(embedder, text: str) -> int:
+    """Use the wrapped HF tokenizer to count tokens in `text`."""
+    return len(embedder._embedder.tokenizer.encode(text))
+
+
+def get_token_count(embedder: Embedder, text: str) -> int:
+    """Return the token count for `text` using the embedder's native tokenizer.
+
+    Raises NotImplementedError for embedder types that have no token-counting
+    implementation yet.
+    """
+    if isinstance(embedder, SageMakerTEIEmbedder):
+        return _count_tokens_sagemaker(embedder, text)
+    if isinstance(embedder, Gemini001Embedder):
+        return _count_tokens_gemini(embedder, text)
+    if isinstance(embedder, Gemini2Embedder):
+        return _count_tokens_gemini(embedder, text)
+    if isinstance(embedder, SentenceTransformersEmbedder):
+        return _count_tokens_sentence_transformers(embedder, text)
+    raise NotImplementedError(
+        f"Token counting is not implemented for {type(embedder).__name__}. "
+        "Add a case to get_token_count() before benchmarking this embedder type."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Metadata
+# ---------------------------------------------------------------------------
+
+
+def get_embedder_metadata(embedder: Embedder) -> dict:
+    """Return a dict of embedder-type-specific metadata for benchmark reporting.
+
+    For SageMaker embedders this includes endpoint name, instance type, and
+    HF_MODEL_ID. For other embedder types it includes whatever is relevant.
+    """
+    base = {
+        "embedder_class": type(embedder).__name__,
+        "model_name": embedder.model_name,
+    }
+
+    if isinstance(embedder, SageMakerTEIEmbedder):
+        sm = embedder._predictor.sagemaker_session.sagemaker_client
+        config = sm.describe_endpoint_config(
+            EndpointConfigName=embedder._predictor._get_endpoint_config_name()
+        )
+        variant = config["ProductionVariants"][0]
+        instance_type = variant.get("InstanceType")
+        model = sm.describe_model(ModelName=variant["ModelName"])
+        hf_model_id = (
+            model["PrimaryContainer"]
+            .get("Environment", {})
+            .get("HF_MODEL_ID", embedder._endpoint_name)
+        )
+        return {
+            **base,
+            "endpoint_name": embedder._endpoint_name,
+            "instance_type": instance_type,
+            "hf_model_id": hf_model_id,
+        }
+
+    if isinstance(embedder, (Gemini001Embedder, Gemini2Embedder)):
+        return {**base, "dimensions": embedder.dimensions}
+
+    return base
+
+
+# ---------------------------------------------------------------------------
+# Throughput benchmark logic
+# ---------------------------------------------------------------------------
+
+
+async def _call_embedder(embedder: Embedder, semaphore: asyncio.Semaphore):
+    """Run one synchronous embedder.embed_document() call inside a thread."""
     async with semaphore:
         start = time.perf_counter()
         try:
-            await asyncio.to_thread(predictor.predict, {"inputs": DUMMY_TEXT})
+            await asyncio.to_thread(embedder.embed_document, DUMMY_TEXT)
             elapsed = time.perf_counter() - start
             return elapsed, None
         except Exception as exc:
@@ -152,7 +253,7 @@ async def _call_endpoint(predictor: HuggingFacePredictor, semaphore: asyncio.Sem
 
 
 async def run_benchmark(
-    predictor: HuggingFacePredictor,
+    embedder: Embedder,
     concurrency: int,
     total_requests: int,
     token_count: int,
@@ -162,16 +263,15 @@ async def run_benchmark(
     Return summary of throughput.
     """
 
-    semaphore = asyncio.Semaphore(concurrency)
-    tasks = [_call_endpoint(predictor, semaphore) for _ in range(total_requests)]
-
     # Run inference for *total_requests*
+    semaphore = asyncio.Semaphore(concurrency)
+    tasks = [_call_embedder(embedder, semaphore) for _ in range(total_requests)]
     print(f"  Benchmarking concurrency={concurrency} ...")
     wall_start = time.perf_counter()
     outcomes = await asyncio.gather(*tasks)
     wall_time = time.perf_counter() - wall_start
 
-    # Collect latency on success, record error on failure
+    # Collect latency/thruput on success, record error on failure
     latencies = []
     errors = 0
     for elapsed, exc in outcomes:
@@ -183,12 +283,14 @@ async def run_benchmark(
 
     latencies_ms = np.array(latencies) * 1000
 
+    tokens_per_s = (total_requests * token_count) / wall_time
+
     result = BatchResult(
         concurrency=concurrency,
         total_requests=total_requests,
         total_time_s=wall_time,
         req_per_s=total_requests / wall_time,
-        tokens_per_s=(total_requests * token_count) / wall_time,
+        tokens_per_s=tokens_per_s,
         avg_latency_ms=float(np.mean(latencies_ms)) if latencies_ms.size else 0.0,
         p50_latency_ms=float(np.percentile(latencies_ms, 50))
         if latencies_ms.size
@@ -206,6 +308,7 @@ async def run_benchmark(
     print(
         f"    concurrency={concurrency:>2}  "
         f"throughput={result.req_per_s:.2f} req/s  "
+        f"tok/s={result.tokens_per_s:>10.1f}  "
         f"avg_latency={result.avg_latency_ms:.1f} ms  "
         f"p95={result.p95_latency_ms:.1f} ms  "
         f"errors={errors}"
@@ -218,59 +321,30 @@ async def run_benchmark(
 # ---------------------------------------------------------------------------
 
 
-def get_endpoint_info(predictor: HuggingFacePredictor) -> tuple[str | None, str | None]:
-    """Return (HF_MODEL_ID, instance_type) by introspecting the predictor's session.
-
-    Uses predictor._get_endpoint_config_name() (caches describe_endpoint) so we only
-    need two API calls: describe_endpoint_config + describe_model.
-    """
-    sm = predictor.sagemaker_session.sagemaker_client
-    config = sm.describe_endpoint_config(
-        EndpointConfigName=predictor._get_endpoint_config_name()
-    )
-    variant = config["ProductionVariants"][0]
-    instance_type = variant.get("InstanceType")
-    model = sm.describe_model(ModelName=variant["ModelName"])
-    hf_model_id = model["PrimaryContainer"].get("Environment", {}).get("HF_MODEL_ID")
-    return hf_model_id, instance_type
-
-
 async def main() -> List[BatchResult]:
-    """Run the benchmark across all CONCURRENCY_LEVELS and write results to OUTPUT_FILE."""
-    boto3.setup_default_session(profile_name=AWS_PROFILE)
-    session = sagemaker.Session()
+    """Run the benchmark across all CONCURRENCY_LEVELS and write results to a JSON file."""
+    configure_loggers(stage="development")
 
-    predictor = HuggingFacePredictor(
-        endpoint_name=ENDPOINT_NAME,
-        sagemaker_session=session,
-    )
+    embedder = EMBEDDER
+    metadata = get_embedder_metadata(embedder)
+    token_count = get_token_count(embedder, DUMMY_TEXT)
 
-    hf_model_id, instance_type = get_endpoint_info(predictor)
-
-    if hf_model_id is None:
-        raise ValueError(
-            "Could not determine HF_MODEL_ID from endpoint config; cannot load tokenizer."
-        )
-    _tokenizer = AutoTokenizer.from_pretrained(hf_model_id)
-    dummy_text_tokens: int = len(_tokenizer.encode(DUMMY_TEXT))
-    # ALT: use the /tokenize endpoint of the deployed model. see: https://huggingface.github.io/text-embeddings-inference/#/Text%20Embeddings%20Inference/tokenize
-
-    print(f"Endpoint      : {ENDPOINT_NAME}")
-    print(f"Instance type : {instance_type or '(not found)'}")
-    print(f"HF_MODEL_ID   : {hf_model_id}")
+    print(f"Embedder class: {metadata['embedder_class']}")
+    for key, val in metadata.items():
+        if key != "embedder_class":
+            print(f"  {key}: {val}")
     print(f"Requests      : {TOTAL_REQUESTS} per concurrency level")
-    print(f"Dummy text    : ~{dummy_text_tokens} tokens\n")
+    print(f"Dummy text    : ~{token_count} tokens\n")
 
     assert max(CONCURRENCY_LEVELS) < TOTAL_REQUESTS, (
-        f"Max concurrency ({max(CONCURRENCY_LEVELS)}) must be less than TOTAL_REQUESTS ({TOTAL_REQUESTS})"
+        f"Max concurrency ({max(CONCURRENCY_LEVELS)}) must be less than "
+        f"TOTAL_REQUESTS ({TOTAL_REQUESTS})"
     )
 
     # Run inference throughput benchmark for all concurrency levels
     results: List[BatchResult] = []
     for concurrency in CONCURRENCY_LEVELS:
-        result = await run_benchmark(
-            predictor, concurrency, TOTAL_REQUESTS, dummy_text_tokens
-        )
+        result = await run_benchmark(embedder, concurrency, TOTAL_REQUESTS, token_count)
         results.append(result)
 
     # Print multi-concurrency benchmark summary table
@@ -295,9 +369,9 @@ async def main() -> List[BatchResult]:
     output_file = Path(__file__).parent / "results" / f"benchmark_{timestamp}.json"
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output = {
-        "endpoint": ENDPOINT_NAME,
-        "instance_type": instance_type,
-        "hf_model_id": hf_model_id,
+        **metadata,
+        "total_requests_per_level": TOTAL_REQUESTS,
+        "dummy_text_tokens": token_count,
         "results": [r.to_dict() for r in results],
     }
     with open(output_file, "w") as f:

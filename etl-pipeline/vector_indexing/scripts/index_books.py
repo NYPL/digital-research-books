@@ -17,7 +17,7 @@ For resumed runs, later batches may rerun barcodes from previous batches.
 
 Usage:
     # From barcodes:
-    python -m vector_indexing.scripts.index_books --barcodes 33433001234567 33433009876543
+    python -m vector_indexing.scripts.index_books --barcodes 33333011962152 33433002996126
 
     # From barcode file (one per line):
     python -m vector_indexing.scripts.index_books --file barcodes.txt
@@ -29,13 +29,13 @@ Usage:
     python -m vector_indexing.scripts.index_books --10k --index-name vra_test-10k-harrier_oss_v1_.6b --resume-latest
 
     # Dry run (no actual indexing):
-    python -m vector_indexing.scripts.index_books --barcodes 33433001234567 --dry-run
+    python -m vector_indexing.scripts.index_books --barcodes 33433002996126 --dry-run
 
-    # Use local files:
-    python -m vector_indexing.scripts.index_books --barcodes 33433001234567 --loader LocalBookLoader
+    # Use non-default book loader:
+    python -m vector_indexing.scripts.index_books --barcodes 33433002996126 --loader CachedS3BookLoader --loader-args '{"cache_dir": "../../vra_experiments/data/experiment_books"}'
 
     # Use mock embedder (for testing):
-    python -m vector_indexing.scripts.index_books --barcodes 33433001234567 --mock-embedder
+    python -m vector_indexing.scripts.index_books --barcodes 33433002996126 --mock-embedder
 
     # Use qa environment config:
     python -m vector_indexing.scripts.index_books --10k --index-name vra_test-10k-harrier_oss_v1_.6b --env qa

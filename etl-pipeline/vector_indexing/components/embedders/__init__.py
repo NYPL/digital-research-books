@@ -7,6 +7,9 @@ from vector_indexing.components.embedders.google import (
     Gemini2Embedder,
 )
 from vector_indexing.components.embedders.openai import OpenAIEmbedder
+from vector_indexing.components.embedders.sentence_transformers import (
+    SentenceTransformersEmbedder,
+)
 from vector_indexing.components.embedders.sagemaker import (
     HarrierEmbedder,
     PplxEmbedder,
@@ -26,4 +29,5 @@ __all__ = [
     "Qwen3Embedder",
     "OpenAIEmbedder",
     "SageMakerTEIEmbedder",
+    "SentenceTransformersEmbedder",
 ]

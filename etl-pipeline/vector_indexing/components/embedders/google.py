@@ -1,11 +1,9 @@
 """Google Gemini embedding implementations."""
 
 from __future__ import annotations
-
 from typing import TYPE_CHECKING
 
 import numpy as np
-
 from google import genai
 from google.genai import types
 from google.genai.errors import ClientError
@@ -18,10 +16,13 @@ from tenacity import (
 )
 
 from vector_indexing.components.embedders.base import Embedder
+from logger import create_log
 
 if TYPE_CHECKING:
     from google.genai import Client
 
+
+logger = create_log(__name__)
 
 # Tutorial Docs: # https://ai.google.dev/gemini-api/docs/embeddings
 DEFAULT_DIMS = 768
@@ -29,7 +30,8 @@ DEFAULT_BATCH_SIZE = 100
 # Rate limit: 20 calls/min with batch size 100 = 2000 embeddings/min
 # (3000/min usually breaks the token limit with current chunking leading to
 # more backoff attempts and thus lower thruput)
-DEFAULT_RATE_LIMIT_CALLS = 20
+# DEFAULT_RATE_LIMIT_CALLS = 20
+DEFAULT_RATE_LIMIT_CALLS = 20_000
 DEFAULT_RATE_LIMIT_PERIOD = 60  # seconds
 
 
@@ -134,7 +136,7 @@ class Gemini001Embedder(Embedder):
         stop=stop_after_attempt(7),
         wait=wait_exponential(multiplier=4, max=70),
         retry=retry_if_exception(_is_rate_limit_error),
-        before_sleep=lambda retry_state: print(
+        before_sleep=lambda retry_state: logger.warning(
             f"Rate limit hit, retrying in {retry_state.next_action.sleep:.1f}s "
             f"(attempt {retry_state.attempt_number}): {retry_state.outcome.exception()}"
         ),
@@ -232,7 +234,7 @@ class Gemini2Embedder(Embedder):
         stop=stop_after_attempt(7),
         wait=wait_exponential(multiplier=4, max=70),
         retry=retry_if_exception(_is_rate_limit_error),
-        before_sleep=lambda retry_state: print(
+        before_sleep=lambda retry_state: logger.warning(
             f"Rate limit hit, retrying in {retry_state.next_action.sleep:.1f}s "
             f"(attempt {retry_state.attempt_number}): {retry_state.outcome.exception()}"
         ),
