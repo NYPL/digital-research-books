@@ -1,7 +1,6 @@
 import { Box, List, Text, VStack } from "@nypl/design-system-react-components";
 import { ApiItem, WorkEdition } from "~/src/types/DataModel";
 import { ApiWork } from "~/src/types/WorkQuery";
-import AuthorsList from "../../AuthorsList/AuthorsList";
 import Link from "../../Link/Link";
 
 interface DetailsPanelProps {
@@ -38,12 +37,6 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
       <Text fontWeight="bold">Place of publication</Text>
       <Text>{previewEdition.publication_place || "Unknown"}</Text>
     </Box>
-    {work.authors && work.authors.length > 0 && (
-      <Box>
-        <Text fontWeight="bold">Authors</Text>
-        <AuthorsList authors={work.authors} />
-      </Box>
-    )}
     <Box>
       <Text fontWeight="bold">Subjects</Text>
       {work.subjects && work.subjects.length > 0 ? (

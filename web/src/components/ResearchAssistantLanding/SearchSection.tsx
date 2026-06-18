@@ -56,9 +56,12 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
     <>
       <Form
         id="vra-landing-form"
-        marginBottom="xl"
         // @ts-expect-error: Override gap value type
         gap="0"
+        marginBottom={{
+          base: "l",
+          md: "xl",
+        }}
       >
         <Box
           display="flex"
@@ -73,7 +76,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
             isFocused
               ? {
                   boxShadow: "none",
-                  outline: "3px solid",
+                  outline: "2px solid",
                   outlineColor: "section.research.secondary",
                 }
               : {}
@@ -113,7 +116,11 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
               },
             }}
           />
-          <Flex flexDir="row" paddingY="xs">
+          <Flex
+            flexDir="row"
+            paddingY="xs"
+            paddingLeft={{ base: "xs", md: "0" }}
+          >
             <Button
               onClick={handleLocalSearchSubmit}
               id="research-landing-submit"
@@ -138,9 +145,17 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
 
       <Box
         display="grid"
-        gridTemplateColumns="repeat(2, 1fr)"
         gap="s"
-        marginBottom="xl"
+        sx={{
+          marginBottom: {
+            base: "l",
+            md: "xl",
+          },
+          gridTemplateColumns: {
+            base: "repeat(1, 1fr)",
+            sm: "repeat(2, 1fr)",
+          },
+        }}
       >
         {featuredSuggestions.map((suggestion, index) => (
           <Button
@@ -154,7 +169,7 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
             borderRadius="8px"
             fontWeight="medium"
             gap="xs"
-            alignItems="left"
+            alignItems="center"
             justifyContent="flex-start"
             textAlign="left"
             height="auto"
