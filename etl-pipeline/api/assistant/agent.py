@@ -24,7 +24,7 @@ from agents import (
     RunResult,
     function_tool,
 )
-from agents.items import ModelResponse
+from agents.items import ModelResponse, ToolApprovalItem
 from agents.memory import SessionABC
 from agents.models.chatcmpl_converter import Converter
 from agents.run_config import DEFAULT_MAX_TURNS
@@ -661,7 +661,7 @@ async def update_chat(
 
 
 def get_session_messages(session_id):
-    """Read message data for session ID as ND-JSON"""
+    """Read message data for session ID as a list of dicts."""
     # TODO: replace with Session.get_items()
     engine = get_engine()
     with engine.connect() as conn:
@@ -669,8 +669,80 @@ def get_session_messages(session_id):
             text("SELECT * FROM agent_messages WHERE session_id = :sid ORDER BY id"),
             {"sid": session_id},
         ).fetchall()
-    messages = [json.loads(row.message_data) for row in rows]
-    return messages
+    return [row.message_data for row in rows]
+
+
+def get_max_message_id() -> int:
+    """Return the current max id in agent_messages, or 0 if the table is empty."""
+    engine = get_engine()
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("SELECT COALESCE(MAX(id), 0) AS max_turn_id FROM agent_messages")
+        ).fetchone()
+    return row.max_turn_id
+
+
+def get_session_messages_after(session_id: str, max_id: int) -> list[dict]:
+    """
+    Return assistant messages written to agent_messages for `session_id` after `max_id`.
+
+    Filters to role='assistant' and type='message' so tool-call rows are excluded.
+    Each returned dict contains a 'db_id' key plus the message content fields.
+    """
+    engine = get_engine()
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                """
+                SELECT id, message_data
+                FROM agent_messages
+                WHERE session_id = :sid
+                  AND id > :max_id
+                  AND message_data->>'role' = 'assistant'
+                  AND message_data->>'type' = 'message'
+                """
+            ),
+            {"sid": session_id, "max_id": max_id},
+        ).fetchall()
+    return [{"db_id": row.id, **row.message_data} for row in rows]
+
+
+def get_new_items_with_ids(
+    run_result: RunResult,
+    session_message_items: list[dict],
+) -> list[dict]:
+    """
+    Return all new items from run_result. Items matching an entry in
+    session_message_items receive a 'db_id' key; others are returned as-is.
+
+    Uses a pop-on-first-match pool so duplicate content is handled correctly:
+    If there are multiple identically valued items in session_message_items the
+    db_id of the first match in .new_items is used. And session_message_items
+    are consumed at most once.
+    """
+    pool = [
+        (item["db_id"], {k: v for k, v in item.items() if k != "db_id"})
+        for item in session_message_items
+    ]
+
+    result = []
+    for item in run_result.new_items:
+        # calling .to_input_item() on ToolApprovalItem raises (agents/items.py).
+        # And they are not persisted agents/run_internal/session_persistence.py, line 243.
+        if isinstance(item, ToolApprovalItem):
+            continue
+        item_dict = item.to_input_item()
+        matched_db_id = None
+        for i, (db_id, msg_data) in enumerate(pool):
+            if item_dict == msg_data:
+                matched_db_id = db_id
+                pool.pop(i)
+                break
+        if matched_db_id is not None:
+            result.append({"db_id": matched_db_id, **item_dict})
+        else:
+            result.append(item_dict)
+    return result
 
 
 def delete_session_data(session_id: str) -> None:

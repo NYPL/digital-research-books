@@ -678,16 +678,15 @@ def test_session_id():
 
 # TODO: in all places where this is used simply replace this by mocking Session \
 # with an in-memory `SQLiteSession`. That way no clean up is even needed bc DB \
-# writes are never made. Future tests that test `CustomSQLAlchemySession.inserted_items` \
-# usage in /chat would still need this fixture.
+# writes are never made.
 @pytest.fixture
 def test_session(test_session_id):
     """
-    A CustomSQLAlchemySession using `test_session_id` fixture for cleanup and isolation.
+    A SQLAlchemySession using `test_session_id` fixture for cleanup and isolation.
 
-    Mostly a light wrapper of `test_session_id`
+    Mostly a light wrapper of `test_session_id`.
     """
     from api.db import get_async_engine
-    from api.assistant.session import CustomSQLAlchemySession
+    from agents.extensions.memory import SQLAlchemySession
 
-    return CustomSQLAlchemySession(test_session_id, engine=get_async_engine())
+    return SQLAlchemySession(test_session_id, engine=get_async_engine())

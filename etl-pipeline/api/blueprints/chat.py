@@ -18,6 +18,8 @@ from utils.timer import timer
 
 # API code
 from ..utils import APIUtils, orm_to_dict
+from agents.extensions.memory import SQLAlchemySession
+
 from ..db import DBClient, get_async_engine
 from ..auth import require_api_key
 from ..decorators import require_session_jwt
@@ -26,8 +28,10 @@ from ..assistant.agent import (
     BookNotFoundError,
     update_chat,
     PAGE_SIZE,
+    get_max_message_id,
+    get_session_messages_after,
+    get_new_items_with_ids,
 )
-from ..assistant.session import CustomSQLAlchemySession, get_new_items_with_ids
 from ..assistant.snippets import get_relevant_snippets
 
 
@@ -230,7 +234,8 @@ def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
     # TODO: inside update_chat make sure than any errors are handled by a polite \
     # llm generated response (except no connectivity to LLM) (just handle the \
     # high level openai agents sdk errors)
-    session = CustomSQLAlchemySession(session_id, engine=get_async_engine())
+    session = SQLAlchemySession(session_id, engine=get_async_engine())
+    max_id = get_max_message_id()
     try:
         run_result = asyncio.run(
             update_chat(
@@ -244,13 +249,18 @@ def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
     except BookNotFoundError as e:
         return APIUtils.formatResponseObject(404, RESPONSE_TYPE, {"message": str(e)})
 
+    session_message_items = get_session_messages_after(session_id, max_id)
+
     # Add relevant snippets to search result, if search was executed in this agent turn
     # snippets updated in run_result in place
     asyncio.run(get_relevant_snippets(run_result, approach="naive"))
 
     ## Build API response
 
-    messages = get_new_items_with_ids(run_result, session)
+    # Note: Concurrent writes to *this* session are theoretically possible but unlikely
+    # in practice; get_new_items_with_ids() guards against them by only returning
+    # items that also appear in RunResult.new_items. MAYBE: just use session_message_items without filtering?
+    messages = get_new_items_with_ids(run_result, session_message_items)
     logger.info(f"Agent generated {len(messages)} new message items")
 
     # Format search results

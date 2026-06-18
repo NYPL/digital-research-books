@@ -33,7 +33,7 @@ class TestOnMaxTurns:
             side_effect=RuntimeError("Search unavailable, please retry."),
         )
 
-        # Mock CustomSQLAlchemySession with in-memory sqlite session
+        # Mock SQLAlchemySession with in-memory sqlite session
         session = SQLiteSession("test")
 
         run_result = await update_chat(
