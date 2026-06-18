@@ -569,6 +569,7 @@ def main():
         )
 
         batch_pct = 100.0 * batch_index / total_batches
+        # NOTE: total batch in the run, not the job (if --resume-latest existing job)
         print(
             f"[Batch {batch_index}/{total_batches} | {batch_pct:.0f}%] Saved batch result: {saved_path}"
         )

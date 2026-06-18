@@ -1,9 +1,20 @@
 """
-Benchmark throughput of any Embedder implementation.
+Benchmark throughput of any Embedder implementation at various concurrency levels.
 
-Configure EMBEDDER at the top of the file, then run with:
-    uv run dev_scripts/embedding/benchmark_throughput_hf_sagemaker.py
+Configure EMBEDDER at the top of the file, then run.
 """
+
+# Add project root to path if running directly
+if __name__ == "__main__":
+    from dotenv import find_dotenv
+    import sys
+    from pathlib import Path
+
+    project_root = Path(
+        find_dotenv("requirements.txt", raise_error_if_not_found=True)
+    ).parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 import asyncio
 import dataclasses
@@ -17,8 +28,11 @@ import numpy as np
 
 from logger import configure_loggers, create_log
 from vector_indexing.components.embedders import *
+from utils.load_env import load_env
 
 logger = create_log(__name__)
+
+load_env("config/.env.production")
 
 # ---------------------------------------------------------------------------
 # Configuration - set EMBEDDER to whatever you want to benchmark
@@ -31,13 +45,24 @@ CONCURRENCY_LEVELS = [1]
 # EMBEDDER: Embedder = Qwen38BEmbedder(
 #     endpoint_name="hf-tei-20260423-142720",
 #     aws_profile="sandbox",
-#     concurrency=1,  # benchmark controls concurrency via the semaphore
+#     batch_concurrency=1,  # benchmark controls concurrency via the semaphore
 # )
-EMBEDDER = Gemini001Embedder()
 # TODO: for sagemaker embedders, for higher thruput. try  {inputs: [<str>, <str>]} (this works!),  batch_transform, async inference endpoint
 
-# TOTAL_REQUESTS = 200
-TOTAL_REQUESTS = 4000
+# EMBEDDER = Gemini001Embedder()
+EMBEDDER = Gemini2Embedder()
+
+
+BATCHED = True  # if True, use embed_document_batch() with EMBEDDER._batch_size chunks per request
+
+# TOTAL_CHUNKS = 200
+TOTAL_CHUNKS = 1000
+
+if BATCHED:
+    assert TOTAL_CHUNKS % EMBEDDER._batch_size == 0, (
+        f"TOTAL_CHUNKS ({TOTAL_CHUNKS}) must be an exact multiple of "
+        f"EMBEDDER._batch_size ({EMBEDDER._batch_size}) when BATCHED=True"
+    )
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -127,8 +152,10 @@ class BatchResult:
 
     concurrency: int
     total_requests: int
+    total_chunks: int
     total_time_s: float
     req_per_s: float
+    chunks_per_s: float
     tokens_per_s: float
     avg_latency_ms: float
     p50_latency_ms: float
@@ -240,11 +267,19 @@ def get_embedder_metadata(embedder: Embedder) -> dict:
 
 
 async def _call_embedder(embedder: Embedder, semaphore: asyncio.Semaphore):
-    """Run one synchronous embedder.embed_document() call inside a thread."""
+    """Run one embed call inside a thread and record duration.
+
+    When BATCHED=True, sends embedder._batch_size documents per request via
+    embed_document_batch(); otherwise sends a single document via embed_document().
+    """
     async with semaphore:
         start = time.perf_counter()
         try:
-            await asyncio.to_thread(embedder.embed_document, DUMMY_TEXT)
+            if BATCHED:
+                batch = [DUMMY_TEXT] * embedder._batch_size
+                await asyncio.to_thread(embedder.embed_document_batch, batch)
+            else:
+                await asyncio.to_thread(embedder.embed_document, DUMMY_TEXT)
             elapsed = time.perf_counter() - start
             return elapsed, None
         except Exception as exc:
@@ -255,17 +290,20 @@ async def _call_embedder(embedder: Embedder, semaphore: asyncio.Semaphore):
 async def run_benchmark(
     embedder: Embedder,
     concurrency: int,
-    total_requests: int,
+    total_chunks: int,
     token_count: int,
 ) -> BatchResult:
     """
-    Send *total_requests* embedding requests capped at *concurrency* in-flight at once.
+    Embed *total_chunks* chunks capped at *concurrency* requests in-flight at once.
+    When BATCHED=True each request carries embedder._batch_size chunks; otherwise one.
     Return summary of throughput.
     """
+    chunks_per_request = embedder._batch_size if BATCHED else 1
+    num_requests = total_chunks // chunks_per_request
 
-    # Run inference for *total_requests*
+    # Run inference for *num_requests*
     semaphore = asyncio.Semaphore(concurrency)
-    tasks = [_call_embedder(embedder, semaphore) for _ in range(total_requests)]
+    tasks = [_call_embedder(embedder, semaphore) for _ in range(num_requests)]
     print(f"  Benchmarking concurrency={concurrency} ...")
     wall_start = time.perf_counter()
     outcomes = await asyncio.gather(*tasks)
@@ -283,13 +321,16 @@ async def run_benchmark(
 
     latencies_ms = np.array(latencies) * 1000
 
-    tokens_per_s = (total_requests * token_count) / wall_time
+    chunks_per_s = total_chunks / wall_time
+    tokens_per_s = total_chunks * token_count / wall_time
 
     result = BatchResult(
         concurrency=concurrency,
-        total_requests=total_requests,
+        total_requests=num_requests,
+        total_chunks=total_chunks,
         total_time_s=wall_time,
-        req_per_s=total_requests / wall_time,
+        req_per_s=num_requests / wall_time,
+        chunks_per_s=chunks_per_s,
         tokens_per_s=tokens_per_s,
         avg_latency_ms=float(np.mean(latencies_ms)) if latencies_ms.size else 0.0,
         p50_latency_ms=float(np.percentile(latencies_ms, 50))
@@ -307,7 +348,8 @@ async def run_benchmark(
     # Print batch results
     print(
         f"    concurrency={concurrency:>2}  "
-        f"throughput={result.req_per_s:.2f} req/s  "
+        f"req/s={result.req_per_s:.2f}  "
+        f"chunks/s={result.chunks_per_s:>8.2f}  "
         f"tok/s={result.tokens_per_s:>10.1f}  "
         f"avg_latency={result.avg_latency_ms:.1f} ms  "
         f"p95={result.p95_latency_ms:.1f} ms  "
@@ -333,29 +375,34 @@ async def main() -> List[BatchResult]:
     for key, val in metadata.items():
         if key != "embedder_class":
             print(f"  {key}: {val}")
-    print(f"Requests      : {TOTAL_REQUESTS} per concurrency level")
+    chunks_per_request = EMBEDDER._batch_size if BATCHED else 1
+    num_requests = TOTAL_CHUNKS // chunks_per_request
+    print(
+        f"Chunks        : {TOTAL_CHUNKS} per concurrency level (batched with {num_requests} requests @ {chunks_per_request} chunk(s)/req)"
+    )
     print(f"Dummy text    : ~{token_count} tokens\n")
 
-    assert max(CONCURRENCY_LEVELS) < TOTAL_REQUESTS, (
+    assert max(CONCURRENCY_LEVELS) < num_requests, (
         f"Max concurrency ({max(CONCURRENCY_LEVELS)}) must be less than "
-        f"TOTAL_REQUESTS ({TOTAL_REQUESTS})"
+        f"num_requests ({num_requests})"
     )
 
     # Run inference throughput benchmark for all concurrency levels
     results: List[BatchResult] = []
     for concurrency in CONCURRENCY_LEVELS:
-        result = await run_benchmark(embedder, concurrency, TOTAL_REQUESTS, token_count)
+        result = await run_benchmark(embedder, concurrency, TOTAL_CHUNKS, token_count)
         results.append(result)
 
     # Print multi-concurrency benchmark summary table
     print("\n--- Summary ---")
-    header = f"{'Concurrency':>11}  {'Req/s':>8}  {'Tok/s':>10}  {'Avg (ms)':>10}  {'P50 (ms)':>10}  {'P95 (ms)':>10}  {'P99 (ms)':>10}  {'Errors':>7}"
+    header = f"{'Concurrency':>11}  {'Req/s':>8}  {'Chunks/s':>10}  {'Tok/s':>10}  {'Avg (ms)':>10}  {'P50 (ms)':>10}  {'P95 (ms)':>10}  {'P99 (ms)':>10}  {'Errors':>7}"
     print(header)
     print("-" * len(header))
     for r in results:
         print(
             f"{r.concurrency:>11}  "
             f"{r.req_per_s:>8.2f}  "
+            f"{r.chunks_per_s:>10.2f}  "
             f"{r.tokens_per_s:>10.1f}  "
             f"{r.avg_latency_ms:>10.1f}  "
             f"{r.p50_latency_ms:>10.1f}  "
@@ -366,11 +413,14 @@ async def main() -> List[BatchResult]:
 
     # Serialize results to JSON
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = Path(__file__).parent / "results" / f"benchmark_{timestamp}.json"
+    output_file = (
+        Path(__file__).parent / "thruput_results" / f"benchmark_{timestamp}.json"
+    )
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output = {
         **metadata,
-        "total_requests_per_level": TOTAL_REQUESTS,
+        "total_chunks": TOTAL_CHUNKS,
+        "batched": BATCHED,
         "dummy_text_tokens": token_count,
         "results": [r.to_dict() for r in results],
     }

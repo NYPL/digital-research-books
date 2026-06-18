@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from google import genai
 from google.genai import types
-from google.genai.errors import ClientError
+from google.genai.errors import ClientError, ServerError
 from ratelimit import limits, sleep_and_retry
 from tenacity import (
     retry,
@@ -15,7 +15,7 @@ from tenacity import (
     wait_exponential,
 )
 
-from vector_indexing.components.embedders.base import Embedder
+from vector_indexing.components.embedders.base import APIEmbedder
 from logger import create_log
 
 if TYPE_CHECKING:
@@ -30,9 +30,12 @@ DEFAULT_BATCH_SIZE = 100
 # Rate limit: 20 calls/min with batch size 100 = 2000 embeddings/min
 # (3000/min usually breaks the token limit with current chunking leading to
 # more backoff attempts and thus lower thruput)
+# June 2026: new rate limits: reqs/min=20k, toks/min=20M
 # DEFAULT_RATE_LIMIT_CALLS = 20
-DEFAULT_RATE_LIMIT_CALLS = 20_000
+DEFAULT_RATE_LIMIT_CALLS = 15_000
 DEFAULT_RATE_LIMIT_PERIOD = 60  # seconds
+# TODO: set RPM and TPM and set up _make_request to have @limits derived from the \
+# RPM and TPM (for configured tokens per chunk = 750). This will require some factory function
 
 
 def _l2_normalize(vector: list[float]) -> list[float]:
@@ -50,7 +53,19 @@ def _is_rate_limit_error(exception: BaseException) -> bool:
     )
 
 
-class Gemini001Embedder(Embedder):
+def _is_service_unavailable_error(exception: BaseException) -> bool:
+    """Check if exception is a service unavailable error (HTTP 503)."""
+    # google.genai.errors.ServerError: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'The service is currently unavailable.', 'status': 'UNAVAILABLE'}}
+    return (
+        isinstance(exception, ServerError) and getattr(exception, "code", None) == 503
+    )
+
+
+def _should_retry(exception: BaseException) -> bool:
+    return _is_rate_limit_error(exception) or _is_service_unavailable_error(exception)
+
+
+class Gemini001Embedder(APIEmbedder):
     """Google Gemini embedding-001 model implementation.
 
     Uses the google-genai client with built-in rate limiting and
@@ -95,14 +110,7 @@ class Gemini001Embedder(Embedder):
     def embed_one(
         self, text: str, task_type: str = "RETRIEVAL_DOCUMENT"
     ) -> list[float]:
-        result = self._client.models.embed_content(
-            model=self._model,
-            contents=text,
-            config={
-                "task_type": task_type,
-                "output_dimensionality": self._dimensions,
-            },
-        )
+        result = self._make_request([text], task_type=task_type)
         return _l2_normalize(result.embeddings[0].values)
 
     def embed_batch(
@@ -114,7 +122,7 @@ class Gemini001Embedder(Embedder):
         vectors: list[list[float]] = []
         for i in range(0, len(texts), self._batch_size):
             batch = texts[i : i + self._batch_size]
-            result = self._call_api(batch, task_type)
+            result = self._make_request(batch, task_type=task_type)
             vectors.extend([_l2_normalize(emb.values) for emb in result.embeddings])
         return vectors
 
@@ -135,15 +143,17 @@ class Gemini001Embedder(Embedder):
     @retry(
         stop=stop_after_attempt(7),
         wait=wait_exponential(multiplier=4, max=70),
-        retry=retry_if_exception(_is_rate_limit_error),
+        retry=retry_if_exception(_should_retry),
         before_sleep=lambda retry_state: logger.warning(
-            f"Rate limit hit, retrying in {retry_state.next_action.sleep:.1f}s "
+            f"Retrying in {retry_state.next_action.sleep:.1f}s "
             f"(attempt {retry_state.attempt_number}): {retry_state.outcome.exception()}"
         ),
     )
     @sleep_and_retry
     @limits(calls=DEFAULT_RATE_LIMIT_CALLS, period=DEFAULT_RATE_LIMIT_PERIOD)
-    def _call_api(self, batch: list[str], task_type: str):
+    def _make_request(
+        self, batch: list[str], task_type: str = "RETRIEVAL_DOCUMENT", **kwargs
+    ):
         """Make rate-limited API call with retry on rate limit errors."""
         return self._client.models.embed_content(
             model=self._model,
@@ -155,7 +165,7 @@ class Gemini001Embedder(Embedder):
         )
 
 
-class Gemini2Embedder(Embedder):
+class Gemini2Embedder(APIEmbedder):
     """Google Gemini Embedding 2 model implementation.
 
     Differences with gemini-001:
@@ -196,7 +206,7 @@ class Gemini2Embedder(Embedder):
         return self._model
 
     def embed_one(self, text: str) -> list[float]:
-        result = self._call_api([text])
+        result = self._make_request([text])
         return result.embeddings[0].values
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
@@ -206,7 +216,7 @@ class Gemini2Embedder(Embedder):
         vectors: list[list[float]] = []
         for i in range(0, len(texts), self._batch_size):
             batch = texts[i : i + self._batch_size]
-            result = self._call_api(batch)
+            result = self._make_request(batch)
             vectors.extend([emb.values for emb in result.embeddings])
         return vectors
 
@@ -233,15 +243,15 @@ class Gemini2Embedder(Embedder):
     @retry(
         stop=stop_after_attempt(7),
         wait=wait_exponential(multiplier=4, max=70),
-        retry=retry_if_exception(_is_rate_limit_error),
+        retry=retry_if_exception(_should_retry),
         before_sleep=lambda retry_state: logger.warning(
-            f"Rate limit hit, retrying in {retry_state.next_action.sleep:.1f}s "
+            f"Retrying in {retry_state.next_action.sleep:.1f}s "
             f"(attempt {retry_state.attempt_number}): {retry_state.outcome.exception()}"
         ),
     )
     @sleep_and_retry
     @limits(calls=DEFAULT_RATE_LIMIT_CALLS, period=DEFAULT_RATE_LIMIT_PERIOD)
-    def _call_api(self, texts: list[str]):
+    def _make_request(self, texts: list[str], **kwargs):
         """Make rate-limited API call with retry on rate limit errors."""
         return self._client.models.embed_content(
             model=self._model,
