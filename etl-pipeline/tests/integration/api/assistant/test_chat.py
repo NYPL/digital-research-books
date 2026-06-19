@@ -1,3 +1,4 @@
+import os
 import pytest
 import requests
 from sqlalchemy import text
@@ -5,6 +6,7 @@ from sqlalchemy import text
 from ..utils import assert_response_status, get_vra_auth_headers
 from utils.common import require_env
 from api.db import get_engine
+from api.session_jwt import sign_session
 
 ENDPOINT_PATH = "/chat"
 
@@ -22,7 +24,7 @@ TEST_CASES = [  # Defined as tuples of (conversation_type, message, edition_id)
 
 
 @pytest.mark.parametrize("conversation_type, message, edition_id", TEST_CASES)
-def test_chat(conversation_type, message, edition_id, vra_test_user):
+def test_chat(conversation_type, message, edition_id, vra_test_user, test_session_id):
     url = require_env("DRB_API_URL") + ENDPOINT_PATH
     payload = {
         "conversationType": conversation_type,
@@ -32,10 +34,14 @@ def test_chat(conversation_type, message, edition_id, vra_test_user):
     if edition_id is not None:
         payload["editionId"] = edition_id
 
+    cookie_name = os.environ.get("SESSION_COOKIE_NAME", "vra_session")
+    session_cookie = sign_session(test_session_id)
+
     response = requests.post(
         url,
         json=payload,
         headers=get_vra_auth_headers(),
+        cookies={cookie_name: session_cookie},
         timeout=90,  # 30s faster than pytest timeout to catch API timeouts explicitly
     )
 
@@ -62,7 +68,9 @@ def test_chat(conversation_type, message, edition_id, vra_test_user):
         )
 
 
-def test_chat_assistant_messages_have_db_ids_matching_db(vra_test_user):
+def test_chat_assistant_messages_have_db_ids_matching_db(
+    vra_test_user, test_session_id
+):
     """Assistant messages in the response should carry a db_id that maps to a
     matching row in agent_messages, with identical message_data content."""
     url = require_env("DRB_API_URL") + ENDPOINT_PATH
@@ -70,11 +78,14 @@ def test_chat_assistant_messages_have_db_ids_matching_db(vra_test_user):
         "conversationType": "catalogSearch",
         "message": "Find books about history.",
     }
+    cookie_name = os.environ.get("SESSION_COOKIE_NAME", "vra_session")
+    session_cookie = sign_session(test_session_id)
 
     response = requests.post(
         url,
         json=payload,
         headers=get_vra_auth_headers(),
+        cookies={cookie_name: session_cookie},
         timeout=90,
     )
     assert_response_status(url, response, 200)
