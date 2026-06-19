@@ -160,7 +160,7 @@ def chat_test_client(mocker):
     )
 
     mocker.patch("api.blueprints.chat.get_async_engine")
-    mocker.patch("api.blueprints.chat.SQLAlchemySession")
+    mocker.patch("api.blueprints.chat.JSONBSQLAlchemySession")
     mocker.patch("api.blueprints.chat.get_max_message_id", return_value=0)
     mocker.patch("api.blueprints.chat.get_session_messages_after", return_value=[])
 

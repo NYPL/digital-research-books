@@ -682,11 +682,11 @@ def test_session_id():
 @pytest.fixture
 def test_session(test_session_id):
     """
-    A SQLAlchemySession using `test_session_id` fixture for cleanup and isolation.
+    A JSONBSQLAlchemySession using `test_session_id` fixture for cleanup and isolation.
 
     Mostly a light wrapper of `test_session_id`.
     """
     from api.db import get_async_engine
-    from agents.extensions.memory import SQLAlchemySession
+    from api.assistant.session import JSONBSQLAlchemySession
 
-    return SQLAlchemySession(test_session_id, engine=get_async_engine())
+    return JSONBSQLAlchemySession(test_session_id, engine=get_async_engine())
