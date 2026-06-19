@@ -240,7 +240,7 @@ class Gemini2Embedder(APIEmbedder):
     def embed_query_batch(self, texts: list[str]) -> list[list[float]]:
         return self.embed_batch([self._format_query(t) for t in texts])
 
-    # MAYBE: since Content() does work for gemini-001 too (I think), _call_api()
+    # MAYBE: since Content() does work for gemini-001 too (I think), _make_request()
     # could be pulled out to a module function shared by both embedders.
     @retry(
         stop=stop_after_attempt(7),
