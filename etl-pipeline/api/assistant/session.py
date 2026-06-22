@@ -1,5 +1,3 @@
-import json
-
 from sqlalchemy import Column, Table
 from sqlalchemy.dialects.postgresql import JSONB
 from agents.extensions.memory import SQLAlchemySession
@@ -25,7 +23,7 @@ class JSONBSQLAlchemySession(SQLAlchemySession):
         )
 
     async def _serialize_item(self, item: TResponseInputItem) -> dict:
-        return json.loads(json.dumps(item))
+        return item
 
     async def _deserialize_item(self, item: dict) -> TResponseInputItem:
         return item
