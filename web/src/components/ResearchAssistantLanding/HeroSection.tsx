@@ -103,7 +103,8 @@ const HeroSection: React.ForwardRefExoticComponent<
             backgroundColor: "section.research.primary-05",
           }}
         >
-          How does it work? <ArrowIcon direction="down" color="#006166" />
+          How does it work?{" "}
+          <ArrowIcon iconRotation="rotate90" color="#006166" />
         </Button>
       </SectionContainer>
     );

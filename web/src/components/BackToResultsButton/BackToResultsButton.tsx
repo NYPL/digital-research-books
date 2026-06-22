@@ -3,25 +3,25 @@ import React from "react";
 import ArrowIcon from "../ResearchAssistant/icons/ArrowIcon";
 
 interface BackToResultsButtonProps {
-    handleBackToResults: () => void;
+  handleBackToResults: () => void;
 }
 
 const BackToResultsButton: React.FC<BackToResultsButtonProps> = ({
-    handleBackToResults,
+  handleBackToResults,
 }) => {
-    return (
-        <Button
-            variant="text"
-            id="back-button"
-            color="section.research.secondary"
-            onClick={handleBackToResults}
-        >
-            <Flex alignItems="center" gap="xs">
-                <ArrowIcon direction="left" color="#006166" />
-                <span>Back to results</span>
-            </Flex>
-        </Button>
-    );
+  return (
+    <Button
+      variant="text"
+      id="back-button"
+      color="section.research.secondary"
+      onClick={handleBackToResults}
+    >
+      <Flex alignItems="center" gap="xs">
+        <ArrowIcon iconRotation="rotate180" color="#006166" />
+        <span>Back to results</span>
+      </Flex>
+    </Button>
+  );
 };
 
 export default BackToResultsButton;
