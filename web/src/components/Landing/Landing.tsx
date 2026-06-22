@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Heading,
@@ -9,11 +8,12 @@ import {
   TemplateMain,
   useNYPLBreakpoints,
 } from "@nypl/design-system-react-components";
+import React from "react";
 import SearchForm from "~/src/components/SearchForm/SearchForm";
-import CollectionList from "../CollectionList/CollectionList";
 import { Opds2Feed } from "~/src/types/OpdsModel";
-import DrbHero from "../DrbHero/DrbHero";
+import CollectionList from "../CollectionList/CollectionList";
 import DrbBreakout from "../DrbBreakout/DrbBreakout";
+import DrbHero from "../DrbHero/DrbHero";
 import Link from "../Link/Link";
 
 const LandingPage: React.FC<{ collections?: Opds2Feed }> = ({
@@ -23,7 +23,7 @@ const LandingPage: React.FC<{ collections?: Opds2Feed }> = ({
     <Box
       sx={{
         a: {
-          color: "ui.link.primary",
+          color: "ui.link.primary !important",
           display: "inline",
         },
       }}
@@ -70,9 +70,9 @@ const LandingPage: React.FC<{ collections?: Opds2Feed }> = ({
     <DrbBreakout>
       <DrbHero />
       <Hero
-        backgroundColor="ui.gray.light-cool"
+        textBackgroundColor="ui.gray.light-cool"
         backgroundImageSrc={backgroundImageSrc}
-        foregroundColor="ui.black"
+        textColor="ui.black"
         variant="primary"
         heading={
           <Heading
@@ -92,7 +92,9 @@ const LandingPage: React.FC<{ collections?: Opds2Feed }> = ({
 
   const contentElement = (
     <Box marginLeft="l" marginRight="l">
-      <Heading level="h2" marginBottom="s">Recently Added Collections</Heading>
+      <Heading level="h2" marginBottom="s">
+        Recently Added Collections
+      </Heading>
       <CollectionList collections={collections} />
     </Box>
   );
