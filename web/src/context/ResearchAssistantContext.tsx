@@ -138,11 +138,9 @@ export const ResearchAssistantProvider: React.FC<{
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
 
     try {
-      const token = localStorage.getItem("authToken");
       const response = await fetch("/api/research-assistant", {
         method: "POST",
         headers: {
-          Authorization: `Basic ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

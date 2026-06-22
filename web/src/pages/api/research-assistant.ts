@@ -45,7 +45,6 @@ export default async function handler(
       });
     }
 
-    const authorization = req.headers.authorization || undefined;
     const cookieHeader = req.headers.cookie || undefined;
 
     const payload: any = {
@@ -60,7 +59,6 @@ export default async function handler(
       "X-API-KEY": apiKey,
       Accept: "application/x-ndjson",
     };
-    if (authorization) headers.Authorization = authorization;
     if (cookieHeader) headers["cookie"] = cookieHeader;
 
     const chatResponse = await fetch(chatUrl, {
