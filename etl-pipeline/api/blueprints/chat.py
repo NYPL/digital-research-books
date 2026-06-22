@@ -264,7 +264,7 @@ def chat(session_id):
 
             # Note: Concurrent writes to *this* session are theoretically possible but unlikely
             # in practice; get_new_items_with_ids() guards against them by only returning
-            # items that also appear in RunResult.new_items. MAYBE: just use session_message_items without filtering?
+            # items that also appear in RunResult.new_items.
             messages = get_new_items_with_ids(run_result, session_message_items)
             logger.info(f"Agent generated {len(messages)} new message items")
 

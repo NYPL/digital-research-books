@@ -735,6 +735,12 @@ def get_new_items_with_ids(
             result.append({"db_id": matched_db_id, **item_dict})
         else:
             result.append(item_dict)
+            if (item_dict.get("role") == "assistant") and (
+                item_dict.get("type") == "message"
+            ):
+                logger.warning(
+                    f"This assistant message did not get a db_id: {item_dict}"
+                )
     return result
 
 
