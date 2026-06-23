@@ -74,6 +74,7 @@ const ResearchAssistantWindow: React.FC = () => {
         display="flex"
         flexDir="column"
         fontSize="desktop.body.body2"
+        minHeight="0"
         overflowY="auto"
         paddingY="s"
         gap="s"
@@ -85,6 +86,11 @@ const ResearchAssistantWindow: React.FC = () => {
         role="log"
         aria-live="off"
         aria-label="Chat messages"
+        sx={{
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch",
+          touchAction: "pan-y",
+        }}
       >
         <MessageBubble index={0} message={initialMessage} />
         {messages.map((message, index) => {

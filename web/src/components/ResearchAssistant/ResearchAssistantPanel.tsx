@@ -17,7 +17,19 @@ import ResearchAssistantHeader from "./ResearchAssistantHeader";
 import ResearchAssistantInput from "./ResearchAssistantInput";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 
-const ResearchAssistantPanel: React.FC = () => {
+type ResearchAssistantPanelProps = {
+  onResizeStart?: (event: React.PointerEvent<HTMLDivElement>) => void;
+  panelHeight?: number;
+  minPanelHeight?: number;
+  maxPanelHeight?: number;
+};
+
+const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
+  onResizeStart,
+  panelHeight,
+  minPanelHeight,
+  maxPanelHeight,
+}) => {
   const {
     clearHistory,
     messages,
@@ -60,16 +72,45 @@ const ResearchAssistantPanel: React.FC = () => {
       display="flex"
       flexDirection="column"
       maxHeight={{ base: "100%", md: "100vh" }}
+      minHeight="0"
       position={{ base: "relative", md: "sticky" }}
       top={{ base: "auto", md: "0" }}
       width="100%"
       paddingLeft={paddingX}
       paddingRight={page === "item" ? "l" : undefined}
+      overflow="hidden"
+      sx={{ overscrollBehavior: "contain" }}
       role="region"
       aria-labelledby="vra-panel-heading"
     >
       {showChat ? (
         <>
+          <Box
+            display={{ base: "flex", md: "none" }}
+            alignItems="center"
+            justifyContent="center"
+            width="100%"
+            paddingTop="xs"
+            onPointerDown={onResizeStart}
+            role="separator"
+            aria-orientation="horizontal"
+            aria-label="Resize enhanced search panel"
+            aria-valuenow={panelHeight}
+            aria-valuemin={minPanelHeight}
+            aria-valuemax={maxPanelHeight}
+            sx={{
+              cursor: "ns-resize",
+              touchAction: "none",
+            }}
+          >
+            <Box
+              width="44px"
+              height="4px"
+              borderRadius="999px"
+              bgColor="ui.white"
+              sx={{ opacity: 0.65 }}
+            />
+          </Box>
           <ResearchAssistantHeader>
             <Heading
               level="h2"
@@ -107,7 +148,10 @@ const ResearchAssistantPanel: React.FC = () => {
                 }}
               >
                 <Flex gap="xxs" alignItems="center">
-                  <RewindIcon /> <Text>Start over</Text>
+                  <RewindIcon />{" "}
+                  <Text display={{ base: "none", sm: "block" }}>
+                    Start over
+                  </Text>
                 </Flex>
               </Button>
               <Button
@@ -132,7 +176,7 @@ const ResearchAssistantPanel: React.FC = () => {
                 }}
               >
                 <Flex gap="xxs" alignItems="center">
-                  <Text>Hide chat</Text>
+                  <Text display={{ base: "none", sm: "block" }}>Hide chat</Text>
                   <ArrowIcon color="#FFF" />
                 </Flex>
               </Button>

@@ -116,7 +116,7 @@ export const CONTROL_SUBNAV_IMAGE_MOBILE =
 
 // ResearchAssistantPanel
 const CONTENT_PADDING_VALUE = "1rem";
-const OUTER_MARGIN_CALC = "calc((100vw - 1280px) / 2)";
+const OUTER_MARGIN_CALC = "max(0px, calc((100vw - 1280px) / 2))";
 
 export const MARGIN_BLEED = {
   base: "0",
@@ -125,10 +125,10 @@ export const MARGIN_BLEED = {
 export const PADDING_COUNTER = `calc(${OUTER_MARGIN_CALC} + ${CONTENT_PADDING_VALUE})`;
 
 const MARGIN_COMPACT = "-2rem";
-const PADDING_COMPACT = "l";
+const PADDING_COMPACT = { base: "m", md: "l" };
 const MARGIN_RIGHT_COMPACT = {
-  base: "0",
-  md: `calc(calc(${OUTER_MARGIN_CALC} * -1 - ${CONTENT_PADDING_VALUE}) * 2)`,
+  base: "xs",
+  md: `min(0px, calc(calc(${OUTER_MARGIN_CALC} * -1 - ${CONTENT_PADDING_VALUE}) * 2))`,
 };
 
 export function getPanelLayout() {
