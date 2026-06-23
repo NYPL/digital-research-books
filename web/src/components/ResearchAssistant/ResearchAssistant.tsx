@@ -38,8 +38,8 @@ const ResearchAssistant: React.FC = () => {
   }, [messages, sendMessage]);
 
   const gridTemplateColumns = showChat
-    ? "1fr 640px 640px 1fr"
-    : "1fr 1152px 128px 1fr";
+    ? { base: "1fr", md: "1fr 640px 640px 1fr" }
+    : { base: "1fr", md: "1fr 1152px 128px 1fr" };
 
   const latestResults = useMemo(() => {
     if (!results) return null;
@@ -64,19 +64,21 @@ const ResearchAssistant: React.FC = () => {
         display="grid"
         gridTemplateColumns={gridTemplateColumns}
         width="100%"
+        minHeight="100vh"
         id="mainContent"
         role="main"
       >
         <Flex
-          gridColumn="1 / span 2"
+          gridColumn={{ base: "1 / -1", md: "1 / span 2" }}
           flexDirection="column"
           minWidth="0"
           justifyContent="flex-end"
           alignItems="flex-end"
           bgColor="ui.bg.default"
+          paddingBottom={{ base: showChat ? "80vh" : "68px", md: "0" }}
         >
           <Flex
-            width={showChat ? "640px" : "1152px"}
+            width={{ base: "100%", md: showChat ? "640px" : "1152px" }}
             flexDirection="column"
             height="100%"
             justifyContent="flex-end"
@@ -107,7 +109,12 @@ const ResearchAssistant: React.FC = () => {
                   paddingLeft={PADDING_COUNTER}
                 />
               )}
-              <Box paddingLeft="s" paddingRight="l" paddingBottom="l" flex="1">
+              <Box
+                paddingLeft="s"
+                paddingRight={{ base: "s", md: "l" }}
+                paddingBottom="l"
+                flex="1"
+              >
                 {isLoading ? (
                   <CatalogResultsSkeleton />
                 ) : latestResults && Object.keys(latestResults).length > 0 ? (
@@ -133,19 +140,24 @@ const ResearchAssistant: React.FC = () => {
           </Flex>
         </Flex>
         <Flex
-          gridColumn="3 / span 2"
+          gridColumn={{ base: "1 / -1", md: "3 / span 2" }}
           flexDirection="column"
           bgColor="section.research.primary"
-          maxHeight="100vh"
-          position="sticky"
-          top="0"
+          maxHeight={{ base: showChat ? "80vh" : "auto", md: "100vh" }}
+          position={{ base: "fixed", md: "sticky" }}
+          top={{ base: "auto", md: "0" }}
+          bottom={{ base: "0", md: "auto" }}
+          left={{ base: "0", md: "auto" }}
+          right={{ base: "0", md: "auto" }}
           zIndex="1000"
           minWidth="0"
+          width={{ base: "100%", md: "auto" }}
           justifyContent="flex-start"
           alignItems="flex-start"
+          borderRadius={{ base: "8px 8px 0 0", md: "0" }}
         >
           <Flex
-            width="640px"
+            width={{ base: "100%", md: "640px" }}
             flexDirection="column"
             height="100%"
             justifyContent="flex-start"

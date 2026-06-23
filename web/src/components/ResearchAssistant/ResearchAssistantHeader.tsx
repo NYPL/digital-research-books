@@ -16,6 +16,7 @@ const ResearchAssistantHeader: React.FC<{ children: React.ReactNode }> = ({
       justifyContent="space-between"
       alignItems="center"
       borderBottom="1px white solid"
+      borderRadius={{ base: "8px 8px 0 0", md: "0" }}
       marginLeft={marginX}
       marginRight={marginRight}
       paddingLeft="s"

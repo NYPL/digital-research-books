@@ -59,10 +59,9 @@ const ResearchAssistantPanel: React.FC = () => {
       flex="1"
       display="flex"
       flexDirection="column"
-      bgColor="section.research.primary"
-      maxHeight="100vh"
-      position="sticky"
-      top="0"
+      maxHeight={{ base: "100%", md: "100vh" }}
+      position={{ base: "relative", md: "sticky" }}
+      top={{ base: "auto", md: "0" }}
       width="100%"
       paddingLeft={paddingX}
       paddingRight={page === "item" ? "l" : undefined}
@@ -152,6 +151,20 @@ const ResearchAssistantPanel: React.FC = () => {
         </>
       ) : (
         <ResearchAssistantHeader>
+          <Box display={{ base: "block", md: "none" }}>
+            <Heading
+              level="h2"
+              size="heading7"
+              color="ui.white"
+              display="flex"
+              alignItems="center"
+              gap="xs"
+              id="vra-panel-heading"
+            >
+              <ResearchAssistantIcon color="#ECFAFB" size="large" />
+              <span>Enhanced Search</span>
+            </Heading>
+          </Box>
           <Button
             ref={showChatButtonRef}
             onClick={toggleChat}

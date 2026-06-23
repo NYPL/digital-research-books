@@ -77,7 +77,7 @@ const CatalogResults: React.FC<{
         fontSize="desktop.heading.heading7"
         fontWeight="bold"
         lineHeight="125%"
-        marginX="-2rem"
+        marginX={{ base: "none", md: "-2rem" }}
         paddingX="l"
         paddingY="s"
         position="sticky"
