@@ -76,20 +76,23 @@ def _chunk_with_id(doc_id: str) -> ChunkDocument:
     )
 
 
-# TODO: fix the out of data global config usage
 def make_backend() -> TurbopufferBackend:
     """Return a TurbopufferBackend with mocked TP client."""
-    with patch("vector_indexing.components.backends.turbopuffer.tpuf") as mock_tpuf:
+    with (
+        patch("vector_indexing.components.backends.turbopuffer.tpuf") as mock_tpuf,
+        patch.dict(
+            "os.environ",
+            {
+                "TURBOPUFFER_API_KEY": "test-key",  # pragma: allowlist secret
+                "TURBOPUFFER_REGION": "aws-us-east-1",
+            },
+        ),
+    ):
         mock_client = MagicMock()
         mock_tpuf.Turbopuffer.return_value = mock_client
         mock_client.namespace.return_value = MagicMock()
 
-        from vector_indexing.core.config import GlobalConfig
-
-        backend = TurbopufferBackend(
-            index_name="test-ns",
-            config=GlobalConfig(turbopuffer_api_key="k", turbopuffer_region="r"),
-        )
+        backend = TurbopufferBackend(index_name="test-ns")
     return backend
 
 
