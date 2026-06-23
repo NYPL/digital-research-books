@@ -10,9 +10,6 @@ import {
 class ResearchAssistantPage {
   readonly page: Page;
 
-  // Authentication
-  readonly logInBtn: Locator;
-
   // Chat interface (right panel)
   readonly researchAssistantPanelHeading: Locator;
   readonly messageBubbles: Locator;
@@ -46,9 +43,6 @@ class ResearchAssistantPage {
 
   constructor(page: Page) {
     this.page = page;
-
-    // Authentication
-    this.logInBtn = page.getByRole("link", { name: "Login" }); // update name for SCHOL-280
 
     // Chat interface (right panel)
     this.researchAssistantPanelHeading = page.getByRole("heading", {
@@ -133,44 +127,6 @@ class ResearchAssistantPage {
     await new Promise((resolve) => setTimeout(resolve, 500)); // sleep for 0.5s to simulate user pause between typing and submitting
     await this.submitQueryBtn.click();
     ResearchAssistantPage.queryExecutionCount += 1;
-  }
-
-  // TODO: Relocate method to a base page class since the action can be carried out elsewhere
-  async logIn(username: string, password: string) {
-    // Ensure username and password are set (loaded from envars at runtime)
-    if (!username || !password) {
-      throw new Error("Username and password must be defined");
-    }
-
-    // If log in button is not visible, assume the user is already authenticated
-    const shouldAttemptLogin = await this.logInBtn
-      .isVisible()
-      .catch(() => false);
-    if (!shouldAttemptLogin) {
-      return;
-    }
-
-    // Handle cases where the login page opens in a new tab or the same tab
-    const newTabPromise = this.page
-      .context()
-      .waitForEvent("page")
-      .catch(() => null);
-    await this.logInBtn.click();
-    const sameTabPromise = this.page
-      .getByLabel("Username")
-      .waitFor({ state: "visible" })
-      .then(() => this.page)
-      .catch(() => null);
-    const loginPage =
-      (await Promise.race([newTabPromise, sameTabPromise])) ?? this.page;
-
-    // Fill in login form and submit
-    await loginPage.getByLabel("Username").fill(username);
-    await loginPage.getByLabel("Password").fill(password);
-    await Promise.all([
-      loginPage.waitForLoadState("networkidle"),
-      loginPage.getByRole("button", { name: "Login" }).click(), // update name for SCHOL-280
-    ]);
   }
 
   async getFirstResultEditionId(): Promise<string> {
