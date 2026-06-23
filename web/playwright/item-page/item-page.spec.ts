@@ -138,6 +138,35 @@ test.describe("Item Page UI", { tag: "@enhanced-search" }, () => {
       });
     }
   });
+
+  test.describe("Breadcrumb links", () => {
+    test("'Home' breadcrumb links to nypl.org", async () => {
+      await expect(itemPage.homeBreadcrumbLink).toHaveAttribute(
+        "href",
+        "https://www.nypl.org"
+      );
+    });
+
+    test("'Research' breadcrumb links to nypl.org/research", async () => {
+      await expect(itemPage.researchBreadcrumbLink).toHaveAttribute(
+        "href",
+        "https://www.nypl.org/research"
+      );
+    });
+
+    test("'Digitized Research Books' breadcrumb links to /", async () => {
+      await expect(
+        itemPage.digitizedResearchBooksBreadcrumbLink
+      ).toHaveAttribute("href", "/");
+    });
+
+    test("Item title breadcrumb links to the item page", async () => {
+      await expect(itemPage.itemBreadcrumbLink).toHaveAttribute(
+        "href",
+        /^\/item\/[0-9a-f-]+$/
+      );
+    });
+  });
 });
 
 test.describe(
