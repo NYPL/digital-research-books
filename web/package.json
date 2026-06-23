@@ -18,7 +18,7 @@
     "@chakra-ui/react": "2.5.4",
     "@emotion/react": "11.11.1",
     "@emotion/styled": "11.11.0",
-    "@nypl/design-system-react-components": "4.3.0",
+    "@nypl/design-system-react-components": "4.2.0",
     "@nypl/web-reader": "5.0.3",
     "@types/node": "16.11.6",
     "css-loader": "7.1.1",
