@@ -18,6 +18,12 @@ class ResearchAssistantLandingPage {
   readonly faqSectionHeading: Locator;
   readonly helpSectionHeading: Locator;
 
+  // Breadcrumb navigation
+  readonly homeBreadcrumbLink: Locator;
+  readonly researchBreadcrumbLink: Locator;
+  readonly digitizedResearchBooksBreadcrumbLink: Locator;
+  readonly enhancedSearchBreadcrumbLink: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.heroHeading = page.getByText("Try our new AI-enabled Enhanced Search");
@@ -55,6 +61,20 @@ class ResearchAssistantLandingPage {
     });
     this.helpSectionHeading = page.getByRole("heading", {
       name: "Have more questions?",
+    });
+
+    // Breadcrumb navigation
+    const breadcrumbNav = page.getByRole("navigation", { name: "Breadcrumb" });
+    this.homeBreadcrumbLink = breadcrumbNav.getByRole("link", { name: "Home" });
+    this.researchBreadcrumbLink = breadcrumbNav.getByRole("link", {
+      name: "Research",
+    });
+    this.digitizedResearchBooksBreadcrumbLink = breadcrumbNav.getByRole(
+      "link",
+      { name: "Digitized Research Books" }
+    );
+    this.enhancedSearchBreadcrumbLink = breadcrumbNav.getByRole("link", {
+      name: "Enhanced Search (beta)",
     });
   }
 

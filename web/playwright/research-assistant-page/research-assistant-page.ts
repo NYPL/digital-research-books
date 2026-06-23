@@ -28,6 +28,12 @@ class ResearchAssistantPage {
   readonly nonZeroResultsPagingText: Locator;
   readonly results: Locator;
 
+  // Breadcrumb navigation
+  readonly homeBreadcrumbLink: Locator;
+  readonly researchBreadcrumbLink: Locator;
+  readonly digitizedResearchBooksBreadcrumbLink: Locator;
+  readonly enhancedSearchBreadcrumbLink: Locator;
+
   // First result card
   readonly firstResult: Locator;
   readonly firstResultStatusBadge: Locator;
@@ -95,6 +101,20 @@ class ResearchAssistantPage {
     );
     this.firstResultReadOnlineBtn = this.firstResult.getByRole("link", {
       name: "Read online",
+    });
+
+    // Breadcrumb navigation
+    const breadcrumbNav = page.getByRole("navigation", { name: "Breadcrumb" });
+    this.homeBreadcrumbLink = breadcrumbNav.getByRole("link", { name: "Home" });
+    this.researchBreadcrumbLink = breadcrumbNav.getByRole("link", {
+      name: "Research",
+    });
+    this.digitizedResearchBooksBreadcrumbLink = breadcrumbNav.getByRole(
+      "link",
+      { name: "Digitized Research Books" }
+    );
+    this.enhancedSearchBreadcrumbLink = breadcrumbNav.getByRole("link", {
+      name: "Enhanced Search (beta)",
     });
   }
 

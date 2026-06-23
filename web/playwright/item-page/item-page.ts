@@ -51,6 +51,12 @@ class ItemPage {
   readonly detailsSubjectsValue: Locator;
   readonly detailsLanguagesValue: Locator;
 
+  // Breadcrumb navigation
+  readonly homeBreadcrumbLink: Locator;
+  readonly researchBreadcrumbLink: Locator;
+  readonly digitizedResearchBooksBreadcrumbLink: Locator;
+  readonly itemBreadcrumbLink: Locator;
+
   constructor(page: Page) {
     this.page = page;
 
@@ -149,6 +155,18 @@ class ItemPage {
       .locator("..")
       .getByTestId("ds-text")
       .last();
+
+    // Breadcrumb navigation
+    const breadcrumbNav = page.getByRole("navigation", { name: "Breadcrumb" });
+    this.homeBreadcrumbLink = breadcrumbNav.getByRole("link", { name: "Home" });
+    this.researchBreadcrumbLink = breadcrumbNav.getByRole("link", {
+      name: "Research",
+    });
+    this.digitizedResearchBooksBreadcrumbLink = breadcrumbNav.getByRole(
+      "link",
+      { name: "Digitized Research Books" }
+    );
+    this.itemBreadcrumbLink = breadcrumbNav.getByRole("link").last();
   }
 
   async navigateTo() {
