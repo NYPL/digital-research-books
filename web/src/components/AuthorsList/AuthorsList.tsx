@@ -27,6 +27,7 @@ const AuthorsList: React.FC<{ authors: Agent[] }> = ({ authors }) => {
                 pathname: "/search",
                 query: query,
               }}
+              isUnderlined={false}
             >
               {authorLinkText}
             </Link>

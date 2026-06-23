@@ -43,7 +43,7 @@ const MessageBubble = memo(
       >
         <Box className={bubbleClasses}>
           {isUser ? (
-            <Text>
+            <Text as="h3" fontSize="desktop.body.body2">
               <b>You: </b>
               {message.content}
             </Text>
@@ -63,7 +63,9 @@ const MessageBubble = memo(
                 )}
                 <Flex flexDir="column" gap="12px">
                   <Box>
-                    <HiddenAria>Enhanced Search says:</HiddenAria>
+                    <HiddenAria ariaLive="off" ariaAtomic={false}>
+                      <Text as="h3">Enhanced Search says:</Text>
+                    </HiddenAria>
                     {renderMarkdownContent(
                       contentItem.text,
                       handleEditionClick

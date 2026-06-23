@@ -1,9 +1,12 @@
+import os
+
 import pytest
+from flask import Flask
 from unittest.mock import MagicMock
 
 from api.assistant.agent import SCORE_SORT_DIRECTION
 from api.assistant.types import CatalogSearchResult, ContentSearchResult, Snippet
-from api.blueprints.chat import prepare_search_response
+from api.blueprints.chat import chat_blueprint, prepare_search_response
 
 
 def make_snippet(text, chunk_score):
@@ -109,3 +112,43 @@ class TestPrepareSearchResponse:
             [s.chunk_score for s in snippets], **SCORE_SORT_DIRECTION
         )
         assert output_scores == expected_scores
+
+
+class TestChatView:
+    @pytest.fixture
+    def test_app(self):
+        app = Flask("test")
+        app.config["TESTING"] = True
+        app.register_blueprint(chat_blueprint)
+        return app
+
+    @pytest.fixture
+    def client(self, test_app):
+        return test_app.test_client()
+
+    def test_unexpected_error_returns_500_and_logs(self, client, mocker):
+        mocker.patch("newrelic.agent.add_custom_attribute")
+        mocker.patch(
+            "api.blueprints.chat.update_chat",
+            side_effect=RuntimeError("something went wrong"),
+        )
+        mock_logger = mocker.patch("api.blueprints.chat.logger")
+        mocker.patch.dict(
+            os.environ,
+            {"VRA_API_KEY": "test-key"},  # pragma: allowlist secret
+        )
+        mocker.patch("api.decorators.verify_session", return_value="test-session")
+
+        client.set_cookie("vra_session", "test-token")
+        response = client.post(
+            "/chat",
+            json={
+                "message": "tell me about this book",
+                "conversationType": "catalogSearch",
+            },
+            headers={"X-API-Key": "test-key"},
+        )
+
+        assert response.status_code == 500
+        assert response.get_json()["data"]["message"] == "Unable to execute chat"
+        mock_logger.exception.assert_called_once_with("Unable to execute chat")

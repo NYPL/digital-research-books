@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Tuple
 from typing_extensions import TypedDict
 
 
+import newrelic.agent
 import numpy as np
 import pandas as pd
 from agents import (
@@ -34,6 +35,18 @@ from openai.types.shared import Reasoning
 from sqlalchemy import text
 
 
+# api code
+from ..utils import remove_markdown_comments
+from ..db import (
+    get_frbr_data_by_barcode,
+    get_frbr_data_by_edition,
+    get_readonly_session,
+    get_async_engine,
+    get_engine,
+)
+from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
+from .types import CatalogSearchResult, ContentSearchResult
+
 # shared code
 from vector_indexing.components.embedders.google import GoogleEmbedder
 from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
@@ -46,6 +59,8 @@ from utils.timer import timer
 from ..utils import remove_markdown_comments
 from .search import ReciprocalRankFuser, ScoredHit, hybrid_search
 from .types import CatalogSearchResult, ContentSearchResult
+from .models.filter import Filter
+from ..newrelic_llm_events import record_llm_events
 from ..db import (
     get_async_engine,
     get_engine,
@@ -57,8 +72,6 @@ logger = create_log(__name__)
 
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
-
-INDEX_NAME = os.getenv("TURBOPUFFER_NAMESPACE")
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
@@ -193,24 +206,18 @@ def recurse_filters(filter_: Any, processing_func: Callable) -> Any:
     if len(filter_) == 0:
         raise ValueError("Filter cannot be an empty list or tuple")
 
-    operator = filter_[0]
-
-    if operator in META_OPERATORS:
-        if operator == "Not":
-            # ["Not", child_filter]
-            return [operator, recurse_filters(filter_[1], processing_func)]
-        else:
-            # ["And"/"Or", [child_filter, ...]]
-            return [
-                operator,
-                [recurse_filters(child, processing_func) for child in filter_[1]],
-            ]
-
-    # Simple filter: [attribute, operator, value] — pass whole filter to processing_func.
-    # processing_func returns the filter unchanged if its conditions are not met.
-    return processing_func(filter_)
+    match filter_:
+        case [("And" | "Or") as op, children]:
+            return [op, [recurse_filters(child, processing_func) for child in children]]
+        case ["Not", child]:
+            return ["Not", recurse_filters(child, processing_func)]
+        case _:
+            # Simple filter: [attribute, operator, value] — pass whole filter to processing_func.
+            # processing_func returns the filter unchanged if its conditions are not met.
+            return processing_func(filter_)
 
 
+# TODO convert into a pipeline class that takes a list of transforms
 def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> Any:
     """
     Apply all filter post-processing transformations in sequence.
@@ -223,7 +230,7 @@ def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> A
         apply_null_matching: Whether to add null matching for incomplete attributes
 
     Returns:
-        Processed filters with all transformations applied
+        Processed filters with all transformations applied. None is passed-through.
     """
     if filters is None:
         return None
@@ -247,16 +254,26 @@ class CatalogSearchExecutionContext:
 
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
+    session_id: str
+    conversation_type: str = "catalogSearch"
     search_results: Dict = field(default_factory=dict)
 
 
 @dataclass
 class ContentSearchExecutionContext:
-    """Container used to inject objects into each agent run execution."""
+    """Container used to inject objects into each agent run execution.
+
+    Either edition_id or barcode must be provided. When barcode is set, the
+    book filter for Turbopuffer searches is applied on `barcode` (stable across
+    FRBR re-clustering); otherwise it falls back to filtering on `edition_id`.
+    """
 
     backend: TurbopufferBackend
     embedder: GoogleEmbedder
+    session_id: str
     edition_id: int
+    barcode: Optional[str] = None
+    conversation_type: str = "contentSearch"
     search_results: Dict = field(default_factory=dict)
     frbr_fields: Dict = field(default_factory=dict)
 
@@ -266,9 +283,24 @@ class ContentSearchExecutionContext:
 class LLMLoggingHooks(RunHooks):
     """Agent lifecycle hooks that log LLM call start/end with timing and response."""
 
-    def __init__(self):
+    def __init__(
+        self, session_id: str, conversation_type: str, edition_id: Optional[int] = None
+    ):
+        self.session_id = session_id
+        self.conversation_type = conversation_type
+        self.edition_id = edition_id
+
         self._llm_start_time: Optional[float] = None
         self._tool_start_time: Optional[float] = None
+
+        self.num_llm_calls = 0
+        self.total_input_tokens = 0
+        self.total_output_tokens = 0
+        self.total_llm_elapsed = 0.0
+
+        self._last_system_prompt: Optional[str] = None
+        self._last_input_items: list = []
+        self._last_response: Optional[ModelResponse] = None
 
     async def on_llm_start(
         self,
@@ -279,6 +311,9 @@ class LLMLoggingHooks(RunHooks):
     ) -> None:
         self._llm_start_time = time.perf_counter()
 
+        self._last_system_prompt = system_prompt
+        self._last_input_items = input_items
+
     async def on_llm_end(
         self,
         context: RunContextWrapper,
@@ -288,12 +323,20 @@ class LLMLoggingHooks(RunHooks):
         elapsed = (
             time.perf_counter() - self._llm_start_time
             if self._llm_start_time is not None
-            else None
+            else 0.0
         )
         self._llm_start_time = None
-        elapsed_str = f"{elapsed:.3f}s" if elapsed is not None else "unknown"
 
-        output_types = [o.type for o in response.output]
+        self.num_llm_calls += 1
+        self.total_llm_elapsed += elapsed
+        self._last_response = response
+
+        if response.usage:
+            self.total_input_tokens += response.usage.input_tokens or 0
+            self.total_output_tokens += response.usage.output_tokens or 0
+
+        elapsed_str = f"{elapsed:.3f}s"
+        output_types = [o.type for o in response.output] if response.output else []
         logger.info(
             f"LLM response received | elapsed: {elapsed_str} | output types: {output_types} | token usage: input={response.usage.input_tokens} output={response.usage.output_tokens}"
         )
@@ -439,6 +482,7 @@ async def update_chat(
     conversation_type: str,
     session_id: str,
     edition_id=None,
+    barcode=None,
     max_turns: int = DEFAULT_MAX_TURNS,
 ) -> RunResult:
     """
@@ -456,7 +500,10 @@ async def update_chat(
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
         session_id: Client-supplied session ID. History is persisted to and loaded
                     from the database using this key.
-        edition_id: Required when conversation_type is "contentSearch" so the agent knows which book to inspect.
+        edition_id: Identifies the book for content search. Either this or
+            ``barcode`` must be provided when conversation_type is
+            "contentSearch". If both are provided, ``barcode`` takes
+            precedence (it is stable across FRBR re-clustering).
 
     Returns:
         The agent's RunResult obj.
@@ -470,15 +517,16 @@ async def update_chat(
     # some reused objs (backend, system prompts, async loop, etc...) (for sharing btw server \
     # request workers/threads)
 
-    backend = TurbopufferBackend(index_name=INDEX_NAME)
+    backend = TurbopufferBackend(index_name=require_env("TURBOPUFFER_NAMESPACE"))
     embedder = GoogleEmbedder()
 
-    # NOTE: litellm has a bug converting `list | None = None` in agents sdk @functol_tool
-    # param type annotations into gemini API compatible format
+    # NOTE: we are not using litellm bc it has a bug converting `list | None = None`
+    # in agents sdk @functol_tool param type annotations into gemini API compatible
+    # tool definition format
 
     # model = "litellm/gemini/gemini-3-flash-preview"
     model = OpenAIChatCompletionsModel(
-        model="gemini-3-flash-preview",
+        model="gemini-3.5-flash",
         openai_client=AsyncOpenAI(
             api_key=require_env("GOOGLE_API_KEY"),
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -504,12 +552,42 @@ async def update_chat(
                 f"FRBR data missing for content search in edition {edition_id}"
             )
             raise ValueError(f"No edition found with id {edition_id}")
+        # Prefer barcode-based lookup when provided. Barcode is stable across
+        # FRBR re-clustering, whereas edition_id is not.
+        if barcode is not None:
+            with Timer(
+                "get_frbr_data_by_barcode",
+                on_exit=lambda name, elapsed: logger.info(
+                    f"{name} took {elapsed:.3f}s for 1 barcode"
+                ),
+            ):
+                frbr_data = get_frbr_data_by_barcode([barcode])
+            if not frbr_data:
+                logger.error(
+                    f"FRBR data missing for content search by barcode {barcode}"
+                )
+            resolved_edition_id = frbr_data[0].Edition.id if frbr_data else None
+        else:
+            with Timer(
+                "get_frbr_data_by_edition",
+                on_exit=lambda name, elapsed: logger.info(
+                    f"{name} took {elapsed:.3f}s for 1 edition"
+                ),
+            ):
+                frbr_data = get_frbr_data_by_edition([edition_id])
+            if not frbr_data:
+                logger.error(
+                    f"FRBR data missing for content search in edition {edition_id}"
+                )
+            resolved_edition_id = edition_id
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
         exec_context = ContentSearchExecutionContext(
             backend=backend,
             embedder=embedder,
-            edition_id=edition_id,
+            edition_id=resolved_edition_id,
+            session_id=session_id,
+            barcode=barcode,
             frbr_fields=frbr_fields,
         )
 
@@ -520,7 +598,9 @@ async def update_chat(
 
     # Search for books in catalog
     else:  # conversation_type == "catalogSearch":
-        exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
+        exec_context = CatalogSearchExecutionContext(
+            backend=backend, embedder=embedder, session_id=session_id
+        )
         system_prompt = remove_markdown_comments(
             system_prompt_template.render(conversation_type="catalogSearch")
         )
@@ -535,22 +615,50 @@ async def update_chat(
 
     session = SQLAlchemySession(session_id, engine=get_async_engine())
 
-    run_result = await Runner.run(
-        starting_agent=agent,
-        input=message,
-        context=exec_context,
-        hooks=LLMLoggingHooks(),
-        max_turns=max_turns,
-        error_handlers={"max_turns": _on_max_turns},
-        session=session,
-        run_config=RunConfig(
-            tracing_disabled=True,
-            model_settings=ModelSettings(
-                temperature=0.0,
-                reasoning=Reasoning(effort="none"),
-                # include_usage=True, # TODO: research if this returns loggable usage info
+    # Add conversation metadata to New Relic transaction for grouping and filtering
+    newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
+    newrelic.agent.add_custom_attribute("llm.conversation_type", conversation_type)
+    newrelic.agent.add_custom_attribute(
+        "llm.edition_id", edition_id if conversation_type == "contentSearch" else None
+    )
+
+    logging_hooks = LLMLoggingHooks(
+        session_id=session_id,
+        conversation_type=conversation_type,
+        edition_id=edition_id if conversation_type == "contentSearch" else None,
+    )
+
+    # Wrap agent exec loop in NR APM trace for AI monitoring dashboard compatibility
+    with newrelic.agent.FunctionTrace(name="create", group="Llm/completion/OpenAI"):
+        run_result = await Runner.run(
+            starting_agent=agent,
+            input=message,
+            context=exec_context,
+            hooks=logging_hooks,
+            max_turns=max_turns,
+            error_handlers={"max_turns": _on_max_turns},
+            session=session,
+            run_config=RunConfig(
+                tracing_disabled=True,
+                model_settings=ModelSettings(
+                    temperature=0.0,
+                    reasoning=Reasoning(effort="none"),
+                    include_usage=True,
+                ),
             ),
-        ),
+        )
+
+    record_llm_events(
+        agent,
+        session_id=logging_hooks.session_id,
+        conversation_type=logging_hooks.conversation_type,
+        edition_id=logging_hooks.edition_id,
+        last_response=logging_hooks._last_response,
+        last_system_prompt=logging_hooks._last_system_prompt,
+        last_input_items=logging_hooks._last_input_items,
+        total_input_tokens=logging_hooks.total_input_tokens,
+        total_output_tokens=logging_hooks.total_output_tokens,
+        total_llm_elapsed=logging_hooks.total_llm_elapsed,
     )
 
     return run_result
@@ -558,6 +666,7 @@ async def update_chat(
 
 def get_session_messages(session_id):
     """Read message data for session ID as ND-JSON"""
+    # TODO: replace with Session.get_items()
     engine = get_engine()
     with engine.connect() as conn:
         rows = conn.execute(
@@ -570,6 +679,7 @@ def get_session_messages(session_id):
 
 def delete_session_data(session_id: str) -> None:
     """Delete all rows in agent_messages and agent_sessions for the given session_id."""
+    # TODO: replace with Session.clear_session()
     engine = get_engine()
     with engine.connect() as conn:
         with conn.begin():
@@ -653,18 +763,33 @@ SEARCH_CATALOG_DOC = f"""
 """
 
 
+# TODO: modularize search_book and search_catalog more. input:  ranking_query+filters, \
+# output: list of editions (the problem is catalog needs the metadata for editions, \
+# book doesn't. maybe be make that optional somehow?)
+# TODO: convert to class FunctionTool def (Why? more explicit param type definition \
+# (exact json schema) and less of a hack for reading tool description from disk).
+# This requires self-handling errors in the tool function.
+# The default error handler for @function_tool raw json str parsing returns 'An
+# error occurred while parsing tool arguments. Please try again with valid JSON.
+# Error: Expecting value: line 1 column 1 (char 0)' (from `await search_book.on_invoke_tool(None, 'fsdfs{')`)
+# NOTE: filters `type` is str bc Gemini does not support arbitrary complex json
+# schema definitions for function tool parameter types.
 @function_tool
 @dynamic_docstring(SEARCH_CATALOG_DOC)
 def search_catalog(
     ctx: ToolContext[CatalogSearchExecutionContext],
     ranking_query: str,
-    filters: List | tuple | None = None,
+    filters: str | None = None,
     filters_match_null: bool = True,
 ) -> str:
     try:
         logger.info(f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}'")
 
-        # Post-process filters through the pipeline
+        # Parse and validate Filter schema
+        if filters is not None:
+            filters = Filter.model_validate_json(filters).model_dump()
+
+        # Post-process filters
         filters = apply_filter_transforms(
             filters, apply_null_matching=filters_match_null
         )
@@ -688,13 +813,14 @@ def search_catalog(
 
         # MAYBE: turn the below into 2 functions: group_by_edition_and_sort() and enrich_edition_hits() (with limit to top 10 in between)
 
-        # Group chunk hits by Edition (before adding FRBR data)
-        # edition_hit = {"chunk_hits", "agg_score", "edition_id"}
+        # Group chunk hits by barcode (stable across FRBR re-clustering).
+        # The DB-resolved edition_id is attached after the FRBR fetch below.
+        # edition_hit = {"chunk_hits", "agg_score", "barcode"}
         edition_hits = {}
         for chunk_hit in results_to_chunk_hits(results):
             edition_hits.setdefault(
-                chunk_hit["edition_id"],
-                {"edition_id": chunk_hit["edition_id"], "chunk_hits": []},
+                chunk_hit["barcode"],
+                {"barcode": chunk_hit["barcode"], "chunk_hits": []},
             )["chunk_hits"].append(chunk_hit)
 
         # Calculate aggregate edition score
@@ -723,45 +849,44 @@ def search_catalog(
             edition_hits = edition_hits[:PAGE_SIZE]
             # TODO: handle paginating or providing more edition hits
 
-        # Fetch FRBR data (from DB)
+        # Fetch FRBR data (from DB) by barcode. Barcode is stable across FRBR
+        # re-clustering, while the edition_id stored on chunk hits in TP may
+        # be stale; the DB-resolved edition_id (highest per barcode = most
+        # recently clustered) is what we attach to results for the FE.
         # TODO: remove fetch of DB data everything the LLM needs is in TP \
         # (right?) and the FE fetches other metadata in a separate request.
-        edition_ids = [h["edition_id"] for h in edition_hits]
-        logger.info(
-            f"Fetching FRBR metadata for the following edition_ids: {edition_ids}"
-        )
+        barcodes = [h["barcode"] for h in edition_hits]
+        logger.info(f"Fetching FRBR metadata for the following barcodes: {barcodes}")
         with Timer(
-            "get_frbr_data_by_edition",
+            "get_frbr_data_by_barcode",
             on_exit=lambda name, elapsed: logger.info(
-                f"{name} took {elapsed:.3f}s for {len(edition_ids)} editions"
+                f"{name} took {elapsed:.3f}s for {len(barcodes)} barcodes"
             ),
         ):
-            frbr_data = get_frbr_data_by_edition(edition_ids)
+            frbr_data = get_frbr_data_by_barcode(barcodes)
 
         # Merge ES hit data and FRBR metadata (maintaining edition sort order)
-        # ALT: if frbr_data was pre-sorted by edition_ids in the SQL call, we \
-        # could zip frbr data and edition hits bc order would be the same
-        frbr_data = {row.Edition.id: row for row in frbr_data}
+        frbr_data = {row.barcode: row for row in frbr_data}
         edition_data = []  # list of EditionResult
         missing_data = []
         for edition_hit in edition_hits:
-            # match DB orm work/edition to vector search edition hit
-            row = frbr_data.get(edition_hit["edition_id"])
+            # match DB orm work/edition to vector search edition hit by barcode
+            row = frbr_data.get(edition_hit["barcode"])
             if row is None:
-                missing_data.append(edition_hit["edition_id"])
+                missing_data.append(edition_hit["barcode"])
             else:
                 edition_data.append(
                     CatalogSearchResult(
                         orm_work=row.Work,
                         orm_edition=row.Edition,
-                        edition_id=edition_hit["edition_id"],
+                        edition_id=row.Edition.id,
                         chunk_hits=edition_hit["chunk_hits"],
                         agg_score=edition_hit["agg_score"],
                     )
                 )
         if missing_data:
             logger.error(
-                f"Missing Data: {len(missing_data)} edition_ids from vector search results have no matching data in DB: {missing_data}"
+                f"Missing Data: {len(missing_data)} barcodes from vector search results have no matching data in DB: {missing_data}"
             )
             logger.info(
                 f"Limiting results to the {len(edition_data)} editions that have metadata in the DB."
@@ -810,21 +935,30 @@ SEARCH_BOOK_DOC = f"""
 def search_book(
     ctx: ToolContext[ContentSearchExecutionContext],
     ranking_query: str,
-    filters: Optional[Union[List, tuple]] = None,
+    filters: str | None = None,
     filters_match_null: bool = True,
 ) -> str:
     try:
         logger.info(
-            f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}', for edition_id = {ctx.context.edition_id}"
+            f"{ctx.tool_name} tool called with args: '{ctx.tool_arguments}', "
+            f"for edition_id = {ctx.context.edition_id}, barcode = {ctx.context.barcode}"
         )
 
-        # Post-process filters through the pipeline
+        # Parse and validate Filter schema
+        if filters is not None:
+            filters = Filter.model_validate_json(filters).model_dump()
+
+        # Post-process filters
         filters = apply_filter_transforms(
             filters, apply_null_matching=filters_match_null
         )
 
-        # Build filter to restrict search to single book
-        book_filter = ["edition_id", "Eq", ctx.context.edition_id]
+        # Build filter to restrict search to single book. Prefer barcode
+        # (stable identifier) when available; fall back to edition_id.
+        if ctx.context.barcode is not None:
+            book_filter = ["barcode", "Eq", ctx.context.barcode]
+        else:
+            book_filter = ["edition_id", "Eq", ctx.context.edition_id]
 
         # Combine with user filters if provided
         if filters is not None:

@@ -27,25 +27,34 @@ const FeaturesSection: React.ForwardRefExoticComponent<
         color="ui.typography.body"
         tabIndex={-1}
         ref={ref}
+        paddingX={{ base: "none", md: "xs" }}
       >
         <Heading
           level="h2"
-          size="heading2"
+          fontSize={{
+            base: "mobile.heading.heading3",
+            md: "desktop.heading.heading2",
+          }}
           fontFamily="Domine"
           fontWeight="bold"
           marginBottom="xs"
+          paddingX={{ base: "s", md: "none" }}
         >
           What can Enhanced Search help you do?
         </Heading>
         <Text
-          fontSize="desktop.heading.heading5"
+          fontSize={{
+            base: "mobile.heading.heading5",
+            md: "desktop.heading.heading5",
+          }}
           color="ui.gray.dark"
           fontWeight="semibold"
-          marginBottom="xxl"
+          marginBottom={{ base: "l", md: "xxl" }}
+          paddingX={{ base: "s", md: "none" }}
         >
           A collaborative discovery tool designed to support your research
         </Text>
-        <Flex flexDir="column" gap="l">
+        <Flex flexDir="column" gap={{ base: "s", md: "l" }}>
           {FEATURES.map((feature) => (
             <FeatureCard
               key={feature.featureName}

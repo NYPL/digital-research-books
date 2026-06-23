@@ -96,6 +96,24 @@ export const SOURCE_MESSAGE_IMAGE =
 export const CONTROL_SUBNAV_IMAGE =
   "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/controlSubnav.png";
 
+export const NATURAL_LANGUAGE_MESSAGE_IMAGE_TABLET =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/naturalLanguageMessage-tablet.png";
+export const FEEDBACK_MESSAGE_IMAGE_TABLET =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/feedbackMessage-tablet.png";
+export const SOURCE_MESSAGE_IMAGE_TABLET =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/sourceMessage-tablet.png";
+export const CONTROL_SUBNAV_IMAGE_TABLET =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/controlSubnav-tablet.png";
+
+export const NATURAL_LANGUAGE_MESSAGE_IMAGE_MOBILE =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/naturalLanguageMessage-mobile.png";
+export const FEEDBACK_MESSAGE_IMAGE_MOBILE =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/feedbackMessage-mobile.png";
+export const SOURCE_MESSAGE_IMAGE_MOBILE =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/sourceMessage-mobile.png";
+export const CONTROL_SUBNAV_IMAGE_MOBILE =
+  "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/controlSubnav-mobile.png";
+
 // ResearchAssistantPanel
 const CONTENT_PADDING_VALUE = "1rem";
 const OUTER_MARGIN_CALC = "calc((100vw - 1280px) / 2)";

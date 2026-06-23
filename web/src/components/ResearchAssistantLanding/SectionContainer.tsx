@@ -8,8 +8,8 @@ interface SectionContainerProps {
   textAlign?: "left" | "center" | "right";
   borderColor?: string;
   borderTop?: string;
-  paddingTop?: string;
-  paddingBottom?: string;
+  paddingTop?: string | { base?: string; md?: string };
+  paddingBottom?: string | { base?: string; md?: string };
   [key: string]: any; // for additional Box props
 }
 
@@ -24,8 +24,9 @@ const SectionContainer: React.ForwardRefExoticComponent<
       textAlign = "center",
       borderColor,
       borderTop,
-      paddingTop = "xxl",
-      paddingBottom = "xxl",
+      paddingTop = { base: "l", md: "xxl" },
+      paddingBottom = { base: "l", md: "xxl" },
+      paddingX = { base: "s", md: "xs" },
       ...rest
     },
     ref
@@ -34,7 +35,7 @@ const SectionContainer: React.ForwardRefExoticComponent<
       backgroundColor={backgroundColor}
       borderTop={borderTop}
       borderColor={borderColor}
-      paddingX="xs"
+      paddingX={paddingX}
       ref={ref}
       {...rest}
     >

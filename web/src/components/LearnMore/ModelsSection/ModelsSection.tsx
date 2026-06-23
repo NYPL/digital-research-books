@@ -29,22 +29,35 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
       <Box maxWidth="55rem" margin="0 auto">
         <Heading
           level="h2"
-          size="heading2"
+          fontSize={{
+            base: "mobile.heading.heading3",
+            md: "desktop.heading.heading2",
+          }}
           fontFamily="Domine"
           fontWeight="bold"
           marginBottom="xs"
+          paddingX={{ base: "s", md: "none" }}
         >
           Our AI models
         </Heading>
         <Text
-          fontSize="desktop.heading.heading5"
+          fontSize={{
+            base: "mobile.heading.heading5",
+            md: "desktop.heading.heading5",
+          }}
           color="ui.gray.dark"
           fontWeight="semibold"
+          paddingX={{ base: "s", md: "none" }}
         >
           Selected to balance speed, cost, performance, and environmental
           impact.
         </Text>
-        <Flex gap="l" marginTop="xxl" marginBottom="xxl">
+        <Flex
+          gap={{ base: "s", md: "l" }}
+          marginTop={{ base: "l", md: "xxl" }}
+          marginBottom={{ base: "none", md: "xxl" }}
+          flexDir={{ base: "column", md: "row" }}
+        >
           <LandingCard
             gap="s"
             icon={
@@ -77,6 +90,7 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
                   display="flex"
                   alignItems="center"
                   gap="xxs"
+                  paddingY={{ base: "xs", md: "none" }}
                   _hover={{
                     color: "section.research.primary",
                     path: { stroke: "#00838A" },
@@ -120,6 +134,7 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
                   display="flex"
                   alignItems="center"
                   gap="xxs"
+                  paddingY={{ base: "xs", md: "none" }}
                   _hover={{
                     color: "section.research.primary",
                     path: { stroke: "#00838A" },

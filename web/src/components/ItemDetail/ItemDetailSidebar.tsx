@@ -14,15 +14,11 @@ import { GRID_PADDING_X } from "~/src/constants/researchAssistant";
 import { ApiWork } from "~/src/types/WorkQuery";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
 import AuthorsList from "../AuthorsList/AuthorsList";
-import HiddenAria from "../HiddenAria/HiddenAria";
 import Link from "../Link/Link";
-import AccordionLabelWithIcon from "./AccordionLabelWithIcon";
 import DetailsPanel from "./panels/DetailsPanel";
 import DownloadOptionsPanel from "./panels/DownloadOptionsPanel";
 import OtherEditionsPanel from "./panels/OtherEditionsPanel";
-import RelatedBooksPanel from "./panels/RelatedBooksPanel";
 import SearchPanel from "./panels/SearchPanel";
-import SummaryPanel from "./panels/SummaryPanel";
 
 interface ItemDetailSidebarProps {
   work: ApiWork;
@@ -99,16 +95,18 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = React.memo(
                   />
                 ),
               },
-              {
-                ariaLabel: "What is this book about?",
-                label: (
-                  <>
-                    <HiddenAria>AI Generated:</HiddenAria>
-                    <AccordionLabelWithIcon text="What is this book about?" />
-                  </>
-                ),
-                panel: <SummaryPanel previewEdition={previewEdition} />,
-              },
+              // {
+              //   ariaLabel: "What is this book about?",
+              //   label: (
+              //     <>
+              //       <HiddenAria ariaLive="off" ariaAtomic={false}>
+              //         AI Generated:
+              //       </HiddenAria>
+              //       <AccordionLabelWithIcon text="What is this book about?" />
+              //     </>
+              //   ),
+              //   panel: <SummaryPanel previewEdition={previewEdition} />,
+              // },
               {
                 ariaLabel: "Download options",
                 label: "Download options",
@@ -131,16 +129,18 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = React.memo(
                 label: "Other editions",
                 panel: <OtherEditionsPanel work={work} />,
               },
-              {
-                ariaLabel: "Related books",
-                label: (
-                  <>
-                    <HiddenAria>AI Generated:</HiddenAria>
-                    <AccordionLabelWithIcon text="Related books" />
-                  </>
-                ),
-                panel: <RelatedBooksPanel />,
-              },
+              // {
+              //   ariaLabel: "Related books",
+              //   label: (
+              //     <>
+              //       <HiddenAria ariaLive="off" ariaAtomic={false}>
+              //         AI Generated:
+              //       </HiddenAria>
+              //       <AccordionLabelWithIcon text="Related books" />
+              //     </>
+              //   ),
+              //   panel: <RelatedBooksPanel />,
+              // },
             ]}
             isDefaultOpen
             bgColor="ui.white"
