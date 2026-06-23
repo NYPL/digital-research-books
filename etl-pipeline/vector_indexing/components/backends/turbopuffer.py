@@ -118,16 +118,6 @@ def chunk_to_tpuf_row(chunk: ChunkDocument) -> dict:
     }
 
 
-def _combine_filters(a: Optional[list], b: Optional[list]) -> Optional[list]:
-    """Combine two turbopuffer filter expressions with And.
-
-    Returns None if both are None, or whichever is non-None if only one is set.
-    """
-    if a and b:
-        return ["And", [a, b]]
-    return a or b
-
-
 def chunk_from_tpuf_row(row) -> ChunkDocument:
     """Reconstruct ChunkDocument from turbopuffer row.
 
@@ -199,15 +189,14 @@ class TurbopufferBackend(IndexBackend):
             top_k=10,
         )
 
-        # Paginated scan — all docs, default attribute cursor
-        for chunk, _ in backend.scan():
+        # Scan ordered ordered by id
+        for chunk, _ in backend.scan(filters=["language", "In", ["en"]]):
             process(chunk)
 
-        # Exhaustive kNN similarity scan (NotIn cursor, yields distances)
+        # Scan ordered by cosine distance (yields distances)
         for chunk, dist in backend.scan(
             rank_by=("vector", "kNN", query_vector),
             filters=["language", "In", ["en"]],
-            include_attributes=["id", "text"],
         ):
             process(chunk, dist)
     """
@@ -536,13 +525,16 @@ class TurbopufferBackend(IndexBackend):
         Supports arbitrary turbopuffer query parameters. Intercepts ``limit``
         for pagination control; all other kwargs are forwarded to ``query()``.
 
-        Two cursor strategies are chosen automatically based on ``rank_by``:
-
+        Chooses one of two cursor strategies automatically based on ``rank_by``:
         - **Order by Attribute cursor** (default): when ``rank_by`` is a 2-tuple
           ``(field, "asc"|"desc")``, pages advance via a ``Gt``/``Lt`` filter
           on the rank field. This is the TP-recommended export pattern.
         - **NotIn cursor**: for vector (``ANN``/``kNN``), BM25, and hybrid
           ``Sum`` queries, pages advance by excluding already-seen document IDs.
+
+        Note: the id exclusion list grows by up to page_size per page for the
+        "NotIn cursor" — acceptable for typical index sizes but worth monitoring
+        for very large namespaces (>1M docs).
 
         Args:
             rank_by: Ranking specification forwarded to TP. Defaults to
@@ -579,9 +571,6 @@ class TurbopufferBackend(IndexBackend):
         # Choose cursor strategy based on rank_by shape.
         # A plain 2-tuple/list (field, "asc"|"desc") → attribute Gt/Lt cursor.
         # Everything else (3-element vector tuple, BM25, Sum hybrid) → NotIn.
-        # Both strategies expose the same two-function interface so the loop
-        # below is identical for both; cursor state is threaded explicitly as
-        # an argument rather than captured via nonlocal.
         is_order_by_attribute = (
             isinstance(rank_by, (tuple, list))
             and len(rank_by) == 2
@@ -600,11 +589,9 @@ class TurbopufferBackend(IndexBackend):
                 return getattr(chunk, rank_field, chunk.doc_id)
 
         else:
-            # Note: the exclusion list grows by up to _SCAN_PAGE_SIZE IDs per
-            # page — acceptable for typical index sizes but worth monitoring for
-            # very large namespaces (>1M docs).
+
             def get_cursor_filter(cursor):
-                return ["id", "NotIn", list(cursor)] if cursor else None
+                return ["id", "NotIn", list(cursor)] if cursor is not None else None
 
             def update_cursor(chunk, cursor=None):
                 if cursor is None:
@@ -630,7 +617,10 @@ class TurbopufferBackend(IndexBackend):
             else:
                 page_query_kwargs["top_k"] = page_size
 
-            page_filters = _combine_filters(user_filters, get_cursor_filter(cursor))
+            if (cursor is not None) and (user_filters is not None):
+                page_filters = ["And", [user_filters, get_cursor_filter(cursor)]]
+            else:
+                page_filters = user_filters or get_cursor_filter(cursor)
             if page_filters is not None:
                 page_query_kwargs["filters"] = page_filters
 

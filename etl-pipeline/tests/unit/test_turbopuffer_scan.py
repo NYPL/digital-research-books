@@ -7,7 +7,6 @@ Tests cover:
 - limit as int vs dict (total + extra keys)
 - Return type: (ChunkDocument, Optional[float]) tuples
 - Call-site helpers: get_document, scan_all_ids, scan_all_documents
-- _combine_filters helper
 """
 
 import pytest
@@ -16,7 +15,6 @@ from unittest.mock import MagicMock, patch, call
 from vector_indexing.core.types import BookMetadata, ChunkDocument
 from vector_indexing.components.backends.turbopuffer import (
     TurbopufferBackend,
-    _combine_filters,
 )
 
 
@@ -93,30 +91,6 @@ def make_backend() -> TurbopufferBackend:
             config=GlobalConfig(turbopuffer_api_key="k", turbopuffer_region="r"),
         )
     return backend
-
-
-# ---------------------------------------------------------------------------
-# _combine_filters
-# ---------------------------------------------------------------------------
-
-
-class TestCombineFilters:
-    def test_both_none(self):
-        assert _combine_filters(None, None) is None
-
-    def test_only_a(self):
-        f = ["language", "In", ["en"]]
-        assert _combine_filters(f, None) is f
-
-    def test_only_b(self):
-        f = ["id", "Gt", "abc"]
-        assert _combine_filters(None, f) is f
-
-    def test_both_present(self):
-        a = ["language", "In", ["en"]]
-        b = ["id", "Gt", "abc"]
-        result = _combine_filters(a, b)
-        assert result == ["And", [a, b]]
 
 
 # ---------------------------------------------------------------------------
