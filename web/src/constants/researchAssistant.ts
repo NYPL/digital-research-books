@@ -122,7 +122,7 @@ export const MARGIN_BLEED = {
   base: "0",
   md: `calc(${OUTER_MARGIN_CALC} * -1 - ${CONTENT_PADDING_VALUE})`,
 };
-export const PADDING_COUNTER = `calc(${OUTER_MARGIN_CALC} + ${CONTENT_PADDING_VALUE})`;
+export const PADDING_COUNTER = `calc(${OUTER_MARGIN_CALC} + 2 * ${CONTENT_PADDING_VALUE})`;
 
 const MARGIN_COMPACT = "-2rem";
 const PADDING_COMPACT = { base: "m", md: "l" };

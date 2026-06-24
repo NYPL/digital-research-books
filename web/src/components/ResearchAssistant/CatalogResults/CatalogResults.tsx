@@ -1,6 +1,10 @@
 import { Flex, Pagination, Text } from "@nypl/design-system-react-components";
 import { useState } from "react";
-import { HEADER_HEIGHT, MARGIN_BLEED } from "~/src/constants/researchAssistant";
+import {
+  HEADER_HEIGHT,
+  MARGIN_BLEED,
+  PADDING_COUNTER,
+} from "~/src/constants/researchAssistant";
 import { CatalogSearchResults } from "~/src/types/ResearchAssistant";
 import { SearchQueryDefaults } from "~/src/types/SearchQuery";
 import ResultsList from "../../NewResultsList/ResultsList";
@@ -73,14 +77,13 @@ const CatalogResults: React.FC<{
         fontSize="desktop.heading.heading7"
         fontWeight="bold"
         lineHeight="125%"
-        marginX={{ base: "none", md: "-2rem" }}
-        paddingX="l"
         paddingY="s"
         position="sticky"
         top="0"
         zIndex="999"
         marginLeft={MARGIN_BLEED}
         height={HEADER_HEIGHT}
+        paddingLeft={PADDING_COUNTER}
       >
         {resultsPagingText}
       </Text>
