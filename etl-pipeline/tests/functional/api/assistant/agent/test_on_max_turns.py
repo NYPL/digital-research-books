@@ -16,6 +16,7 @@ class TestOnMaxTurns:
         3. raw_responses has exactly 2 entries (max_turns agent-loop LLM calls).
         """
         # Prevent real embedder/backend initialization
+        # hybrid_search raises before embedder is used, so the return value doesn't matter
         mock_embedder = mocker.MagicMock()
         mock_backend = mocker.MagicMock()
         mocker.patch(
