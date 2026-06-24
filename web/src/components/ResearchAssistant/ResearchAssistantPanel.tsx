@@ -159,7 +159,7 @@ const ResearchAssistantPanel: React.FC = () => {
             }}
           >
             <Flex gap="xxs" alignItems="center">
-              <ArrowIcon iconRotation="rotate180" color="#FFF" />
+              <ArrowIcon direction="left" color="#FFF" />
               <Text fontSize="desktop.body.body2">Show chat</Text>
             </Flex>
           </Button>

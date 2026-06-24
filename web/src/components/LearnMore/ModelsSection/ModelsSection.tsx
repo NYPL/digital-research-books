@@ -97,7 +97,7 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
                   }}
                 >
                   Learn more about Flash
-                  <ArrowIcon iconRotation="rotate0" color="#006166" />
+                  <ArrowIcon direction="right" color="#006166" />
                 </Link>
               </Flex>
             }
@@ -141,7 +141,7 @@ const ModelsSection: React.FC<ModelsSectionProps> = ({ heroSectionRef }) => {
                   }}
                 >
                   <Text>Learn more about Embeddings</Text>
-                  <ArrowIcon iconRotation="rotate0" color="#006166" />
+                  <ArrowIcon direction="right" color="#006166" />
                 </Link>
               </Flex>
             }

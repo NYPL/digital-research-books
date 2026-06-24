@@ -23,7 +23,7 @@ const LandingPage: React.FC<{ collections?: Opds2Feed }> = ({
     <Box
       sx={{
         a: {
-          color: "ui.link.primary !important",
+          color: "ui.link.primary",
           display: "inline",
         },
       }}

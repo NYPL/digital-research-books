@@ -82,7 +82,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                   path: { stroke: "#00838A" },
                 }}
               >
-                Contact us <ArrowIcon iconRotation="rotate0" color="#006166" />
+                Contact us <ArrowIcon direction="right" color="#006166" />
               </Link>
             </Flex>
           }
@@ -118,7 +118,7 @@ const HelpSection: React.FC<HelpSectionProps> = ({
                 }}
               >
                 <Text>Learn more</Text>
-                <ArrowIcon iconRotation="rotate0" color="#006166" />
+                <ArrowIcon direction="right" color="#006166" />
               </Link>
             </Flex>
           }

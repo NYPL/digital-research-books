@@ -17,7 +17,7 @@ const BackToResultsButton: React.FC<BackToResultsButtonProps> = ({
       onClick={handleBackToResults}
     >
       <Flex alignItems="center" gap="xs">
-        <ArrowIcon iconRotation="rotate180" color="#006166" />
+        <ArrowIcon direction="left" color="#006166" />
         <span>Back to results</span>
       </Flex>
     </Button>

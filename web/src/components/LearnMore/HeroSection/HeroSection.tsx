@@ -85,7 +85,7 @@ const HeroSection: React.ForwardRefExoticComponent<
             }}
           >
             Read more
-            <ArrowIcon iconRotation="rotate90" color="#006166" />
+            <ArrowIcon direction="down" color="#006166" />
           </Button>
         </Flex>
       </SectionContainer>

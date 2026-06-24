@@ -41,7 +41,7 @@ const LandingButtons: React.FC<LandingButtonsProps> = ({
           backgroundColor: "section.research.primary",
         }}
       >
-        Try it out <ArrowIcon iconRotation="rotate270" color="#FFF" />
+        Try it out <ArrowIcon direction="up" color="#FFF" />
       </Button>
       <Link
         to="/learn-more"

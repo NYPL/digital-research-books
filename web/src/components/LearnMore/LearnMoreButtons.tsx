@@ -56,7 +56,7 @@ const LearnMoreButtons: React.FC<LearnMoreButtonsProps> = ({
           backgroundColor: "section.research.primary-05",
         }}
       >
-        Back to top <ArrowIcon iconRotation="rotate270" color="#006166" />
+        Back to top <ArrowIcon direction="up" color="#006166" />
       </Button>
     </Flex>
   );

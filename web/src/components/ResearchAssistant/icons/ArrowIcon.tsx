@@ -1,24 +1,30 @@
-import { Icon } from "@nypl/design-system-react-components";
+import { Icon, type IconRotations } from "@nypl/design-system-react-components";
 import React from "react";
 
-const iconRotationsArray = [
-  "rotate0",
-  "rotate90",
-  "rotate180",
-  "rotate270",
-] as const;
+export type ArrowDirection = "right" | "down" | "left" | "up";
+
+const DIRECTION_TO_ROTATION: Record<ArrowDirection, IconRotations> = {
+  right: "rotate0",
+  down: "rotate90",
+  left: "rotate180",
+  up: "rotate270",
+};
 
 interface ArrowIconProps {
-  iconRotation?: typeof iconRotationsArray[number];
+  direction?: ArrowDirection;
   color?: string;
 }
 
 const ArrowIcon: React.FC<ArrowIconProps> = ({
-  iconRotation = "rotate0",
+  direction = "right",
   color = "ui.white",
 }) => {
   return (
-    <Icon size="medium" iconRotation={iconRotation} fill={color}>
+    <Icon
+      size="medium"
+      iconRotation={DIRECTION_TO_ROTATION[direction]}
+      fill={color}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="18"
