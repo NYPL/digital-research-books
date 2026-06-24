@@ -1,46 +1,14 @@
 from contextlib import contextmanager
 from types import SimpleNamespace
-from typing import List, Optional
+from typing import List
 from unittest.mock import patch
 
 import numpy as np
 import pytest
 
 from api.assistant.agent import search_catalog
-from vector_indexing.core.types import BookMetadata, ChunkDocument
-
-
-def make_chunk_doc(
-    text: str = "Default text content.",
-    title: str = "Default Title",
-    edition_id: int = 1,
-    book_id: str = "1",
-    author: Optional[List[str]] = None,
-    subject: Optional[List[str]] = None,
-    language: Optional[List[str]] = None,
-    publication_date: str = "2000-01-01",
-    barcode: str = "00000000000000",
-    chunk_index: int = 0,
-    start_page: int = 1,
-    end_page: int = 5,
-) -> ChunkDocument:
-    """Factory for ChunkDocument with sensible defaults for use in tests."""
-    return ChunkDocument.create(
-        barcode=barcode,
-        book_id=book_id,
-        chunk_index=chunk_index,
-        text=text,
-        start_page=start_page,
-        end_page=end_page,
-        book_metadata=BookMetadata(
-            edition_id=edition_id,
-            title=title,
-            author=author if author is not None else [],
-            subject=subject if subject is not None else [],
-            publication_date=publication_date,
-            language=language if language is not None else [],
-        ),
-    )
+from tests.factories import make_chunk_doc
+from vector_indexing.core.types import ChunkDocument
 
 
 @pytest.fixture

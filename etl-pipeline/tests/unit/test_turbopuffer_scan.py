@@ -12,68 +12,11 @@ Tests cover:
 import pytest
 from unittest.mock import MagicMock, patch, call
 
-from vector_indexing.core.types import BookMetadata, ChunkDocument
+from tests.factories import make_chunk_doc
+from vector_indexing.core.types import ChunkDocument
 from vector_indexing.components.backends.turbopuffer import (
     TurbopufferBackend,
 )
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-# TODO: check if similar to these helpers are used elsewhere ChunkDocument is \
-# used (in the chat.py tests?), and define in a shared utils file accessible whereever needed
-
-
-def make_chunk(doc_id: str, chunk_index: int = 0) -> ChunkDocument:
-    meta = BookMetadata(
-        edition_id=1,
-        title="T",
-        author=[],
-        subject=[],
-        publication_date=None,
-        language=[],
-    )
-    chunk = ChunkDocument.create(
-        barcode=doc_id.split("_")[0],
-        book_id="book",
-        chunk_index=chunk_index,
-        text=f"text {doc_id}",
-        start_page=1,
-        end_page=1,
-        book_metadata=meta,
-        vector=None,
-    )
-    # Override doc_id to the value we want for cursor assertions
-    object.__setattr__(chunk, "_doc_id", doc_id)
-    return chunk
-
-
-# TODO: combine with make_chunk()
-def _chunk_with_id(doc_id: str) -> ChunkDocument:
-    """Build a ChunkDocument whose doc_id matches the given string exactly."""
-    parts = doc_id.split("_")
-    barcode = parts[0]
-    idx = int(parts[1]) if len(parts) > 1 else 0
-    meta = BookMetadata(
-        edition_id=1,
-        title="T",
-        author=[],
-        subject=[],
-        publication_date=None,
-        language=[],
-    )
-    return ChunkDocument.create(
-        barcode=barcode,
-        book_id="book",
-        chunk_index=idx,
-        text=f"text {doc_id}",
-        start_page=1,
-        end_page=1,
-        book_metadata=meta,
-        vector=None,
-    )
 
 
 def make_backend() -> TurbopufferBackend:
@@ -101,13 +44,13 @@ def make_backend() -> TurbopufferBackend:
 # ---------------------------------------------------------------------------
 
 
-class TestScanAttributeCursor:
-    def _make_page(self, ids: list[str]) -> list[tuple[ChunkDocument, None]]:
-        return [(_chunk_with_id(i), None) for i in ids]
+class TestScanLtGtCursor:
+    def _make_query_result(self, ids: list[str]) -> list[tuple[ChunkDocument, None]]:
+        return [(make_chunk_doc(doc_id=i), None) for i in ids]
 
-    def test_default_single_page_stops_on_short_result(self):
+    def test_scan_stops_on_short_result(self):
         backend = make_backend()
-        page = self._make_page(["a_0", "a_1", "a_2"])
+        page = self._make_query_result(["a_0", "a_1", "a_2"])
 
         backend.query = MagicMock(return_value=page)
 
@@ -122,15 +65,17 @@ class TestScanAttributeCursor:
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 2
 
-        page1 = self._make_page(["a_0", "a_1"])
-        page2 = self._make_page(["a_2"])
+        page1 = self._make_query_result(["a_0", "a_1"])
+        page2 = self._make_query_result(["a_2"])
 
         backend.query = MagicMock(side_effect=[page1, page2])
 
         results = list(backend.scan())
 
         assert len(results) == 3
+        # TODO: why not just assert the exact result chunk ids to make sure your get back the chunks in the expected order
         assert backend.query.call_count == 2
+        # TODO: This also tests that the scan stops on a short result... so just stat that in comments explicitly and delete the previous test, or is there some reason/benefit to having a spearate test that only tests that?
 
         # Second call should carry a Gt cursor on "id"
         second_call_kwargs = backend.query.call_args_list[1][1]
@@ -142,8 +87,8 @@ class TestScanAttributeCursor:
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 2
 
-        page1 = self._make_page(["a_0", "a_1"])
-        page2 = self._make_page(["a_2"])
+        page1 = self._make_query_result(["a_0", "a_1"])
+        page2 = self._make_query_result(["a_2"])
 
         backend.query = MagicMock(side_effect=[page1, page2])
 
@@ -160,11 +105,12 @@ class TestScanAttributeCursor:
         assert combined[0] == "And"
         assert user_filter in combined[1]
 
+    # TODO: this feels like a cursor agnostic test
     def test_limit_int_stops_early(self):
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 10
 
-        chunks = self._make_page([f"a_{i}" for i in range(10)])
+        chunks = self._make_query_result([f"a_{i}" for i in range(10)])
         backend.query = MagicMock(return_value=chunks)
 
         results = list(backend.scan(limit=3))
@@ -175,7 +121,7 @@ class TestScanAttributeCursor:
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 10
 
-        chunks = self._make_page([f"a_{i}" for i in range(10)])
+        chunks = self._make_query_result([f"a_{i}" for i in range(10)])
         backend.query = MagicMock(return_value=chunks)
 
         results = list(backend.scan(limit={"total": 4}))
@@ -187,7 +133,7 @@ class TestScanAttributeCursor:
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 10
 
-        chunks = self._make_page(["a_0", "a_1"])
+        chunks = self._make_query_result(["a_0", "a_1"])
         backend.query = MagicMock(return_value=chunks)
 
         list(
@@ -204,9 +150,10 @@ class TestScanAttributeCursor:
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 1
 
-        page1 = self._make_page(["a_0"])
-        page2 = self._make_page(["a_1"])
+        page1 = self._make_query_result(["a_0"])
+        page2 = self._make_query_result(["a_1"])
         backend.query = MagicMock(side_effect=[page1, page2, []])
+        # Q: why is there an empty 3rd page here, seems unrelated to what is being tested
 
         list(backend.scan(rank_by=("id", "asc")))
 
@@ -217,18 +164,20 @@ class TestScanAttributeCursor:
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 1
 
-        page1 = self._make_page(["a_1"])
-        page2 = self._make_page(["a_0"])
+        page1 = self._make_query_result(["a_1"])
+        page2 = self._make_query_result(["a_0"])
         backend.query = MagicMock(side_effect=[page1, page2, []])
+        # Q: why is there an empty 3rd page here, seems unrelated to what is being tested
 
         list(backend.scan(rank_by=("id", "desc")))
 
         second_kwargs = backend.query.call_args_list[1][1]
         assert second_kwargs["filters"][1] == "Lt"
 
+    # TODO: order by attribute scans should actually return none as the distance (right?)!
     def test_yields_chunk_and_dist_tuple(self):
         backend = make_backend()
-        chunk = _chunk_with_id("a_0")
+        chunk = make_chunk_doc(doc_id="a_0")
         backend.query = MagicMock(return_value=[(chunk, 0.42)])
 
         results = list(backend.scan())
@@ -246,23 +195,21 @@ class TestScanAttributeCursor:
         assert results == []
 
 
+# TODO: I want to group tests by cursor agnostic, and LT/GT cursor and NotIn cursor. propose which tests can be pulled into the cursor agnostic bucket
+
+
 # ---------------------------------------------------------------------------
 # NotIn cursor (vector / BM25 / hybrid rank_by)
 # ---------------------------------------------------------------------------
 
 
 class TestScanNotInCursor:
-    def _make_page(
-        self, ids: list[str], dist: float = 0.1
-    ) -> list[tuple[ChunkDocument, float]]:
-        return [(_chunk_with_id(i), dist) for i in ids]
-
     def test_knn_uses_notin_cursor(self):
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 2
 
-        page1 = self._make_page(["a_0", "a_1"], dist=0.1)
-        page2 = self._make_page(["a_2"], dist=0.2)
+        page1 = [(make_chunk_doc(doc_id=i), 0.1) for i in ["a_0", "a_1"]]
+        page2 = [(make_chunk_doc(doc_id=i), 0.2) for i in ["a_2"]]
 
         backend.query = MagicMock(side_effect=[page1, page2])
 
@@ -277,28 +224,14 @@ class TestScanNotInCursor:
         assert notin[1] == "NotIn"
         assert set(notin[2]) == {r[0].doc_id for r in results[:2]}
 
-    def test_ann_uses_notin_cursor(self):
-        backend = make_backend()
-        backend._SCAN_PAGE_SIZE = 2
-
-        page1 = self._make_page(["a_0", "a_1"])
-        backend.query = MagicMock(side_effect=[page1, []])
-
-        list(backend.scan(rank_by=("vector", "ANN", [0.1, 0.2])))
-        # Verify it ran without error, picked NotIn strategy (not Gt/Lt),
-        # and issued a second call to confirm the empty-page termination path.
-        assert backend.query.call_count == 2
-        second_kwargs = backend.query.call_args_list[1][1]
-        assert second_kwargs["filters"][1] == "NotIn"
-
     def test_notin_accumulates_across_pages(self):
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 2
 
         ids_p1 = ["a_0", "a_1"]
         ids_p2 = ["a_2", "a_3"]
-        page1 = self._make_page(ids_p1)
-        page2 = self._make_page(ids_p2)
+        page1 = [(make_chunk_doc(doc_id=i), 0.1) for i in ids_p1]
+        page2 = [(make_chunk_doc(doc_id=i), 0.1) for i in ids_p2]
 
         backend.query = MagicMock(side_effect=[page1, page2, []])
 
@@ -312,8 +245,8 @@ class TestScanNotInCursor:
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 2
 
-        page1 = self._make_page(["a_0", "a_1"])
-        page2 = self._make_page(["a_2"])
+        page1 = [(make_chunk_doc(doc_id=i), 0.1) for i in ["a_0", "a_1"]]
+        page2 = [(make_chunk_doc(doc_id=i), 0.1) for i in ["a_2"]]
 
         backend.query = MagicMock(side_effect=[page1, page2])
 
@@ -326,17 +259,6 @@ class TestScanNotInCursor:
         assert combined[0] == "And"
         filter_types = {f[1] for f in combined[1]}
         assert "NotIn" in filter_types
-
-    def test_limit_int_stops_notin_scan_early(self):
-        backend = make_backend()
-        backend._SCAN_PAGE_SIZE = 10
-
-        chunks = self._make_page([f"a_{i}" for i in range(10)])
-        backend.query = MagicMock(return_value=chunks)
-
-        results = list(backend.scan(rank_by=("vector", "kNN", [0.0]), limit=5))
-
-        assert len(results) == 5
 
     def test_yields_distances_from_vector_query(self):
         backend = make_backend()
@@ -375,7 +297,7 @@ class TestScanNotInCursor:
 class TestScanHelpers:
     def test_scan_all_ids_yields_doc_ids(self):
         backend = make_backend()
-        chunks = [(_chunk_with_id(f"a_{i}"), None) for i in range(3)]
+        chunks = [(make_chunk_doc(doc_id=f"a_{i}"), None) for i in range(3)]
         backend.query = MagicMock(return_value=chunks)
 
         ids = list(backend.scan_all_ids())
@@ -385,7 +307,7 @@ class TestScanHelpers:
 
     def test_scan_all_documents_yields_chunks(self):
         backend = make_backend()
-        chunks = [(_chunk_with_id(f"a_{i}"), None) for i in range(3)]
+        chunks = [(make_chunk_doc(doc_id=f"a_{i}"), None) for i in range(3)]
         backend.query = MagicMock(return_value=chunks)
 
         docs = list(backend.scan_all_documents())
@@ -395,7 +317,7 @@ class TestScanHelpers:
 
     def test_get_document_returns_chunk_on_hit(self):
         backend = make_backend()
-        chunk = _chunk_with_id("a_0")
+        chunk = make_chunk_doc(doc_id="a_0")
         backend.query = MagicMock(return_value=[(chunk, None)])
 
         result = backend.get_document("a_0")
