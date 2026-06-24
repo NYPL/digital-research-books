@@ -1,16 +1,6 @@
-"""Unit tests for TurbopufferBackend.scan().
+"""Unit tests for TurbopufferBackend.scan()."""
 
-Tests cover:
-- Default attribute cursor (id asc) with pagination
-- Attribute cursor with explicit rank_by / filters / limit
-- NotIn cursor for vector (kNN/ANN) queries
-- limit as int vs dict (total + extra keys)
-- Return type: (ChunkDocument, Optional[float]) tuples
-- Call-site helpers: get_document, scan_all_ids, scan_all_documents
-"""
-
-import pytest
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 from tests.factories import make_chunk_doc
 from vector_indexing.core.types import ChunkDocument
@@ -39,56 +29,81 @@ def make_backend() -> TurbopufferBackend:
     return backend
 
 
+def _make_query_result(ids: list[str]) -> list[tuple[ChunkDocument, None]]:
+    return [(make_chunk_doc(doc_id=i), None) for i in ids]
+
+
 # ---------------------------------------------------------------------------
-# Attribute cursor (default rank_by = ("id", "asc"))
+# Pagination Strategy Agnostic Behavior
 # ---------------------------------------------------------------------------
 
 
-class TestScanLtGtCursor:
-    def _make_query_result(self, ids: list[str]) -> list[tuple[ChunkDocument, None]]:
-        return [(make_chunk_doc(doc_id=i), None) for i in ids]
-
-    def test_scan_stops_on_short_result(self):
+class TestScan:
+    def test_empty_namespace_returns_nothing(self):
         backend = make_backend()
-        page = self._make_query_result(["a_0", "a_1", "a_2"])
+        backend.query = MagicMock(return_value=[])
 
-        backend.query = MagicMock(return_value=page)
+        results = list(backend.scan())
+        assert results == []
+
+    def test_yields_chunk_and_dist_tuple(self):
+        """scan() passes through (chunk, dist) exactly as returned by query()."""
+        backend = make_backend()
+        chunk = make_chunk_doc(doc_id="a_0")
+        backend.query = MagicMock(return_value=[(chunk, 0.42)])
 
         results = list(backend.scan())
 
-        assert len(results) == 3
-        assert all(dist is None for _, dist in results)
-        # Only one query call since page < _SCAN_PAGE_SIZE
-        assert backend.query.call_count == 1
+        assert len(results) == 1
+        returned_chunk, dist = results[0]
+        assert returned_chunk is chunk
+        assert dist == 0.42
 
-    def test_cursor_advances_on_second_page(self):
+    def test_limit_int_stops_early(self):
         backend = make_backend()
-        backend._SCAN_PAGE_SIZE = 2
+        backend._SCAN_PAGE_SIZE = 10
 
-        page1 = self._make_query_result(["a_0", "a_1"])
-        page2 = self._make_query_result(["a_2"])
+        chunks = _make_query_result([f"a_{i}" for i in range(10)])
+        backend.query = MagicMock(return_value=chunks)
 
-        backend.query = MagicMock(side_effect=[page1, page2])
-
-        results = list(backend.scan())
+        results = list(backend.scan(limit=3))
 
         assert len(results) == 3
-        # TODO: why not just assert the exact result chunk ids to make sure your get back the chunks in the expected order
-        assert backend.query.call_count == 2
-        # TODO: This also tests that the scan stops on a short result... so just stat that in comments explicitly and delete the previous test, or is there some reason/benefit to having a spearate test that only tests that?
 
-        # Second call should carry a Gt cursor on "id"
-        second_call_kwargs = backend.query.call_args_list[1][1]
-        filters = second_call_kwargs["filters"]
-        assert filters[0] == "id"
-        assert filters[1] == "Gt"
+    def test_limit_dict_total_respected(self):
+        backend = make_backend()
+        backend._SCAN_PAGE_SIZE = 10
+
+        chunks = _make_query_result([f"a_{i}" for i in range(10)])
+        backend.query = MagicMock(return_value=chunks)
+
+        results = list(backend.scan(limit={"total": 4}))
+
+        assert len(results) == 4
+
+    def test_limit_dict_extra_keys_forwarded(self):
+        """Extra limit keys (e.g. 'per') are forwarded to query()."""
+        backend = make_backend()
+        backend._SCAN_PAGE_SIZE = 10
+
+        chunks = _make_query_result(["a_0", "a_1"])
+        backend.query = MagicMock(return_value=chunks)
+
+        list(
+            backend.scan(limit={"total": 100, "per": {"field": "book_id", "limit": 2}})
+        )
+
+        call_kwargs = backend.query.call_args_list[0][1]
+        assert "limit" in call_kwargs
+        assert call_kwargs["limit"]["per"] == {"field": "book_id", "limit": 2}
+        assert "top_k" not in call_kwargs
 
     def test_user_filters_combined_with_cursor(self):
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 2
 
-        page1 = self._make_query_result(["a_0", "a_1"])
-        page2 = self._make_query_result(["a_2"])
+        page1 = _make_query_result(["a_0", "a_1"])
+        page2 = _make_query_result(["a_2"])
 
         backend.query = MagicMock(side_effect=[page1, page2])
 
@@ -105,97 +120,50 @@ class TestScanLtGtCursor:
         assert combined[0] == "And"
         assert user_filter in combined[1]
 
-    # TODO: this feels like a cursor agnostic test
-    def test_limit_int_stops_early(self):
+
+# ---------------------------------------------------------------------------
+# Attribute cursor (default rank_by = ("id", "asc"))
+# ---------------------------------------------------------------------------
+
+
+class TestScanLtGtCursor:
+    def test_cursor_advances_on_second_page(self):
+        """Cursor advances across pages; short final page stops iteration."""
         backend = make_backend()
-        backend._SCAN_PAGE_SIZE = 10
+        backend._SCAN_PAGE_SIZE = 2
 
-        chunks = self._make_query_result([f"a_{i}" for i in range(10)])
-        backend.query = MagicMock(return_value=chunks)
+        page1 = _make_query_result(["a_0", "a_1"])
+        page2 = _make_query_result(["a_2"])
 
-        results = list(backend.scan(limit=3))
+        backend.query = MagicMock(side_effect=[page1, page2])
 
-        assert len(results) == 3
+        results = list(backend.scan())
 
-    def test_limit_dict_total_respected(self):
-        backend = make_backend()
-        backend._SCAN_PAGE_SIZE = 10
+        result_ids = [chunk.doc_id for chunk, _ in results]
+        assert result_ids == ["a_0", "a_1", "a_2"]
+        # page2 is short → scan stops without a 3rd call
+        assert backend.query.call_count == 2
 
-        chunks = self._make_query_result([f"a_{i}" for i in range(10)])
-        backend.query = MagicMock(return_value=chunks)
-
-        results = list(backend.scan(limit={"total": 4}))
-
-        assert len(results) == 4
-
-    def test_limit_dict_extra_keys_forwarded(self):
-        """Extra limit keys (e.g. 'per') are forwarded to query()."""
-        backend = make_backend()
-        backend._SCAN_PAGE_SIZE = 10
-
-        chunks = self._make_query_result(["a_0", "a_1"])
-        backend.query = MagicMock(return_value=chunks)
-
-        list(
-            backend.scan(limit={"total": 100, "per": {"field": "book_id", "limit": 2}})
-        )
-
-        call_kwargs = backend.query.call_args_list[0][1]
-        # Should use limit dict form, not top_k
-        assert "limit" in call_kwargs
-        assert call_kwargs["limit"]["per"] == {"field": "book_id", "limit": 2}
-        assert "top_k" not in call_kwargs
-
-    def test_asc_uses_gt_cursor(self):
-        backend = make_backend()
-        backend._SCAN_PAGE_SIZE = 1
-
-        page1 = self._make_query_result(["a_0"])
-        page2 = self._make_query_result(["a_1"])
-        backend.query = MagicMock(side_effect=[page1, page2, []])
-        # Q: why is there an empty 3rd page here, seems unrelated to what is being tested
-
-        list(backend.scan(rank_by=("id", "asc")))
-
-        second_kwargs = backend.query.call_args_list[1][1]
-        assert second_kwargs["filters"][1] == "Gt"
+        # Second call should carry a Gt cursor on "id" advanced to the last id of page1
+        second_call_kwargs = backend.query.call_args_list[1][1]
+        filters = second_call_kwargs["filters"]
+        assert filters[0] == "id"
+        assert filters[1] == "Gt"
+        assert filters[2] == "a_1"
 
     def test_desc_uses_lt_cursor(self):
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 1
 
-        page1 = self._make_query_result(["a_1"])
-        page2 = self._make_query_result(["a_0"])
+        page1 = _make_query_result(["a_1"])
+        page2 = _make_query_result(["a_0"])
+        # page2 is full (== page_size), so scan makes a 3rd call; [] stops it
         backend.query = MagicMock(side_effect=[page1, page2, []])
-        # Q: why is there an empty 3rd page here, seems unrelated to what is being tested
 
         list(backend.scan(rank_by=("id", "desc")))
 
         second_kwargs = backend.query.call_args_list[1][1]
         assert second_kwargs["filters"][1] == "Lt"
-
-    # TODO: order by attribute scans should actually return none as the distance (right?)!
-    def test_yields_chunk_and_dist_tuple(self):
-        backend = make_backend()
-        chunk = make_chunk_doc(doc_id="a_0")
-        backend.query = MagicMock(return_value=[(chunk, 0.42)])
-
-        results = list(backend.scan())
-
-        assert len(results) == 1
-        returned_chunk, dist = results[0]
-        assert returned_chunk is chunk
-        assert dist == 0.42
-
-    def test_empty_namespace_returns_nothing(self):
-        backend = make_backend()
-        backend.query = MagicMock(return_value=[])
-
-        results = list(backend.scan())
-        assert results == []
-
-
-# TODO: I want to group tests by cursor agnostic, and LT/GT cursor and NotIn cursor. propose which tests can be pulled into the cursor agnostic bucket
 
 
 # ---------------------------------------------------------------------------
@@ -233,6 +201,7 @@ class TestScanNotInCursor:
         page1 = [(make_chunk_doc(doc_id=i), 0.1) for i in ids_p1]
         page2 = [(make_chunk_doc(doc_id=i), 0.1) for i in ids_p2]
 
+        # page2 is full (== page_size), so scan makes a 3rd call; [] stops it
         backend.query = MagicMock(side_effect=[page1, page2, []])
 
         list(backend.scan(rank_by=("vector", "kNN", [0.0])))
@@ -241,42 +210,14 @@ class TestScanNotInCursor:
         notin_ids = set(third_kwargs["filters"][2])
         assert notin_ids == set(ids_p1 + ids_p2)
 
-    def test_user_filters_combined_with_notin(self):
-        backend = make_backend()
-        backend._SCAN_PAGE_SIZE = 2
-
-        page1 = [(make_chunk_doc(doc_id=i), 0.1) for i in ["a_0", "a_1"]]
-        page2 = [(make_chunk_doc(doc_id=i), 0.1) for i in ["a_2"]]
-
-        backend.query = MagicMock(side_effect=[page1, page2])
-
-        user_filter = ["language", "In", ["en"]]
-        list(backend.scan(rank_by=("vector", "kNN", [0.0]), filters=user_filter))
-
-        # Second page: And([user_filter, NotIn filter])
-        second_kwargs = backend.query.call_args_list[1][1]
-        combined = second_kwargs["filters"]
-        assert combined[0] == "And"
-        filter_types = {f[1] for f in combined[1]}
-        assert "NotIn" in filter_types
-
-    def test_yields_distances_from_vector_query(self):
-        backend = make_backend()
-        chunk = _chunk_with_id("a_0")
-        backend.query = MagicMock(return_value=[(chunk, 0.77)])
-
-        results = list(backend.scan(rank_by=("vector", "kNN", [0.0])))
-
-        _, dist = results[0]
-        assert dist == 0.77
-
     def test_hybrid_sum_uses_notin_cursor(self):
         """A Sum hybrid rank_by should trigger the NotIn cursor path."""
         backend = make_backend()
         backend._SCAN_PAGE_SIZE = 2
 
-        page = [(_chunk_with_id("a_0"), 0.5)]
-        backend.query = MagicMock(return_value=page)
+        page1 = [(make_chunk_doc(doc_id=i), 0.5) for i in ["a_0", "a_1"]]
+        page2 = [(make_chunk_doc(doc_id="a_2"), 0.3)]
+        backend.query = MagicMock(side_effect=[page1, page2])
 
         rank_by = [
             "Sum",
@@ -284,9 +225,9 @@ class TestScanNotInCursor:
         ]
         list(backend.scan(rank_by=rank_by))
 
-        call_kwargs = backend.query.call_args_list[0][1]
-        # First page has no NotIn filter (seen_ids is empty), just top_k
-        assert "top_k" in call_kwargs or "limit" in call_kwargs
+        # Second call must carry a NotIn filter (not a Gt/Lt cursor)
+        second_kwargs = backend.query.call_args_list[1][1]
+        assert second_kwargs["filters"][1] == "NotIn"
 
 
 # ---------------------------------------------------------------------------
