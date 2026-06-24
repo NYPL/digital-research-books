@@ -5,14 +5,18 @@ from __future__ import annotations
 
 import requests
 
-from vector_indexing.components.embedders.base import Embedder
+from vector_indexing.components.embedders.base import APIEmbedder
 
 
 DEFAULT_BATCH_SIZE = 32
 
 
-class OpenAIEmbedder(Embedder):
+class OpenAIEmbedder(APIEmbedder):
     """Embedding model served by any OpenAI-compatible embeddings endpoint.
+
+    This endpoint is task-agnostic: document and query embeddings are identical,
+    so embed_document/embed_query are aliases for embed_one/embed_batch.
+    Sub-class this class to implement task-aware embedders for specific models.
 
     Args:
         base_url: Base URL of the endpoint (e.g. ``http://localhost:1234``).
@@ -20,9 +24,6 @@ class OpenAIEmbedder(Embedder):
         model_name: Model identifier to pass in the request payload.
         dimensions: Output vector dimensions. Must match the model's output size.
         batch_size: Max texts per API call (default: 32).
-
-        .embed_document(), .embed_document_batch(), .embed_query(), and .embed_query_batch()
-        inherited from the abstract class raise NotImplementedError.
     """
 
     def __init__(
@@ -57,51 +58,41 @@ class OpenAIEmbedder(Embedder):
         """Return the full embeddings endpoint URL."""
         return f"{self._base_url}/v1/embeddings"
 
-    def embed_one(self, text: str) -> list[float]:
-        """Embed a single text string."""
-        payload = {
-            "model": self.model_name,
-            "input": text.strip(),
-        }
-
+    def _make_request(self, texts: list[str], **kwargs) -> list[list[float]]:
+        """POST a batch of texts to the embeddings endpoint and return vectors in input order."""
+        payload = {"model": self.model_name, "input": [t.strip() for t in texts]}
         response = requests.post(
             self.endpoint,
             headers={"Content-Type": "application/json"},
             json=payload,
-            timeout=60,
+            timeout=120,
         )
         response.raise_for_status()
-
         data = response.json()
-        return data["data"][0]["embedding"]
+        # Sort by index in case the server returns items out of order.
+        return [
+            item["embedding"] for item in sorted(data["data"], key=lambda x: x["index"])
+        ]
+
+    def embed_one(self, text: str) -> list[float]:
+        return self._make_request([text])[0]
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        """Embed multiple texts in batches."""
         if not texts:
             return []
-
         vectors: list[list[float]] = []
-
         for i in range(0, len(texts), self._batch_size):
-            batch = [t.strip() for t in texts[i : i + self._batch_size]]
-
-            payload = {
-                "model": self.model_name,
-                "input": batch,
-            }
-
-            response = requests.post(
-                self.endpoint,
-                headers={"Content-Type": "application/json"},
-                json=payload,
-                timeout=120,
-            )
-            response.raise_for_status()
-
-            data = response.json()
-            # Response has an 'index' key indicating the original order.
-            # Sort to be safe even if the server returns them out of order.
-            batch_embeddings = sorted(data["data"], key=lambda x: x["index"])
-            vectors.extend([item["embedding"] for item in batch_embeddings])
-
+            vectors.extend(self._make_request(texts[i : i + self._batch_size]))
         return vectors
+
+    def embed_document(self, text: str) -> list[float]:
+        return self.embed_one(text)
+
+    def embed_document_batch(self, texts: list[str]) -> list[list[float]]:
+        return self.embed_batch(texts)
+
+    def embed_query(self, text: str) -> list[float]:
+        return self.embed_one(text)
+
+    def embed_query_batch(self, texts: list[str]) -> list[list[float]]:
+        return self.embed_batch(texts)

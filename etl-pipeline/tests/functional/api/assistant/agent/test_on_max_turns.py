@@ -20,7 +20,7 @@ class TestOnMaxTurns:
 
         # Prevent real Google Embedder API calls; embed_query returns a mock (hybrid_search
         # raises before it's used, so the return value doesn't matter)
-        mocker.patch("api.assistant.agent.GoogleEmbedder")
+        mocker.patch("api.assistant.agent.Gemini001Embedder")
 
         # Force search tool to always fail → triggers LLM retry
         mocker.patch(

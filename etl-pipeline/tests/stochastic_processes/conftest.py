@@ -57,7 +57,7 @@ def mock_search_backend(mocker):
       - map_editions_and_records → returns synthetic item_ids keyed by book_id
       - get_frbr_data_by_edition → returns SimpleNamespace ORM-like rows
         built from each ChunkDocument's book_metadata (first chunk per edition)
-      - GoogleEmbedder → returns a dummy zero vector from embed_query
+      - Gemini001Embedder → returns a dummy zero vector from embed_query
       - TurbopufferBackend → replaced with a no-op mock
 
     Returns:
@@ -65,7 +65,7 @@ def mock_search_backend(mocker):
     """
     mock_embedder = mocker.MagicMock()
     mock_embedder.embed_query.return_value = np.zeros(768).tolist()
-    mocker.patch("api.assistant.agent.GoogleEmbedder", return_value=mock_embedder)
+    mocker.patch("api.assistant.agent.Gemini001Embedder", return_value=mock_embedder)
     mocker.patch("api.assistant.agent.TurbopufferBackend")
 
     def _setup(chunk_docs: List[ChunkDocument]) -> List[ChunkDocument]:
