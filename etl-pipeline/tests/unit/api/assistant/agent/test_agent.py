@@ -20,7 +20,13 @@ class TestAgent:
         """Test update_chat in catalogSearch mode returns run_result."""
 
         # Mock external resource dependencies
-        mocker.patch("api.assistant.agent.TurbopufferBackend")
+        mocker.patch(
+            "api.assistant.agent.get_index_config",
+            return_value={
+                "embedder": mocker.MagicMock(),
+                "backend": mocker.MagicMock(),
+            },
+        )
         mocker.patch("api.assistant.agent.get_async_engine")
         mocker.patch("api.assistant.agent.SQLAlchemySession")
         mocker.patch.dict(os.environ, {"GOOGLE_API_KEY": "fake-key"})

@@ -65,8 +65,11 @@ def mock_search_backend(mocker):
     """
     mock_embedder = mocker.MagicMock()
     mock_embedder.embed_query.return_value = np.zeros(768).tolist()
-    mocker.patch("api.assistant.agent.Gemini001Embedder", return_value=mock_embedder)
-    mocker.patch("api.assistant.agent.TurbopufferBackend")
+    mock_backend = mocker.MagicMock()
+    mocker.patch(
+        "api.assistant.agent.get_index_config",
+        return_value={"embedder": mock_embedder, "backend": mock_backend},
+    )
 
     def _setup(chunk_docs: List[ChunkDocument]) -> List[ChunkDocument]:
         scored_hits = [(cd, 0.5) for cd in chunk_docs]
