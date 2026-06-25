@@ -42,15 +42,19 @@ const IngestionPipeline = () => {
   return (
     <Box
       display="flex"
-      flexDir="row"
-      gap="58px"
+      flexDir="column"
       margin="0 auto"
-      marginTop="xl"
-      marginBottom="xxl"
+      marginTop={{ base: "s", md: "xl" }}
+      marginBottom={{ base: "xl", md: "xxl" }}
     >
-      <Flex flexDir="column">
-        {pipelineSteps.map((stage, index) => (
-          <Box key={index}>
+      {pipelineSteps.map((stage, index) => (
+        <Flex
+          key={index}
+          flexDir="row"
+          gap={{ base: "s", sm: "xl", md: "58px" }}
+          alignItems="stretch"
+        >
+          <Flex flexDir="column" alignItems="center" flexShrink={0}>
             <Box
               background="ui.white"
               border="2px solid"
@@ -62,16 +66,15 @@ const IngestionPipeline = () => {
               {stage.icon}
             </Box>
             {index < pipelineSteps.length - 1 && (
-              <Flex justifyContent="center">
+              <Box flex="1" display="flex" justifyContent="center">
                 <ArrowSVG />
-              </Flex>
+              </Box>
             )}
-          </Box>
-        ))}
-      </Flex>
-      <Flex flexDir="column" gap="xl">
-        {pipelineSteps.map((stage, index) => (
-          <Box key={index} maxWidth="395px">
+          </Flex>
+          <Box
+            maxWidth="395px"
+            paddingBottom={index < pipelineSteps.length - 1 ? "xl" : "0"}
+          >
             <Heading
               size="heading8"
               fontWeight="bold"
@@ -82,14 +85,17 @@ const IngestionPipeline = () => {
             </Heading>
             <Text
               color="ui.gray.dark"
-              fontSize="desktop.subtitle.subtitle1"
+              fontSize={{
+                base: "mobile.subtitle.subtitle1",
+                md: "desktop.subtitle.subtitle1",
+              }}
               lineHeight="135%;"
             >
               {stage.description}
             </Text>
           </Box>
-        ))}
-      </Flex>
+        </Flex>
+      ))}
     </Box>
   );
 };

@@ -68,10 +68,15 @@ const PrinciplesSection: React.FC<PrinciplesSectionProps> = ({
       color="ui.typography.body"
     >
       <Grid
-        gridTemplateColumns="repeat(3, 1fr)"
-        rowGap="xxl"
-        columnGap="l"
-        marginTop="xxl"
+        gridTemplateColumns={{
+          base: "repeat(1, 1fr)",
+          sm: "repeat(2, 1fr)",
+          md: "repeat(3, 1fr)",
+        }}
+        rowGap={{ base: "l", md: "xxl" }}
+        columnGap={{ base: "s", md: "l" }}
+        marginTop={{ base: "none", md: "xxl" }}
+        marginBottom={{ base: "xxl", md: "none" }}
       >
         {accessCardData.map((card, index) => (
           <AccessCard

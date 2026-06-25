@@ -1,11 +1,15 @@
 import React from "react";
-import Layout from "~/src/components/NewLayout/Layout";
-import { ApiSearchQuery } from "../../types/SearchQuery";
-import { searchResultsFetcher } from "../../lib/api/SearchApi";
-import { toSearchQuery } from "~/src/util/apiConversion";
-import Error from "../_error";
 import KeywordSearch from "~/src/components/KeywordSearch/KeywordSearch";
+import Layout from "~/src/components/NewLayout/Layout";
 import VRALayout from "~/src/components/VRALayout/VRALayout";
+import { toSearchQuery } from "~/src/util/apiConversion";
+import {
+  isBlinkClient,
+  normalizeCombiningHalfMarksDeep,
+} from "~/src/util/TextNormalization";
+import { searchResultsFetcher } from "../../lib/api/SearchApi";
+import { ApiSearchQuery } from "../../types/SearchQuery";
+import Error from "../_error";
 
 export async function getServerSideProps(context: any) {
   const isResearchAssistantEnabled = process.env.APP_ENV !== "production";
@@ -28,8 +32,20 @@ export async function getServerSideProps(context: any) {
 }
 
 const SearchResults: React.FC<any> = (props) => {
-  if (props.searchResults.status !== 200) {
-    return <Error statusCode={props.searchResults.status} />;
+  const [displaySearchResults, setDisplaySearchResults] = React.useState(
+    props.searchResults
+  );
+
+  React.useEffect(() => {
+    setDisplaySearchResults(
+      isBlinkClient()
+        ? normalizeCombiningHalfMarksDeep(props.searchResults)
+        : props.searchResults
+    );
+  }, [props.searchResults]);
+
+  if (displaySearchResults.status !== 200) {
+    return <Error statusCode={displaySearchResults.status} />;
   }
 
   return (
@@ -45,7 +61,7 @@ const SearchResults: React.FC<any> = (props) => {
       >
         <KeywordSearch
           searchQuery={props.searchQuery}
-          searchResults={props.searchResults}
+          searchResults={displaySearchResults}
         />
       </VRALayout>
     </Layout>

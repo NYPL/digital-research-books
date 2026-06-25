@@ -1,9 +1,13 @@
 import React from "react";
 import Layout from "~/src/components/Layout/Layout";
-import Search from "../../components/Search/Search";
-import { ApiSearchQuery } from "../../types/SearchQuery";
-import { searchResultsFetcher } from "../../lib/api/SearchApi";
 import { toSearchQuery } from "~/src/util/apiConversion";
+import {
+  isBlinkClient,
+  normalizeCombiningHalfMarksDeep,
+} from "~/src/util/TextNormalization";
+import Search from "../../components/Search/Search";
+import { searchResultsFetcher } from "../../lib/api/SearchApi";
+import { ApiSearchQuery } from "../../types/SearchQuery";
 import Error from "../_error";
 
 export async function getServerSideProps(context: any) {
@@ -20,15 +24,27 @@ export async function getServerSideProps(context: any) {
 }
 
 const SearchResults: React.FC<any> = (props) => {
-  if (props.searchResults.status !== 200) {
-    return <Error statusCode={props.searchResults.status} />;
+  const [displaySearchResults, setDisplaySearchResults] = React.useState(
+    props.searchResults
+  );
+
+  React.useEffect(() => {
+    setDisplaySearchResults(
+      isBlinkClient()
+        ? normalizeCombiningHalfMarksDeep(props.searchResults)
+        : props.searchResults
+    );
+  }, [props.searchResults]);
+
+  if (displaySearchResults.status !== 200) {
+    return <Error statusCode={displaySearchResults.status} />;
   }
 
   return (
     <Layout>
       <Search
         searchQuery={props.searchQuery}
-        searchResults={props.searchResults}
+        searchResults={displaySearchResults}
       />
     </Layout>
   );

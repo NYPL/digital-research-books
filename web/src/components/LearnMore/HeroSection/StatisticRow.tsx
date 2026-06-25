@@ -12,36 +12,28 @@ const StatisticRow: React.FC = () => {
     <Box
       color="ui.typography.body"
       display="flex"
-      flexDir={{ base: "column", md: "row" }}
+      flexDir={{ base: "column", sm: "row" }}
       justifyContent="center"
       alignItems="center"
       margin="0 auto"
-      marginBottom="50.5px"
+      marginBottom={{ base: "12px", sm: "l", md: "50.5px" }}
       width="100%"
     >
-      {statisticsData.map((stat, index) => {
-        const isMiddle = index === 1;
-
-        return (
+      {statisticsData.map((stat, index) => (
+        <React.Fragment key={stat.label}>
           <Flex
-            key={stat.label}
             flexDir="column"
             alignItems="center"
             flex="1"
             maxWidth="274px"
-            py={{ base: isMiddle ? "20px" : "20px", md: "0" }}
-            px={{ base: "20px", md: isMiddle ? "0px" : "0" }}
-            borderLeft={{ md: isMiddle ? "1px dashed" : "none" }}
-            borderRight={{ md: isMiddle ? "1px dashed" : "none" }}
-            borderTop={{ base: isMiddle ? "1px dashed" : "none", md: "none" }}
-            borderBottom={{
-              base: isMiddle ? "1px dashed" : "none",
-              md: "none",
-            }}
-            borderColor="ui.black"
+            py={{ base: "20px", sm: "0" }}
+            px={{ base: "20px", sm: "0" }}
           >
             <Text
-              fontSize="desktop.heading.heading1"
+              fontSize={{
+                base: "mobile.heading.heading1",
+                md: "desktop.heading.heading1",
+              }}
               fontWeight="semibold"
               lineHeight="120%"
               color="section.research.secondary"
@@ -49,15 +41,33 @@ const StatisticRow: React.FC = () => {
               {stat.value}
             </Text>
             <Text
-              fontSize="desktop.heading.heading5"
+              fontSize={{
+                base: "mobile.heading.heading5",
+                md: "desktop.heading.heading5",
+              }}
               fontWeight="semibold"
               lineHeight="135%"
             >
               {stat.label}
             </Text>
           </Flex>
-        );
-      })}
+
+          {index < statisticsData.length - 1 && (
+            <Box
+              flexShrink={0}
+              color="section.research.secondary"
+              width={{ base: "96px", sm: "1px" }}
+              height={{ base: "1px", sm: "96px" }}
+              backgroundImage={{
+                base:
+                  "repeating-linear-gradient(to right, currentColor 0 4px, transparent 4px 8px)",
+                sm:
+                  "repeating-linear-gradient(to bottom, currentColor 0 4px, transparent 4px 8px)",
+              }}
+            />
+          )}
+        </React.Fragment>
+      ))}
     </Box>
   );
 };

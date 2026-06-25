@@ -21,7 +21,12 @@ const LearnMoreButtons: React.FC<LearnMoreButtonsProps> = ({
     }
   };
   return (
-    <Flex marginTop="xxl" width="fit-content" gap="s" marginX="auto">
+    <Flex
+      marginTop={{ base: "l", md: "xxl" }}
+      width="fit-content"
+      gap="s"
+      marginX="auto"
+    >
       <Link
         to="/research-assistant-landing"
         variant="buttonPrimary"

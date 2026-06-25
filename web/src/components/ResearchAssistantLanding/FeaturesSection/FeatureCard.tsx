@@ -24,18 +24,28 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
 }) => {
   return (
     <Box
-      minHeight="602px"
       width="100%"
       backgroundColor="ui.white"
-      borderRadius="32px"
+      borderRadius={{ base: "0px", md: "32px" }}
       border="1px solid"
       borderColor="section.research.primary-10"
-      padding="l"
+      paddingY={{ base: "m", md: "l" }}
+      paddingX={{ base: "s", md: "l" }}
     >
-      <Flex gap="l">
+      <Flex
+        gap={{ base: "m", md: "l" }}
+        flexDir={{ base: "column", md: "row" }}
+      >
         <Box flex="1">
-          <Flex flexDir="column" gap="s" textAlign="left">
-            <Heading level="h3" size="heading3" color="ui.typography.heading">
+          <Flex flexDir="column" gap={{ base: "xs", md: "s" }} textAlign="left">
+            <Heading
+              level="h3"
+              fontSize={{
+                base: "mobile.heading.heading4",
+                md: "desktop.heading.heading3",
+              }}
+              color="ui.typography.heading"
+            >
               <Flex
                 gap="xs"
                 alignItems="center"
@@ -43,8 +53,8 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
                 borderRadius="8px"
                 color="ui.typography.body"
                 fontSize="desktop.body.body1"
-                marginTop="l"
-                marginBottom="l"
+                marginY={{ base: "none", md: "l" }}
+                marginBottom={{ base: "m", md: "l" }}
                 paddingX="12px"
                 paddingY="xxs"
                 width="fit-content"
@@ -54,7 +64,10 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
               </Flex>
               <Text fontFamily="Domine">{title}</Text>
             </Heading>
-            <Text color="ui.gray.dark" fontSize="desktop.subtitle.subtitle1">
+            <Text
+              color="ui.gray.dark"
+              fontSize={{ base: "s", md: "desktop.subtitle.subtitle1" }}
+            >
               {description}
             </Text>
           </Flex>
@@ -63,8 +76,8 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
           src={imageSrc}
           alt={imageAlt}
           width="820px"
-          height="540px"
-          borderRadius="24px"
+          height={{ base: "auto", md: "540px" }}
+          borderRadius={{ base: "8px", md: "24px" }}
           border="1px solid"
           borderColor="ui.gray.light-cool"
           flexShrink="0"
