@@ -181,6 +181,7 @@ def _index_config_data():
         {  # Gemini-embedding-001
             "names": [
                 "vra-dev",
+                "vra-test",
                 "vra_test-sketches_of_the_north_river-gemini-001",
                 "vra_test-eval300-gemini_001",  # pragma: allowlist secret
             ],
