@@ -6,7 +6,6 @@ import {
   CONTENT_INITIAL_MESSAGE,
   getPanelLayout,
   LOADING_MESSAGE,
-  PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { chatAnnouncer } from "~/src/lib/chatAnnouncer/ChatAnnouncer";
@@ -27,7 +26,7 @@ const ResearchAssistantWindow: React.FC = () => {
     target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages, isLoading]);
 
-  const { marginX, paddingX, marginRight } = getPanelLayout();
+  const { marginX, paddingX, paddingRight, marginRight } = getPanelLayout();
 
   const router = useRouter();
 
@@ -82,7 +81,7 @@ const ResearchAssistantWindow: React.FC = () => {
         marginLeft={marginX}
         marginRight={marginRight}
         paddingLeft={paddingX}
-        paddingRight={`calc(${PADDING_COUNTER} * 2)`}
+        paddingRight={paddingRight}
         role="log"
         aria-live="off"
         aria-label="Chat messages"

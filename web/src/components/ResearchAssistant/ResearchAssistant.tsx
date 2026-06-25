@@ -169,7 +169,7 @@ const ResearchAssistant: React.FC = () => {
         display="grid"
         gridTemplateColumns={gridTemplateColumns}
         width="100%"
-        minHeight="100vh"
+        minHeight="auto"
         id="mainContent"
         role="main"
       >
@@ -230,7 +230,11 @@ const ResearchAssistant: React.FC = () => {
                     )}
                   </>
                 ) : (
-                  <Box width="100%" marginTop="s">
+                  <Box
+                    width="100%"
+                    marginTop="s"
+                    paddingX={{ base: "s", md: "l" }}
+                  >
                     <ResultsBanner />
                     <EmptySearchPrompt
                       message={
@@ -259,7 +263,7 @@ const ResearchAssistant: React.FC = () => {
             base: showChat
               ? `${mobilePanelHeight}px`
               : `${COLLAPSED_PANEL_HEIGHT}px`,
-            md: "100vh",
+            md: "none",
           }}
           position={{ base: "fixed", md: "sticky" }}
           top={{ base: "auto", md: "0" }}
@@ -276,8 +280,7 @@ const ResearchAssistant: React.FC = () => {
           overflow="hidden"
         >
           <Flex
-            width={{ base: "100%", md: "100%" }}
-            maxWidth={{ md: "640px" }}
+            width="100%"
             flexDirection="column"
             height="100%"
             minHeight="0"

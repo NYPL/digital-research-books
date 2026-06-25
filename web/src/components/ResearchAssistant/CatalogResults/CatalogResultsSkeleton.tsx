@@ -16,7 +16,12 @@ export const CatalogResultsSkeleton: React.FC = () => {
   const accordionContentWidths = ["40%", "30%", "15%"];
 
   return (
-    <Flex flexDir="column" bgColor="ui.bg.default" gap="s">
+    <Flex
+      flexDir="column"
+      bgColor="ui.bg.default"
+      gap="s"
+      paddingX={{ base: "s", md: "l" }}
+    >
       <Box
         bgColor="ui.bg.default"
         borderBottom="1px solid"

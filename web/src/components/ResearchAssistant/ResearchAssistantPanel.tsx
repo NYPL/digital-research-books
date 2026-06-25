@@ -186,9 +186,9 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
           <ResearchAssistantWindow />
           <Box
             backgroundColor="section.research.primary"
-            position="sticky"
             bottom="0"
             zIndex="10001"
+            position="sticky"
           >
             <ResearchAssistantInput />
           </Box>

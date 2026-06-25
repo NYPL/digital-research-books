@@ -6,10 +6,7 @@ import {
   TextInputRefType,
 } from "@nypl/design-system-react-components";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  getPanelLayout,
-  PADDING_COUNTER,
-} from "~/src/constants/researchAssistant";
+import { getPanelLayout } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
 
@@ -21,7 +18,7 @@ const ResearchAssistantInput: React.FC = () => {
   const inputRef = useRef<TextInputRefType>(null);
   const isDisabled = isLoading;
 
-  const { marginX, paddingX, marginRight } = getPanelLayout();
+  const { marginX, paddingX, paddingRight, marginRight } = getPanelLayout();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +74,7 @@ const ResearchAssistantInput: React.FC = () => {
       marginLeft={marginX}
       marginRight={marginRight}
       paddingLeft={paddingX}
-      paddingRight={`calc(${PADDING_COUNTER} * 2)`}
+      paddingRight={paddingRight}
       paddingY="s"
       // @ts-expect-error: Override gap value type
       gap="xs"

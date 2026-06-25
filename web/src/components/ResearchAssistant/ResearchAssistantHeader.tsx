@@ -2,13 +2,12 @@ import { Box } from "@nypl/design-system-react-components";
 import {
   getPanelLayout,
   HEADER_HEIGHT,
-  PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 
 const ResearchAssistantHeader: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { marginX, marginRight } = getPanelLayout();
+  const { marginX, marginRight, paddingX, paddingRight } = getPanelLayout();
   return (
     <Box
       bgColor="section.research.primary"
@@ -19,8 +18,8 @@ const ResearchAssistantHeader: React.FC<{ children: React.ReactNode }> = ({
       borderRadius={{ base: "8px 8px 0 0", md: "0" }}
       marginLeft={marginX}
       marginRight={marginRight}
-      paddingLeft="s"
-      paddingRight={`calc(${PADDING_COUNTER} * 2)`}
+      paddingLeft={paddingX}
+      paddingRight={paddingRight}
       position="sticky"
       paddingY="s"
       top="0"
