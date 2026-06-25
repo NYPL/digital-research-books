@@ -177,6 +177,8 @@ def _index_config_data():
         get_default_schema_with_dims,
     )
 
+    # NOTE: TP namespace naming convention: `vra_<env>-<content>-<embedding_model>`
+
     return [
         {  # Gemini-embedding-001
             "names": [
