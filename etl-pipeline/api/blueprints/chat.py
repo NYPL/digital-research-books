@@ -21,7 +21,12 @@ from ..elastic import ElasticClient
 from ..db import DBClient
 from ..auth import require_api_key
 from ..decorators import require_session_jwt
-from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
+from ..assistant.agent import (
+    SCORE_SORT_DIRECTION,
+    update_chat,
+    PAGE_SIZE,
+    get_result_reason,
+)
 from ..assistant.snippets import get_relevant_snippets
 
 
@@ -270,4 +275,57 @@ def chat(session_id):
             logger.exception("Unable to execute chat")
             return APIUtils.formatResponseObject(
                 500, response_type, {"message": "Unable to execute chat"}
+            )
+
+
+@chat_blueprint.route("/result-reason", methods=["POST"])
+@require_api_key
+@require_session_jwt
+@timer(logger)
+def result_reason(session_id):
+    response_type = "result_reason"
+
+    call_id = request.json.get("call_id")
+    barcode = request.json.get("barcode")
+
+    log_context = {"session_id": session_id}
+    if call_id is not None:
+        log_context["call_id"] = call_id
+    if barcode is not None:
+        log_context["barcode"] = barcode
+
+    for k, v in log_context.items():
+        newrelic.agent.add_custom_attribute(k, v)
+    if session_id:
+        newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
+
+    with LogContextVars(get_app_logger(), context=log_context):
+        try:
+            logger.info("Result reason request received")
+
+            if not call_id:
+                return APIUtils.formatResponseObject(
+                    400, response_type, {"message": "call_id is required"}
+                )
+
+            if not barcode:
+                return APIUtils.formatResponseObject(
+                    400, response_type, {"message": "barcode is required"}
+                )
+
+            explanation, ai_generated = asyncio.run(
+                get_result_reason(session_id, call_id, barcode)
+            )
+
+            response_data = {
+                "explanation": explanation,
+                "ai_generated": ai_generated,
+                "session_id": session_id,
+            }
+            return APIUtils.formatResponseObject(200, response_type, response_data)
+
+        except Exception:
+            logger.exception("Unable to execute result_reason")
+            return APIUtils.formatResponseObject(
+                500, response_type, {"message": "Unable to execute result_reason"}
             )
