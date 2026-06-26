@@ -135,8 +135,12 @@ def chat_test_client(mocker):
     # require_session_jwt (JWT signing)
     mocker.patch("api.decorators.sign_session", return_value="fake-token")
 
-    mocker.patch("api.assistant.agent.TurbopufferBackend")
-    mocker.patch("api.assistant.agent.GoogleEmbedder")
+    mock_backend = MagicMock()
+    mock_embedder = MagicMock()
+    mocker.patch(
+        "api.assistant.agent.get_index_config",
+        return_value={"backend": mock_backend, "embedder": mock_embedder},
+    )
     mocker.patch("api.assistant.agent.AsyncOpenAI")
     mocker.patch("api.assistant.agent.record_llm_events")
 

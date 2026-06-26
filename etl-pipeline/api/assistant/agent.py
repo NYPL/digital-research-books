@@ -48,7 +48,7 @@ from .types import CatalogSearchResult, ContentSearchResult
 
 # shared code
 from vector_indexing.components.embedders.base import Embedder
-from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
+from vector_indexing.components.backends.base import IndexBackend
 from vector_indexing.core.config import get_index_config
 from vector_indexing.core.utils import Timer
 from logger import create_log
@@ -251,7 +251,7 @@ def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> A
 class CatalogSearchExecutionContext:
     """Container used to inject objects into each agent run execution."""
 
-    backend: TurbopufferBackend
+    backend: IndexBackend
     embedder: Embedder
     conversation_type: str = "catalogSearch"
     search_results: Dict = field(default_factory=dict)
@@ -266,7 +266,7 @@ class ContentSearchExecutionContext:
     FRBR re-clustering); otherwise it falls back to filtering on `edition_id`.
     """
 
-    backend: TurbopufferBackend
+    backend: IndexBackend
     embedder: Embedder
     edition_id: int
     barcode: Optional[str] = None
