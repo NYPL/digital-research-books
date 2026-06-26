@@ -26,7 +26,7 @@ FALLBACK_RESULT_REASON = (
     "It may share themes, subjects, or content related to your inquiry."
 )
 
-_RESULT_REASON_SYSTEM_PROMPT = """\
+RESULT_REASON_SYSTEM_PROMPT = """\
 You are a research assistant at a library helping users understand why specific \
 search results appear for their queries. Given the conversation history and the \
 search query that was executed, explain in 3-4 sentences (~450 characters) why the \
@@ -121,7 +121,7 @@ async def get_result_reason(
         response = await client.chat.completions.create(
             model="gemini-3.5-flash",
             messages=[
-                {"role": "system", "content": _RESULT_REASON_SYSTEM_PROMPT},
+                {"role": "system", "content": RESULT_REASON_SYSTEM_PROMPT},
                 # TODO: insert the conversation history + final_user_message into the system prompt
                 # TODO: make sure the full search result for the book (including chunk test in addition to metadata) is injected
                 *conversation_messages,
@@ -148,15 +148,18 @@ async def get_result_reason(
 async def result_reason(session_id):
     response_type = "result_reason"
 
+    # TODO: add validation? i.e. require these to be present? ... oh this is done below
     call_id = request.json.get("call_id")
     barcode = request.json.get("barcode")
 
     log_context = {"session_id": session_id}
+    # Q: do the below need to be in every log, would it be enough just to log the session_id and log these once
     if call_id is not None:
         log_context["call_id"] = call_id
     if barcode is not None:
         log_context["barcode"] = barcode
 
+    # TODO: maybe consolidate into a function used here and in /chat
     for k, v in log_context.items():
         newrelic.agent.add_custom_attribute(k, v)
     if session_id:
@@ -166,6 +169,7 @@ async def result_reason(session_id):
         try:
             logger.info("Result reason request received")
 
+            # TODO: turn this validation into a reusable function
             if not call_id:
                 return APIUtils.formatResponseObject(
                     400, response_type, {"message": "call_id is required"}
