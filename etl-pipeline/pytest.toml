@@ -1,4 +1,5 @@
 [pytest]
 addopts = ["-rA"]
+retries = "3"
 asyncio_mode = "strict"
 pythonpath = ["."]
