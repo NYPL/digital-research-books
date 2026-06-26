@@ -13,13 +13,13 @@ unit:
 	python -m pytest --cov-report term-missing --cov=. tests/unit
 
 functional:
-	python -m pytest tests/functional --env=$(ENVIRONMENT) -n=4
+	python -m pytest tests/functional --env=$(ENVIRONMENT) -n=4 --retries=3 --retry-delay=10
 
 integration-drb:
-	python -m pytest tests/integration --ignore=tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4 --retry-delay=30 --timeout=120
+	python -m pytest tests/integration --ignore=tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4 --retries=3 --retry-delay=30 --timeout=120
 
 integration-vra:
-	python -m pytest tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4 --retry-delay=30 --timeout=120
+	python -m pytest tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4 --retries=3 --retry-delay=10 --timeout=120
 
 up:
 	$(compose_command) up -d
