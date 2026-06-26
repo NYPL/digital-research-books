@@ -724,28 +724,35 @@ async def get_result_reason(
         messages = get_session_messages(session_id)
 
         # Locate the tool call by call_id to retrieve the search query
-        ranking_query = None
+        tool_call_args = None
         for msg in messages:
             if msg.get("role") == "assistant":
                 for tool_call in msg.get("tool_calls") or []:
                     if tool_call.get("id") == call_id:
-                        args = json.loads(tool_call["function"]["arguments"])
-                        ranking_query = args.get("ranking_query")
+                        tool_call_args = json.loads(tool_call["function"]["arguments"])
                         break
-            if ranking_query is not None:
+            if tool_call_args is not None:
                 break
 
-        if ranking_query is None:
+        if tool_call_args is None:
             logger.warning(
                 f"get_result_reason: call_id '{call_id}' not found in session '{session_id}'"
             )
             return FALLBACK_RESULT_REASON, False
+
+        query_description = (
+            f'Semantic query: "{tool_call_args.get("ranking_query", "")}"'
+        )
+        filters_raw = tool_call_args.get("filters")
+        if filters_raw:
+            query_description += f"\nFilters: {filters_raw}"
 
         # Build book description from FRBR metadata
         frbr_data = get_frbr_data_by_barcode([barcode])
         if frbr_data:
             row = frbr_data[0]
             frbr_fields = format_frbr_fields(row.Work, row.Edition)
+            # TODO: this data extraction is duplicated in ..? (content search system prompt)
             book_info = (
                 f"Title: {frbr_fields['title']}\n"
                 f"Authors: {frbr_fields['author_names']}\n"
@@ -759,6 +766,9 @@ async def get_result_reason(
             book_info = f"(Book metadata unavailable for barcode: {barcode})"
 
         # Build conversation context from stored history (user/assistant text only)
+        # TODO: find and consolidate with other place that conversation history \
+        # is reconstructed for text insertion (and note maybe insert a note where \
+        # non-final seach results were returned (or attempted i.e. "search undertaken"))
         conversation_messages = []
         for msg in messages:
             role = msg.get("role")
@@ -769,12 +779,13 @@ async def get_result_reason(
                 conversation_messages.append({"role": "assistant", "content": content})
 
         final_user_message = (
-            f'The search query that returned these results was: "{ranking_query}"\n\n'
+            f"The search query that returned these results was:\n{query_description}\n\n"
             f"Explain why the following book appears in the results:\n{book_info}\n\n"
             f"Write 3-4 sentences (~450 characters) explaining the connection between "
             f"this book and the user's search."
         )
 
+        # TODO: find all the places I make an LLM call and make a centralized wrapper call_google_llm(model=, messages=, **kwargs<passed to completion.create()>)
         client = AsyncOpenAI(
             api_key=require_env("GOOGLE_API_KEY"),
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -784,13 +795,15 @@ async def get_result_reason(
             model="gemini-3.5-flash",
             messages=[
                 {"role": "system", "content": _RESULT_REASON_SYSTEM_PROMPT},
+                # TODO: insert the conversation history + final_user_message into the system prompt
+                # TODO: make sure the full search result for the book (including chunk test in addition to metadata) is injected
                 *conversation_messages,
                 {"role": "user", "content": final_user_message},
             ],
-            temperature=0.3,
+            temperature=0,
             reasoning_effort=None,
         )
-
+        # TODO: handle if explanation=None, use fallback
         explanation = response.choices[0].message.content
         return explanation, True
 

@@ -282,7 +282,7 @@ def chat(session_id):
 @require_api_key
 @require_session_jwt
 @timer(logger)
-def result_reason(session_id):
+async def result_reason(session_id):
     response_type = "result_reason"
 
     call_id = request.json.get("call_id")
@@ -313,8 +313,8 @@ def result_reason(session_id):
                     400, response_type, {"message": "barcode is required"}
                 )
 
-            explanation, ai_generated = asyncio.run(
-                get_result_reason(session_id, call_id, barcode)
+            explanation, ai_generated = await get_result_reason(
+                session_id, call_id, barcode
             )
 
             response_data = {

@@ -1,5 +1,6 @@
 # elastic-transport==8.4.0 # >9.2 required by elasticsearch9
 alembic==1.10.2
+asgiref==3.11.1
 asyncpg==0.31.0
 beautifulsoup4==4.12.0
 boto3==1.42.95
