@@ -19,7 +19,7 @@
 }
 
 .messageBubble {
-  max-width: 80%;
+  max-width: 90%;
   padding: 16px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -27,6 +27,10 @@
   flex-direction: column;
   word-break: break-word;
   line-height: 1.5;
+
+  @media screen and (min-width: 768px) {
+    max-width: 80%;
+  }
 }
 
 .userBubble {

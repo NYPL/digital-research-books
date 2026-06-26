@@ -78,11 +78,11 @@ const CatalogResults: React.FC<{
         fontWeight="bold"
         lineHeight="125%"
         paddingY="s"
-        position="sticky"
+        // position="sticky"
         top="0"
         zIndex="999"
         marginLeft={MARGIN_BLEED}
-        height={HEADER_HEIGHT}
+        height={{ base: "fit-content", md: HEADER_HEIGHT }}
         paddingLeft={PADDING_COUNTER}
       >
         {resultsPagingText}

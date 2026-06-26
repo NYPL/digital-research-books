@@ -115,20 +115,23 @@ export const CONTROL_SUBNAV_IMAGE_MOBILE =
   "https://drb-files-qa.s3.us-east-1.amazonaws.com/misc/controlSubnav-mobile.png";
 
 // ResearchAssistantPanel
-const CONTENT_PADDING_VALUE = "2rem";
+const CONTENT_PADDING_VALUE = { base: "1rem", md: "2rem" };
 const OUTER_MARGIN_CALC = "max(0px, calc((100vw - 1280px) / 2))";
 
 export const MARGIN_BLEED = {
   base: "0",
   md: `calc(${OUTER_MARGIN_CALC} * -1)`,
 };
-export const PADDING_COUNTER = `calc(${OUTER_MARGIN_CALC} + ${CONTENT_PADDING_VALUE})`;
+export const PADDING_COUNTER = {
+  base: `calc(${OUTER_MARGIN_CALC} + ${CONTENT_PADDING_VALUE.base})`,
+  md: `calc(${OUTER_MARGIN_CALC} + ${CONTENT_PADDING_VALUE.md})`,
+};
 
 const MARGIN_COMPACT = "-2rem";
 const PADDING_COMPACT = { base: "m", md: "l" };
 const PADDING_COUNTER_COMPACT = {
   base: "s",
-  md: `calc(calc(${OUTER_MARGIN_CALC} * 2) + ${CONTENT_PADDING_VALUE})`,
+  md: `calc(calc(${OUTER_MARGIN_CALC} * 2) + ${CONTENT_PADDING_VALUE.md})`,
 };
 
 export function getPanelLayout() {

@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   Heading,
+  Menu,
   Text,
 } from "@nypl/design-system-react-components";
 import React, { useEffect, useRef } from "react";
@@ -19,6 +20,8 @@ import ResearchAssistantWindow from "./ResearchAssistantWindow";
 
 type ResearchAssistantPanelProps = {
   onResizeStart?: (event: React.PointerEvent<HTMLDivElement>) => void;
+  onExpandToFull?: () => void;
+  onDecreaseToMin?: () => void;
   panelHeight?: number;
   minPanelHeight?: number;
   maxPanelHeight?: number;
@@ -26,9 +29,8 @@ type ResearchAssistantPanelProps = {
 
 const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
   onResizeStart,
-  panelHeight,
-  minPanelHeight,
-  maxPanelHeight,
+  onExpandToFull,
+  onDecreaseToMin,
 }) => {
   const {
     clearHistory,
@@ -52,9 +54,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
       isFirstRender.current = false;
       return;
     }
-    if (showChat) {
-      hideChatButtonRef.current?.focus();
-    } else {
+    if (!showChat) {
       showChatButtonRef.current?.focus();
     }
   }, [showChat]);
@@ -72,7 +72,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
       display="flex"
       flexDirection="column"
       maxHeight={{ base: "100%", md: "100vh" }}
-      minHeight="0"
+      minHeight="0px"
       position={{ base: "relative", md: "sticky" }}
       top={{ base: "auto", md: "0" }}
       width="100%"
@@ -91,13 +91,11 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
             justifyContent="center"
             width="100%"
             paddingTop="xs"
+            paddingBottom="xs"
             onPointerDown={onResizeStart}
             role="separator"
             aria-orientation="horizontal"
             aria-label="Resize enhanced search panel"
-            aria-valuenow={panelHeight}
-            aria-valuemin={minPanelHeight}
-            aria-valuemax={maxPanelHeight}
             sx={{
               cursor: "ns-resize",
               touchAction: "none",
@@ -119,13 +117,13 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
               display="flex"
               alignItems="center"
               gap="xs"
-              height="40px"
+              height="auto"
               id="vra-panel-heading"
             >
               <ResearchAssistantIcon color="#ECFAFB" size="large" />
               <span>Enhanced Search</span>
             </Heading>
-            <Flex gap="xxs">
+            <Flex gap="xxs" alignItems="center">
               <Button
                 onClick={handleStartOver}
                 variant="text"
@@ -180,6 +178,28 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
                   <ArrowIcon color="#FFF" />
                 </Flex>
               </Button>
+              <Menu
+                display={{ base: "block", md: "none" }}
+                showLabel={false}
+                labelText="Panel size options"
+                color="ui.white"
+                listItemsData={[
+                  {
+                    type: "action",
+                    id: "increase-panel-size",
+                    label: "Increase panel size",
+                    media: { type: "icon", name: "arrow" },
+                    onClick: () => onExpandToFull?.(),
+                  },
+                  {
+                    type: "action",
+                    id: "decrease-panel-size",
+                    label: "Decrease panel size",
+                    media: { type: "icon", name: "arrow" },
+                    onClick: () => onDecreaseToMin?.(),
+                  },
+                ]}
+              />
             </Flex>
           </ResearchAssistantHeader>
 
@@ -190,7 +210,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
             zIndex="10001"
             position="sticky"
           >
-            <ResearchAssistantInput />
+            <ResearchAssistantInput onExpandToFull={onExpandToFull} />
           </Box>
         </>
       ) : (

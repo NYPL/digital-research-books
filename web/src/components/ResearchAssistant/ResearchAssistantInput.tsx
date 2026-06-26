@@ -10,8 +10,10 @@ import { getPanelLayout } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
 
-const ResearchAssistantInput: React.FC = () => {
-  const { messages, sendMessage, isLoading } = useResearchAssistant();
+const ResearchAssistantInput: React.FC<{ onExpandToFull?: () => void }> = ({
+  onExpandToFull,
+}) => {
+  const { messages, sendMessage, isLoading, showChat } = useResearchAssistant();
 
   const [isFocused, setIsFocused] = useState(false);
   const [inputText, setInputText] = useState("");
@@ -59,6 +61,17 @@ const ResearchAssistantInput: React.FC = () => {
       inputRef.current.focus();
     }
   }, [isDisabled]);
+
+  const isFirstShowRef = useRef(true);
+  useEffect(() => {
+    if (isFirstShowRef.current) {
+      isFirstShowRef.current = false;
+      return;
+    }
+    if (showChat && inputRef.current && !isDisabled) {
+      inputRef.current.focus();
+    }
+  }, [showChat, isDisabled]);
 
   const placeholderValue = isDisabled
     ? "Thinking..."
@@ -132,10 +145,15 @@ const ResearchAssistantInput: React.FC = () => {
           isDisabled={isDisabled}
           id="chat-input"
           labelText={""}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={(e) => {
+            setInputText(e.target.value);
+            if (e.target.value.length === 1) onExpandToFull?.();
+          }}
           onInput={(e) => updateTextareaHeight(e)}
           onKeyDown={(e) => handleKeyDown(e)}
-          onFocus={() => setIsFocused(true)}
+          onFocus={() => {
+            setIsFocused(true);
+          }}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholderValue}
           ref={inputRef}
@@ -166,6 +184,8 @@ const ResearchAssistantInput: React.FC = () => {
           isDisabled={isDisabled || inputText === ""}
           height="24px"
           id="send-chat-button"
+          minH="24px"
+          minW="24px"
           padding="0"
           type="submit"
           width="24px"
