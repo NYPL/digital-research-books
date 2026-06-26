@@ -68,6 +68,7 @@ class ResearchAssistantLandingPage {
     this.homeBreadcrumbLink = breadcrumbNav.getByRole("link", { name: "Home" });
     this.researchBreadcrumbLink = breadcrumbNav.getByRole("link", {
       name: "Research",
+      exact: true,
     });
     this.digitizedResearchBooksBreadcrumbLink = breadcrumbNav.getByRole(
       "link",
