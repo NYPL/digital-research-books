@@ -43,6 +43,7 @@ def make_chunk_doc(
     )
 
 
+# TODO: see if similar functionality is duplicated elsewhere in teh code/test base
 @pytest.fixture
 def mock_search_backend(mocker):
     """
@@ -52,21 +53,25 @@ def mock_search_backend(mocker):
     For search_book all chunks should be from the same edition/book.
 
     Call the returned function with a list of ChunkDocuments to activate the
-    mocks. The fixture stubs:
+    mocked backend.
+    The fixture stubs:
       - hybrid_search → returns ChunkDocuments as ScoredHits
       - map_editions_and_records → returns synthetic item_ids keyed by book_id
       - get_frbr_data_by_edition → returns SimpleNamespace ORM-like rows
         built from each ChunkDocument's book_metadata (first chunk per edition)
-      - GoogleEmbedder → returns a dummy zero vector from embed_query
-      - TurbopufferBackend → replaced with a no-op mock
+      - Embedder → returns a dummy zero vector from embed_query (via get_index_config())
+      - Backend → replaced with a no-op mock (via get_index_config())
 
     Returns:
         Callable that accepts a list of ChunkDocuments and activates all mocks.
     """
     mock_embedder = mocker.MagicMock()
     mock_embedder.embed_query.return_value = np.zeros(768).tolist()
-    mocker.patch("api.assistant.agent.GoogleEmbedder", return_value=mock_embedder)
-    mocker.patch("api.assistant.agent.TurbopufferBackend")
+    mock_backend = mocker.MagicMock()
+    mocker.patch(
+        "api.assistant.agent.get_index_config",
+        return_value={"embedder": mock_embedder, "backend": mock_backend},
+    )
 
     def _setup(chunk_docs: List[ChunkDocument]) -> List[ChunkDocument]:
         scored_hits = [(cd, 0.5) for cd in chunk_docs]

@@ -106,6 +106,10 @@ class S3BookLoader(BookLoader):
         self._grin_access_key = grin_access_key or os.environ.get("GRIN_ACCESS_KEY")
         self._gpg = gnupg.GPG()
 
+        if self._cache is not None:
+            if isinstance(self._cache, DiskBookCache):
+                logger.info(f"Using cache at {self._cache.cache_dir}")
+
     @cached_property
     def s3(self) -> S3Client:
         """Lazily initialize S3 client."""

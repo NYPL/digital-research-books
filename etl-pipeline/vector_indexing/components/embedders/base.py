@@ -50,3 +50,17 @@ class Embedder(ABC):
 
     # NOTE: the usage pattern in Pipeline.index_books(), requires batch failure
     # if any single embedding fails
+
+
+class APIEmbedder(Embedder, ABC):
+    """Abstract base for API-backed embedders.
+
+    Subclasses must implement ``_make_request`` which performs a single batched
+    API call. ``embed_one`` and ``embed_batch`` should route through it so that
+    failures surface consistently.
+    """
+
+    @abstractmethod
+    def _make_request(self, texts: list[str], **kwargs):
+        """Make a single batched API call and return raw results."""
+        ...

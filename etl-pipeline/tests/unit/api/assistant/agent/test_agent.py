@@ -17,10 +17,12 @@ from openai.types.chat.chat_completion_message_tool_call import (
 
 def mock_update_chat_env(mocker):
     """Patch all external dependencies of update_chat and return the mock Runner."""
-    mocker.patch("api.assistant.agent.TurbopufferBackend")
-    mocker.patch.dict(
-        os.environ,
-        {"GOOGLE_API_KEY": "fake-key", "TURBOPUFFER_NAMESPACE": "test-namespace"},
+    mocker.patch(
+        "api.assistant.agent.get_index_config",
+        return_value={
+            "embedder": mocker.MagicMock(),
+            "backend": mocker.MagicMock(),
+        },
     )
     mocker.patch("api.assistant.agent.Agent")
     mock_runner = mocker.patch("api.assistant.agent.Runner")

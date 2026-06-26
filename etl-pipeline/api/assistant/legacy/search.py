@@ -4,7 +4,7 @@ from elasticsearch.dsl import Search, Q, Response
 
 from typing import Dict
 
-from vector_indexing.components.embedders.google import GoogleEmbedder
+from vector_indexing.components.embedders.google import Gemini001Embedder
 from utils.elastic import get_or_create_default_connection
 from logger import create_log
 
@@ -19,7 +19,7 @@ logger = create_log(__name__)
 # TODO: explicitly control n hits to return in Search()
 # TODO: stop returning embedding with hit
 # self = object.__new__(Searcher)
-# embedder = GoogleEmbedder()
+# embedder = Gemini001Embedder()
 # index_name = "vra_chunks_gemini-embedding-001"
 # MAYBE: create a "search" factory that handles some of the common code in \
 # different search methods (metadata i/o, elastic search boilerplate, etc...)

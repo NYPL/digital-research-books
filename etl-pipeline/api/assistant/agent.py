@@ -47,8 +47,9 @@ from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
 from .types import CatalogSearchResult, ContentSearchResult
 
 # shared code
-from vector_indexing.components.embedders.google import GoogleEmbedder
+from vector_indexing.components.embedders.base import Embedder
 from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
+from vector_indexing.core.config import get_index_config
 from vector_indexing.core.utils import Timer
 from logger import create_log
 from utils.common import require_env, wrap
@@ -251,7 +252,7 @@ class CatalogSearchExecutionContext:
     """Container used to inject objects into each agent run execution."""
 
     backend: TurbopufferBackend
-    embedder: GoogleEmbedder
+    embedder: Embedder
     conversation_type: str = "catalogSearch"
     search_results: Dict = field(default_factory=dict)
 
@@ -266,7 +267,7 @@ class ContentSearchExecutionContext:
     """
 
     backend: TurbopufferBackend
-    embedder: GoogleEmbedder
+    embedder: Embedder
     edition_id: int
     barcode: Optional[str] = None
     conversation_type: str = "contentSearch"
@@ -517,8 +518,10 @@ async def update_chat(
 
     session_id = session.session_id
 
-    backend = TurbopufferBackend(index_name=require_env("TURBOPUFFER_NAMESPACE"))
-    embedder = GoogleEmbedder()
+    index_name = require_env("TURBOPUFFER_NAMESPACE")
+    index_config = get_index_config(index_name)
+    backend = index_config["backend"]
+    embedder = index_config["embedder"]
 
     # NOTE: we are not using litellm bc it has a bug converting `list | None = None`
     # in agents sdk @functol_tool param type annotations into gemini API compatible

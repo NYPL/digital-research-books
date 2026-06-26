@@ -16,7 +16,7 @@ os.chdir(PROJ_ROOT)
 from utils.load_env import load_env
 
 from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
-from vector_indexing.components.embedders.google import GoogleEmbedder
+from vector_indexing.components.embedders.google import Gemini001Embedder
 from api.assistant.search import hybrid_search
 
 ENVIRONMENT = "production"  # or "local", "qa"
@@ -34,7 +34,7 @@ FILTER = [
 
 
 backend = TurbopufferBackend(index_name=os.environ["TURBOPUFFER_NAMESPACE"])
-embedder = GoogleEmbedder()
+embedder = Gemini001Embedder()
 
 
 query_vector = embedder.embed_query(RANKING_QUERY)
