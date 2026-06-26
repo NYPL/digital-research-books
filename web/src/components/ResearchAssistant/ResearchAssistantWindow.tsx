@@ -5,17 +5,28 @@ import {
   CATALOG_INITIAL_MESSAGE,
   CONTENT_INITIAL_MESSAGE,
   getPanelLayout,
-  LOADING_MESSAGE,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { chatAnnouncer } from "~/src/lib/chatAnnouncer/ChatAnnouncer";
-import { ConversationType } from "~/src/types/ResearchAssistant";
+import {
+  ConversationType,
+  ItemType,
+  MessageItem,
+  MessageRole,
+} from "~/src/types/ResearchAssistant";
 import { markdownToPlainText } from "~/src/util/MarkdownParser";
 import MessageBubble from "./MessageBubble";
 
 const ResearchAssistantWindow: React.FC = () => {
-  const { messages, isLoading, error, results } = useResearchAssistant();
+  const {
+    messages,
+    isLoading,
+    error,
+    results,
+    progressEvents,
+    searchCompleted: searchCompleted,
+  } = useResearchAssistant();
   const announce = chatAnnouncer.announce;
   const prevMessageCountRef = useRef(0);
 
@@ -67,6 +78,22 @@ const ResearchAssistantWindow: React.FC = () => {
     if (error) announce(`Error: ${error}`);
   }, [error, announce]);
 
+  const searchStartedEvent = progressEvents?.find(
+    (e) => e.type === "search_started"
+  );
+  const searchContext = searchStartedEvent?.context;
+
+  const loadingMessage: MessageItem = {
+    type: ItemType.Message,
+    role: MessageRole.Assistant,
+    content: [
+      {
+        text: searchContext ?? "Thinking... This may take several seconds.",
+        type: "output_text",
+      },
+    ],
+  };
+
   return (
     <>
       <Box
@@ -102,6 +129,7 @@ const ResearchAssistantWindow: React.FC = () => {
                   index={index}
                   message={message}
                   messageResults={results?.[index] ?? null}
+                  searchCompletedMessage={searchCompleted?.[index] ?? null}
                 />
               </Box>
             );
@@ -111,7 +139,7 @@ const ResearchAssistantWindow: React.FC = () => {
           <Box ref={loadingRef}>
             <MessageBubble
               index={messages.length}
-              message={LOADING_MESSAGE}
+              message={loadingMessage}
               isLoading={isLoading}
             />
           </Box>

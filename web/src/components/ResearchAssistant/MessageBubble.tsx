@@ -21,10 +21,17 @@ interface MessageBubbleProps {
   index: number;
   isLoading?: boolean;
   messageResults?: ChatResults | null;
+  searchCompletedMessage?: string;
 }
 
 const MessageBubble = memo(
-  ({ message, index, isLoading, messageResults }: MessageBubbleProps) => {
+  ({
+    message,
+    index,
+    isLoading,
+    messageResults,
+    searchCompletedMessage,
+  }: MessageBubbleProps) => {
     const isUser = message.role === MessageRole.User;
     const isAssistant = message.role === MessageRole.Assistant;
     const bubbleClasses = isUser
@@ -62,6 +69,13 @@ const MessageBubble = memo(
                   <ResearchAssistantIcon inCircle />
                 )}
                 <Flex flexDir="column" gap="12px">
+                  {!isLoading && searchCompletedMessage && (
+                    <Box>
+                      <Text color="ui.gray.dark" size="body2">
+                        {searchCompletedMessage}
+                      </Text>
+                    </Box>
+                  )}
                   <Box>
                     <HiddenAria ariaLive="off" ariaAtomic={false}>
                       <Text as="h3">Enhanced Search says:</Text>

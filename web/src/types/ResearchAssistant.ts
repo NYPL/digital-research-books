@@ -178,6 +178,43 @@ export type SearchParams = {
 
 export type PageType = "drb" | "vra" | "keyword" | "item" | "learn-more";
 
+export type StreamEventType =
+  | "search_started"
+  | "search_completed"
+  | "final_response"
+  | "error";
+
+export interface StreamEvent {
+  type: StreamEventType;
+  [key: string]: any;
+}
+
+export interface SearchStartedEvent extends StreamEvent {
+  type: "search_started";
+  tool: string;
+  context: string;
+}
+
+export interface SearchCompletedEvent extends StreamEvent {
+  type: "search_completed";
+  tool: string;
+  status: string;
+}
+
+export interface FinalResponseEvent extends StreamEvent {
+  type: "final_response";
+  messages: MessageItem[];
+  result_type: ConversationType | null;
+  result: any;
+  session_id: string;
+}
+
+export interface ErrorEvent extends StreamEvent {
+  type: "error";
+  message: string;
+  code?: string;
+}
+
 export type ItemReadResults = {
   data: ApiItemsRead;
   status?: number;

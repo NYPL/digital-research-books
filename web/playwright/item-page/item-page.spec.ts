@@ -174,6 +174,12 @@ test.describe(
     test("An assistant response is displayed after submitting text", async () => {
       await itemPage.query(testQuery);
 
+      await test.step("Wait for loading indicator to appear", async () => {
+        await expect(itemPage.loadingIndicator).toBeVisible({
+          timeout: 10_000,
+        });
+      });
+
       await test.step("Wait for loading indicator to disappear", async () => {
         await expect(itemPage.loadingIndicator).toBeHidden({ timeout: 90_000 });
       });

@@ -6,6 +6,7 @@ const LoadingEllipses: React.FC = () => {
   const stagger = totalCycleTime * 0.29;
   return (
     <Box
+      data-testid="assistant-loading-indicator"
       display="flex"
       justifyContent="center"
       alignItems="center"

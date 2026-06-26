@@ -1,9 +1,11 @@
 import asyncio
 from dataclasses import asdict
+import queue
+import threading
 from textwrap import indent
 from typing import Any, Dict, Tuple
 from api.assistant.types import CatalogSearchResult
-from flask import Blueprint, current_app, request
+from flask import Blueprint, current_app, request, Response, stream_with_context
 import newrelic.agent
 
 # shared code
@@ -23,6 +25,11 @@ from ..auth import require_api_key
 from ..decorators import require_session_jwt
 from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
 from ..assistant.snippets import get_relevant_snippets
+from ..assistant.streaming_utils import (
+    serialize_event,
+    format_final_response,
+    format_error,
+)
 
 
 logger = create_log(__name__)
@@ -184,90 +191,118 @@ def chat(session_id):
     # even being a global error handler with logger defined in a different module. \
     # something like https://www.structlog.org/en/stable/contextvars.html
     with LogContextVars(get_app_logger(), context=log_context):
-        try:
-            logger.info(f"Chat request received: {message[:20]}...")
 
-            if not message:
-                return APIUtils.formatResponseObject(
-                    400, response_type, {"message": "message is required"}
-                )
-
-            if not conversation_type:
-                return APIUtils.formatResponseObject(
-                    400, response_type, {"message": "conversationType is required"}
-                )
-
-            if conversation_type not in ["contentSearch", "catalogSearch"]:
-                return APIUtils.formatResponseObject(
-                    400,
-                    response_type,
-                    {
-                        "message": "conversationType must be either 'contentSearch' or 'catalogSearch'"
-                    },
-                )
-
-            if (
-                conversation_type == "contentSearch"
-                and edition_id is None
-                and barcode is None
-            ):
-                return APIUtils.formatResponseObject(
-                    400,
-                    response_type,
-                    {
-                        "message": "editionId or barcode is required for conversationType='contentSearch'"
-                    },
-                )
-
-            # get LLM response + search results
-            # TODO: inside update_chat make sure than any errors are handled by a polite \
-            # llm generated response (except no connectivity to LLM) (just handle the \
-            # high level openai agents sdk errors)
+        def generate_streaming_response():
             try:
-                run_result = asyncio.run(
+                yield from _chat_stream_handler(
+                    session_id, conversation_type, message, edition_id, barcode
+                )
+            except Exception as e:
+                logger.exception("Error in streaming chat handler")
+                yield format_error(str(e), code="stream_error")
+
+        return Response(
+            stream_with_context(generate_streaming_response()),
+            mimetype="application/x-ndjson",
+            headers={"Transfer-Encoding": "chunked"},
+        )
+
+
+def _chat_stream_handler(session_id, conversation_type, message, edition_id, barcode):
+    """
+    Generator that yields NDJSON events during chat processing.
+    Validates input, processes chat, and yields progress/result events.
+    """
+    return _chat_handler(session_id, conversation_type, message, edition_id, barcode)
+
+
+def _chat_handler(session_id, conversation_type, message, edition_id, barcode):
+    """wrapper for main chat() logic to allow use of LogContextVars without a huge indent block"""
+
+    if not message:
+        yield format_error("message is required", code="validation_error")
+        return
+
+    if not conversation_type:
+        yield format_error("conversationType is required", code="validation_error")
+        return
+
+    if conversation_type not in ["contentSearch", "catalogSearch"]:
+        yield format_error(
+            "conversationType must be either 'contentSearch' or 'catalogSearch'",
+            code="validation_error",
+        )
+        return
+
+    if conversation_type == "contentSearch" and edition_id is None and barcode is None:
+        yield format_error(
+            "editionId or barcode is required for conversationType='contentSearch'",
+            code="validation_error",
+        )
+        return
+
+    logger.info(f"Streaming chat request received: {message[:20]}...")
+
+    try:
+        event_queue: queue.Queue = queue.Queue()
+        completion_marker = object()
+        run_result_holder = {"result": None, "error": None}
+
+        def on_event(event_type: str, payload: Dict[str, Any]) -> None:
+            event_queue.put(serialize_event(event_type, payload))
+
+        def run_chat() -> None:
+            try:
+                run_result_holder["result"] = asyncio.run(
                     update_chat(
                         message,
                         conversation_type,
                         session_id,
                         edition_id=edition_id,
                         barcode=barcode,
+                        event_callback=on_event,
                     )
                 )
-            except ValueError as e:
-                # Intended to catch "No edition found with id=XXX"
-                # TODO: make error filter specific to intended error, even tho its the \
-                # only ValueError intentionlly raided in the update_chat() boundary
-                return APIUtils.formatResponseObject(
-                    404, response_type, {"message": str(e)}
-                )
+            except Exception as exc:
+                run_result_holder["error"] = exc
+            finally:
+                event_queue.put(completion_marker)
 
-            # Add relevant snippets to search result, if search was executed in this agent turn
-            # snippets updated in run_result in place
-            asyncio.run(get_relevant_snippets(run_result, approach="naive"))
+        worker = threading.Thread(target=run_chat, daemon=True)
+        worker.start()
 
-            ## Build API response
+        while True:
+            event = event_queue.get()
+            if event is completion_marker:
+                break
+            yield event
 
-            # Extract new messages
-            messages = [item.to_input_item() for item in run_result.new_items]
-            logger.info(
-                f"Agent generated {len(run_result.new_items)} new message items"
-            )
+        if run_result_holder["error"] is not None:
+            raise run_result_holder["error"]
 
-            # Format search results
-            result_type, formatted_search_result = prepare_search_response(
-                run_result.context_wrapper.context.search_results
-            )
+        run_result = run_result_holder["result"]
 
-            response_data = {
-                "messages": messages,
-                "result_type": result_type,
-                "result": formatted_search_result,
-                "session_id": session_id,
-            }
-            return APIUtils.formatResponseObject(200, response_type, response_data)
+        # Add relevant snippets to search result, if search was executed in this agent turn
+        # snippets updated in run_result in place
+        asyncio.run(get_relevant_snippets(run_result, approach="naive"))
 
-        except Exception:
-            logger.exception("Unable to execute chat")
-            return APIUtils.formatResponseObject(
-                500, response_type, {"message": "Unable to execute chat"}
-            )
+        # Extract new messages
+        messages = [item.to_input_item() for item in run_result.new_items]
+        logger.info(f"Agent generated {len(run_result.new_items)} new message items")
+
+        # Format search results
+        result_type, formatted_search_result = prepare_search_response(
+            run_result.context_wrapper.context.search_results
+        )
+
+        # Emit final response event
+        yield format_final_response(
+            messages=messages,
+            result_type=result_type,
+            result=formatted_search_result,
+            session_id=session_id,
+        )
+
+    except Exception as e:
+        logger.exception("Error processing streaming chat request")
+        yield format_error(str(e), code="processing_error")

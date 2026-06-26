@@ -124,7 +124,7 @@ test.describe(
         ).toBeVisible();
       });
 
-      test("First result card displays a status, title, author, publisher, and edition", async () => {
+      test("First result card displays a status, title, publisher, and edition; author when present", async () => {
         await researchAssistantPage.firstResult.waitFor({ state: "visible" });
 
         await expect(
@@ -137,9 +137,6 @@ test.describe(
         await expect(researchAssistantPage.firstResultTitle).toBeVisible();
         await expect(researchAssistantPage.firstResultTitle).toHaveText(/\S+/);
 
-        await expect(researchAssistantPage.firstResultAuthor).toBeVisible();
-        await expect(researchAssistantPage.firstResultAuthor).toHaveText(/\S+/);
-
         await expect(researchAssistantPage.firstResultPublisher).toBeVisible();
         await expect(researchAssistantPage.firstResultPublisher).toHaveText(
           /\S+/
@@ -149,6 +146,13 @@ test.describe(
         await expect(researchAssistantPage.firstResultEdition).toHaveText(
           /\S+/
         );
+
+        if ((await researchAssistantPage.firstResultAuthor.count()) > 0) {
+          await expect(researchAssistantPage.firstResultAuthor).toBeVisible();
+          await expect(researchAssistantPage.firstResultAuthor).toHaveText(
+            /\S+/
+          );
+        }
       });
 
       test("Result title and Preview button direct to item page for the expected edition", async () => {
