@@ -75,17 +75,17 @@ jobs:
       - name: Run API integration tests against QA env
         working-directory: ./etl-pipeline
         run: |
-          pytest tests/integration/api --env=qa --retries=3 --retry-delay=10
+          pytest tests/integration/api --env=qa
 
       - name: Run ingest functional tests against QA env
         working-directory: ./etl-pipeline
         run: |
           pytest tests/functional/processes/ingest \
-            --retries=3 \
-            --retry-delay=10 \
+            --reruns=3 \
+            --reruns-delay=10 \
             --env=qa
 
       - name: Run LLM behavior tests against QA env
         working-directory: ./etl-pipeline
         run: |
-          pytest tests/stochastic_processes --env=qa --retries=3 --retry-delay=10
+          pytest tests/stochastic_processes --env=qa
