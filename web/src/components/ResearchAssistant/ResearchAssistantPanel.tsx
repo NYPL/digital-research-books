@@ -18,7 +18,12 @@ import ResearchAssistantInput from "./ResearchAssistantInput";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 
 const ResearchAssistantPanel: React.FC = () => {
-  const { clearHistory, showChat, toggleChat } = useResearchAssistant();
+  const {
+    clearHistory,
+    messages,
+    showChat,
+    toggleChat,
+  } = useResearchAssistant();
 
   const { paddingX } = getPanelLayout();
 
@@ -43,6 +48,8 @@ const ResearchAssistantPanel: React.FC = () => {
   }, [showChat]);
 
   const handleStartOver = () => {
+    if (messages.length === 0) return;
+
     clearHistory(page, true);
     announce("Chat cleared.");
   };
