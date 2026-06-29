@@ -15,6 +15,7 @@ RETRY_ON_EXCEPTIONS: list[type[BaseException]] = [
     requests.exceptions.Timeout,
     requests.exceptions.ConnectionError,
     SourceNotAvailableError,
+    requests.exceptions.HTTPError,
     # Add more exceptions as needed
 ]
 
