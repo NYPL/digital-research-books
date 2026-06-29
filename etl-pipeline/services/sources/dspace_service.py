@@ -134,6 +134,14 @@ class DSpaceService(SourceService):
         )
 
         if response.status_code == 200:
+            content_type = response.headers.get("Content-Type", "")
+            if "xml" not in content_type:
+                # Source: these open archives docs say response content type must be text/xml.
+                # https://www.openarchives.org/OAI/openarchivesprotocol.html#MIMETypes
+                raise ServiceNotAvailableError(
+                    f"Expected XML content-type Open Archives Protocol response from {url}, got {content_type}"
+                )
+
             content = bytes()
 
             for chunk in response.iter_content(1024 * 100):
