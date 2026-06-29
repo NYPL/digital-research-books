@@ -139,7 +139,7 @@ class DSpaceService(SourceService):
                 # Source: these open archives docs say response content type must be text/xml.
                 # https://www.openarchives.org/OAI/openarchivesprotocol.html#MIMETypes
                 raise SourceNotAvailableError(
-                    f"Expected XML content-type Open Archives Protocol response from {url}, got {content_type}"
+                    f"Expected Open Archives Protocol response with XML content-type from {url}, got '{content_type}'"
                 )
 
             content = bytes()
