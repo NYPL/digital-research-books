@@ -9,4 +9,4 @@ from .sources.met_service import METService
 from .sources.loc_service import LOCService
 from .sources.muse_service import MUSEService
 from .sources.source_factory import get_source_service
-from .sources.source_service import ServiceNotAvailableError
+from .sources.source_service import SourceNotAvailableError

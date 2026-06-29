@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import requests
 
-from services import ServiceNotAvailableError
+from services import SourceNotAvailableError
 
 RETRY_DELAY = 120  # seconds
 
@@ -14,7 +14,7 @@ RETRY_DELAY = 120  # seconds
 RETRY_ON_EXCEPTIONS: list[type[BaseException]] = [
     requests.exceptions.Timeout,
     requests.exceptions.ConnectionError,
-    ServiceNotAvailableError,
+    SourceNotAvailableError,
     # Add more exceptions as needed
 ]
 

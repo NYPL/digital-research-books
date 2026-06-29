@@ -10,7 +10,7 @@ from typing import Generator
 from constants.get_constants import get_constants
 from mappings.gutenberg import GutenbergMapping
 from model import Record
-from .source_service import SourceService, ServiceNotAvailableError
+from .source_service import SourceService, SourceNotAvailableError
 from logger import create_log
 from utils.common import require_env
 
@@ -213,7 +213,7 @@ class GutenbergService(SourceService):
             if graphql_response.status_code < 500:
                 break
 
-        raise ServiceNotAvailableError(
+        raise SourceNotAvailableError(
             f"Gutenberg GraphQL query failed with status {graphql_response.status_code}: {graphql_response.text}. Query: {query}"
         )
 
