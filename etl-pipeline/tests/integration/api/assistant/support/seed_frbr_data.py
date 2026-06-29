@@ -3,26 +3,27 @@
 Upsert order (respects FK dependencies):
     works -> editions -> records -> items -> links -> item_links -> rights -> item_rights
 
-Defaults to docker-compose env config but can be used for any local DB with the
-appropriate .env config file. See usage instructions below.
 
 Depended on for running VRA integration tests against a local DRB API instance,
 which require specific FRBR data to be present for /chat requests to succeed.
 
-Dockerized DB usage:
-    From etl-pipeline/:
-        # Run dockerized local development setup
-        docker compose run --rm --entrypoint python devsetup main.py \
-            -p LocalDevelopmentSetupProcess \
-            -e docker-compose
+The dockerized postgres database must be running for the seed script to insert 
+data. Here are 2 ways to ensure it is running before the script is executed. 
+Both require CWD to be "etl-pipeline/".
 
-        # Run seeding script
-        docker compose run --rm --entrypoint python devsetup \
+A) 
+```
+docker compose up --no-recreate --wait
+python -m tests.integration.api.assistant.support.seed_frbr_data -e local
+```
+
+B)
+This relies on the dependency conditions for the `devsetup` service defined in 
+docker-compose.yaml to start the dockerized database before executing the script.
+```
+docker compose run --rm --entrypoint python devsetup \
             -m tests.integration.api.assistant.support.seed_frbr_data
-
-Local DB usage:
-    From etl-pipeline/ after running local development setup:
-        python -m tests.integration.api.assistant.support.seed_frbr_data -e local
+```
 """
 
 import argparse
