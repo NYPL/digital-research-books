@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+RETRY_DELAY = 120  # seconds
+
 
 def _countdown(node_id: str, seconds: int, interval: int = 30) -> None:
     """Display a periodic countdown for realtime feedback when retrying a test."""
@@ -23,7 +25,7 @@ def pytest_runtest_logreport(report: pytest.TestReport) -> None:
     """Start a countdown timer when a test is retried."""
     if report.outcome == "retried":
         threading.Thread(
-            target=_countdown, args=(report.nodeid, 120), daemon=True
+            target=_countdown, args=(report.nodeid, RETRY_DELAY), daemon=True
         ).start()
 
 
@@ -31,4 +33,4 @@ def pytest_collection_modifyitems(items):
     """Add flaky marker to all tests under the sources folder to retry on failure."""
     for item in items:
         if Path(str(item.fspath)).is_relative_to(Path(__file__).parent):
-            item.add_marker(pytest.mark.flaky(retries=1, delay=120))
+            item.add_marker(pytest.mark.flaky(retries=1, delay=RETRY_DELAY))
