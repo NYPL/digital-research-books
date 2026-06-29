@@ -4,8 +4,21 @@ import time
 from pathlib import Path
 
 import pytest
+import requests
 
 RETRY_DELAY = 120  # seconds
+
+# Only retry tests that fail due to these transient exceptions
+RETRY_ON_EXCEPTIONS: list[type[BaseException]] = [
+    requests.exceptions.Timeout,
+    requests.exceptions.ConnectionError,
+    # Add more exceptions as needed
+]
+
+
+def pytest_set_filtered_exceptions() -> list[type[BaseException]]:
+    """Retry tests only when they fail with certain exceptions."""
+    return RETRY_ON_EXCEPTIONS
 
 
 def _countdown(node_id: str, seconds: int, interval: int = 30) -> None:
