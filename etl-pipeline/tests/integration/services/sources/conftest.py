@@ -34,3 +34,8 @@ def pytest_collection_modifyitems(items):
     for item in items:
         if Path(str(item.fspath)).is_relative_to(Path(__file__).parent):
             item.add_marker(pytest.mark.flaky(retries=1, delay=RETRY_DELAY))
+            # Disable pytest-timeout: the global --timeout fires its SIGALRM
+            # during the retry delay sleep, killing the xdist worker.
+            # These tests usually fail on connection timeout so a test timeout
+            # is not needed.
+            item.add_marker(pytest.mark.timeout(0))
