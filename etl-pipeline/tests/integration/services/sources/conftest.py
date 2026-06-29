@@ -1,8 +1,9 @@
-import pytest
 import sys
 import threading
 import time
 from pathlib import Path
+
+import pytest
 
 
 def _countdown(node_id: str, seconds: int, interval: int = 30) -> None:
