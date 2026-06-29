@@ -420,10 +420,8 @@ def map_editions_and_records(record_ids=None, edition_ids=None, barcode_ids=None
             JOIN records r ON i.record_id = r.id
             ORDER BY e.id
         """)
-    else:  # barcode
-        # Barcodes are TEXT, not INTEGER — cast accordingly.
-        # DISTINCT ON + ORDER BY e.id DESC picks the item from the most recently
-        # clustered edition when a barcode resolves to multiple editions.
+    else:
+        # Map based on barcodes
         query = text("""
             WITH requested(barcode) AS (
                 SELECT UNNEST(CAST(:ids AS TEXT[]))
@@ -732,7 +730,7 @@ def mean_chunk_score(chunk_hits):
 def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
     """
     Yield chunk_hit's from search index search results, adding item_id to each
-    chunk_hit by mapping chunk record_id to item_id in DB.
+    chunk_hit by mapping chunk barcode to item_id in DB.
 
     Args:
         results: List of (ChunkDocument, score) tuples
@@ -743,9 +741,7 @@ def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
 
     missing_barcodes = []
     try:
-        # Map barcode -> item_id. barcode is the stable identifier for a book;
-        # book_id is not used here because it defaults to the barcode string
-        # and cannot be safely cast to INTEGER.
+        # Map barcode -> item_id
         barcodes = set(cd.barcode for cd, _ in results)
         mapper = map_editions_and_records(barcode_ids=barcodes)
 
