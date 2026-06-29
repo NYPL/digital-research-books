@@ -1,5 +1,29 @@
 import pytest
+import sys
+import threading
+import time
 from pathlib import Path
+
+
+def _countdown(node_id: str, seconds: int, interval: int = 30) -> None:
+    """Display a periodic countdown for realtime feedback when retrying a test."""
+    test_name = node_id.split("/")[-1]
+    sys.__stderr__.write(f"\n  RETRY {test_name}")
+    sys.__stderr__.flush()
+    for remaining in range(seconds, 0, -interval):
+        sys.__stderr__.write(f"\n  Retrying {test_name} in {remaining:>3}s...\n")
+        sys.__stderr__.flush()
+        time.sleep(min(interval, remaining))
+    sys.__stderr__.write("  Retrying now...\n")
+    sys.__stderr__.flush()
+
+
+def pytest_runtest_logreport(report: pytest.TestReport) -> None:
+    """Start a countdown timer when a test is retried."""
+    if report.outcome == "retried":
+        threading.Thread(
+            target=_countdown, args=(report.nodeid, 120), daemon=True
+        ).start()
 
 
 def pytest_collection_modifyitems(items):
