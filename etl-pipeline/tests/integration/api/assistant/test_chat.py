@@ -42,7 +42,6 @@ def test_chat(conversation_type, message, edition_id, vra_test_user, test_sessio
         json=payload,
         headers=get_vra_auth_headers(),
         cookies={cookie_name: session_cookie},
-        timeout=90,  # 30s faster than pytest timeout to catch API timeouts explicitly
     )
 
     # Verify HTTP status code is returned and is 200 OK
@@ -86,7 +85,6 @@ def test_chat_assistant_messages_have_db_ids_matching_db(
         json=payload,
         headers=get_vra_auth_headers(),
         cookies={cookie_name: session_cookie},
-        timeout=90,
     )
     assert_response_status(url, response, 200)
 
