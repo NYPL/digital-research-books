@@ -71,6 +71,7 @@ const CatalogResults: React.FC<{
   return (
     <Flex flexDir="column" bgColor="ui.bg.default" gap="s">
       <Text
+        position="sticky"
         bgColor="ui.bg.default"
         borderBottom="1px solid"
         borderColor="ui.border.default"
@@ -78,7 +79,6 @@ const CatalogResults: React.FC<{
         fontWeight="bold"
         lineHeight="125%"
         paddingY="s"
-        // position="sticky"
         top="0"
         zIndex="999"
         marginLeft={MARGIN_BLEED}

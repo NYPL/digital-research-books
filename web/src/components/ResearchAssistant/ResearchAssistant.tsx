@@ -293,7 +293,6 @@ const ResearchAssistant: React.FC = () => {
           justifyContent="flex-start"
           alignItems="flex-start"
           borderRadius={{ base: "8px 8px 0 0", md: "0" }}
-          overflow="hidden"
         >
           <Flex
             width="100%"

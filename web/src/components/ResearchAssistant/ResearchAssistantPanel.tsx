@@ -73,13 +73,9 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
       flexDirection="column"
       maxHeight={{ base: "100%", md: "100vh" }}
       minHeight="0px"
-      position={{ base: "relative", md: "sticky" }}
-      top={{ base: "auto", md: "0" }}
       width="100%"
       paddingLeft={paddingX}
       paddingRight={page === "item" ? "l" : undefined}
-      overflow="hidden"
-      sx={{ overscrollBehavior: "contain" }}
       role="region"
       aria-labelledby="vra-panel-heading"
     >
