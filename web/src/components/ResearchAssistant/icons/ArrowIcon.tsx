@@ -1,4 +1,3 @@
-import { useBreakpointValue } from "@chakra-ui/react";
 import { Icon, type IconRotations } from "@nypl/design-system-react-components";
 import React from "react";
 
@@ -31,8 +30,7 @@ const ArrowIcon: React.FC<ArrowIconProps> = ({
 }) => {
   const responsiveDirection =
     typeof direction === "string" ? { base: direction } : direction;
-  const breakpointDirection = useBreakpointValue(responsiveDirection);
-  const resolvedDirection = breakpointDirection ?? responsiveDirection.base;
+  const resolvedDirection = responsiveDirection.base;
 
   return (
     <Icon

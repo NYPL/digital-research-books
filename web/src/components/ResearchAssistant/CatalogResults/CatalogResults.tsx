@@ -71,7 +71,7 @@ const CatalogResults: React.FC<{
   return (
     <Flex flexDir="column" bgColor="ui.bg.default" gap="s">
       <Text
-        position="sticky"
+        position={{ base: "static", md: "sticky" }}
         bgColor="ui.bg.default"
         borderBottom="1px solid"
         borderColor="ui.border.default"
