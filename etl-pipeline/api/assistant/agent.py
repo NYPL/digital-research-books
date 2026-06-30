@@ -664,9 +664,9 @@ async def update_chat(
     return run_result
 
 
+# TODO: replace with Session.get_items() (async)
 def get_session_messages(session_id):
     """Read message data for session ID as ND-JSON"""
-    # TODO: replace with Session.get_items()
     engine = get_engine()
     with engine.connect() as conn:
         rows = conn.execute(

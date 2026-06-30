@@ -27,22 +27,26 @@ FALLBACK_RESULT_REASON = (
     "It may share themes, subjects, or content related to your inquiry."
 )
 
-# TODO: make sure the full search result for the book (including chunk test in addition to metadata) is injected
-RESULT_REASON_SYSTEM_PROMPT_TEMPLATE = f"""\
+RESULT_REASON_SYSTEM_PROMPT_TEMPLATE = """\
 You are a research assistant at a library helping users understand why specific \
 search results appear for their queries. Given the conversation history and the \
 search query that was executed, explain in 3-4 sentences (~450 characters) why the \
 specified book appears as a result. Be specific about what connects the book's \
 subject matter, themes, or content to the user's research interest. Write clearly \
 for a general audience.\
-{conversation}\
+
+Conversation History:
+{conversation_history}
+
+The search query that returned these results was:
+{query_description}
+
+Explain why the following book appears in the results:
+{book_info}
+
+Write 3-4 sentences (~450 characters) explaining the connection between \
+this book and the user's search.\
 """
-(
-    f"The search query that returned these results was:\n{query_description}\n\n"
-    f"Explain why the following book appears in the results:\n{book_info}\n\n"
-    f"Write 3-4 sentences (~450 characters) explaining the connection between "
-    f"this book and the user's search."
-)
 
 
 async def get_result_reason(
@@ -57,11 +61,18 @@ async def get_result_reason(
     Returns (explanation, ai_generated) where ai_generated is False on fallback.
     """
     try:
-        # Q: why not use Session.get_items()?
         messages = get_session_messages(session_id)
+
+        # TODO: if call_id does not exist in session messages, or the tool call output starts with error_prefix (btw centralize ERROR prefix in agent.py as a module var), return 404 (tool call output not found). with will handle the case of no session messages (right? what does get_session_messages return in that case). And separately return 404 if the barcode is not in the call_id tool call output (parse the XML)
+        if tool_call_args is None:
+            logger.warning(
+                f"get_result_reason: call_id '{call_id}' not found in session '{session_id}'"
+            )
+            return FALLBACK_RESULT_REASON, False
+
         # TODO: truncate the conversation history (messages) to end after the tool call output with specified call id (before passing the messages to format_conversation_history)
 
-        # Locate the tool call by call_id to retrieve the search query
+        # Extract and format tool call args
         # TODO: look at sample data from the DB this parsing does not respect the actual data structure (which is in open ai response items format)
         tool_call_args = None
         for msg in messages:
@@ -72,22 +83,14 @@ async def get_result_reason(
                         break
             if tool_call_args is not None:
                 break
-
-        # TODO: if call_id does not exist in session messages, or the tool call output starts with error_prefix (btw centralize ERROR prefix in agent.py as a module var), return 404 (tool call output not found). with will handle the case of no session messages (right? what does get_session_messages return in that case). And separately return 404 if the barcode is not in the call_id tool call output (parse the XML)
-        if tool_call_args is None:
-            logger.warning(
-                f"get_result_reason: call_id '{call_id}' not found in session '{session_id}'"
-            )
-            return FALLBACK_RESULT_REASON, False
-
-        query_description = (
+        formatted_tool_call_args = (
             f'Semantic query: "{tool_call_args.get("ranking_query", "")}"'
         )
         filters_raw = tool_call_args.get("filters")
         if filters_raw:
-            query_description += f"\nFilters: {filters_raw}"
+            formatted_tool_call_args += f"\nFilters: {filters_raw}"
 
-        # Build book description from FRBR metadata
+        # format book details (from FRBR metadata)
         frbr_data = get_frbr_data_by_barcode([barcode])
         if frbr_data:
             row = frbr_data[0]
@@ -113,11 +116,14 @@ async def get_result_reason(
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
         )
 
-        # TODO: add format vars
-        system_prompt = RESULT_REASON_SYSTEM_PROMPT_TEMPLATE.format(...)
+        system_prompt = RESULT_REASON_SYSTEM_PROMPT_TEMPLATE.format(
+            conversation_history=conversation_history,
+            query_description=formatted_tool_call_args,
+            book_info=book_info,
+        )
 
         response = await client.chat.completions.create(
-            model="gemini-3.5-flash",
+            model="gemini-3.5-flash",  # TODO: centralize as module var in agent.py DEFAULT_LLM
             messages=[
                 {"role": "system", "content": system_prompt},
             ],
@@ -164,7 +170,7 @@ async def result_reason(session_id):
             logger.info("Result reason request received")
 
             # Request Parameter Validation
-            # TODO: turn this validation into a reusable function
+            # TODO: turn individual param existence validation into a reusable function
             if not call_id:
                 return APIUtils.formatResponseObject(
                     400, response_type, {"message": "call_id is required"}
@@ -175,13 +181,13 @@ async def result_reason(session_id):
                     400, response_type, {"message": "barcode is required"}
                 )
 
-            explanation, ai_generated = await get_result_reason(
+            explanation, is_ai_generated = await get_result_reason(
                 session_id, call_id, barcode
             )
 
             response_data = {
                 "explanation": explanation,
-                "ai_generated": ai_generated,
+                "is_ai_generated": is_ai_generated,
                 "session_id": session_id,
             }
             return APIUtils.formatResponseObject(200, response_type, response_data)
