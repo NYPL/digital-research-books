@@ -141,7 +141,7 @@ class Qwen3Embedder(SageMakerTEIEmbedder):
     """SageMaker embedder for Qwen3-Embedding models served via HF TEI.
 
     For details on query vs document prompting for Qwen3-Embedding models,
-    see: https://huggingface.co/Qwen/Qwen3-Embedding-8B
+    see: https://huggingface.co/Qwen/Qwen3-Embedding-8B and config_sentence_transformer.json
     """
 
     def embed_document(self, text: str) -> list[float]:
@@ -191,7 +191,7 @@ class HarrierEmbedder(SageMakerTEIEmbedder):
     """SageMaker embedder for Microsoft Harrier models served via HF TEI.
 
     For details on query vs document prompting for Harrier models,
-    see: https://huggingface.co/microsoft/harrier-oss-v1-27b
+    see: https://huggingface.co/microsoft/harrier-oss-v1-27b and config_sentence_transformer.json
 
     Args:
         query_prompt_name: TEI prompt_name to use for query embeddings.

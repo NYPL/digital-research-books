@@ -762,7 +762,7 @@ def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
             )
 
 
-# TODO: make score type metadata of the chunk index search method
+# TODO: make score type metadata/attr of the chunk index search method (e.g. RankFuser or TPBackend)
 CHUNK_SCORE_TYPE: Literal["higher-is-better", "lower-is-better"] = "higher-is-better"
 
 if CHUNK_SCORE_TYPE == "higher-is-better":
@@ -918,21 +918,28 @@ def search_catalog(
         # determine results ordering (because direct results are grouped by \
         # edition outside of ES  in VRA)
 
+        # Format editions for LLM (markdown)
+        # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
+        # than saving JSON/API response separately but edition data json may \
+        # include irrelevant metadata)
+        search_result_str = format_search_results(edition_data, as_str=True)
+
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
             "tool_name": ctx.tool_name,
             "edition_data": edition_data,  # ordered search result
             "search_params": json.loads(ctx.tool_arguments),
         }
+        # TODO: store search result chunk + edition ids in DB for structured retreival
 
-        # Format editions for LLM (markdown)
-        # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
-        # than saving JSON/API response separately but edition data json may \
-        # include irrelevant metadata)
-        return format_search_results(edition_data, as_str=True)
+        return search_result_str
 
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
+
+        # Double make sure no search is recorded if there is an error
+        del ctx.context.search_results[ctx.tool_call_id]
+
         raise e
 
 
@@ -997,6 +1004,12 @@ def search_book(
 
         chunk_hits = list(results_to_chunk_hits(results))
 
+        # Format results for LLM
+        search_result_str = format_search_results(
+            ctx.context.search_results[ctx.tool_call_id]["edition_data"],
+            as_str=True,
+        )
+
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
             "tool_name": ctx.tool_name,
@@ -1009,15 +1022,16 @@ def search_book(
             ],
             "search_params": json.loads(ctx.tool_arguments),
         }
+        # TODO: store search result chunk + edition ids in DB for structured retreival
 
-        # Format results for LLM
-        return format_search_results(
-            ctx.context.search_results[ctx.tool_call_id]["edition_data"],
-            as_str=True,
-        )
+        return search_result_str
 
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
+
+        # Double make sure no search is recorded if there is an error
+        del ctx.context.search_results[ctx.tool_call_id]
+
         raise e
 
 

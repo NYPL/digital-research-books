@@ -11,6 +11,15 @@ logger = create_log(__name__)
 
 
 class LinkFulfiller:
+    """Creates custom access links in WebPub Manifests for records flagged with `fulfill_limited_access`.
+
+    For records, where any link is flagged with Record.parts[].flags = fulfill_limited_access,
+    fetches the record's WebPub manifest from S3, replaces direct file URLs with
+    DRB API `/fulfill/{link.id}` endpoints, and writes the updated manifest back
+    to S3. This allows access via API backend to files that require private
+    credentials that are not available to the end user.
+    """
+
     def __init__(self, db_manager: DBManager):
         self.db_manager = db_manager
 
