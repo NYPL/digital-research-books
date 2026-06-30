@@ -2,6 +2,7 @@ import json
 
 import newrelic.agent
 from flask import Blueprint, request
+from lxml import etree as ET
 from openai import AsyncOpenAI
 
 from logger import create_log, LogContextVars, get_app_logger
@@ -12,14 +13,18 @@ from ..auth import require_api_key
 from ..decorators import require_session_jwt
 from ..utils import APIUtils
 from ..db import get_frbr_data_by_barcode
-from ..assistant.agent import get_session_messages, format_frbr_fields
+from ..assistant.agent import (
+    DEFAULT_LLM,
+    TOOL_ERROR_PREFIX,
+    get_session_messages,
+    format_frbr_fields,
+)
 from ..assistant.snippets import format_conversation_history
 
 
 logger = create_log(__name__)
 
 result_reason_blueprint = Blueprint("result_reason", __name__)
-
 
 FALLBACK_RESULT_REASON = (
     "This result appears in your search based on its relevance to your query. "
@@ -49,6 +54,12 @@ this book and the user's search.\
 """
 
 
+class CallNotFoundError(Exception):
+    """Raised when call_id or barcode cannot be resolved in the session."""
+
+    pass
+
+
 async def get_result_reason(
     session_id: str,
     call_id: str,
@@ -59,30 +70,68 @@ async def get_result_reason(
     search result identified by call_id.
 
     Returns (explanation, ai_generated) where ai_generated is False on fallback.
+    Raises CallNotFoundError if session, call_id, or barcode cannot be resolved.
     """
     try:
         messages = get_session_messages(session_id)
 
-        # TODO: if call_id does not exist in session messages, or the tool call output starts with error_prefix (btw centralize ERROR prefix in agent.py as a module var), return 404 (tool call output not found). with will handle the case of no session messages (right? what does get_session_messages return in that case). And separately return 404 if the barcode is not in the call_id tool call output (parse the XML)
-        if tool_call_args is None:
+        # --- 404 guard 1: session has no messages ---
+        if not messages:
+            logger.warning(
+                f"get_result_reason: no messages found for session '{session_id}'"
+            )
+            raise CallNotFoundError(f"session '{session_id}' not found")
+
+        # Find the raw function_call and function_call_output items for call_id.
+        # Traverse in order so we know the truncation index after the output.
+        function_call_item = None
+        tool_call_output = None
+        truncate_idx = None
+
+        for i, msg in enumerate(messages):
+            msg_type = msg.get("type")
+            if msg_type == "function_call" and msg.get("call_id") == call_id:
+                function_call_item = msg
+            elif msg_type == "function_call_output" and msg.get("call_id") == call_id:
+                tool_call_output = msg.get("output", "")
+                truncate_idx = i + 1
+                break
+
+        # --- 404 guard 2: call_id not in session, or its output is a tool error ---
+        if function_call_item is None or truncate_idx is None:
             logger.warning(
                 f"get_result_reason: call_id '{call_id}' not found in session '{session_id}'"
             )
-            return FALLBACK_RESULT_REASON, False
+            raise CallNotFoundError(f"call_id '{call_id}' not found in session")
 
-        # TODO: truncate the conversation history (messages) to end after the tool call output with specified call id (before passing the messages to format_conversation_history)
+        if tool_call_output.startswith(TOOL_ERROR_PREFIX):
+            logger.warning(
+                f"get_result_reason: tool output for call_id '{call_id}' is an error"
+            )
+            raise CallNotFoundError(f"tool output for call_id '{call_id}' is an error")
 
-        # Extract and format tool call args
-        # TODO: look at sample data from the DB this parsing does not respect the actual data structure (which is in open ai response items format)
-        tool_call_args = None
-        for msg in messages:
-            if msg.get("role") == "assistant":
-                for tool_call in msg.get("tool_calls") or []:
-                    if tool_call.get("id") == call_id:
-                        tool_call_args = json.loads(tool_call["function"]["arguments"])
-                        break
-            if tool_call_args is not None:
-                break
+        # --- 404 guard 3: barcode not present in the tool call output XML ---
+        try:
+            root = ET.fromstring(tool_call_output)
+            barcodes_in_output = {el.text for el in root.findall(".//barcode")}
+        except ET.XMLSyntaxError:
+            barcodes_in_output = set()
+
+        if barcode not in barcodes_in_output:
+            logger.warning(
+                f"get_result_reason: barcode '{barcode}' not found in tool output for call_id '{call_id}'"
+            )
+            raise CallNotFoundError(
+                f"barcode '{barcode}' not found in results for call_id '{call_id}'"
+            )
+
+        # All 404 checks passed — now build query description and book info.
+
+        # Truncate conversation history to end at (and including) this tool call output
+        messages = messages[:truncate_idx]
+
+        # Parse and format tool call args as a human-readable query description
+        tool_call_args = json.loads(function_call_item.get("arguments", "{}"))
         formatted_tool_call_args = (
             f'Semantic query: "{tool_call_args.get("ranking_query", "")}"'
         )
@@ -90,12 +139,11 @@ async def get_result_reason(
         if filters_raw:
             formatted_tool_call_args += f"\nFilters: {filters_raw}"
 
-        # format book details (from FRBR metadata)
+        # Format book details (from FRBR metadata)
         frbr_data = get_frbr_data_by_barcode([barcode])
         if frbr_data:
             row = frbr_data[0]
             frbr_fields = format_frbr_fields(row.Work, row.Edition)
-            # TODO: this data extraction is duplicated in ..? (content search system prompt)
             book_info = (
                 f"Title: {frbr_fields['title']}\n"
                 f"Authors: {frbr_fields['author_names']}\n"
@@ -123,17 +171,24 @@ async def get_result_reason(
         )
 
         response = await client.chat.completions.create(
-            model="gemini-3.5-flash",  # TODO: centralize as module var in agent.py DEFAULT_LLM
+            model=DEFAULT_LLM,
             messages=[
                 {"role": "system", "content": system_prompt},
             ],
             temperature=0,
             reasoning_effort=None,
         )
-        # TODO: handle if explanation=None, use fallback
         explanation = response.choices[0].message.content
+        if explanation is None:
+            logger.warning(
+                "get_result_reason: LLM returned None content, using fallback"
+            )
+            return FALLBACK_RESULT_REASON, False
+
         return explanation, True
 
+    except CallNotFoundError:
+        raise
     except Exception:
         logger.exception(
             "get_result_reason: failed to generate explanation, using fallback"
@@ -152,13 +207,11 @@ async def result_reason(session_id):
     barcode = request.json.get("barcode")
 
     log_context = {"session_id": session_id}
-    # Q: do the below need to be in every log, would it be enough just to log the session_id and log these once
     if call_id is not None:
         log_context["call_id"] = call_id
     if barcode is not None:
         log_context["barcode"] = barcode
 
-    # New Relic Attributes
     # TODO: maybe consolidate into a function used here and in /chat
     for k, v in log_context.items():
         newrelic.agent.add_custom_attribute(k, v)
@@ -169,7 +222,6 @@ async def result_reason(session_id):
         try:
             logger.info("Result reason request received")
 
-            # Request Parameter Validation
             # TODO: turn individual param existence validation into a reusable function
             if not call_id:
                 return APIUtils.formatResponseObject(
@@ -181,9 +233,14 @@ async def result_reason(session_id):
                     400, response_type, {"message": "barcode is required"}
                 )
 
-            explanation, is_ai_generated = await get_result_reason(
-                session_id, call_id, barcode
-            )
+            try:
+                explanation, is_ai_generated = await get_result_reason(
+                    session_id, call_id, barcode
+                )
+            except CallNotFoundError as e:
+                return APIUtils.formatResponseObject(
+                    404, response_type, {"message": str(e)}
+                )
 
             response_data = {
                 "explanation": explanation,

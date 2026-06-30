@@ -37,7 +37,7 @@ import rapidfuzz
 # api code
 from ..utils import APIUtils, remove_markdown_comments, shorten
 from .types import Snippet, BaseEditionResult
-from .agent import format_search_results
+from .agent import format_search_results, TOOL_ERROR_PREFIX
 
 # shared code
 from utils.timer import timer
@@ -408,9 +408,8 @@ def format_conversation_history(items: list) -> str:  # list[TResponseOutputItem
 
     def _compact_tool_output(output: str) -> str:
         """Summarize search tool output with a count of N results returned"""
-        error_prefix = "An error occurred while running the tool"
-        if output.startswith(error_prefix):
-            return error_prefix
+        if output.startswith(TOOL_ERROR_PREFIX):
+            return TOOL_ERROR_PREFIX
         try:
             root = ET.fromstring(output)
             # MAYBE: tighter criteria <edition> direct children of <search_results> according to output format

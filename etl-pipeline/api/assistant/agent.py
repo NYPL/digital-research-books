@@ -70,6 +70,10 @@ from ..db import (
 
 logger = create_log(__name__)
 
+DEFAULT_LLM = "gemini-3.5-flash"
+
+TOOL_ERROR_PREFIX = "An error occurred while running the tool"
+
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
 
@@ -526,7 +530,7 @@ async def update_chat(
 
     # model = "litellm/gemini/gemini-3-flash-preview"
     model = OpenAIChatCompletionsModel(
-        model="gemini-3.5-flash",
+        model=DEFAULT_LLM,
         openai_client=AsyncOpenAI(
             api_key=require_env("GOOGLE_API_KEY"),
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -882,6 +886,7 @@ def search_catalog(
                         edition_id=row.Edition.id,
                         chunk_hits=edition_hit["chunk_hits"],
                         agg_score=edition_hit["agg_score"],
+                        barcode=edition_hit["barcode"],
                     )
                 )
         if missing_data:
@@ -1057,7 +1062,7 @@ def format_frbr_fields(orm_work, orm_edition):
     }
 
 
-def display_book(lines, frbr_fields, chunk_hits, edition_id):
+def display_book(lines, frbr_fields, chunk_hits, edition_id, barcode=None):
     """
     Create lines of str for an XML display of book and chunk search results.
     Chunk display order controlled by input data order.
@@ -1067,6 +1072,8 @@ def display_book(lines, frbr_fields, chunk_hits, edition_id):
 
     # MAYBE: edition index not id?
     lines.append(f"<edition_id>{edition_id}</edition_id>")
+    if barcode is not None:
+        lines.append(f"<barcode>{barcode}</barcode>")
     lines.append(f"<title>{frbr_fields['title']}</title>")
     lines.append(f"<authors>{frbr_fields['author_names']}</authors>")
     lines.append(f"<publisher>{frbr_fields['publisher_names']}</publisher>")
@@ -1145,7 +1152,10 @@ def format_search_results(
             if isinstance(entry, CatalogSearchResult)
             else entry.frbr_fields
         )
-        lines = display_book(lines, frbr_fields, entry.chunk_hits, entry.edition_id)
+        barcode = entry.barcode if isinstance(entry, CatalogSearchResult) else None
+        lines = display_book(
+            lines, frbr_fields, entry.chunk_hits, entry.edition_id, barcode=barcode
+        )
 
     lines.append("\n</search_results>")
 

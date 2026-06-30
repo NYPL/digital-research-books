@@ -39,3 +39,4 @@ class CatalogSearchResult(BaseEditionResult):
     orm_work: Any
     orm_edition: Any
     agg_score: float
+    barcode: Optional[str] = None
