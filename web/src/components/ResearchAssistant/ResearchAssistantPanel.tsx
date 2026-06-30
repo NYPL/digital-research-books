@@ -171,7 +171,10 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
               >
                 <Flex gap="xxs" alignItems="center">
                   <Text display={{ base: "none", sm: "block" }}>Hide chat</Text>
-                  <ArrowIcon color="#FFF" />
+                  <ArrowIcon
+                    direction={{ base: "down", md: "right" }}
+                    color="#FFF"
+                  />
                 </Flex>
               </Button>
               <Menu
@@ -247,7 +250,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
             }}
           >
             <Flex gap="xxs" alignItems="center">
-              <ArrowIcon direction="left" color="#FFF" />
+              <ArrowIcon direction={{ base: "up", md: "left" }} color="#FFF" />
               <Text fontSize="desktop.body.body2">Show chat</Text>
             </Flex>
           </Button>
