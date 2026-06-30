@@ -26,14 +26,22 @@ FALLBACK_RESULT_REASON = (
     "It may share themes, subjects, or content related to your inquiry."
 )
 
-RESULT_REASON_SYSTEM_PROMPT = """\
+# TODO: make sure the full search result for the book (including chunk test in addition to metadata) is injected
+RESULT_REASON_SYSTEM_PROMPT_TEMPLATE = f"""\
 You are a research assistant at a library helping users understand why specific \
 search results appear for their queries. Given the conversation history and the \
 search query that was executed, explain in 3-4 sentences (~450 characters) why the \
 specified book appears as a result. Be specific about what connects the book's \
 subject matter, themes, or content to the user's research interest. Write clearly \
 for a general audience.\
+{conversation}\
 """
+(
+    f"The search query that returned these results was:\n{query_description}\n\n"
+    f"Explain why the following book appears in the results:\n{book_info}\n\n"
+    f"Write 3-4 sentences (~450 characters) explaining the connection between "
+    f"this book and the user's search."
+)
 
 
 async def get_result_reason(
@@ -48,9 +56,12 @@ async def get_result_reason(
     Returns (explanation, ai_generated) where ai_generated is False on fallback.
     """
     try:
+        # Q: why not use Session.get_items()?
         messages = get_session_messages(session_id)
+        # TODO: truncate the conversation history (messages) to end after the tool call output with specified call id (before passing the messages to format_conversation_history)
 
         # Locate the tool call by call_id to retrieve the search query
+        # TODO: look at sample data from the DB this parsing does not respect the actual data structure (which is in open ai response items format)
         tool_call_args = None
         for msg in messages:
             if msg.get("role") == "assistant":
@@ -92,25 +103,7 @@ async def get_result_reason(
             )
             book_info = f"(Book metadata unavailable for barcode: {barcode})"
 
-        # Build conversation context from stored history (user/assistant text only)
-        # TODO: find and consolidate with other place that conversation history \
-        # is reconstructed for text insertion (and note maybe insert a note where \
-        # non-final seach results were returned (or attempted i.e. "search undertaken"))
-        conversation_messages = []
-        for msg in messages:
-            role = msg.get("role")
-            content = msg.get("content")
-            if role == "user" and content:
-                conversation_messages.append({"role": "user", "content": content})
-            elif role == "assistant" and content and not msg.get("tool_calls"):
-                conversation_messages.append({"role": "assistant", "content": content})
-
-        final_user_message = (
-            f"The search query that returned these results was:\n{query_description}\n\n"
-            f"Explain why the following book appears in the results:\n{book_info}\n\n"
-            f"Write 3-4 sentences (~450 characters) explaining the connection between "
-            f"this book and the user's search."
-        )
+        conversation_history = ...
 
         # TODO: find all the places I make an LLM call and make a centralized wrapper call_google_llm(model=, messages=, **kwargs<passed to completion.create()>)
         client = AsyncOpenAI(
@@ -118,14 +111,13 @@ async def get_result_reason(
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
         )
 
+        # TODO: add format vars
+        system_prompt = RESULT_REASON_SYSTEM_PROMPT_TEMPLATE.format(...)
+
         response = await client.chat.completions.create(
             model="gemini-3.5-flash",
             messages=[
-                {"role": "system", "content": RESULT_REASON_SYSTEM_PROMPT},
-                # TODO: insert the conversation history + final_user_message into the system prompt
-                # TODO: make sure the full search result for the book (including chunk test in addition to metadata) is injected
-                *conversation_messages,
-                {"role": "user", "content": final_user_message},
+                {"role": "system", "content": system_prompt},
             ],
             temperature=0,
             reasoning_effort=None,
@@ -148,7 +140,6 @@ async def get_result_reason(
 async def result_reason(session_id):
     response_type = "result_reason"
 
-    # TODO: add validation? i.e. require these to be present? ... oh this is done below
     call_id = request.json.get("call_id")
     barcode = request.json.get("barcode")
 
@@ -159,6 +150,7 @@ async def result_reason(session_id):
     if barcode is not None:
         log_context["barcode"] = barcode
 
+    # New Relic Attributes
     # TODO: maybe consolidate into a function used here and in /chat
     for k, v in log_context.items():
         newrelic.agent.add_custom_attribute(k, v)
@@ -169,6 +161,7 @@ async def result_reason(session_id):
         try:
             logger.info("Result reason request received")
 
+            # Request Parameter Validation
             # TODO: turn this validation into a reusable function
             if not call_id:
                 return APIUtils.formatResponseObject(

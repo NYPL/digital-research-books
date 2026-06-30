@@ -376,7 +376,7 @@ def validate_edition_snippets(
 
 
 # TODO: insert "search executed here" where appropriate in convo history
-def _build_conversation_text(run_result: RunResult) -> str:
+def format_conversation_history(run_result: RunResult) -> str:
     """Extract user and assistant text messages from run_result, and format as
     a conversation chain."""
 
@@ -651,7 +651,7 @@ async def get_relevant_snippets_llm(
     # model_name = 'gemini-2.5-flash-lite'
 
     # Shared system prompt variables
-    conversation_text = _build_conversation_text(run_result)
+    conversation_text = format_conversation_history(run_result)
     prompt_template = Template(
         (PROMPTS_DIR / "snippet_agent" / "v7.jinja.md").read_text()
     )
