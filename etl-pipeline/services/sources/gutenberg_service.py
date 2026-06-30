@@ -10,7 +10,7 @@ from typing import Generator
 from constants.get_constants import get_constants
 from mappings.gutenberg import GutenbergMapping
 from model import Record
-from .source_service import SourceService
+from .source_service import SourceService, SourceNotAvailableError
 from logger import create_log
 from utils.common import require_env
 
@@ -213,8 +213,8 @@ class GutenbergService(SourceService):
             if graphql_response.status_code < 500:
                 break
 
-        raise Exception(
-            f"Unable to execute Gutenberg GraphQL query {query} - status {graphql_response.status_code}"
+        raise SourceNotAvailableError(
+            f"Gutenberg GraphQL query failed with status {graphql_response.status_code}: {graphql_response.text}. Query: {query}"
         )
 
     def set_rate_limit_fields(self, graphql_response):

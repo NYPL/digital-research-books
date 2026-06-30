@@ -157,8 +157,6 @@ test.describe(
       page = await context.newPage();
       itemPage = new ItemPage(page);
       await itemPage.navigateTo();
-      await itemPage.logIn(process.env.VRA_USERNAME, process.env.VRA_PASSWORD);
-      await itemPage.navigateTo(); // Return to item page after auth redirect
     });
 
     test.afterAll(async () => {

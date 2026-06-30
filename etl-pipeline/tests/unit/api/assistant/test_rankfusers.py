@@ -2,33 +2,12 @@
 
 import pytest
 from api.assistant.search.rankfusers import ReciprocalRankFuser, ScoredHit
-from vector_indexing.core.types import ChunkDocument, BookMetadata
-
-
-def make_chunk(doc_id: str, book_id: str = "1") -> ChunkDocument:
-    """Create a minimal ChunkDocument for testing."""
-    return ChunkDocument(
-        doc_id=doc_id,
-        text=f"Text for {doc_id}",
-        barcode="test_barcode",
-        book_id=book_id,
-        chunk_index=0,
-        start_page=1,
-        end_page=1,
-        book_metadata=BookMetadata(
-            edition_id=1,
-            title="Test Book",
-            author=["Test Author"],
-            subject=["Test Subject"],
-            publication_date="2024-01-01",
-            language=["en"],
-        ),
-    )
+from tests.factories import make_chunk_doc
 
 
 def make_hit(doc_id: str, score: float = 0.5, book_id: str = "1") -> ScoredHit:
     """Create a ScoredHit tuple for testing."""
-    return (make_chunk(doc_id, book_id), score)
+    return (make_chunk_doc(doc_id=doc_id, book_id=book_id), score)
 
 
 class TestReciprocalRankFuser:

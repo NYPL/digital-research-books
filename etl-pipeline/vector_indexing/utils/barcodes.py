@@ -47,7 +47,6 @@ def get_last_indexed_barcode(index_name: str) -> str | None:
     return chunk.barcode
 
 
-# TODO: modularize this to make "TurbopufferBackend.scan()" with arbitrary queries like the one used here
 def write_non_indexed_10k_barcodes(index_name: str, output_path: Path | str) -> Path:
     """Write 10k barcodes not yet indexed in the target turbopuffer namespace.
 
@@ -55,43 +54,20 @@ def write_non_indexed_10k_barcodes(index_name: str, output_path: Path | str) -> 
     """
     output_path = Path(output_path)
     source_barcodes = set(list_10k_barcodes())
-    missing_barcodes = set(source_barcodes)
 
-    # limit.per returns 1 row per unique barcode value.
-    # limit.total is page size for paginating the sorted query over the whole index
-    # Cursor-based pagination handles datasets of any size.
-    _PAGE_LIMIT = 1_000
     backend = TurbopufferBackend(index_name=index_name)
-    last_barcode: str | None = None
+    indexed_barcodes: set[str] = set()
 
-    while missing_barcodes:
-        query_kwargs: dict[str, Any] = {
-            "rank_by": ("barcode", "asc"),
-            "limit": {
-                "total": _PAGE_LIMIT,  #
-                "per": {"attributes": ["barcode"], "limit": 1},
-            },
-            "include_attributes": ["barcode"],
-        }
-        if last_barcode is not None:
-            query_kwargs["filters"] = ("barcode", "Gt", last_barcode)
+    # limit.per deduplicates by barcode, yielding one row per unique barcode.
+    for chunk, _ in backend.scan(
+        rank_by=("barcode", "asc"),
+        limit={"per": {"attributes": ["barcode"], "limit": 1}},
+        include_attributes=["barcode"],
+    ):
+        if chunk.barcode:
+            indexed_barcodes.add(chunk.barcode)
 
-        result = backend.namespace.query(**query_kwargs)
-        rows = result.rows
-        if not rows:
-            break
-
-        last_barcode = None
-        for row in rows:
-            barcode = row.model_dump().get("barcode")
-            last_barcode = barcode
-            if barcode in missing_barcodes:
-                missing_barcodes.discard(barcode)
-
-        if last_barcode is None or len(rows) < _PAGE_LIMIT:
-            break
-
-    non_indexed_barcodes = sorted(missing_barcodes)
+    non_indexed_barcodes = sorted(source_barcodes - indexed_barcodes)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_contents = "\n".join(non_indexed_barcodes)
