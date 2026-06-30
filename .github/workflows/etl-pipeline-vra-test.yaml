@@ -1,0 +1,93 @@
+name: ETL Pipeline VRA Integration Test (Debug)
+
+on:
+  push:
+    branches:
+      - "SCHOL-567/message-ids"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      IS_CI: "true"
+      DOCKER_BUILDKIT: 1
+      COMPOSE_DOCKER_CLI_BUILD: 1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::946183545209:role/GithubActionsDeployerRole
+          aws-region: us-east-1
+
+      - name: Mask secrets
+        uses: ./.github/actions/mask-etl-pipeline-secrets
+
+      - name: Install build essentials
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-12 g++-12
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 60
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 60
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: 'etl-pipeline/.python-version'
+          cache: "pip"
+          cache-dependency-path: |
+            etl-pipeline/requirements.txt
+            etl-pipeline/dev-requirements.txt
+
+      - name: Install Python dependencies
+        working-directory: ./etl-pipeline
+        run: |
+          python -m pip install --upgrade pip wheel
+          pip install -r requirements.txt -r dev-requirements.txt
+
+      - name: Build Docker images with cache
+        id: build-images
+        working-directory: ./etl-pipeline
+        run: |
+          docker compose build --progress plain \
+            --build-arg BUILDKIT_INLINE_CACHE=1
+
+      - name: Start services
+        working-directory: ./etl-pipeline
+        run: |
+          docker compose up -d --wait --wait-timeout 180
+
+      - name: Seed local Postgres DB to support /chat API tests
+        working-directory: ./etl-pipeline
+        run: |
+          docker compose run --rm --entrypoint python devsetup main.py \
+            -p LocalDevelopmentSetupProcess \
+            -e docker-compose && \
+          docker compose run --rm --entrypoint python devsetup \
+            -m tests.integration.api.assistant.support.seed_frbr_data
+
+      - name: Run integration tests (VRA)
+        env:
+          ENVIRONMENT: local
+        working-directory: ./etl-pipeline
+        run: |
+          python -m pytest tests/integration/api/assistant --env=local -n=4 --timeout=300
+
+      - name: Dump service logs
+        if: always() && steps.build-images.outcome == 'success'
+        working-directory: ./etl-pipeline
+        run: |
+          docker compose ps
+          docker compose logs --no-color
+
+      - name: Cleanup
+        if: always()
+        working-directory: ./etl-pipeline
+        run: |
+          docker compose down
