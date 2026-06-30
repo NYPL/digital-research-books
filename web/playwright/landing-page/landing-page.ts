@@ -30,6 +30,7 @@ class LandingPage {
   readonly researchHeaderLink: Locator;
   readonly educationHeaderLink: Locator;
   readonly eventsHeaderLink: Locator;
+  readonly visitHeaderLink: Locator;
   readonly giveHeaderLink: Locator;
   readonly getHelpHeaderLink: Locator;
   readonly searchHeaderLink: Locator;
@@ -121,6 +122,7 @@ class LandingPage {
       "[href='//www.nypl.org/education'] >> nth=0"
     );
     this.eventsHeaderLink = page.locator("[href='//www.nypl.org/events']");
+    this.visitHeaderLink = page.locator("[href='//www.nypl.org/visit']");
     this.giveHeaderLink = page.locator("[href='//www.nypl.org/give']");
     this.getHelpHeaderLink = page.locator("[href='//www.nypl.org/get-help']");
     this.searchHeaderLink = page.locator(

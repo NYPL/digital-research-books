@@ -47,6 +47,7 @@ test.describe("Header Links", () => {
     await landingPage.verifyHeaderLinkVisible(landingPage.researchHeaderLink);
     await landingPage.verifyHeaderLinkVisible(landingPage.educationHeaderLink);
     await landingPage.verifyHeaderLinkVisible(landingPage.eventsHeaderLink);
+    await landingPage.verifyHeaderLinkVisible(landingPage.visitHeaderLink);
     await landingPage.verifyHeaderLinkVisible(landingPage.giveHeaderLink);
     await landingPage.verifyHeaderLinkVisible(landingPage.getHelpHeaderLink);
     await landingPage.verifyHeaderLinkVisible(landingPage.searchHeaderLink);
