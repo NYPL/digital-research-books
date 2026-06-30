@@ -60,28 +60,15 @@ This guide provides step-by-step instructions to set up local development and st
 #### (Option A) Run in docker compose
 
 
-1. Seed data in the local dockerized DB instance (one-time only):
+1. Seed data for DRB and VRA in the local dockerized Postgres DB instance (one-time only):
 
    ```bash
    # Run the database seeding process
-   docker compose -f docker-compose.setup.yml up --abort-on-container-exit
+   ./seed_local_db.sh
    ```
-
-   Or to instead seed known books using a local fixture file:
-
-   ```bash
-   # Run dockerized local development setup
-   docker compose run --rm --entrypoint python devsetup main.py \
-      -p LocalDevelopmentSetupProcess \
-      -e docker-compose
-
-   # Run seeding script
-   docker compose run --rm --entrypoint python devsetup \
-      -m tests.integration.api.assistant.support.seed_frbr_data
-   ```
-   Note: Any semantic search hits from the vector database must be accompanied with FRBR graph data in the Postgres database in order to be returned by the /chat endpoint.
-   - The first method seeds the Postgres database with brand new records from HathiTrust (making it highly non-deterministic) but they are not indexed in the vector database and hence cannot be returned as results from /chat.
-   - The second method seeds the Postgres database with records known to exist in at least the following vector database namespaces, allowing them to be returned by /chat:
+   Note: The /chat endpoint looks up FRBR data in the Postgres database matching semantic search hits in Turbopuffer. The seed process inserts two kinds of data:
+   1) brand new records from HathiTrust (highly non-deterministic) that are indexed in the vector database and hence cannot be returned as results from /chat.
+   2) records known to exist in the following Turbopuffer namespaces, which can be returned by /chat:
      - vra-dev
      - vra-test
 
