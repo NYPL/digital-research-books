@@ -13,6 +13,7 @@ from ..decorators import require_session_jwt
 from ..utils import APIUtils
 from ..db import get_frbr_data_by_barcode
 from ..assistant.agent import get_session_messages, format_frbr_fields
+from ..assistant.snippets import format_conversation_history
 
 
 logger = create_log(__name__)
@@ -72,6 +73,7 @@ async def get_result_reason(
             if tool_call_args is not None:
                 break
 
+        # TODO: if call_id does not exist in session messages, or the tool call output starts with error_prefix (btw centralize ERROR prefix in agent.py as a module var), return 404 (tool call output not found). with will handle the case of no session messages (right? what does get_session_messages return in that case). And separately return 404 if the barcode is not in the call_id tool call output (parse the XML)
         if tool_call_args is None:
             logger.warning(
                 f"get_result_reason: call_id '{call_id}' not found in session '{session_id}'"
@@ -103,7 +105,7 @@ async def get_result_reason(
             )
             book_info = f"(Book metadata unavailable for barcode: {barcode})"
 
-        conversation_history = ...
+        conversation_history = format_conversation_history(messages)
 
         # TODO: find all the places I make an LLM call and make a centralized wrapper call_google_llm(model=, messages=, **kwargs<passed to completion.create()>)
         client = AsyncOpenAI(

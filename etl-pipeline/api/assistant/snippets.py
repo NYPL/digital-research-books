@@ -375,37 +375,115 @@ def validate_edition_snippets(
     return rejections, validated
 
 
-# TODO: insert "search executed here" where appropriate in convo history
-def format_conversation_history(run_result: RunResult) -> str:
-    """Extract user and assistant text messages from run_result, and format as
-    a conversation chain."""
+def format_conversation_history(items: list) -> str:  # list[TResponseOutputItem]
+    """Format conversation history from a list of OpenAI Responses API items.
 
-    # TODO: use this instead: https://openai.github.io/openai-agents-python/ref/items/#agents.items.ItemHelpers.extract_text
-    def _get_clean_text(message):
-        """Standardize text extraction from dict serialization of type=message
-        OpenAI Responses API items
-        """
-        content = message.get("content", "")
+    - All final tool call outputs except the final one are summarized as "N results returned"
+      by counting <edition> elements in the returned XML, or an error message if error.
+    - Within each agent turn (a run of consecutive tool call/output pairs between
+      message items), only the final complete pair is kept.
+    - The last tool call output in the entire messages list is never summarized;
+      its full content is preserved as-is.
+    - Items types other than "mesagage", "function_call", and "function_call_output"
+      are skipped.
+    """
+    # MAYBE: keeping only the final tool call pair is over-complicated. Just keep all tool calls.
+
+    from lxml import etree as ET
+
+    # FUTURE: after upgrading agents sdk use this instead: https://openai.github.io/openai-agents-python/ref/items/#agents.items.ItemHelpers.extract_text
+    def _get_msg_text(msg):
+        content = msg.get("content", "")
         if isinstance(content, list):
             return "".join(
                 part.get("text", "")
                 for part in content
-                if part.get("type") == "output_text"
+                if part.get("type")
+                in (
+                    "output_text",
+                    "input_text",
+                )  # input_text (EasyInputMessageParam / ResponseInputTextParam), output_text (ResponseOutputMessageParam / ResponseOutputText)
             )
         return str(content)
 
+    def _compact_tool_output(output: str) -> str:
+        """Summarize search tool output with a count of N results returned"""
+        error_prefix = "An error occurred while running the tool"
+        if output.startswith(error_prefix):
+            return error_prefix
+        try:
+            root = ET.fromstring(output)
+            # MAYBE: tighter criteria <edition> direct children of <search_results> according to output format
+            count = len(root.findall("edition"))
+            return f"{count} results returned"
+        except ET.XMLSyntaxError:
+            return output
+
+    # Hold a reference to the last function_call_output item so we can preserve
+    # its full output without summarization.
+    last_output_item = None
+    for msg in reversed(items):
+        if msg.get("type") == "function_call_output":
+            last_output_item = msg
+            break
+
     parts = []
-    for msg in run_result.to_input_list():
+    # Buffer of (function_call_item, function_call_output_item | None) pairs
+    # accumulated between message items. Flushed on each message item, keeping
+    # only the last complete pair.
+    tool_buffer: list[tuple[dict, Optional[dict]]] = []
+    call_id_to_idx: dict[str, int] = {}
+
+    def flush_tool_buffer():
+        for call_item, output_item in reversed(tool_buffer):
+            if output_item is not None:
+                tool_name = call_item.get("name", "tool")
+                raw_output = output_item.get("output", "")
+                if output_item is last_output_item:
+                    output_text = raw_output
+                else:
+                    output_text = _compact_tool_output(raw_output)
+                parts.append(f"[Tool: {tool_name}]\n{output_text}")
+                break
+        tool_buffer.clear()
+        call_id_to_idx.clear()
+
+    for msg in items:
+        msg_type = msg.get("type")
         role = msg.get("role", "")
-        if role not in ("user", "assistant"):
-            continue
-        text = _get_clean_text(msg).strip()
-        # TODO: distinguish btw no message text output in message (message may \
-        # include only reasoning, image, tool call, etc) and message text is all \
-        # whitespace/empty str
-        if text:
-            label = "User" if role == "user" else "Assistant"
-            parts.append(f"{label}: {text}")
+
+        if msg_type == "function_call":
+            idx = len(tool_buffer)
+            tool_buffer.append((msg, None))
+            call_id = msg.get("call_id")
+            if call_id:
+                call_id_to_idx[call_id] = idx
+
+        elif msg_type == "function_call_output":
+            call_id = msg.get("call_id")
+            if call_id in call_id_to_idx:
+                idx = call_id_to_idx[call_id]
+                call_item, _ = tool_buffer[idx]
+                tool_buffer[idx] = (call_item, msg)
+            else:
+                # Orphaned output with no matching function_call
+                tool_buffer.append(({"name": "unknown", "call_id": call_id}, msg))
+
+        elif msg_type == "message" or (
+            msg_type is None and role in ("user", "assistant")
+        ):
+            if tool_buffer:
+                flush_tool_buffer()
+            text = _get_msg_text(msg).strip()
+            if text and role in ("user", "assistant"):
+                label = "User" if role == "user" else "Assistant"
+                parts.append(f"{label}: {text}")
+
+        # reasoning items and other types are skipped
+
+    if tool_buffer:
+        flush_tool_buffer()
+
     return "\n\n".join(parts)
 
 
@@ -651,7 +729,7 @@ async def get_relevant_snippets_llm(
     # model_name = 'gemini-2.5-flash-lite'
 
     # Shared system prompt variables
-    conversation_text = format_conversation_history(run_result)
+    conversation_text = format_conversation_history(run_result.to_input_list())
     prompt_template = Template(
         (PROMPTS_DIR / "snippet_agent" / "v7.jinja.md").read_text()
     )
