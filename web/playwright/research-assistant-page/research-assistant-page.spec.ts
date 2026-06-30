@@ -47,6 +47,33 @@ test.describe(
     test("'Hide chat' button is visible", async () => {
       await expect(researchAssistantPage.hideChatBtn).toBeVisible();
     });
+
+    test.describe("Breadcrumb links", { tag: "@enhanced-search" }, () => {
+      test("'Home' breadcrumb links to nypl.org", async () => {
+        await expect(researchAssistantPage.homeBreadcrumbLink).toHaveAttribute(
+          "href",
+          "https://www.nypl.org"
+        );
+      });
+
+      test("'Research' breadcrumb links to nypl.org/research", async () => {
+        await expect(
+          researchAssistantPage.researchBreadcrumbLink
+        ).toHaveAttribute("href", "https://www.nypl.org/research");
+      });
+
+      test("'Digitized Research Books' breadcrumb links to /", async () => {
+        await expect(
+          researchAssistantPage.digitizedResearchBooksBreadcrumbLink
+        ).toHaveAttribute("href", "/");
+      });
+
+      test("'Enhanced Search (beta)' breadcrumb links to /research-assistant", async () => {
+        await expect(
+          researchAssistantPage.enhancedSearchBreadcrumbLink
+        ).toHaveAttribute("href", "/research-assistant");
+      });
+    });
   }
 );
 
@@ -60,7 +87,7 @@ test.describe(
     let context: BrowserContext;
     let page: Page;
     let researchAssistantPage: ResearchAssistantPage;
-    const testQuery = "I want to learn about Bryant Park.";
+    const testQuery = "I want to learn about history of rivers in New York.";
 
     test.beforeAll(async ({ browser }) => {
       context = await browser.newContext();
