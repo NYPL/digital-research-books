@@ -183,20 +183,35 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
                 display={{ base: "block", md: "none" }}
                 showLabel={false}
                 labelText="Panel size options"
-                color="ui.white"
+                sx={{
+                  ".chakra-menu__menu-button": {
+                    color: "ui.white",
+                  },
+                  ".chakra-menu__menu-button > span > svg, .chakra-menu__menu-button > span > svg path": {
+                    fill: "ui.white",
+                  },
+                }}
                 listItemsData={[
                   {
                     type: "action",
                     id: "increase-panel-size",
                     label: "Increase panel size",
-                    media: { type: "icon", name: "arrow" },
+                    media: {
+                      type: "svg",
+                      src: `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M13.5 11.25L9 6.75L4.5 11.25" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+                      alt: "arrow up icon",
+                    },
                     onClick: () => onExpandToFull?.(),
                   },
                   {
                     type: "action",
                     id: "decrease-panel-size",
                     label: "Decrease panel size",
-                    media: { type: "icon", name: "arrow" },
+                    media: {
+                      type: "svg",
+                      src: `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+                      alt: "arrow down icon",
+                    },
                     onClick: () => onDecreaseToMin?.(),
                   },
                 ]}

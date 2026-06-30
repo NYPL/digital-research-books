@@ -127,7 +127,7 @@ export const PADDING_COUNTER = {
   md: `calc(${OUTER_MARGIN_CALC} + ${CONTENT_PADDING_VALUE.md})`,
 };
 
-const MARGIN_COMPACT = { base: "-1.5rem", md: "-2rem" };
+const MARGIN_COMPACT = { base: "-1rem", md: "-2rem" };
 const PADDING_COMPACT = { base: "m", md: "l" };
 const PADDING_COUNTER_COMPACT = {
   base: "s",
