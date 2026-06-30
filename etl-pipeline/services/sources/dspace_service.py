@@ -9,7 +9,7 @@ from logger import create_log
 from mappings.base_mapping import MappingError
 from mappings.xml import XMLMapping
 from model import Record
-from .source_service import SourceService, ServiceNotAvailableError
+from .source_service import SourceService, SourceNotAvailableError
 
 logger = create_log(__name__)
 
@@ -134,6 +134,14 @@ class DSpaceService(SourceService):
         )
 
         if response.status_code == 200:
+            content_type = response.headers.get("Content-Type", "")
+            if "xml" not in content_type:
+                # Source: these open archives docs say response content type must be text/xml.
+                # https://www.openarchives.org/OAI/openarchivesprotocol.html#MIMETypes
+                raise SourceNotAvailableError(
+                    f"Expected Open Archives Protocol response with XML content-type from {url}, got '{content_type}'"
+                )
+
             content = bytes()
 
             for chunk in response.iter_content(1024 * 100):
@@ -141,6 +149,6 @@ class DSpaceService(SourceService):
 
             return BytesIO(content)
 
-        raise ServiceNotAvailableError(
+        raise SourceNotAvailableError(
             f"Received {response.status_code} status code from {url}"
         )

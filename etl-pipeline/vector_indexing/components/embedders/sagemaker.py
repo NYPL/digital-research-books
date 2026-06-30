@@ -16,10 +16,10 @@ from sagemaker.huggingface import HuggingFacePredictor
 # from sagemaker.serializers import JSONSerializer
 
 from utils.s3 import get_boto3_session_with_assumed_role
-from vector_indexing.components.embedders.base import Embedder
+from vector_indexing.components.embedders.base import APIEmbedder
 
 
-class SageMakerTEIEmbedder(Embedder):
+class SageMakerTEIEmbedder(APIEmbedder):
     """Intermediary abstract class for all types of embedding models served on SageMaker HF TEI endpoints.
 
     Args:
@@ -31,21 +31,23 @@ class SageMakerTEIEmbedder(Embedder):
             ``assume_role`` is also provided, this profile is applied to the
             default session used to perform the STS AssumeRole call.
         assume_role: ARN of an IAM role to assume for model inference calls.
-        concurrency: concurrent requests in embed_batch()
+        batch_concurrency: concurrent requests in embed_batch(), ignored by .embed_one()
     """
 
     def __init__(
         self,
         endpoint_name: str,
         dimensions: int | None = None,
-        concurrency: int = 1,
+        batch_size: int = 1,
+        batch_concurrency: int = 1,
         aws_profile: str | None = None,
         assume_role: str | None = None,
     ) -> None:
         self._endpoint_name = endpoint_name
         self._dimensions = dimensions
         self._aws_profile = aws_profile
-        self._concurrency = concurrency
+        self._batch_size = batch_size
+        self._batch_concurrency = batch_concurrency
         boto_session = (
             boto3.Session(profile_name=self._aws_profile)
             if self._aws_profile
@@ -87,41 +89,59 @@ class SageMakerTEIEmbedder(Embedder):
             .get("HF_MODEL_ID", self._endpoint_name)
         )
 
-    def embed_one(self, text: str, prompt_name: str | None = None) -> list[float]:
-        """Embed a single text string."""
+    def _make_request(self, texts: list[str], **kwargs) -> list[list[float]]:
+        """Call the TEI endpoint with a batch of texts and return a list of vectors.
+
+        TEI accepts {"inputs": [str, ...]} and returns [[float, ...], ...].
+        L2 normalization is applied by TEI post-truncation by default regardless of `dimensions`.
+        """
+        prompt_name = kwargs.get("prompt_name")
         extra_args = {}
         if self._dimensions:
             extra_args["dimensions"] = self._dimensions
         if prompt_name:
             extra_args["prompt_name"] = prompt_name
+        return self._predictor.predict({"inputs": texts, **extra_args})
 
-        # NOTE: The HF TEI endpoint accepts {"inputs": "text"} and returns a list of floats.
-        # NOTE: L2 normalization is applied post-hoc by default regardless of `dimensions`
-        embeddings = self._predictor.predict({"inputs": text, **extra_args})
-        return embeddings[0]
+    def embed_one(self, text: str, prompt_name: str | None = None) -> list[float]:
+        """Embed a single text string."""
+        return self._make_request([text], prompt_name=prompt_name)[0]
 
     def embed_batch(
         self, texts: list[str], prompt_name: str | None = None
     ) -> list[list[float]]:
-        """Embed multiple texts up to `concurrency` in-flight requests."""
-        # TODO: look at other sagemaker deployments that support better batch speed and cost like, batch_transform, async inference endpoint
-        # TODO: try  {inputs: [<str>, <str>]}. see --max-client-batch-size https://github.com/huggingface/text-embeddings-inference
-        if self._concurrency <= 1:
-            return [self.embed_one(text, prompt_name=prompt_name) for text in texts]
+        """Embed multiple texts, chunked by batch_size with optional concurrency.
+
+        See --max-client-batch-size https://github.com/huggingface/text-embeddings-inference
+        TODO: look at other sagemaker deployments for better batch speed/cost: batch_transform, async inference endpoint
+        """
+        batches = [
+            texts[i : i + self._batch_size]
+            for i in range(0, len(texts), self._batch_size)
+        ]
+        if self._batch_concurrency <= 1:
+            results: list[list[float]] = []
+            for batch in batches:
+                results.extend(self._make_request(batch, prompt_name=prompt_name))
+            return results
         with concurrent.futures.ThreadPoolExecutor(
-            max_workers=self._concurrency
+            max_workers=self._batch_concurrency
         ) as executor:
             futures = [
-                executor.submit(self.embed_one, text, prompt_name) for text in texts
+                executor.submit(self._make_request, batch, prompt_name=prompt_name)
+                for batch in batches
             ]
-            return [f.result() for f in futures]
+            results = []
+            for f in futures:
+                results.extend(f.result())
+            return results
 
 
 class Qwen3Embedder(SageMakerTEIEmbedder):
     """SageMaker embedder for Qwen3-Embedding models served via HF TEI.
 
     For details on query vs document prompting for Qwen3-Embedding models,
-    see: https://huggingface.co/Qwen/Qwen3-Embedding-8B
+    see: https://huggingface.co/Qwen/Qwen3-Embedding-8B and config_sentence_transformer.json
     """
 
     def embed_document(self, text: str) -> list[float]:
@@ -171,7 +191,7 @@ class HarrierEmbedder(SageMakerTEIEmbedder):
     """SageMaker embedder for Microsoft Harrier models served via HF TEI.
 
     For details on query vs document prompting for Harrier models,
-    see: https://huggingface.co/microsoft/harrier-oss-v1-27b
+    see: https://huggingface.co/microsoft/harrier-oss-v1-27b and config_sentence_transformer.json
 
     Args:
         query_prompt_name: TEI prompt_name to use for query embeddings.
