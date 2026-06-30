@@ -371,7 +371,11 @@ class LLMLoggingHooks(RunHooks):
 
 
 @timer(logger)
-def map_editions_and_records(record_ids=None, edition_ids=None):
+def map_editions_and_records(record_ids=None, edition_ids=None, barcode_ids=None):
+    assert sum(x is not None for x in (record_ids, edition_ids, barcode_ids)) == 1, (
+        "exactly one of record_ids, edition_ids, or barcode_ids must be non-None"
+    )
+
     if record_ids:
         ids = record_ids
         source_col = "record_id"
@@ -381,6 +385,10 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
         ids = edition_ids
         source_col = "edition_id"
         target_col = "record_id"
+    elif barcode_ids:
+        ids = barcode_ids
+        source_col = "barcode"
+        target_col = "item_id"
 
     logger.debug(f"Mapping {source_col}s to {target_col}s...")
 
@@ -401,7 +409,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
             JOIN editions e ON i.edition_id = e.id
             ORDER BY r.id
         """)
-    else:
+    elif source_col == "edition_id":
         query = text("""
             WITH requested(id) AS (
                 SELECT UNNEST(CAST(:ids AS INTEGER[]))
@@ -415,6 +423,21 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
             JOIN items i ON e.id = i.edition_id
             JOIN records r ON i.record_id = r.id
             ORDER BY e.id
+        """)
+    else:
+        # Map based on barcodes
+        query = text("""
+            WITH requested(barcode) AS (
+                SELECT UNNEST(CAST(:ids AS TEXT[]))
+            )
+            SELECT DISTINCT ON (gs.barcode)
+                gs.barcode,
+                i.id AS item_id
+            FROM requested
+            JOIN grin_statuses gs ON gs.barcode = requested.barcode
+            JOIN items         i  ON i.record_id = gs.record_id
+            JOIN editions      e  ON i.edition_id = e.id
+            ORDER BY gs.barcode, e.id DESC
         """)
 
     Session = get_readonly_session()
@@ -432,7 +455,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
 
 _MAX_TURNS_SYSTEM_PROMPT = """\
 You are a research library assistant. You have reached the maximum number of \
-allowed agent turns in the agent loop. 
+allowed agent turns in the agent loop.
 
 Here is the original system prompt:
 ```
@@ -711,7 +734,7 @@ def mean_chunk_score(chunk_hits):
 def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
     """
     Yield chunk_hit's from search index search results, adding item_id to each
-    chunk_hit by mapping chunk record_id to item_id in DB.
+    chunk_hit by mapping chunk barcode to item_id in DB.
 
     Args:
         results: List of (ChunkDocument, score) tuples
@@ -720,28 +743,26 @@ def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
     # NOTE: future: the item_id will be directly indexed in the chunk hit \
     # making this function unnecessary, ScoredHit can be used instead.
 
-    missing_item_ids = []
+    missing_barcodes = []
     try:
-        # map record_id->item_id to add to chunk metadata
-        # book_id = record_id
-        record_ids = set(cd.book_id for cd, _ in results)
-        mapper = map_editions_and_records(record_ids=record_ids)
+        # Map barcode -> item_id
+        barcodes = set(cd.barcode for cd, _ in results)
+        mapper = map_editions_and_records(barcode_ids=barcodes)
 
         # Results from hybrid_search are (ChunkDocument, rrf_score) tuples
         for chunk_doc, rrf_score in results:
             chunk_hit = chunk_doc.to_dict()
             chunk_hit["score"] = rrf_score if rrf_score is not None else 0.0
-            # book_id was incorrectly indexed as a str
-            item_id = mapper.get(int(chunk_hit["book_id"]), {}).get("item_id")
+            item_id = mapper.get(chunk_hit["barcode"], {}).get("item_id")
             if item_id is None:
-                missing_item_ids.append(chunk_hit["book_id"])
+                missing_barcodes.append(chunk_hit["barcode"])
                 continue
             chunk_hit["item_id"] = item_id
             yield chunk_hit
     finally:
-        if missing_item_ids:
+        if missing_barcodes:
             logger.error(
-                f"These {len(set(missing_item_ids))} record_ids do not map to an item_id: {set(missing_item_ids)}"
+                f"These {len(set(missing_barcodes))} barcodes do not map to an item_id: {set(missing_barcodes)}"
             )
 
 
