@@ -60,7 +60,7 @@ test.describe(
     let context: BrowserContext;
     let page: Page;
     let researchAssistantPage: ResearchAssistantPage;
-    const testQuery = "I want to learn about Bryant Park.";
+    const testQuery = "I want to learn about history of rivers in New York.";
 
     test.beforeAll(async ({ browser }) => {
       context = await browser.newContext();
