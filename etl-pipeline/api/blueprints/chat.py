@@ -237,8 +237,11 @@ def chat(session_id):
             # TODO: inside update_chat make sure than any errors are handled by a polite \
             # llm generated response (except no connectivity to LLM) (just handle the \
             # high level openai agents sdk errors)
+            print("DEBUG before session")
             session = JSONBSQLAlchemySession(session_id, engine=get_async_engine())
+            print("DEBUG after session init")
             max_id = get_max_message_id()
+            print("DEBUG after max id")
             try:
                 run_result = asyncio.run(
                     update_chat(

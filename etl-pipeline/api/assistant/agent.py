@@ -530,6 +530,7 @@ async def update_chat(
     Returns:
         The agent's RunResult obj.
     """
+    print("DEBUG start update_chat")
 
     # TODO: when a user switches from catalog to content search, we should add \
     # an additional user message saying: "I am now switching to content search \
