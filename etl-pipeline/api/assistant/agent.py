@@ -372,6 +372,10 @@ class LLMLoggingHooks(RunHooks):
 
 @timer(logger)
 def map_editions_and_records(record_ids=None, edition_ids=None, barcode_ids=None):
+    assert sum(x is not None for x in (record_ids, edition_ids, barcode_ids)) == 1, (
+        "exactly one of record_ids, edition_ids, or barcode_ids must be non-None"
+    )
+
     if record_ids:
         ids = record_ids
         source_col = "record_id"
@@ -451,7 +455,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None, barcode_ids=None
 
 _MAX_TURNS_SYSTEM_PROMPT = """\
 You are a research library assistant. You have reached the maximum number of \
-allowed agent turns in the agent loop. 
+allowed agent turns in the agent loop.
 
 Here is the original system prompt:
 ```
