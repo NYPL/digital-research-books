@@ -120,14 +120,14 @@ const OUTER_MARGIN_CALC = "max(0px, calc((100vw - 1280px) / 2))";
 
 export const MARGIN_BLEED = {
   base: "0",
-  md: `calc(${OUTER_MARGIN_CALC} * -1)`,
+  md: `calc(calc(${OUTER_MARGIN_CALC} * -1))`,
 };
 export const PADDING_COUNTER = {
   base: `calc(${OUTER_MARGIN_CALC} + ${CONTENT_PADDING_VALUE.base})`,
   md: `calc(${OUTER_MARGIN_CALC} + ${CONTENT_PADDING_VALUE.md})`,
 };
 
-const MARGIN_COMPACT = "-2rem";
+const MARGIN_COMPACT = { base: "-1.5rem", md: "-2rem" };
 const PADDING_COMPACT = { base: "m", md: "l" };
 const PADDING_COUNTER_COMPACT = {
   base: "s",

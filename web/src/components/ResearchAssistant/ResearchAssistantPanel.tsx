@@ -74,10 +74,11 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
       maxHeight={{ base: "100%", md: "100vh" }}
       minHeight="0px"
       width="100%"
-      paddingLeft={paddingX}
+      paddingLeft={{ base: "s", md: paddingX.md }}
       paddingRight={page === "item" ? "l" : undefined}
       role="region"
       aria-labelledby="vra-panel-heading"
+      sx={{ position: "relative" }}
     >
       {showChat ? (
         <>
@@ -86,16 +87,17 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
             alignItems="center"
             justifyContent="center"
             width="100%"
-            paddingTop="xs"
-            paddingBottom="xs"
+            position="absolute"
+            top="0"
+            left="0"
+            right="0"
+            height="18px"
+            zIndex="10000"
             onPointerDown={onResizeStart}
             role="separator"
             aria-orientation="horizontal"
             aria-label="Resize enhanced search panel"
-            sx={{
-              cursor: "ns-resize",
-              touchAction: "none",
-            }}
+            sx={{ touchAction: "none", cursor: "ns-resize" }}
           >
             <Box
               width="44px"

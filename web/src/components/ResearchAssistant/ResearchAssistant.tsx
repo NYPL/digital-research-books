@@ -40,6 +40,7 @@ const ResearchAssistant: React.FC = () => {
     startHeight: 512,
     shouldHide: false,
   });
+  const rafIdRef = useRef<number | null>(null);
   const toggleChatRef = useRef(toggleChat);
   useEffect(() => {
     toggleChatRef.current = toggleChat;
@@ -109,11 +110,21 @@ const ResearchAssistant: React.FC = () => {
         resizeStateRef.current.shouldHide = true;
       } else {
         resizeStateRef.current.shouldHide = false;
-        setMobilePanelHeight(clampPanelHeight(rawHeight));
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+        }
+        rafIdRef.current = requestAnimationFrame(() => {
+          setMobilePanelHeight(clampPanelHeight(rawHeight));
+          rafIdRef.current = null;
+        });
       }
     };
 
     const stopResizing = () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
       if (resizeStateRef.current.shouldHide) {
         toggleChatRef.current();
       }
@@ -154,6 +165,7 @@ const ResearchAssistant: React.FC = () => {
       if (!showChat) return;
 
       event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
       resizeStateRef.current = {
         isResizing: true,
         startY: event.clientY,
