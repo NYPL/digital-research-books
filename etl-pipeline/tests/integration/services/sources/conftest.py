@@ -8,6 +8,10 @@ import requests
 
 from services import SourceNotAvailableError
 
+############## RETRY > SKIP LOGIC #############################
+# This section implements logic to retry once then skip on second failure any
+# exception in the RETRY_ON_EXCEPTION list.
+
 RETRY_DELAY = 120  # seconds
 
 # Only retry then skip tests that fail due to these transient exceptions
@@ -103,3 +107,6 @@ def pytest_collection_modifyitems(items):
             # These tests usually fail on connection timeout so a test timeout
             # is not needed.
             item.add_marker(pytest.mark.timeout(0))
+
+
+############################################################################
