@@ -23,7 +23,7 @@ class SourceService(ABC):
         pass
 
 
-class ServiceNotAvailableError(Exception):
-    """Raised when a network request to a source service returns a non-200 HTTP code."""
+class SourceNotAvailableError(Exception):
+    """Raised when a network request to a source service returns a non-200 HTTP code or other form of not-ok response."""
 
     pass

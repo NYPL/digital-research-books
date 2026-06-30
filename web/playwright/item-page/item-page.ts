@@ -161,39 +161,6 @@ class ItemPage {
     await new Promise((resolve) => setTimeout(resolve, 500)); // sleep for 0.5s to simulate user pause between typing and submitting
     await this.submitQueryBtn.click();
   }
-
-  async logIn(username: string, password: string) {
-    if (!username || !password) {
-      throw new Error("Username and password must be defined");
-    }
-
-    const shouldAttemptLogin = await this.logInBtn
-      .isVisible()
-      .catch(() => false);
-    if (!shouldAttemptLogin) {
-      return;
-    }
-
-    const newTabPromise = this.page
-      .context()
-      .waitForEvent("page")
-      .catch(() => null);
-    await this.logInBtn.click();
-    const sameTabPromise = this.page
-      .getByLabel("Username")
-      .waitFor({ state: "visible" })
-      .then(() => this.page)
-      .catch(() => null);
-    const loginPage =
-      (await Promise.race([newTabPromise, sameTabPromise])) ?? this.page;
-
-    await loginPage.getByLabel("Username").fill(username);
-    await loginPage.getByLabel("Password").fill(password);
-    await Promise.all([
-      loginPage.waitForLoadState("networkidle"),
-      loginPage.getByRole("button", { name: "Login" }).click(),
-    ]);
-  }
 }
 
 export { ItemPage };
