@@ -82,7 +82,7 @@ jobs:
         run: |
           pytest tests/functional/processes/ingest \
             --retries=3 \
-            --retries-delay=5 \
+            --retry-delay=5 \
             --env=qa
 
       - name: Run LLM behavior tests against QA env
