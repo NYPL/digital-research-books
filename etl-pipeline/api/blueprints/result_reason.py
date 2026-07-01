@@ -12,12 +12,10 @@ from utils.timer import timer
 from ..auth import require_api_key
 from ..decorators import require_session_jwt
 from ..utils import APIUtils
-from ..db import get_frbr_data_by_barcode
 from ..assistant.agent import (
     DEFAULT_LLM,
     TOOL_ERROR_PREFIX,
     get_session_messages,
-    format_frbr_fields,
 )
 from ..assistant.snippets import format_conversation_history
 
@@ -47,7 +45,7 @@ The search query that returned these results was:
 {query_description}
 
 Explain why the following book appears in the results:
-{book_info}
+{item_result}
 
 Write 3-4 sentences (~450 characters) explaining the connection between \
 this book and the user's search.\
@@ -83,7 +81,7 @@ async def get_result_reason(
             raise CallNotFoundError(f"session '{session_id}' not found")
 
         # Find the raw function_call and function_call_output items for call_id.
-        # Traverse in order so we know the truncation index after the output.
+        # Traverse in order so we know the truncation index after the call's arguments.
         function_call_item = None
         tool_call_output = None
         truncate_idx = None
@@ -92,13 +90,13 @@ async def get_result_reason(
             msg_type = msg.get("type")
             if msg_type == "function_call" and msg.get("call_id") == call_id:
                 function_call_item = msg
+                truncate_idx = i + 1
             elif msg_type == "function_call_output" and msg.get("call_id") == call_id:
                 tool_call_output = msg.get("output", "")
-                truncate_idx = i + 1
                 break
 
         # --- 404 guard 2: call_id not in session, or its output is a tool error ---
-        if function_call_item is None or truncate_idx is None:
+        if function_call_item is None or tool_call_output is None:
             logger.warning(
                 f"get_result_reason: call_id '{call_id}' not found in session '{session_id}'"
             )
@@ -113,11 +111,16 @@ async def get_result_reason(
         # --- 404 guard 3: barcode not present in the tool call output XML ---
         try:
             root = ET.fromstring(tool_call_output)
-            barcodes_in_output = {el.text for el in root.findall(".//barcode")}
+            editions_in_output = root.findall("edition")
         except ET.XMLSyntaxError:
-            barcodes_in_output = set()
+            editions_in_output = []
 
-        if barcode not in barcodes_in_output:
+        item_result_el = next(
+            (el for el in editions_in_output if el.findtext("barcode") == barcode),
+            None,
+        )
+
+        if item_result_el is None:
             logger.warning(
                 f"get_result_reason: barcode '{barcode}' not found in tool output for call_id '{call_id}'"
             )
@@ -125,9 +128,10 @@ async def get_result_reason(
                 f"barcode '{barcode}' not found in results for call_id '{call_id}'"
             )
 
-        # All 404 checks passed — now build query description and book info.
+        # All 404 checks passed — now build query description and item result.
 
-        # Truncate conversation history to end at (and including) this tool call output
+        # Truncate conversation history to end at (and including) this tool call's
+        # arguments, excluding the tool call output.
         messages = messages[:truncate_idx]
 
         # Parse and format tool call args as a human-readable query description
@@ -139,22 +143,8 @@ async def get_result_reason(
         if filters_raw:
             formatted_tool_call_args += f"\nFilters: {filters_raw}"
 
-        # Format book details (from FRBR metadata)
-        frbr_data = get_frbr_data_by_barcode([barcode])
-        if frbr_data:
-            row = frbr_data[0]
-            frbr_fields = format_frbr_fields(row.Work, row.Edition)
-            book_info = (
-                f"Title: {frbr_fields['title']}\n"
-                f"Authors: {frbr_fields['author_names']}\n"
-                f"Subjects: {frbr_fields['subject_list']}\n"
-                f"Publication date: {frbr_fields['pub_date']}"
-            )
-        else:
-            logger.warning(
-                f"get_result_reason: no FRBR data found for barcode '{barcode}'"
-            )
-            book_info = f"(Book metadata unavailable for barcode: {barcode})"
+        # Extract the full <edition> result for this barcode from the search results
+        item_result = ET.tostring(item_result_el, encoding="unicode").strip()
 
         conversation_history = format_conversation_history(messages)
 
@@ -167,7 +157,7 @@ async def get_result_reason(
         system_prompt = RESULT_REASON_SYSTEM_PROMPT_TEMPLATE.format(
             conversation_history=conversation_history,
             query_description=formatted_tool_call_args,
-            book_info=book_info,
+            item_result=item_result,
         )
 
         response = await client.chat.completions.create(

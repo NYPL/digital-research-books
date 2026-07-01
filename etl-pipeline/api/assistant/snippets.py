@@ -375,15 +375,18 @@ def validate_edition_snippets(
     return rejections, validated
 
 
-def format_conversation_history(items: list) -> str:  # list[TResponseOutputItem]
+def format_conversation_history(
+    items: list, preserve_last_output: bool = False
+) -> str:  # list[TResponseOutputItem]
     """Format conversation history from a list of OpenAI Responses API items.
 
     - All final tool call outputs except the final one are summarized as "N results returned"
       by counting <edition> elements in the returned XML, or an error message if error.
     - Within each agent turn (a run of consecutive tool call/output pairs between
       message items), only the final complete pair is kept.
-    - The last tool call output in the entire messages list is never summarized;
-      its full content is preserved as-is.
+    - The last tool call output in the entire messages list is summarized like the
+      rest, unless preserve_last_output is True, in which case its full content is
+      preserved as-is.
     - Items types other than "mesagage", "function_call", and "function_call_output"
       are skipped.
     """
@@ -438,7 +441,7 @@ def format_conversation_history(items: list) -> str:  # list[TResponseOutputItem
             if output_item is not None:
                 tool_name = call_item.get("name", "tool")
                 raw_output = output_item.get("output", "")
-                if output_item is last_output_item:
+                if output_item is last_output_item and preserve_last_output:
                     output_text = raw_output
                 else:
                     output_text = _compact_tool_output(raw_output)
@@ -728,7 +731,9 @@ async def get_relevant_snippets_llm(
     # model_name = 'gemini-2.5-flash-lite'
 
     # Shared system prompt variables
-    conversation_text = format_conversation_history(run_result.to_input_list())
+    conversation_text = format_conversation_history(
+        run_result.to_input_list(), preserve_last_output=True
+    )
     prompt_template = Template(
         (PROMPTS_DIR / "snippet_agent" / "v7.jinja.md").read_text()
     )
