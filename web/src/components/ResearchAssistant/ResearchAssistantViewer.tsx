@@ -39,6 +39,7 @@ const ResearchAssistantViewer: React.FC<{
   const getContent = React.useCallback(async (href: string) => {
     const response = await fetch(href, {
       mode: 'cors',
+      // TODO: Once signed cookies are implemented, uncomment the following line:
       // credentials: 'include',
     });
     return new Uint8Array(await response.arrayBuffer());
