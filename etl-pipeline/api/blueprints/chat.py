@@ -1,5 +1,6 @@
 # builtins
 import asyncio
+import threading
 from dataclasses import asdict
 from typing import Dict, Tuple
 
@@ -38,6 +39,24 @@ from ..assistant.snippets import get_relevant_snippets
 logger = create_log(__name__)
 
 chat_blueprint = Blueprint("chat", __name__, url_prefix="/chat")
+
+# The openai-agents SDK shares a single httpx.AsyncClient across all calls for
+# connection pool reuse (see openai_provider.py's shared_http_client()), and that
+# client is bound to whichever event loop first creates it. Waitress runs each
+# request in its own thread, so calling asyncio.run() per-request would give the
+# second concurrent request a loop that doesn't match the one the shared client
+# is bound to, deadlocking silently. Instead, all agent coroutines run on this
+# single persistent background loop for the lifetime of the process.
+_event_loop = asyncio.new_event_loop()
+threading.Thread(
+    target=_event_loop.run_forever, name="chat-event-loop", daemon=True
+).start()
+
+
+def _run_coroutine(coro):
+    """Run `coro` on the shared background event loop, blocking the calling
+    (Flask request) thread until it completes, same as asyncio.run() would."""
+    return asyncio.run_coroutine_threadsafe(coro, _event_loop).result()
 
 
 def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, None]:
@@ -243,7 +262,7 @@ def chat(session_id):
             max_id = get_max_message_id()
             print(f"DEBUGX {session_id} after max id")
             try:
-                run_result = asyncio.run(
+                run_result = _run_coroutine(
                     update_chat(
                         message,
                         conversation_type,
@@ -261,7 +280,7 @@ def chat(session_id):
 
             # Add relevant snippets to search result, if search was executed in this agent turn
             # snippets updated in run_result in place
-            asyncio.run(get_relevant_snippets(run_result, approach="naive"))
+            _run_coroutine(get_relevant_snippets(run_result, approach="naive"))
 
             ## Build API response
 
