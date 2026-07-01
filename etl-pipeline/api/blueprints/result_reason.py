@@ -67,7 +67,8 @@ async def get_result_reason(
     Generate an explanation for why a book (identified by barcode) appears in the
     search result identified by call_id.
 
-    Returns (explanation, ai_generated) where ai_generated is False on fallback.
+    Returns (explanation, is_ai_generated) where is_ai_generated is False
+    when LLM generation fails and a fallback is returned.
     Raises CallNotFoundError if session, call_id, or barcode cannot be resolved.
     """
     try:
