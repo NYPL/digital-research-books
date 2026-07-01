@@ -1,7 +1,7 @@
 import { Locator, Page } from "@playwright/test";
 
 const ITEM_PAGE_URL =
-  "/item/9e6a33c8-eee0-498c-821c-f19e4ac70660?featured=15251797";
+  "/item/1e21d527-35cf-45e3-8c51-f1e60e92fe5d?featured=15297538";
 
 class ItemPage {
   readonly page: Page;
