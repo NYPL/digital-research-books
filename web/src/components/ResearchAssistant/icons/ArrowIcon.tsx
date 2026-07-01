@@ -1,4 +1,4 @@
-import { Icon, type IconRotations } from "@nypl/design-system-react-components";
+import { Icon, type IconRotations, useNYPLBreakpoints } from "@nypl/design-system-react-components";
 import React from "react";
 
 export type ArrowDirection = "right" | "down" | "left" | "up";
@@ -28,9 +28,21 @@ const ArrowIcon: React.FC<ArrowIconProps> = ({
   direction = "right",
   color = "ui.white",
 }) => {
+  const { isLargerThanMedium, isLargerThanLarge, isLargerThanXLarge } = useNYPLBreakpoints();
   const responsiveDirection =
     typeof direction === "string" ? { base: direction } : direction;
-  const resolvedDirection = responsiveDirection.base;
+  
+  let resolvedDirection = responsiveDirection.base;
+  
+  if (isLargerThanXLarge && responsiveDirection["2xl"]) {
+    resolvedDirection = responsiveDirection["2xl"];
+  } else if (isLargerThanLarge && responsiveDirection.xl) {
+    resolvedDirection = responsiveDirection.xl;
+  } else if (isLargerThanLarge && responsiveDirection.lg) {
+    resolvedDirection = responsiveDirection.lg;
+  } else if (isLargerThanMedium && responsiveDirection.md) {
+    resolvedDirection = responsiveDirection.md;
+  }
 
   return (
     <Icon
