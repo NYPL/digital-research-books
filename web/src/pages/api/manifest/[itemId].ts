@@ -20,7 +20,11 @@ export default async function handler(
 
   const pageId = req.query.pageId as string | undefined;
   const itemReadResult = await itemsReadFetcher(itemId as string, pageId);
-  const { barcode } = itemReadResult.data;
+  const barcode = itemReadResult?.data?.barcode;
+
+  if (!barcode) {
+    return res.status(404).json({ error: "No data found" });
+  }
 
   const readingOrder = [
     {
