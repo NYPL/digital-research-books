@@ -39,7 +39,7 @@ const ResearchAssistantViewer: React.FC<{
   const getContent = React.useCallback(async (href: string) => {
     const response = await fetch(href, {
       mode: 'cors',
-      credentials: 'include',
+      // credentials: 'include',
     });
     return new Uint8Array(await response.arrayBuffer());
   }, []);
