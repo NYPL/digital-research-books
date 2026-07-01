@@ -1,11 +1,22 @@
 import asyncio
+import json
 import os
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from agents import Agent, RunConfig, Runner, function_tool
 from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
-from api.assistant.agent import _MAX_TURNS_SYSTEM_PROMPT, _on_max_turns, update_chat
+from agents.tool_context import ToolContext
+from api.assistant.agent import (
+    _MAX_TURNS_SYSTEM_PROMPT,
+    _on_max_turns,
+    CatalogSearchExecutionContext,
+    ContentSearchExecutionContext,
+    search_book,
+    search_catalog,
+    update_chat,
+)
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
@@ -13,6 +24,8 @@ from openai.types.chat.chat_completion_message_tool_call import (
     ChatCompletionMessageToolCall,
     Function,
 )
+
+from tests.factories import make_chunk_doc
 
 
 class TestAgent:
@@ -54,6 +67,116 @@ class TestAgent:
         # Verify result and that the runner was called just once
         assert result == mock_run_result
         mock_runner.run.assert_called_once()
+
+
+class TestDirectToolInvocation:
+    """
+    Calls search_book/search_catalog directly via on_invoke_tool(), bypassing
+    the full agent loop and LLM, so a bug in the tool's internal logic (e.g.
+    reading ctx.context.search_results before writing it, as in the bug fixed
+    by commit 9b185a89eb) fails the test regardless of whether the LLM ever
+    chooses to call the tool.
+    """
+
+    @pytest.mark.asyncio
+    async def test_search_book_on_invoke_tool_returns_results(
+        self, mocker, mock_search_backend
+    ):
+        chunk_doc = make_chunk_doc(
+            text="Merchants traded goods along the Missouri river.",
+            title="The Missouri Merchant",
+            edition_id=42,
+            barcode="00000000000042",
+        )
+        mock_search_backend([chunk_doc])
+
+        context = ContentSearchExecutionContext(
+            backend=mocker.MagicMock(),
+            embedder=mocker.MagicMock(),
+            session_id="test-session",
+            edition_id=42,
+            frbr_fields={
+                "title": "The Missouri Merchant",
+                "author_names": "Jane Doe",
+                "subject_list": "History",
+                "pub_date": "1919",
+                "publisher_names": "Test Publisher",
+                "language_list": "English",
+            },
+        )
+        tool_call_id = "call-book-1"
+        tool_arguments = json.dumps({"ranking_query": "merchants"})
+        ctx = ToolContext(
+            context=context,
+            tool_name="search_book",
+            tool_call_id=tool_call_id,
+            tool_arguments=tool_arguments,
+        )
+
+        result = await search_book.on_invoke_tool(ctx, tool_arguments)
+
+        assert "error" not in result.lower()
+        assert "merchant" in result.lower()
+        assert tool_call_id in context.search_results
+
+    @pytest.mark.asyncio
+    async def test_search_catalog_on_invoke_tool_returns_results(
+        self, mocker, mock_search_backend
+    ):
+        barcode = "00000000000042"
+        chunk_doc = make_chunk_doc(
+            text="Merchants traded goods along the Missouri river.",
+            title="The Missouri Merchant",
+            edition_id=42,
+            barcode=barcode,
+            author=["Jane Doe"],
+            subject=["History"],
+        )
+        mock_search_backend([chunk_doc])
+
+        # search_catalog resolves editions by barcode, not edition_id, so it
+        # needs its own get_frbr_data_by_barcode stub (mock_search_backend
+        # only stubs get_frbr_data_by_edition, used by the contentSearch setup
+        # in update_chat rather than by search_catalog itself).
+        mocker.patch(
+            "api.assistant.agent.get_frbr_data_by_barcode",
+            return_value=[
+                SimpleNamespace(
+                    barcode=barcode,
+                    Work=SimpleNamespace(
+                        title="The Missouri Merchant",
+                        authors=[{"name": "Jane Doe"}],
+                        subjects=[{"heading": "History"}],
+                    ),
+                    Edition=SimpleNamespace(
+                        id=42,
+                        publication_date="1919-01-01",
+                        publishers=[],
+                        languages=[],
+                    ),
+                )
+            ],
+        )
+
+        context = CatalogSearchExecutionContext(
+            backend=mocker.MagicMock(),
+            embedder=mocker.MagicMock(),
+            session_id="test-session",
+        )
+        tool_call_id = "call-catalog-1"
+        tool_arguments = json.dumps({"ranking_query": "merchants"})
+        ctx = ToolContext(
+            context=context,
+            tool_name="search_catalog",
+            tool_call_id=tool_call_id,
+            tool_arguments=tool_arguments,
+        )
+
+        result = await search_catalog.on_invoke_tool(ctx, tool_arguments)
+
+        assert "error" not in result.lower()
+        assert "merchant" in result.lower()
+        assert tool_call_id in context.search_results
 
 
 def make_mock_data(agent, history=None):
