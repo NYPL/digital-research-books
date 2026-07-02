@@ -87,7 +87,6 @@ class TestSearchToolInvocation:
         context = ContentSearchExecutionContext(
             backend=mocker.MagicMock(),
             embedder=mocker.MagicMock(),
-            session_id="test-session",
             edition_id=42,
             frbr_fields={
                 "title": "The Missouri Merchant",
@@ -122,7 +121,6 @@ class TestSearchToolInvocation:
         context = CatalogSearchExecutionContext(
             backend=mocker.MagicMock(),
             embedder=mocker.MagicMock(),
-            session_id="test-session",
         )
         tool_call_id = "call-catalog-1"
         tool_arguments = json.dumps({"ranking_query": "merchants"})
