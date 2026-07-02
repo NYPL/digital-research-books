@@ -39,6 +39,7 @@ describe("ResearchAssistant", () => {
       showChat: true,
       goToPreviousState: mockGoToPreviousState,
     });
+    window.HTMLElement.prototype.scrollIntoView = jest.fn();
   });
 
   test("renders the Research Assistant", () => {
@@ -56,10 +57,25 @@ describe("ResearchAssistant", () => {
     expect(screen.getByRole("button", { name: /send/i })).toBeInTheDocument();
   });
 
-  test("calls clearHistory when the Clear button is clicked", () => {
+  test("calls clearHistory when the Start over button is clicked with messages", () => {
+    mockUseResearchAssistant.mockReturnValue({
+      messages: [{ type: "message", role: "user", content: "Hello" }],
+      sendMessage: mockSendMessage,
+      isLoading: false,
+      error: null,
+      clearHistory: mockClearHistory,
+      showChat: true,
+      goToPreviousState: mockGoToPreviousState,
+    });
     render(<ResearchAssistant />);
     fireEvent.click(screen.getByRole("button", { name: /start over/i }));
     expect(mockClearHistory).toHaveBeenCalledTimes(1);
+  });
+
+  test("does not call clearHistory when Start over is clicked with no patron messages", () => {
+    render(<ResearchAssistant />);
+    fireEvent.click(screen.getByRole("button", { name: /start over/i }));
+    expect(mockClearHistory).not.toHaveBeenCalled();
   });
 
   test("displays an error message when an error occurs", () => {

@@ -9,6 +9,7 @@ import React, { useEffect, useRef } from "react";
 import { getPanelLayout } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
+import { chatAnnouncer } from "~/src/lib/chatAnnouncer/ChatAnnouncer";
 import ArrowIcon from "./icons/ArrowIcon";
 import ResearchAssistantIcon from "./icons/ResearchAssistantIcon";
 import RewindIcon from "./icons/RewindIcon";
@@ -17,11 +18,18 @@ import ResearchAssistantInput from "./ResearchAssistantInput";
 import ResearchAssistantWindow from "./ResearchAssistantWindow";
 
 const ResearchAssistantPanel: React.FC = () => {
-  const { clearHistory, showChat, toggleChat } = useResearchAssistant();
+  const {
+    clearHistory,
+    messages,
+    showChat,
+    toggleChat,
+  } = useResearchAssistant();
 
   const { paddingX } = getPanelLayout();
 
   const { page } = useResultPageContext();
+
+  const announce = chatAnnouncer.announce;
 
   const showChatButtonRef = useRef<HTMLButtonElement>(null);
   const hideChatButtonRef = useRef<HTMLButtonElement>(null);
@@ -38,6 +46,13 @@ const ResearchAssistantPanel: React.FC = () => {
       showChatButtonRef.current?.focus();
     }
   }, [showChat]);
+
+  const handleStartOver = () => {
+    if (messages.length === 0) return;
+
+    clearHistory(page, true);
+    announce("Chat cleared.");
+  };
 
   return (
     <Box
@@ -72,7 +87,7 @@ const ResearchAssistantPanel: React.FC = () => {
             </Heading>
             <Flex gap="xxs">
               <Button
-                onClick={() => clearHistory(page, true)}
+                onClick={handleStartOver}
                 variant="text"
                 size="small"
                 color="ui.white"
