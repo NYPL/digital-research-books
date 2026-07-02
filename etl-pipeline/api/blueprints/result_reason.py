@@ -171,34 +171,34 @@ async def result_reason(session_id):
             # arguments, excluding the tool call output.
             messages = messages[:truncate_idx]
 
+            # Parse and format tool call args as a human-readable query description
+            tool_call_args = json.loads(function_call_item.get("arguments", "{}"))
+            formatted_tool_call_args = (
+                f'Semantic query: "{tool_call_args.get("ranking_query", "")}"'
+            )
+            filters_raw = tool_call_args.get("filters")
+            if filters_raw:
+                formatted_tool_call_args += f"\nFilters: {filters_raw}"
+
+            # Extract the full <edition> result for this barcode from the search results
+            item_result = ET.tostring(item_result_el, encoding="unicode").strip()
+
+            conversation_history = format_conversation_history(messages)
+
+            # TODO: find all the places I make an LLM call and make a centralized wrapper call_google_llm(model=, messages=, **kwargs<passed to completion.create()>)
+            # TODO: use sync OpenaiClient
+            client = AsyncOpenAI(
+                api_key=require_env("GOOGLE_API_KEY"),
+                base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+            )
+
+            system_prompt = RESULT_REASON_SYSTEM_PROMPT_TEMPLATE.format(
+                conversation_history=conversation_history,
+                query_description=formatted_tool_call_args,
+                item_result=item_result,
+            )
+
             try:
-                # Parse and format tool call args as a human-readable query description
-                tool_call_args = json.loads(function_call_item.get("arguments", "{}"))
-                formatted_tool_call_args = (
-                    f'Semantic query: "{tool_call_args.get("ranking_query", "")}"'
-                )
-                filters_raw = tool_call_args.get("filters")
-                if filters_raw:
-                    formatted_tool_call_args += f"\nFilters: {filters_raw}"
-
-                # Extract the full <edition> result for this barcode from the search results
-                item_result = ET.tostring(item_result_el, encoding="unicode").strip()
-
-                conversation_history = format_conversation_history(messages)
-
-                # TODO: find all the places I make an LLM call and make a centralized wrapper call_google_llm(model=, messages=, **kwargs<passed to completion.create()>)
-                # TODO: use sync OpenaiClient
-                client = AsyncOpenAI(
-                    api_key=require_env("GOOGLE_API_KEY"),
-                    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-                )
-
-                system_prompt = RESULT_REASON_SYSTEM_PROMPT_TEMPLATE.format(
-                    conversation_history=conversation_history,
-                    query_description=formatted_tool_call_args,
-                    item_result=item_result,
-                )
-
                 response = await client.chat.completions.create(
                     model=DEFAULT_LLM,
                     messages=[
