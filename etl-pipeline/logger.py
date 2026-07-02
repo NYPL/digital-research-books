@@ -55,8 +55,12 @@ class LogContextVars:
     ContextVars provide data isolation when used concurrently with
     multi-threading/asyncio.
 
-    Usage::
+    Note: Because the logging filter used to append to log messages is removed
+        on context exit, any ayncio.creat_task() background tasks created within
+        the context that continue running after the manager has exited will
+        no longer have the context vars appended to log messages created.
 
+    Usage::
         with LogContextVars(get_app_logger(), context={"session_id": abc}):
             logger.info("hello")  # -> "hello | session_id: abc"
     """

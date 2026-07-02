@@ -24,8 +24,8 @@ from agents import (
     RunResult,
     function_tool,
 )
-from agents.extensions.memory import SQLAlchemySession
-from agents.items import ModelResponse
+from agents.items import ModelResponse, ToolApprovalItem
+from agents.memory import SessionABC
 from agents.models.chatcmpl_converter import Converter
 from agents.run_config import DEFAULT_MAX_TURNS
 from agents.tool_context import ToolContext
@@ -36,12 +36,12 @@ from sqlalchemy import text
 
 
 # api code
+from ..event_loop import run_coroutine
 from ..utils import remove_markdown_comments
 from ..db import (
     get_frbr_data_by_barcode,
     get_frbr_data_by_edition,
     get_readonly_session,
-    get_async_engine,
     get_engine,
 )
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
@@ -49,7 +49,7 @@ from .types import CatalogSearchResult, ContentSearchResult
 
 # shared code
 from vector_indexing.components.embedders.base import Embedder
-from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
+from vector_indexing.components.backends.base import IndexBackend
 from vector_indexing.core.config import get_index_config
 from vector_indexing.core.utils import Timer
 from logger import create_log
@@ -63,7 +63,6 @@ from .types import CatalogSearchResult, ContentSearchResult
 from .models.filter import Filter
 from ..newrelic_llm_events import record_llm_events
 from ..db import (
-    get_async_engine,
     get_engine,
     get_frbr_data_by_edition,
     get_readonly_session,
@@ -253,9 +252,8 @@ def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> A
 class CatalogSearchExecutionContext:
     """Container used to inject objects into each agent run execution."""
 
-    backend: TurbopufferBackend
+    backend: IndexBackend
     embedder: Embedder
-    session_id: str
     conversation_type: str = "catalogSearch"
     search_results: Dict = field(default_factory=dict)
 
@@ -269,9 +267,8 @@ class ContentSearchExecutionContext:
     FRBR re-clustering); otherwise it falls back to filtering on `edition_id`.
     """
 
-    backend: TurbopufferBackend
+    backend: IndexBackend
     embedder: Embedder
-    session_id: str
     edition_id: int
     barcode: Optional[str] = None
     conversation_type: str = "contentSearch"
@@ -500,11 +497,15 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
     )
 
 
+class BookNotFoundError(ValueError):
+    pass
+
+
 @timer(logger)
-async def update_chat(
+def update_chat(
     message: str,
     conversation_type: str,
-    session_id: str,
+    session: SessionABC,
     edition_id=None,
     barcode=None,
     max_turns: int = DEFAULT_MAX_TURNS,
@@ -512,9 +513,8 @@ async def update_chat(
     """
     Send a message to the conversation and get the agent's response.
 
-    Conversation history is managed server-side via SQLAlchemySession keyed on
-    session_id. The caller sends only the new user message; the SDK loads prior
-    turns from the database automatically.
+    Conversation history is accessed via and managed by `session`, only the new
+    user `message` is needed separately.
 
     The raw search results will be available in self.context.search_data
     for any post-processing or enrichment needed.
@@ -522,8 +522,7 @@ async def update_chat(
     Args:
         message: The new user message text.
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
-        session_id: Client-supplied session ID. History is persisted to and loaded
-                    from the database using this key.
+        session: Session object that manages conversation history persistence.
         edition_id: Identifies the book for content search. Either this or
             ``barcode`` must be provided when conversation_type is
             "contentSearch". If both are provided, ``barcode`` takes
@@ -540,6 +539,8 @@ async def update_chat(
     # TODO: figure out how to do thread safe  module level instantiations for \
     # some reused objs (backend, system prompts, async loop, etc...) (for sharing btw server \
     # request workers/threads)
+
+    session_id = session.session_id
 
     index_name = require_env("TURBOPUFFER_NAMESPACE")
     index_config = get_index_config(index_name)
@@ -566,19 +567,7 @@ async def update_chat(
     # Search within single book
     if conversation_type == "contentSearch":
         # Fetch FRBR data for the book
-        with Timer(
-            "get_frbr_data_by_edition",
-            on_exit=lambda name, elapsed: logger.info(
-                f"{name} took {elapsed:.3f}s for 1 edition"
-            ),
-        ):
-            frbr_data = get_frbr_data_by_edition([edition_id])
-        if not frbr_data:
-            logger.error(
-                f"FRBR data missing for content search in edition {edition_id}"
-            )
-            raise ValueError(f"No edition found with id {edition_id}")
-        # Prefer barcode-based lookup when provided. Barcode is stable across
+        # Note: Prefer barcode-based lookup when provided. Barcode is stable across
         # FRBR re-clustering, whereas edition_id is not.
         if barcode is not None:
             with Timer(
@@ -590,7 +579,7 @@ async def update_chat(
                 frbr_data = get_frbr_data_by_barcode([barcode])
             if not frbr_data:
                 logger.error(
-                    f"FRBR data missing for content search by barcode {barcode}"
+                    f"FRBR data missing for content search in barcode={barcode}"
                 )
             resolved_edition_id = frbr_data[0].Edition.id if frbr_data else None
         else:
@@ -603,16 +592,21 @@ async def update_chat(
                 frbr_data = get_frbr_data_by_edition([edition_id])
             if not frbr_data:
                 logger.error(
-                    f"FRBR data missing for content search in edition {edition_id}"
+                    f"FRBR data missing for content search in edition={edition_id}"
                 )
-            resolved_edition_id = edition_id
+            resolved_edition_id = edition_id if frbr_data else None
+
+        if resolved_edition_id is None:
+            if barcode is not None:
+                raise BookNotFoundError(f"No book found with barcode {barcode}")
+            raise BookNotFoundError(f"No book found with edition id {edition_id}")
+
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
         exec_context = ContentSearchExecutionContext(
             backend=backend,
             embedder=embedder,
             edition_id=resolved_edition_id,
-            session_id=session_id,
             barcode=barcode,
             frbr_fields=frbr_fields,
         )
@@ -624,9 +618,7 @@ async def update_chat(
 
     # Search for books in catalog
     else:  # conversation_type == "catalogSearch":
-        exec_context = CatalogSearchExecutionContext(
-            backend=backend, embedder=embedder, session_id=session_id
-        )
+        exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
         system_prompt = remove_markdown_comments(
             system_prompt_template.render(conversation_type="catalogSearch")
         )
@@ -638,8 +630,6 @@ async def update_chat(
         instructions=system_prompt,
         tools=tools,
     )
-
-    session = SQLAlchemySession(session_id, engine=get_async_engine())
 
     # Add conversation metadata to New Relic transaction for grouping and filtering
     newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
@@ -656,22 +646,24 @@ async def update_chat(
 
     # Wrap agent exec loop in NR APM trace for AI monitoring dashboard compatibility
     with newrelic.agent.FunctionTrace(name="create", group="Llm/completion/OpenAI"):
-        run_result = await Runner.run(
-            starting_agent=agent,
-            input=message,
-            context=exec_context,
-            hooks=logging_hooks,
-            max_turns=max_turns,
-            error_handlers={"max_turns": _on_max_turns},
-            session=session,
-            run_config=RunConfig(
-                tracing_disabled=True,
-                model_settings=ModelSettings(
-                    temperature=0.0,
-                    reasoning=Reasoning(effort="none"),
-                    include_usage=True,
+        run_result = run_coroutine(
+            Runner.run(
+                starting_agent=agent,
+                input=message,
+                context=exec_context,
+                hooks=logging_hooks,
+                max_turns=max_turns,
+                error_handlers={"max_turns": _on_max_turns},
+                session=session,
+                run_config=RunConfig(
+                    tracing_disabled=True,
+                    model_settings=ModelSettings(
+                        temperature=0.0,
+                        reasoning=Reasoning(effort="none"),
+                        include_usage=True,
+                    ),
                 ),
-            ),
+            )
         )
 
     record_llm_events(
@@ -691,7 +683,7 @@ async def update_chat(
 
 
 def get_session_messages(session_id):
-    """Read message data for session ID as ND-JSON"""
+    """Read message data for session ID as a list of dicts."""
     # TODO: replace with Session.get_items()
     engine = get_engine()
     with engine.connect() as conn:
@@ -699,8 +691,86 @@ def get_session_messages(session_id):
             text("SELECT * FROM agent_messages WHERE session_id = :sid ORDER BY id"),
             {"sid": session_id},
         ).fetchall()
-    messages = [json.loads(row.message_data) for row in rows]
-    return messages
+    return [row.message_data for row in rows]
+
+
+def get_max_message_id() -> int:
+    """Return the current max id in agent_messages, or 0 if the table is empty."""
+    engine = get_engine()
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("SELECT COALESCE(MAX(id), 0) AS max_turn_id FROM agent_messages")
+        ).fetchone()
+    return row.max_turn_id
+
+
+def get_session_messages_after(session_id: str, max_id: int) -> list[dict]:
+    """
+    Return assistant messages written to agent_messages for `session_id` after `max_id`.
+
+    Filters to role='assistant' and type='message' so tool-call rows are excluded.
+    Each returned dict contains a 'db_id' key plus the message content fields.
+    """
+    engine = get_engine()
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                """
+                SELECT id, message_data
+                FROM agent_messages
+                WHERE session_id = :sid
+                  AND id > :max_id
+                  AND message_data->>'role' = 'assistant'
+                  AND message_data->>'type' = 'message'
+                """
+            ),
+            {"sid": session_id, "max_id": max_id},
+        ).fetchall()
+    return [{"db_id": row.id, **row.message_data} for row in rows]
+
+
+def get_new_items_with_ids(
+    run_result: RunResult,
+    session_message_items: list[dict],
+) -> list[dict]:
+    """
+    Return all new items from run_result. Items matching an entry in
+    session_message_items receive a 'db_id' key; others are returned as-is.
+
+    Uses a pop-on-first-match pool so duplicate content is handled correctly:
+    If there are multiple identically valued items in session_message_items the
+    db_id of the first match in .new_items is used. And session_message_items
+    are consumed at most once.
+    """
+    pool = [
+        (item["db_id"], {k: v for k, v in item.items() if k != "db_id"})
+        for item in session_message_items
+    ]
+
+    result = []
+    for item in run_result.new_items:
+        # calling .to_input_item() on ToolApprovalItem raises (agents/items.py).
+        # And they are not persisted agents/run_internal/session_persistence.py, line 243.
+        if isinstance(item, ToolApprovalItem):
+            continue
+        item_dict = item.to_input_item()
+        matched_db_id = None
+        for i, (db_id, msg_data) in enumerate(pool):
+            if item_dict == msg_data:
+                matched_db_id = db_id
+                pool.pop(i)
+                break
+        if matched_db_id is not None:
+            result.append({"db_id": matched_db_id, **item_dict})
+        else:
+            result.append(item_dict)
+            if (item_dict.get("role") == "assistant") and (
+                item_dict.get("type") == "message"
+            ):
+                logger.warning(
+                    f"This assistant message did not get a db_id: {item_dict}"
+                )
+    return result
 
 
 def delete_session_data(session_id: str) -> None:

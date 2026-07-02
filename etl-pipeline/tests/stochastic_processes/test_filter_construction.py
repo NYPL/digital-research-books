@@ -20,8 +20,6 @@ from api.assistant.models.filter import Filter
 from tests.factories import stub_function_tool
 
 
-pytestmark = [pytest.mark.asyncio]
-
 _FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "stochastic_processes"
 
 
@@ -117,19 +115,19 @@ def filter_match(filters, attribute=None, operator=None, value=None) -> bool:
 class TestCatalogSearchFilterUsage:
     """Test that the agent constructs appropriate filters for catalog searches."""
 
-    @pytest.mark.xfail(reason="Subject filter gets applied")
+    @pytest.mark.xfail(reason="Subject filter gets applied", raises=AssertionError)
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_no_filter_for_generic_search(self, test_session_id):
+    def test_no_filter_for_generic_search(self, test_session):
         """
         Test: No filter is used when not needed (shipbuilding example).
 
         For a generic search like "shipbuilding", the agent should
         rely on semantic ranking without applying restrictive filters.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "I want to learn about shipbuilding",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -141,17 +139,17 @@ class TestCatalogSearchFilterUsage:
         assert filters is None
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_subject_filter(self, test_session_id):
+    def test_subject_filter(self, test_session):
         """
         Test: Filter is used when needed (poetry with mother-daughter themes).
 
         For a thematic search like "poetry that deals with mother daughter themes",
         the agent should apply subject filters to narrow results.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "I want to find poetry that deals with mother daughter themes",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -183,7 +181,7 @@ class TestCatalogSearchFilterUsage:
             ),
         ],
     )
-    async def test_negative_filter(self, test_session_id, query):
+    def test_negative_filter(self, test_session, query):
         """
         Test: A negative filter is used when appropriate, and ranking_query uses positive framing only.
 
@@ -191,10 +189,10 @@ class TestCatalogSearchFilterUsage:
         negation operators. Negative language in ranking_query is washed out during semantic
         embedding and does not exclude content — exclusion must live entirely in a Not filter.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             query,
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -221,14 +219,14 @@ class TestCatalogSearchFilterUsage:
         )
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_multi_language_filter(self, test_session_id):
+    def test_multi_language_filter(self, test_session):
         """
         Test: Language filter construction uses ContainsAny for multiple languages.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "I want books written English or French about philosophy",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -273,9 +271,7 @@ class TestCatalogSearchFilterUsage:
             ),
         ],
     )
-    async def test_date_range_filter(
-        self, test_session_id, query, excluded_ranking_terms
-    ):
+    def test_date_range_filter(self, test_session, query, excluded_ranking_terms):
         """
         Test: Date range filters for publication dates.
 
@@ -283,10 +279,10 @@ class TestCatalogSearchFilterUsage:
         construct appropriate date range filters. Temporal constraints should be expressed
         as publication_date filters on the metadata field, not embedded in ranking_query.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             query,
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -341,7 +337,9 @@ class TestCatalogSearchFilterUsage:
     #             or "french" in filter_str
     #         ), f"Expected combined filters for subject and language, got: {filters}"
 
-    @pytest.mark.xfail(reason="author name is wrongly included in ranking_query")
+    @pytest.mark.xfail(
+        reason="author name is wrongly included in ranking_query", raises=AssertionError
+    )
     @pytest.mark.usefixtures("patch_search_catalog")
     @pytest.mark.parametrize(
         "query,author_name",
@@ -358,7 +356,7 @@ class TestCatalogSearchFilterUsage:
             ),
         ],
     )
-    async def test_author_filter(self, test_session_id, query, author_name):
+    def test_author_filter(self, test_session, query, author_name):
         """
         Test: Author filter for books by specific authors.
 
@@ -366,10 +364,10 @@ class TestCatalogSearchFilterUsage:
         filter. Author attribution belongs in a structured author filter, not in
         ranking_query, which only performs semantic search over text content.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             query,
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -397,7 +395,7 @@ class TestCatalogSearchFilterUsage:
     # MAYBE: remove this instruction and test because BM25 search achieves this \
     # functionality (better?) than a text field filter.
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_text_filter(self, test_session_id):
+    def test_text_filter(self, test_session):
         """
         Test: Exact phrase queries use ContainsTokenSequence on the text field.
 
@@ -405,10 +403,10 @@ class TestCatalogSearchFilterUsage:
         filter on text ensures the phrase must appear verbatim in results rather
         than relying solely on semantic ranking, which cannot enforce exact spelling.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "Find passages that mention the Magna Carta",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -432,7 +430,7 @@ class TestCatalogSearchFilterUsage:
         )
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_unsearchable_field_no_hallucinated_filter(self, test_session_id):
+    def test_unsearchable_field_no_hallucinated_filter(self, test_session):
         """
         Test: Queries involving data not in the schema do not produce hallucinated filter fields.
 
@@ -440,10 +438,10 @@ class TestCatalogSearchFilterUsage:
         illustration metadata), the agent should execute a partial search using valid fields
         only, without inventing non-existent field names.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "I want books that contain original maps or illustrations",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         tool_call_items = [
@@ -460,9 +458,12 @@ class TestCatalogSearchFilterUsage:
             Filter.model_validate_json(filters)
 
     # MAYBE: the presence of any subject filter is inappropriate for this query. Change to not rely on subject filter (maybe just relay on bm25 in ranking filter)
-    @pytest.mark.xfail(reason="ContainsAnyToken instead of ContainsAllTokens is used")
+    @pytest.mark.xfail(
+        reason="ContainsAnyToken instead of ContainsAllTokens is used",
+        raises=AssertionError,
+    )
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_compound_phrase(self, test_session_id):
+    def test_compound_phrase(self, test_session):
         """
         Test: Compound phrases require all words.
 
@@ -470,10 +471,10 @@ class TestCatalogSearchFilterUsage:
         it to a compound phrase like "social contract" would match unrelated subjects containing
         only "social" or only "contract". ContainsAllTokens is more appropriate.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "Find books on social contract theory",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -495,7 +496,7 @@ class TestCatalogSearchFilterUsage:
         ), "expected 'social' and 'contract' in subject filter."
 
     @pytest.mark.usefixtures("patch_search_catalog")
-    async def test_single_language_filter(self, test_session_id):
+    def test_single_language_filter(self, test_session):
         """
         Test: A single-language filter uses 'Contains', not word token operators.
 
@@ -503,10 +504,10 @@ class TestCatalogSearchFilterUsage:
         (ContainsAnyToken, ContainsAllTokens, ContainsTokenSequence) are not valid
         for the language field.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "I want to find books written in German about philosophy",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
             max_turns=1,
         )
         search_params = get_last_tool_call_args(run_result)
@@ -594,7 +595,8 @@ class TestCatalogSearchFilterUsage:
         ),
     ],
 )
-async def test_filter_syntax_errors(test_session_id, query, prior_history):
+@pytest.mark.asyncio
+async def test_filter_syntax_errors(test_session, query, prior_history):
     """
     Test: agent constructs TP filters with no syntax errors
 
@@ -605,17 +607,13 @@ async def test_filter_syntax_errors(test_session_id, query, prior_history):
     (see inline comments on each pytest.param).
     """
     if prior_history is not None:
-        from agents.extensions.memory.sqlalchemy_session import SQLAlchemySession
-        from api.assistant.agent import get_async_engine
+        # prior_history = _load_conversation_fixture() on export from agent_messages
+        await test_session.add_items(prior_history)
 
-        session = SQLAlchemySession(test_session_id, engine=get_async_engine())
-        # prior_history = _load_conversation_fixture() on extracted convo history
-        await session.add_items(prior_history)
-
-    run_result = await update_chat(
+    run_result = update_chat(
         query,
         conversation_type="catalogSearch",
-        session_id=test_session_id,
+        session=test_session,
         max_turns=1,
     )
     tool_call_items = [

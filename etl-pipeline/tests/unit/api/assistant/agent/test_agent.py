@@ -1,4 +1,3 @@
-import asyncio
 import json
 import os
 from unittest.mock import AsyncMock, MagicMock
@@ -27,43 +26,36 @@ from openai.types.chat.chat_completion_message_tool_call import (
 from tests.factories import make_chunk_doc
 
 
-class TestAgent:
+def mock_update_chat_env(mocker):
+    """Patch all external dependencies of update_chat and return the mock Runner."""
+    mocker.patch(
+        "api.assistant.agent.get_index_config",
+        return_value={
+            "embedder": mocker.MagicMock(),
+            "backend": mocker.MagicMock(),
+        },
+    )
+    mocker.patch("api.assistant.agent.Agent")
+    mock_runner = mocker.patch("api.assistant.agent.Runner")
+    mock_run_result = MagicMock()
+    mock_runner.run = AsyncMock(return_value=mock_run_result)
+
+    mock_template = mocker.patch("api.assistant.agent.Template")
+    mock_template_instance = MagicMock()
+    mock_template.return_value = mock_template_instance
+    mock_template_instance.render.return_value = "system prompt"
+
+    return mock_runner, mock_run_result
+
+
+class TestUpdateChat:
     def test_update_chat_catalog_search(self, mocker):
-        """Test update_chat in catalogSearch mode returns run_result."""
+        """Test update_chat in catalogSearch mode returns value from Runner.run()."""
+        mock_runner, mock_run_result = mock_update_chat_env(mocker)
+        mock_session = MagicMock()
 
-        # Mock external resource dependencies
-        mocker.patch(
-            "api.assistant.agent.get_index_config",
-            return_value={
-                "embedder": mocker.MagicMock(),
-                "backend": mocker.MagicMock(),
-            },
-        )
-        mocker.patch("api.assistant.agent.get_async_engine")
-        mocker.patch("api.assistant.agent.SQLAlchemySession")
-        mocker.patch.dict(os.environ, {"GOOGLE_API_KEY": "fake-key"})
-        # Q: the pattern seems to be mock everything implemented in the top-level \
-        # of the function, so why not mock `OpenAIChatCompletionsModel` instead \
-        # of patch just the env var that it uses?
+        result = update_chat("Some query", "catalogSearch", mock_session)
 
-        # Mock the agent and its runner to simulate execution
-        mocker.patch("api.assistant.agent.Agent")
-        mock_runner = mocker.patch("api.assistant.agent.Runner")
-        mock_run_result = MagicMock()
-        mock_runner.run = AsyncMock(return_value=mock_run_result)
-
-        # Mock prompt template rendering
-        mock_template = mocker.patch("api.assistant.agent.Template")
-        mock_template_instance = MagicMock()
-        mock_template.return_value = mock_template_instance
-        mock_template_instance.render.return_value = "system prompt"
-
-        # Execute a catalog search using a simple user prompt
-        result = asyncio.run(
-            update_chat("Some query", "catalogSearch", "test-session-id")
-        )
-
-        # Verify result and that the runner was called just once
         assert result == mock_run_result
         mock_runner.run.assert_called_once()
 
@@ -95,7 +87,6 @@ class TestSearchToolInvocation:
         context = ContentSearchExecutionContext(
             backend=mocker.MagicMock(),
             embedder=mocker.MagicMock(),
-            session_id="test-session",
             edition_id=42,
             frbr_fields={
                 "title": "The Missouri Merchant",
@@ -130,7 +121,6 @@ class TestSearchToolInvocation:
         context = CatalogSearchExecutionContext(
             backend=mocker.MagicMock(),
             embedder=mocker.MagicMock(),
-            session_id="test-session",
         )
         tool_call_id = "call-catalog-1"
         tool_arguments = json.dumps({"ranking_query": "merchants"})
