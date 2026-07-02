@@ -3,7 +3,7 @@ import json
 import newrelic.agent
 from flask import Blueprint, request
 from lxml import etree as ET
-from openai import AsyncOpenAI
+from openai import OpenAI
 
 from logger import create_log, LogContextVars, get_app_logger
 from utils.common import require_env
@@ -31,6 +31,7 @@ FALLBACK_RESULT_REASON = (
 )
 
 # TODO: add simple prose paragraph formatting instruction
+# TODO: add instruction if the book is not actually relevant
 RESULT_REASON_SYSTEM_PROMPT_TEMPLATE = """\
 You are a research assistant at a library helping users understand why specific \
 search results appear for their queries. Given the conversation history and the \
@@ -42,11 +43,13 @@ for a general audience.\
 Conversation History:
 {conversation_history}
 
-The search query that returned these results was:
-{query_description}
+The final search query is the one that returned the book that whose presence you \
+must explain.
 
-Explain why the following book appears in the results:
-{item_result}
+Here is the full result for the the book whose presence in the results you must \
+explain. The result includes some book metadata and the text chunks in the book \
+that best matched the search query:
+{edition_result}
 
 Write 3-4 sentences (~450 characters) explaining the connection between \
 this book and the user's search.\
@@ -57,7 +60,7 @@ this book and the user's search.\
 @require_api_key
 @require_session_jwt
 @timer(logger)
-async def result_reason(session_id):
+def result_reason(session_id):
     response_type = "result_reason"
 
     call_id = request.json.get("call_id")
@@ -148,12 +151,12 @@ async def result_reason(session_id):
             except ET.XMLSyntaxError:
                 editions_in_output = []
 
-            item_result_el = next(
+            edition_result_el = next(
                 (el for el in editions_in_output if el.findtext("barcode") == barcode),
                 None,
             )
 
-            if item_result_el is None:
+            if edition_result_el is None:
                 logger.warning(
                     f"get_result_reason: barcode '{barcode}' not found in tool output for call_id '{call_id}'"
                 )
@@ -171,35 +174,24 @@ async def result_reason(session_id):
             # arguments, excluding the tool call output.
             messages = messages[:truncate_idx]
 
-            # Parse and format tool call args as a human-readable query description
-            tool_call_args = json.loads(function_call_item.get("arguments", "{}"))
-            formatted_tool_call_args = (
-                f'Semantic query: "{tool_call_args.get("ranking_query", "")}"'
-            )
-            filters_raw = tool_call_args.get("filters")
-            if filters_raw:
-                formatted_tool_call_args += f"\nFilters: {filters_raw}"
-
             # Extract the full <edition> result for this barcode from the search results
-            item_result = ET.tostring(item_result_el, encoding="unicode").strip()
+            edition_result = ET.tostring(edition_result_el, encoding="unicode").strip()
 
             conversation_history = format_conversation_history(messages)
 
             # TODO: find all the places I make an LLM call and make a centralized wrapper call_google_llm(model=, messages=, **kwargs<passed to completion.create()>)
-            # TODO: use sync OpenaiClient
-            client = AsyncOpenAI(
+            client = OpenAI(
                 api_key=require_env("GOOGLE_API_KEY"),
                 base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
             )
 
             system_prompt = RESULT_REASON_SYSTEM_PROMPT_TEMPLATE.format(
                 conversation_history=conversation_history,
-                query_description=formatted_tool_call_args,
-                item_result=item_result,
+                edition_result=edition_result,
             )
 
             try:
-                response = await client.chat.completions.create(
+                response = client.chat.completions.create(
                     model=DEFAULT_LLM,
                     messages=[
                         {"role": "system", "content": system_prompt},
