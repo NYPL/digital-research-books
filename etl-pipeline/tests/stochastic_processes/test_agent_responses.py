@@ -24,9 +24,6 @@ from api.assistant.agent import search_catalog
 from .conftest import make_chunk_doc, stub_function_tool
 
 
-pytestmark = pytest.mark.asyncio
-
-
 # ---------------------------------------------------------------------------
 # LLM-as-judge
 # ---------------------------------------------------------------------------
@@ -37,7 +34,6 @@ class JudgeVerdict(BaseModel):
     answer: Literal["YES", "NO"]
 
 
-# NOTE: async bc called inside test which is async bc it tests update_chat()
 async def llm_judge(run_result, question: str) -> JudgeVerdict:
     """
     Run an LLM-as-judge evaluation over the full conversation history.
@@ -108,6 +104,7 @@ class TestAgentResponses:
     @pytest.mark.xfail(
         reason="The Judge's criteria should probably be loosened to accept the agent response in this case."
     )
+    @pytest.mark.asyncio
     async def test_grounding_fixture_inline(self, test_session, mock_search_backend):
         """
         Verify that the agent response does not include information not grounded
@@ -209,6 +206,7 @@ class TestAgentResponses:
 
     @pytest.mark.xfail
     @pytest.mark.parametrize("fixture_file,query", _GROUNDING_FIXTURE_PARAMS)
+    @pytest.mark.asyncio
     async def test_grounding_fixture_file(self, test_session, fixture_file, query):
         """
         Verify that the agent response does not include information not grounded
@@ -241,6 +239,7 @@ class TestAgentResponses:
             f"Agent response contains ungrounded information.\nJudge reason: {verdict.reason}"
         )
 
+    @pytest.mark.asyncio
     async def test_irrelevant_results_acknowledged(self, test_session):
         """
         Verify that the agent acknowledges search results are irrelevant to the query.
@@ -277,7 +276,7 @@ the irrelevant results as if they are relevant to the query.""",
             f"Agent did not acknowledge irrelevant results.\nJudge reason: {verdict.reason}"
         )
 
-    async def test_no_search_on_ambiguous_query(self, test_session):
+    def test_no_search_on_ambiguous_query(self, test_session):
         """
         Verify that the agent does not perform a search for an underspecified query.
         """

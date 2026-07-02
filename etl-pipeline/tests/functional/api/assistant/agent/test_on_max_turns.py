@@ -1,11 +1,9 @@
-import pytest
 from agents.memory import SQLiteSession
 from api.assistant.agent import update_chat
 
 
 class TestOnMaxTurns:
-    @pytest.mark.asyncio
-    async def test_update_chat_max_turns_graceful_response(self, mocker):
+    def test_update_chat_max_turns_graceful_response(self, mocker):
         """
         Test graceful response when max turns are exceeded.
 
