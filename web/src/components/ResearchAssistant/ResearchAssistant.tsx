@@ -58,6 +58,23 @@ const ResearchAssistant: React.FC = () => {
     return null;
   }, [messages.length, results]);
 
+  useEffect(() => {
+    const queryFromLandingPage = sessionStorage.getItem("queryFromLandingPage");
+    if (queryFromLandingPage && !isLoading && latestResults) {
+      let resultsCount = 0;
+      if (isCatalogResults(latestResults)) {
+        resultsCount = latestResults.paging?.totalRecords || 0;
+      }
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "view_query_results",
+        query_type: "landing_page",
+        results_count: resultsCount,
+      });
+      sessionStorage.removeItem("queryFromLandingPage");
+    }
+  }, [isLoading, latestResults]);
+
   return (
     <>
       <Box
