@@ -126,7 +126,7 @@ class TestCatalogSearchFilterUsage:
         For a generic search like "shipbuilding", the agent should
         rely on semantic ranking without applying restrictive filters.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "I want to learn about shipbuilding",
             conversation_type="catalogSearch",
             session=test_session,
@@ -148,7 +148,7 @@ class TestCatalogSearchFilterUsage:
         For a thematic search like "poetry that deals with mother daughter themes",
         the agent should apply subject filters to narrow results.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "I want to find poetry that deals with mother daughter themes",
             conversation_type="catalogSearch",
             session=test_session,
@@ -191,7 +191,7 @@ class TestCatalogSearchFilterUsage:
         negation operators. Negative language in ranking_query is washed out during semantic
         embedding and does not exclude content — exclusion must live entirely in a Not filter.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             query,
             conversation_type="catalogSearch",
             session=test_session,
@@ -225,7 +225,7 @@ class TestCatalogSearchFilterUsage:
         """
         Test: Language filter construction uses ContainsAny for multiple languages.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "I want books written English or French about philosophy",
             conversation_type="catalogSearch",
             session=test_session,
@@ -281,7 +281,7 @@ class TestCatalogSearchFilterUsage:
         construct appropriate date range filters. Temporal constraints should be expressed
         as publication_date filters on the metadata field, not embedded in ranking_query.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             query,
             conversation_type="catalogSearch",
             session=test_session,
@@ -364,7 +364,7 @@ class TestCatalogSearchFilterUsage:
         filter. Author attribution belongs in a structured author filter, not in
         ranking_query, which only performs semantic search over text content.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             query,
             conversation_type="catalogSearch",
             session=test_session,
@@ -403,7 +403,7 @@ class TestCatalogSearchFilterUsage:
         filter on text ensures the phrase must appear verbatim in results rather
         than relying solely on semantic ranking, which cannot enforce exact spelling.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "Find passages that mention the Magna Carta",
             conversation_type="catalogSearch",
             session_id=test_session_id,
@@ -438,7 +438,7 @@ class TestCatalogSearchFilterUsage:
         illustration metadata), the agent should execute a partial search using valid fields
         only, without inventing non-existent field names.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "I want books that contain original maps or illustrations",
             conversation_type="catalogSearch",
             session_id=test_session_id,
@@ -468,7 +468,7 @@ class TestCatalogSearchFilterUsage:
         it to a compound phrase like "social contract" would match unrelated subjects containing
         only "social" or only "contract". ContainsAllTokens is more appropriate.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "Find books on social contract theory",
             conversation_type="catalogSearch",
             session_id=test_session_id,
@@ -501,7 +501,7 @@ class TestCatalogSearchFilterUsage:
         (ContainsAnyToken, ContainsAllTokens, ContainsTokenSequence) are not valid
         for the language field.
         """
-        run_result = await update_chat(
+        run_result = update_chat(
             "I want to find books written in German about philosophy",
             conversation_type="catalogSearch",
             session_id=test_session_id,
@@ -606,7 +606,7 @@ async def test_filter_syntax_errors(test_session, query, prior_history):
         # prior_history = _load_conversation_fixture() on export from agent_messages
         await test_session.add_items(prior_history)
 
-    run_result = await update_chat(
+    run_result = update_chat(
         query,
         conversation_type="catalogSearch",
         session=test_session,

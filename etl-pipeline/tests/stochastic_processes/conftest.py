@@ -100,7 +100,7 @@ def stub_function_tool(tool, return_value: str):
 
         def test_something(test_session_id):
             with stub_function_tool(search_catalog, "No results found."):
-                run_result = await update_chat(...)
+                run_result = update_chat(...)
     """
 
     async def _stub(ctx, input) -> str:

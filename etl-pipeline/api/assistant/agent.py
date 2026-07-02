@@ -36,6 +36,7 @@ from sqlalchemy import text
 
 
 # api code
+from ..event_loop import run_coroutine
 from ..utils import remove_markdown_comments
 from ..db import (
     get_frbr_data_by_barcode,
@@ -501,7 +502,7 @@ class BookNotFoundError(ValueError):
 
 
 @timer(logger)
-async def update_chat(
+def update_chat(
     message: str,
     conversation_type: str,
     session: SessionABC,
@@ -530,7 +531,6 @@ async def update_chat(
     Returns:
         The agent's RunResult obj.
     """
-    print(f"DEBUGX {session.session_id} start update_chat")
 
     # TODO: when a user switches from catalog to content search, we should add \
     # an additional user message saying: "I am now switching to content search \
@@ -646,22 +646,24 @@ async def update_chat(
 
     # Wrap agent exec loop in NR APM trace for AI monitoring dashboard compatibility
     with newrelic.agent.FunctionTrace(name="create", group="Llm/completion/OpenAI"):
-        run_result = await Runner.run(
-            starting_agent=agent,
-            input=message,
-            context=exec_context,
-            hooks=logging_hooks,
-            max_turns=max_turns,
-            error_handlers={"max_turns": _on_max_turns},
-            session=session,
-            run_config=RunConfig(
-                tracing_disabled=True,
-                model_settings=ModelSettings(
-                    temperature=0.0,
-                    reasoning=Reasoning(effort="none"),
-                    include_usage=True,
+        run_result = run_coroutine(
+            Runner.run(
+                starting_agent=agent,
+                input=message,
+                context=exec_context,
+                hooks=logging_hooks,
+                max_turns=max_turns,
+                error_handlers={"max_turns": _on_max_turns},
+                session=session,
+                run_config=RunConfig(
+                    tracing_disabled=True,
+                    model_settings=ModelSettings(
+                        temperature=0.0,
+                        reasoning=Reasoning(effort="none"),
+                        include_usage=True,
+                    ),
                 ),
-            ),
+            )
         )
 
     record_llm_events(

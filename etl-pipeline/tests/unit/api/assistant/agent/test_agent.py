@@ -1,4 +1,3 @@
-import asyncio
 import os
 from unittest.mock import AsyncMock, MagicMock
 
@@ -43,7 +42,7 @@ class TestUpdateChat:
         mock_runner, mock_run_result = mock_update_chat_env(mocker)
         mock_session = MagicMock()
 
-        result = asyncio.run(update_chat("Some query", "catalogSearch", mock_session))
+        result = update_chat("Some query", "catalogSearch", mock_session)
 
         assert result == mock_run_result
         mock_runner.run.assert_called_once()

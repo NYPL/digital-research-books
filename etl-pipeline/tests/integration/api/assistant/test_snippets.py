@@ -85,7 +85,7 @@ def save_run_result_state(run_result, path: str | Path) -> None:
     """Serialize run_result state to a JSON fixture file.
 
     Usage (capturing):
-    run_result = await update_chat(conversation, "catalogSearch")
+    run_result = update_chat(conversation, "catalogSearch")
     save_run_result_state(run_result, "tests/integration/api/assistant/agent/fixtures/run_result_state.json")
     """
     state = serialize_run_result_state(run_result)
@@ -99,7 +99,7 @@ def load_mock_run_result(
 
     Usage (replaying):
         run_result = load_mock_run_result("tests/integration/api/assistant/agent/fixtures/run_result_state.json")
-        result = await get_relevant_snippets_llm(run_result)
+        result = get_relevant_snippets_llm(run_result)
     """
     if isinstance(state, (str, Path)):
         state = json.loads(Path(state).read_text())
@@ -192,8 +192,7 @@ def test_get_relevant_snippets_naive():
         )
 
 
-@pytest.mark.asyncio
-async def test_get_relevant_snippets_llm():
+def test_get_relevant_snippets_llm():
     if not FIXTURE_PATH.exists():
         raise FileNotFoundError(
             f"Fixture not found at {FIXTURE_PATH}. Capture one with save_run_result_state()."
@@ -210,7 +209,7 @@ async def test_get_relevant_snippets_llm():
             f"Edition {entry.edition_id} already has snippets before agent run"
         )
 
-    result = await get_relevant_snippets_llm(run_result, fallback_naive=False)
+    result = get_relevant_snippets_llm(run_result, fallback_naive=False)
 
     # assert return type
     assert isinstance(result, list), f"get_relevant_snippets returned {result!r}"

@@ -177,7 +177,7 @@ class TestAgentResponses:
         ]
         mock_search_backend(chunk_docs)
 
-        run_result = await update_chat(
+        run_result = update_chat(
             "what is the plot of the lord of the rings",
             conversation_type="catalogSearch",
             session=test_session,
@@ -226,7 +226,7 @@ class TestAgentResponses:
         )
 
         with stub_function_tool(search_catalog, fixture_path.read_text()):
-            run_result = await update_chat(
+            run_result = update_chat(
                 query,
                 conversation_type="catalogSearch",
                 session=test_session,
@@ -258,7 +258,7 @@ class TestAgentResponses:
         )
 
         with stub_function_tool(search_catalog, miyazaki_fixture.read_text()):
-            run_result = await update_chat(
+            run_result = update_chat(
                 "Hayao Miyazaki",
                 conversation_type="catalogSearch",
                 session=test_session,
@@ -284,7 +284,7 @@ the irrelevant results as if they are relevant to the query.""",
 
         query = "new york"
         with stub_function_tool(search_catalog, "No results found for your query."):
-            run_result = await update_chat(
+            run_result = update_chat(
                 query,
                 conversation_type="catalogSearch",
                 session=test_session,

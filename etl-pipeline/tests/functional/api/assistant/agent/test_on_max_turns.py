@@ -38,7 +38,7 @@ class TestOnMaxTurns:
         # Mock SQLAlchemySession with in-memory sqlite session
         session = SQLiteSession("test")
 
-        run_result = await update_chat(
+        run_result = update_chat(
             message="find me books about climate change",
             conversation_type="catalogSearch",
             session=session,

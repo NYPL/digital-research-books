@@ -38,5 +38,20 @@ def get_event_loop():
 
 def run_coroutine(coro):
     """Run `coro` on the shared background event loop, blocking the calling
-    thread until it completes, same as asyncio.run() would."""
+    thread until it completes, same as asyncio.run() would.
+
+    Notes:
+    - Warning: Every `coro` run with this function shares a single event loop
+      thread, so a coroutine that blocks synchronously (no await, e.g. a sync
+      driver/HTTP call) freezes the loop for all `coro`s, even across multiple
+      concurrent and multi-threaded flask request handlers. Make sure to route
+      blocking calls through asyncio.to_thread()/run_in_executor.
+    - Functions like asyncio.gather(), asyncio.Semaphore, etc... need a running
+      loop to work, so they can't be passed in directly. Wrap it in an async def
+      first. EX:
+          async def _both(): return await asyncio.gather(a(), b())
+          run_coroutine(_both())
+    - Fire-and-forget asyncio.create_task() calls made inside `coro` keep
+      running after run_coroutine() returns, since this loop never stops.
+    """
     return asyncio.run_coroutine_threadsafe(coro, get_event_loop()).result()

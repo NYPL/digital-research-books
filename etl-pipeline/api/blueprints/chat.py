@@ -32,7 +32,6 @@ from ..assistant.agent import (
     get_new_items_with_ids,
 )
 from ..assistant.snippets import get_relevant_snippets
-from ..event_loop import run_coroutine
 
 
 logger = create_log(__name__)
@@ -237,20 +236,15 @@ def chat(session_id):
             # TODO: inside update_chat make sure than any errors are handled by a polite \
             # llm generated response (except no connectivity to LLM) (just handle the \
             # high level openai agents sdk errors)
-            print(f"DEBUGX {session_id} before session")
             session = JSONBSQLAlchemySession(session_id, engine=get_async_engine())
-            print(f"DEBUGX {session_id} after session init")
             max_id = get_max_message_id()
-            print(f"DEBUGX {session_id} after max id")
             try:
-                run_result = run_coroutine(
-                    update_chat(
-                        message,
-                        conversation_type,
-                        edition_id=edition_id,
-                        barcode=barcode,
-                        session=session,
-                    )
+                run_result = update_chat(
+                    message,
+                    conversation_type,
+                    edition_id=edition_id,
+                    barcode=barcode,
+                    session=session,
                 )
             except BookNotFoundError as e:
                 return APIUtils.formatResponseObject(
@@ -261,7 +255,7 @@ def chat(session_id):
 
             # Add relevant snippets to search result, if search was executed in this agent turn
             # snippets updated in run_result in place
-            run_coroutine(get_relevant_snippets(run_result, approach="naive"))
+            get_relevant_snippets(run_result, approach="naive")
 
             ## Build API response
 
