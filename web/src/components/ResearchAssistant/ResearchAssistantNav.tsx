@@ -71,9 +71,7 @@ const ResearchAssistantNav: React.FC<ResearchAssistantNavProps> = ({
           </SubNavButton>
           <SubNavLink isOutlined href="#" id="subnav-my-account">
             <Icon name="actionIdentityFilled" size="medium" />
-            <Box display={{ base: "none", md: "inline" }}>
-              {"Login"}
-            </Box>
+            <Box display={{ base: "none", md: "inline" }}>My account</Box>
           </SubNavLink>
         </>
       }

@@ -17,7 +17,7 @@ from agents.items import ToolCallItem, ToolCallOutputItem
 
 from api.assistant.agent import update_chat, META_OPERATORS, search_catalog
 from api.assistant.models.filter import Filter
-from tests.stochastic_processes.conftest import stub_function_tool
+from tests.factories import stub_function_tool
 
 
 _FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "stochastic_processes"

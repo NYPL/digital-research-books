@@ -10,7 +10,7 @@ from api.session_jwt import sign_session
 
 ENDPOINT_PATH = "/chat"
 
-TOP_LEVEL_FIELDS = {
+TOP_LEVEL_RESPONSE_FIELDS = {
     "status": int,
     "timestamp": str,
     "responseType": str,
@@ -57,11 +57,11 @@ def test_chat(conversation_type, message, edition_id, vra_test_user, test_sessio
     assert response_json is not None
 
     # Verify expected top-level fields are present in the response
-    for field in TOP_LEVEL_FIELDS.keys():
+    for field in TOP_LEVEL_RESPONSE_FIELDS.keys():
         assert field in response_json, f"Missing expected top-level field: {field}"
 
     # Verify top-level fields are of the expected type
-    for field, expected_type in TOP_LEVEL_FIELDS.items():
+    for field, expected_type in TOP_LEVEL_RESPONSE_FIELDS.items():
         assert isinstance(response_json.get(field), expected_type), (
             f"Expected {field} to be of type {expected_type.__name__}"
         )

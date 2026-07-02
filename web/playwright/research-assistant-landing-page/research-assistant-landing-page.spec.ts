@@ -83,6 +83,32 @@ test.describe(
         researchAssistantLandingPage.helpSectionHeading
       ).toBeVisible();
     });
+
+    test.describe("Breadcrumb links", { tag: "@enhanced-search" }, () => {
+      test("'Home' breadcrumb links to nypl.org", async () => {
+        await expect(
+          researchAssistantLandingPage.homeBreadcrumbLink
+        ).toHaveAttribute("href", "https://www.nypl.org");
+      });
+
+      test("'Research' breadcrumb links to nypl.org/research", async () => {
+        await expect(
+          researchAssistantLandingPage.researchBreadcrumbLink
+        ).toHaveAttribute("href", "https://www.nypl.org/research");
+      });
+
+      test("'Digitized Research Books' breadcrumb links to /", async () => {
+        await expect(
+          researchAssistantLandingPage.digitizedResearchBooksBreadcrumbLink
+        ).toHaveAttribute("href", "/");
+      });
+
+      test("'Enhanced Search (beta)' breadcrumb links to /research-assistant", async () => {
+        await expect(
+          researchAssistantLandingPage.enhancedSearchBreadcrumbLink
+        ).toHaveAttribute("href", "/research-assistant");
+      });
+    });
   }
 );
 

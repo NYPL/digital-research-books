@@ -662,7 +662,7 @@ def get_relevant_snippets_llm(
     for entry in edition_data:
         # Format search result chunk text
         # NOTE: slowish. in some cases constructing a 54,813 token str from 100 chunks.
-        edition_chunk_text = format_search_results([entry], as_str=True)
+        edition_chunk_text = format_search_results([entry])
 
         snippet_agent_prompt = remove_markdown_comments(
             prompt_template.render(

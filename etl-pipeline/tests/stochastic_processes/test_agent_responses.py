@@ -21,7 +21,7 @@ from utils.common import require_env
 
 from api.assistant.agent import search_catalog
 
-from .conftest import make_chunk_doc, stub_function_tool
+from tests.factories import make_chunk_doc, stub_function_tool
 
 
 # ---------------------------------------------------------------------------
