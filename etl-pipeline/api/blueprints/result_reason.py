@@ -30,8 +30,6 @@ FALLBACK_RESULT_REASON = (
     "It may share themes, subjects, or content related to your inquiry."
 )
 
-# TODO: add simple prose paragraph formatting instruction
-# TODO: add instruction if the book is not actually relevant
 RESULT_REASON_SYSTEM_PROMPT_TEMPLATE = """\
 You are a research assistant at a library helping users understand why specific \
 search results appear for their queries. Given the conversation history and the \
@@ -53,6 +51,18 @@ that best matched the search query:
 
 Write 3-4 sentences (~450 characters) explaining the connection between \
 this book and the user's search.\
+
+Closest match results are always returned even if there are no truly relevant \
+matches in our search catalog. If the book is truly not relevant to the user's \
+query, tell the user it's the closest match even though it isn't really relevant \
+to their query. Include a very short hypothesis about why the irrelevant results \
+might have been returned (e.g., matching a shared first name but wrong entity).
+
+Format your response as standard, flowing paragraph prose without any markdown. 
+Use plain text and italics for emphasis. No other markdown, syntax, or HTML is permitted.
+* Do NOT use list structures of any kind (no bullets *, -, •, or numbered lists).
+* Do NOT use structural Markdown headers (#, ##, ###) within the body of your response.
+* Do NOT use links, code blocks, or inline code backticks.
 """
 
 
