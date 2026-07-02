@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -69,25 +68,28 @@ class TestAgent:
         mock_runner.run.assert_called_once()
 
 
-class TestDirectToolInvocation:
+class TestSearchToolInvocation:
     """
-    Calls search_book/search_catalog directly via on_invoke_tool(), bypassing
-    the full agent loop and LLM, so a bug in the tool's internal logic (e.g.
-    reading ctx.context.search_results before writing it, as in the bug fixed
-    by commit 9b185a89eb) fails the test regardless of whether the LLM ever
-    chooses to call the tool.
+    Tests for bugs in the tool's internal logic regardless of whether the LLM
+    ever chooses to call the tool. Calls search_book/search_catalog directly via
+    on_invoke_tool(). Mocks external I/O dependencies via mock_search_backend().
     """
 
-    @pytest.mark.asyncio
-    async def test_search_book_on_invoke_tool_returns_results(
-        self, mocker, mock_search_backend
-    ):
-        chunk_doc = make_chunk_doc(
+    @pytest.fixture
+    def chunk_doc(self):
+        return make_chunk_doc(
             text="Merchants traded goods along the Missouri river.",
             title="The Missouri Merchant",
             edition_id=42,
             barcode="00000000000042",
+            author=["Jane Doe"],
+            subject=["History"],
         )
+
+    @pytest.mark.asyncio
+    async def test_search_book_on_invoke_tool_returns_results(
+        self, mocker, mock_search_backend, chunk_doc
+    ):
         mock_search_backend([chunk_doc])
 
         context = ContentSearchExecutionContext(
@@ -121,42 +123,9 @@ class TestDirectToolInvocation:
 
     @pytest.mark.asyncio
     async def test_search_catalog_on_invoke_tool_returns_results(
-        self, mocker, mock_search_backend
+        self, mocker, mock_search_backend, chunk_doc
     ):
-        barcode = "00000000000042"
-        chunk_doc = make_chunk_doc(
-            text="Merchants traded goods along the Missouri river.",
-            title="The Missouri Merchant",
-            edition_id=42,
-            barcode=barcode,
-            author=["Jane Doe"],
-            subject=["History"],
-        )
         mock_search_backend([chunk_doc])
-
-        # search_catalog resolves editions by barcode, not edition_id, so it
-        # needs its own get_frbr_data_by_barcode stub (mock_search_backend
-        # only stubs get_frbr_data_by_edition, used by the contentSearch setup
-        # in update_chat rather than by search_catalog itself).
-        mocker.patch(
-            "api.assistant.agent.get_frbr_data_by_barcode",
-            return_value=[
-                SimpleNamespace(
-                    barcode=barcode,
-                    Work=SimpleNamespace(
-                        title="The Missouri Merchant",
-                        authors=[{"name": "Jane Doe"}],
-                        subjects=[{"heading": "History"}],
-                    ),
-                    Edition=SimpleNamespace(
-                        id=42,
-                        publication_date="1919-01-01",
-                        publishers=[],
-                        languages=[],
-                    ),
-                )
-            ],
-        )
 
         context = CatalogSearchExecutionContext(
             backend=mocker.MagicMock(),
@@ -179,14 +148,13 @@ class TestDirectToolInvocation:
         assert tool_call_id in context.search_results
 
 
-def make_mock_data(agent, history=None):
-    mock_data = MagicMock()
-    mock_data.run_data.last_agent = agent
-    mock_data.run_data.history = history if history is not None else []
-    return mock_data
-
-
 class TestOnMaxTurns:
+    def make_mock_data(self, agent, history=None):
+        mock_data = MagicMock()
+        mock_data.run_data.last_agent = agent
+        mock_data.run_data.history = history if history is not None else []
+        return mock_data
+
     @pytest.fixture
     def mock_client(self):
         client = AsyncMock()
@@ -316,7 +284,7 @@ class TestOnMaxTurns:
         Fails if the async get_system_prompt() was called not awaited,
         catching a missing `await` before the .format() call.
         """
-        await _on_max_turns(make_mock_data(mock_agent))
+        await _on_max_turns(self.make_mock_data(mock_agent))
 
         mock_agent.get_system_prompt.assert_awaited_once()
 
@@ -325,7 +293,7 @@ class TestOnMaxTurns:
         self, mock_client, mock_agent
     ):
         """System message must embed the agent's original instructions inside _MAX_TURNS_SYSTEM_PROMPT."""
-        await _on_max_turns(make_mock_data(mock_agent))
+        await _on_max_turns(self.make_mock_data(mock_agent))
 
         system_content = mock_client.chat.completions.create.call_args.kwargs[
             "messages"
@@ -349,7 +317,9 @@ class TestOnMaxTurns:
             return_value=history_messages,
         )
 
-        await _on_max_turns(make_mock_data(mock_agent, history=[object(), object()]))
+        await _on_max_turns(
+            self.make_mock_data(mock_agent, history=[object(), object()])
+        )
 
         sent_messages = mock_client.chat.completions.create.call_args.kwargs["messages"]
         assert sent_messages[0]["role"] == "system"

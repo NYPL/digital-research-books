@@ -594,18 +594,22 @@ def mock_sqs_manager():
 @pytest.fixture
 def mock_search_backend(mocker):
     """
-    Factory fixture that stubs all external I/O in search_catalog or search_book,
-    allowing tests to inject ChunkDocuments as synthetic search results.
+    Factory fixture that mocks all external I/O used in search_catalog and search_book.
+    The ChunkDocuments passed to the factory are used as synthetic search results.
 
-    For search_book all chunks should be from the same edition/book.
+    For search_book all chunks should be from the same edition/book (this is not enforced).
 
-    Call the returned function with a list of ChunkDocuments to activate the
-    mocked backend.
+    Call the returned function with a list of ChunkDocuments to initiate the patching.
+
     The fixture stubs:
       - hybrid_search → returns ChunkDocuments as ScoredHits
       - map_editions_and_records → returns synthetic item_ids keyed by barcode
       - get_frbr_data_by_edition → returns SimpleNamespace ORM-like rows
-        built from each ChunkDocument's book_metadata (first chunk per edition)
+        built from each ChunkDocument's book_metadata (first chunk per edition),
+        used by search_book/update_chat's contentSearch setup
+      - get_frbr_data_by_barcode → returns SimpleNamespace ORM-like rows
+        built from each ChunkDocument's book_metadata (first chunk per barcode),
+        used by search_catalog
       - Embedder → returns a dummy zero vector from embed_query (via get_index_config())
       - Backend → replaced with a no-op mock (via get_index_config())
 
@@ -620,8 +624,46 @@ def mock_search_backend(mocker):
         return_value={"embedder": mock_embedder, "backend": mock_backend},
     )
 
+    def _first_chunk_doc_by(chunk_docs: List[ChunkDocument], key_fn) -> dict:
+        """Map each unique key (via key_fn) to its first matching ChunkDocument."""
+        first_by_key: dict = {}
+        for chunk_doc in chunk_docs:
+            key = key_fn(chunk_doc)
+            first_by_key.setdefault(key, chunk_doc)
+        return first_by_key
+
+    def _to_frbr_row(chunk_doc: ChunkDocument, **extra_attrs) -> SimpleNamespace:
+        """
+        Build an ORM-like row from a ChunkDocument's book_metadata.
+        format_frbr_fields() is the only place these attributes are read, so
+        a SimpleNamespace is sufficient.
+        """
+        book_metadata = chunk_doc.book_metadata
+        return SimpleNamespace(
+            Work=SimpleNamespace(
+                title=book_metadata.title,
+                authors=[{"name": author} for author in book_metadata.author],
+                subjects=[{"heading": subject} for subject in book_metadata.subject],
+            ),
+            Edition=SimpleNamespace(
+                id=book_metadata.edition_id,
+                publication_date=book_metadata.publication_date,
+                publishers=[],  # not in BookMetadata; yields "(Publishers Unavailable)"
+                languages=[{"language": lang} for lang in book_metadata.language],
+            ),
+            **extra_attrs,
+        )
+
+    def _make_frbr_lookup(rows_by_key: dict):
+        """Build a get_frbr_data_by_*(keys) side_effect that looks up rows_by_key."""
+
+        def _lookup(keys):
+            return [rows_by_key[key] for key in keys if key in rows_by_key]
+
+        return _lookup
+
     def _setup(chunk_docs: List[ChunkDocument]) -> List[ChunkDocument]:
-        scored_hits = [(cd, 0.5) for cd in chunk_docs]
+        scored_hits = [(chunk_doc, 0.5) for chunk_doc in chunk_docs]
         mocker.patch("api.assistant.agent.hybrid_search", return_value=scored_hits)
 
         # Assign a synthetic item_id to each unique barcode.
@@ -635,34 +677,28 @@ def mock_search_backend(mocker):
             "api.assistant.agent.map_editions_and_records", return_value=mapper
         )
 
-        # Build ORM-like rows from the first chunk per edition.
-        # format_frbr_fields() is the only place these attributes are accessed
-        # inside search_catalog, so SimpleNamespace is sufficient.
-        editions_by_id: dict = {}
-        for cd in chunk_docs:
-            eid = cd.book_metadata.edition_id
-            if eid not in editions_by_id:
-                bm = cd.book_metadata
-                editions_by_id[eid] = SimpleNamespace(
-                    Work=SimpleNamespace(
-                        title=bm.title,
-                        authors=[{"name": a} for a in bm.author],
-                        subjects=[{"heading": s} for s in bm.subject],
-                    ),
-                    Edition=SimpleNamespace(
-                        id=eid,
-                        publication_date=bm.publication_date,
-                        publishers=[],  # not in BookMetadata; yields "(Publishers Unavailable)"
-                        languages=[{"language": lang} for lang in bm.language],
-                    ),
-                )
-
-        def _mock_get_frbr(edition_ids):
-            return [editions_by_id[eid] for eid in edition_ids if eid in editions_by_id]
-
+        # Used by search_book/update_chat's contentSearch setup.
+        rows_by_edition_id = {
+            edition_id: _to_frbr_row(chunk_doc)
+            for edition_id, chunk_doc in _first_chunk_doc_by(
+                chunk_docs, lambda cd: cd.book_metadata.edition_id
+            ).items()
+        }
         mocker.patch(
             "api.assistant.agent.get_frbr_data_by_edition",
-            side_effect=_mock_get_frbr,
+            side_effect=_make_frbr_lookup(rows_by_edition_id),
+        )
+
+        # Used by search_catalog.
+        rows_by_barcode = {
+            barcode: _to_frbr_row(chunk_doc, barcode=barcode)
+            for barcode, chunk_doc in _first_chunk_doc_by(
+                chunk_docs, lambda cd: cd.barcode
+            ).items()
+        }
+        mocker.patch(
+            "api.assistant.agent.get_frbr_data_by_barcode",
+            side_effect=_make_frbr_lookup(rows_by_barcode),
         )
 
         return chunk_docs
