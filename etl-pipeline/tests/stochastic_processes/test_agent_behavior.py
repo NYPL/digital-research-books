@@ -21,9 +21,7 @@ _QUOTED_TEXT_RE = re.compile(r'"([^"\n]+)"')
 
 
 async def run_catalog_query(query: str, session_id: str):
-    return await update_chat(
-        query, conversation_type="catalogSearch", session_id=session_id
-    )
+    return update_chat(query, conversation_type="catalogSearch", session_id=session_id)
 
 
 @pytest.fixture(scope="module")

@@ -24,9 +24,6 @@ from api.assistant.agent import search_catalog
 from tests.factories import make_chunk_doc, stub_function_tool
 
 
-pytestmark = pytest.mark.asyncio
-
-
 # ---------------------------------------------------------------------------
 # LLM-as-judge
 # ---------------------------------------------------------------------------
@@ -37,7 +34,6 @@ class JudgeVerdict(BaseModel):
     answer: Literal["YES", "NO"]
 
 
-# NOTE: async bc called inside test which is async bc it tests update_chat()
 async def llm_judge(run_result, question: str) -> JudgeVerdict:
     """
     Run an LLM-as-judge evaluation over the full conversation history.
@@ -108,7 +104,8 @@ class TestAgentResponses:
     @pytest.mark.xfail(
         reason="The Judge's criteria should probably be loosened to accept the agent response in this case."
     )
-    async def test_grounding_fixture_inline(self, test_session_id, mock_search_backend):
+    @pytest.mark.asyncio
+    async def test_grounding_fixture_inline(self, test_session, mock_search_backend):
         """
         Verify that the agent response does not include information not grounded
         in the search results.
@@ -177,10 +174,10 @@ class TestAgentResponses:
         ]
         mock_search_backend(chunk_docs)
 
-        run_result = await update_chat(
+        run_result = update_chat(
             "what is the plot of the lord of the rings",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
         )
 
         verdict = await llm_judge(
@@ -209,7 +206,8 @@ class TestAgentResponses:
 
     @pytest.mark.xfail
     @pytest.mark.parametrize("fixture_file,query", _GROUNDING_FIXTURE_PARAMS)
-    async def test_grounding_fixture_file(self, test_session_id, fixture_file, query):
+    @pytest.mark.asyncio
+    async def test_grounding_fixture_file(self, test_session, fixture_file, query):
         """
         Verify that the agent response does not include information not grounded
         in the search results.
@@ -226,10 +224,10 @@ class TestAgentResponses:
         )
 
         with stub_function_tool(search_catalog, fixture_path.read_text()):
-            run_result = await update_chat(
+            run_result = update_chat(
                 query,
                 conversation_type="catalogSearch",
-                session_id=test_session_id,
+                session=test_session,
             )
 
         verdict = await llm_judge(
@@ -241,7 +239,8 @@ class TestAgentResponses:
             f"Agent response contains ungrounded information.\nJudge reason: {verdict.reason}"
         )
 
-    async def test_irrelevant_results_acknowledged(self, test_session_id):
+    @pytest.mark.asyncio
+    async def test_irrelevant_results_acknowledged(self, test_session):
         """
         Verify that the agent acknowledges search results are irrelevant to the query.
         All test cases should have no relevant documents in the search index.
@@ -258,10 +257,10 @@ class TestAgentResponses:
         )
 
         with stub_function_tool(search_catalog, miyazaki_fixture.read_text()):
-            run_result = await update_chat(
+            run_result = update_chat(
                 "Hayao Miyazaki",
                 conversation_type="catalogSearch",
-                session_id=test_session_id,
+                session=test_session,
             )
 
         verdict = await llm_judge(
@@ -277,17 +276,17 @@ the irrelevant results as if they are relevant to the query.""",
             f"Agent did not acknowledge irrelevant results.\nJudge reason: {verdict.reason}"
         )
 
-    async def test_no_search_on_ambiguous_query(self, test_session_id):
+    def test_no_search_on_ambiguous_query(self, test_session):
         """
         Verify that the agent does not perform a search for an underspecified query.
         """
 
         query = "new york"
         with stub_function_tool(search_catalog, "No results found for your query."):
-            run_result = await update_chat(
+            run_result = update_chat(
                 query,
                 conversation_type="catalogSearch",
-                session_id=test_session_id,
+                session=test_session,
             )
 
         tool_calls = [
