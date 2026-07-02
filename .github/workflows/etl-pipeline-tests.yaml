@@ -26,6 +26,9 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [integration-drb, integration-vra, functional, stochastic-processes]
     env:
       IS_CI: "true"
       DOCKER_BUILDKIT: 1
@@ -88,31 +91,18 @@ jobs:
         run: |
           docker compose up -d --wait --wait-timeout 180
 
-      - name: Run integration tests (DRB)
-        env:
-          ENVIRONMENT: local
-        working-directory: ./etl-pipeline
-        run: |
-          make integration-drb
-
       - name: Seed local Postgres DB to support /chat API tests
+        if: matrix.target != 'integration-drb'
         working-directory: ./etl-pipeline
         run: |
           python -m tests.integration.api.assistant.support.seed_frbr_data -e local
 
-      - name: Run integration tests (VRA)
+      - name: Run ${{ matrix.target }} tests
         env:
           ENVIRONMENT: local
         working-directory: ./etl-pipeline
         run: |
-          make integration-vra
-
-      - name: Run functional tests
-        env:
-          ENVIRONMENT: local
-        working-directory: ./etl-pipeline
-        run: |
-          make functional
+          make ${{ matrix.target }}
 
       - name: Dump service logs
         if: always() && steps.build-images.outcome == 'success'
