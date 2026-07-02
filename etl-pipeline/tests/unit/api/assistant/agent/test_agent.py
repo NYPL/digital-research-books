@@ -118,7 +118,7 @@ class TestSearchToolInvocation:
         result = await search_book.on_invoke_tool(ctx, tool_arguments)
 
         assert "error" not in result.lower()
-        assert "merchant" in result.lower()
+        assert chunk_doc.text in result
         assert tool_call_id in context.search_results
 
     @pytest.mark.asyncio
@@ -144,7 +144,7 @@ class TestSearchToolInvocation:
         result = await search_catalog.on_invoke_tool(ctx, tool_arguments)
 
         assert "error" not in result.lower()
-        assert "merchant" in result.lower()
+        assert chunk_doc.text in result
         assert tool_call_id in context.search_results
 
 
