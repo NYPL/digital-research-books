@@ -2,6 +2,8 @@ name: 'Mask Secrets'
 description: 'Mask all secrets from .env.*.secrets files to prevent exposure in GitHub Actions logs'
 
 # Must be invoked after AWS authentication in calling workflow
+# Note: This action must be invoked separately for every job in a workflow
+# see: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands#masking-a-value-in-a-log
 
 # Q: Why create a separate workflow? A: A separate custom 
 # action allows bundling the python dependency with the masking script. 

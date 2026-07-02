@@ -23,6 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # TODO: extract these 2 steps ("Get AWS credentials for IAM role in primary NYPL \
+      # account" and "Get AWS credentials for IAM role in nypl-digital-dev account") into \
+      # a composite action, so it can be repeatably run/used in all workflows that use the \
+      # self-hosted runner. Here and in web-playwright-tests.yml.
       - name: Get AWS credentials for IAM role in primary NYPL account
         uses: aws-actions/configure-aws-credentials@v4
         with:
