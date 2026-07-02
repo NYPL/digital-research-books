@@ -1,6 +1,8 @@
 """Shared factory helpers for ChunkDocument used across tests."""
 
+from contextlib import contextmanager
 from typing import List, Optional
+from unittest.mock import patch
 
 from vector_indexing.core.types import BookMetadata, ChunkDocument
 
@@ -68,3 +70,23 @@ def make_chunk_doc(
         end_page=end_page,
         book_metadata=metadata,
     )
+
+
+@contextmanager
+def stub_function_tool(tool, return_value: str):
+    """
+    Generic context manager that stubs any openai agents sdk FunctionTool's
+    on_invoke_tool with a fixed return value.
+
+    Usage::
+
+        def test_something(test_session_id):
+            with stub_function_tool(search_catalog, "No results found."):
+                run_result = await update_chat(...)
+    """
+
+    async def _stub(ctx, input) -> str:
+        return return_value
+
+    with patch.object(tool, "on_invoke_tool", new=_stub):
+        yield

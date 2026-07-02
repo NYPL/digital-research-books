@@ -926,7 +926,7 @@ def search_catalog(
         # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
         # than saving JSON/API response separately but edition data json may \
         # include irrelevant metadata)
-        search_result_str = format_search_results(edition_data, as_str=True)
+        search_result_str = format_search_results(edition_data)
 
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
@@ -942,7 +942,7 @@ def search_catalog(
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
 
         # Double make sure no search is recorded if there is an error
-        del ctx.context.search_results[ctx.tool_call_id]
+        ctx.context.search_results.pop(ctx.tool_call_id, None)
 
         raise e
 
@@ -1008,22 +1008,19 @@ def search_book(
 
         chunk_hits = list(results_to_chunk_hits(results))
 
-        # Format results for LLM
-        search_result_str = format_search_results(
-            ctx.context.search_results[ctx.tool_call_id]["edition_data"],
-            as_str=True,
+        search_result = ContentSearchResult(
+            edition_id=ctx.context.edition_id,
+            chunk_hits=chunk_hits,
+            frbr_fields=ctx.context.frbr_fields,
         )
+
+        # Format results for LLM
+        search_result_str = format_search_results([search_result])
 
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
             "tool_name": ctx.tool_name,
-            "edition_data": [
-                ContentSearchResult(
-                    edition_id=ctx.context.edition_id,
-                    chunk_hits=chunk_hits,
-                    frbr_fields=ctx.context.frbr_fields,
-                )
-            ],
+            "edition_data": [search_result],
             "search_params": json.loads(ctx.tool_arguments),
         }
         # TODO: store search result chunk + edition ids in DB for structured retreival
@@ -1034,7 +1031,7 @@ def search_book(
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
 
         # Double make sure no search is recorded if there is an error
-        del ctx.context.search_results[ctx.tool_call_id]
+        ctx.context.search_results.pop(ctx.tool_call_id, None)
 
         raise e
 
@@ -1148,11 +1145,9 @@ def display_book(lines, frbr_fields, chunk_hits, edition_id):
 
 
 # MAYBE: remove book level info from search response for contentSearch to save tokens.
-def format_search_results(
-    edition_data, search_tool_call_id=None, query=None, as_str=False
-):
+def format_search_results(edition_data, search_tool_call_id=None, query=None) -> str:
     """
-    Print or return a formatted str containing an ordered list of editions and their
+    Return a formatted str containing an ordered list of editions and their
     associated text excerpts. For each edition, metadata (title, authors, subjects,
     publication date) and chunk text excerpts with page numbers are displayed.
     Editions are ordered by the input list.
@@ -1161,7 +1156,6 @@ def format_search_results(
         edition_data: List of BaseEditionResult (CatalogSearchResult or ContentSearchResult)
         search_tool_call_id: Optional tool call ID to include in output header
         query: The search query string
-        as_str: If True, return as string; otherwise print
     """
     if not edition_data:
         return "There are no results for your query."
@@ -1187,11 +1181,7 @@ def format_search_results(
 
     lines.append("\n</search_results>")
 
-    msg = "\n".join(lines)
-    if as_str:
-        return msg
-    else:
-        print(msg)
+    return "\n".join(lines)
 
 
 # UNUSED
