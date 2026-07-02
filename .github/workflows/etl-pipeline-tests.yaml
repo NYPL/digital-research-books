@@ -98,8 +98,12 @@ jobs:
           python -m tests.integration.api.assistant.support.seed_frbr_data -e local
 
       - name: Run ${{ matrix.target }} tests
+        # NOTE: stochastic-processes tests running with qa env still the local code but \
+        # instead use qa postgres and TP index. Future we want to expand local postgres \
+        # data pre-seed to support more queries or tweak existing test queries to be \
+        # compatible with the data available in the local DB and index.
         env:
-          ENVIRONMENT: local
+          ENVIRONMENT: ${{ matrix.target == 'stochastic-processes' && 'qa' || 'local' }}
         working-directory: ./etl-pipeline
         run: |
           make ${{ matrix.target }}
