@@ -181,6 +181,7 @@ def _index_config_data():
         {  # Gemini-embedding-001
             "names": [
                 "vra-dev",
+                "vra-test",
                 "vra_test-sketches_of_the_north_river-gemini-001",
                 "vra_test-eval300-gemini_001",  # pragma: allowlist secret
             ],
@@ -256,7 +257,7 @@ def _index_config_data():
             "embedder": {
                 "class": "PplxEmbedder",
                 "params": {
-                    "endpoint_name": "tei-pplx-embed-v1-4b-ml-g6e-xlarge-20260506233640",  # pragma: allowlist secret
+                    "endpoint_name": "tei-pplx-embed-v1-4b-ml-g5-2xlarge-20260529132017",  # pragma: allowlist secret
                     "aws_profile": "vra-sandbox",
                     "concurrency": 4,
                     "dimensions": PPLX_V1_DIMENSIONS,

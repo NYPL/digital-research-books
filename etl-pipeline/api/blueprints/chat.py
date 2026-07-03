@@ -1,9 +1,9 @@
-import asyncio
+# builtins
 from dataclasses import asdict
-from textwrap import indent
-from typing import Any, Dict, Tuple
-from api.assistant.types import CatalogSearchResult
-from flask import Blueprint, current_app, request
+from typing import Dict, Tuple
+
+# non-built-ins
+from flask import Blueprint, request
 import newrelic.agent
 
 # shared code
@@ -17,11 +17,20 @@ from utils.timer import timer
 
 # API code
 from ..utils import APIUtils, orm_to_dict
-from ..elastic import ElasticClient
-from ..db import DBClient
+from ..assistant.session import JSONBSQLAlchemySession
+
+from ..db import DBClient, get_async_engine
 from ..auth import require_api_key
 from ..decorators import require_session_jwt
-from ..assistant.agent import SCORE_SORT_DIRECTION, update_chat, PAGE_SIZE
+from ..assistant.agent import (
+    SCORE_SORT_DIRECTION,
+    BookNotFoundError,
+    update_chat,
+    PAGE_SIZE,
+    get_max_message_id,
+    get_session_messages_after,
+    get_new_items_with_ids,
+)
 from ..assistant.snippets import get_relevant_snippets
 
 
@@ -35,8 +44,9 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
     Extract final search result, prepare structure for expected chat/ response,
     and convert to serializable types.
 
-    Returns (result_type, formatted_search_result) where formatted_search_result
-    is the search results serialized for http response via flask.jsonify
+    Returns (result_type, formatted_search_result)
+    Returns (None, None) if search_results is empty (no search was executed)
+    `formatted_search_result` is the search results is consumable by flask.jsonify.
     """
 
     # Extract (single) search tool result
@@ -53,11 +63,11 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
             "No search results to return (agent did record search tool call result)"
         )
 
-    # Format search result for API response
-
+    # Build search result for API response
     result_type = None
     formatted_search_result = None
     if search_result:
+        # Extract search tool type
         result_type = (
             "catalogSearch"
             if search_result["tool_name"] == "search_catalog"
@@ -72,12 +82,14 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
 
         search_params = search_result["search_params"]
 
+        # Format edition-level response data
         editions = []
         for edition_result in search_result["edition_data"]:
-            edition = {}
+            edition_response = {}
 
+            # Add snippets to edition response
             # Sort editions + convert to json serializable form
-            edition["snippets"] = [
+            edition_response["snippets"] = [
                 asdict(s)
                 for s in sorted(
                     edition_result.snippets,
@@ -87,7 +99,7 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
             ]
 
             if result_type == "catalogSearch":
-                # FRBR ORM to dict
+                # Add FRBR metadata to edition response
 
                 edition_metadata = orm_to_dict(
                     edition_result.orm_edition,
@@ -121,10 +133,11 @@ def prepare_search_response(search_results) -> Tuple[str, Dict] | Tuple[None, No
                 # prepend "work_" to work fields
                 work_metadata = {f"work_{k}": v for k, v in work_metadata.items()}
 
-                edition.update({**edition_metadata, **work_metadata})
+                edition_response.update({**edition_metadata, **work_metadata})
 
-            editions.append(edition)
+            editions.append(edition_response)
 
+        # Format search result response
         if result_type == "catalogSearch":
             formatted_search_result = {
                 "editions": editions,
@@ -223,35 +236,34 @@ def chat(session_id):
             # TODO: inside update_chat make sure than any errors are handled by a polite \
             # llm generated response (except no connectivity to LLM) (just handle the \
             # high level openai agents sdk errors)
+            session = JSONBSQLAlchemySession(session_id, engine=get_async_engine())
+            max_id = get_max_message_id()
             try:
-                run_result = asyncio.run(
-                    update_chat(
-                        message,
-                        conversation_type,
-                        session_id,
-                        edition_id=edition_id,
-                        barcode=barcode,
-                    )
+                run_result = update_chat(
+                    message,
+                    conversation_type,
+                    edition_id=edition_id,
+                    barcode=barcode,
+                    session=session,
                 )
-            except ValueError as e:
-                # Intended to catch "No edition found with id=XXX"
-                # TODO: make error filter specific to intended error, even tho its the \
-                # only ValueError intentionlly raided in the update_chat() boundary
+            except BookNotFoundError as e:
                 return APIUtils.formatResponseObject(
                     404, response_type, {"message": str(e)}
                 )
 
+            session_message_items = get_session_messages_after(session_id, max_id)
+
             # Add relevant snippets to search result, if search was executed in this agent turn
             # snippets updated in run_result in place
-            asyncio.run(get_relevant_snippets(run_result, approach="naive"))
+            get_relevant_snippets(run_result, approach="naive")
 
             ## Build API response
 
-            # Extract new messages
-            messages = [item.to_input_item() for item in run_result.new_items]
-            logger.info(
-                f"Agent generated {len(run_result.new_items)} new message items"
-            )
+            # Note: Concurrent writes to *this* session are theoretically possible but unlikely
+            # in practice; get_new_items_with_ids() guards against them by only returning
+            # items that also appear in RunResult.new_items.
+            messages = get_new_items_with_ids(run_result, session_message_items)
+            logger.info(f"Agent generated {len(messages)} new message items")
 
             # Format search results
             result_type, formatted_search_result = prepare_search_response(

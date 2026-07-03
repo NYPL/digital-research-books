@@ -10,8 +10,9 @@ import json
 import re
 import tempfile
 from datetime import datetime, timezone
+from pathlib import Path
 import os
-from typing import Any, Dict, TYPE_CHECKING, Any, Dict, Iterator, Optional
+from typing import Any, Dict, TYPE_CHECKING, Iterator, Optional
 
 import turbopuffer as tpuf
 from logger import create_log
@@ -144,7 +145,10 @@ def chunk_from_tpuf_row(row) -> ChunkDocument:
         language=row_dict.get("language", []),
     )
 
-    return ChunkDocument.create(
+    return ChunkDocument(
+        doc_id=str(
+            row_dict["id"]
+        ),  # turbopuffer always returns id even when include_attributes=False
         barcode=row_dict.get("barcode"),
         book_id=row_dict.get("book_id"),
         chunk_index=row_dict.get("chunk_index"),
@@ -185,9 +189,16 @@ class TurbopufferBackend(IndexBackend):
             top_k=10,
         )
 
-        # Paginated scan
-        for chunk in backend.scan(filters=["language", "In", ["en"]]):
+        # Scan ordered ordered by id
+        for chunk, _ in backend.scan(filters=["language", "In", ["en"]]):
             process(chunk)
+
+        # Scan ordered by cosine distance (yields distances)
+        for chunk, dist in backend.scan(
+            rank_by=("vector", "kNN", query_vector),
+            filters=["language", "In", ["en"]],
+        ):
+            process(chunk, dist)
     """
 
     def __init__(
@@ -245,7 +256,8 @@ class TurbopufferBackend(IndexBackend):
     def get_document(self, doc_id: str) -> Optional[ChunkDocument]:
         """Get a document by ID."""
         try:
-            return next(self.scan(filters=["id", "Eq", doc_id], limit=1))
+            chunk, _ = next(self.scan(filters=["id", "Eq", doc_id], limit=1))
+            return chunk
         except StopIteration:
             return None
         except Exception:
@@ -507,78 +519,134 @@ class TurbopufferBackend(IndexBackend):
 
     _SCAN_PAGE_SIZE = 10_000  # Internal batch size for scan operations
 
-    def scan(
-        self,
-        filters: Optional[list] = None,
-        order_by: tuple[str, str] = ("id", "asc"),
-        limit: Optional[int] = None,
-    ) -> Iterator[ChunkDocument]:
-        """Scan/export documents with cursor-based pagination.
+    def scan(self, **kwargs) -> Iterator[tuple[ChunkDocument, Optional[float]]]:
+        """Scan documents with cursor-based pagination.
 
-        Uses turbopuffer's recommended export pattern with cursor advancement.
-        See: https://turbopuffer.com/docs/export
+        Supports arbitrary turbopuffer query parameters. Intercepts ``limit``
+        for pagination control; all other kwargs are forwarded to ``query()``.
+
+        Chooses one of two cursor strategies automatically based on ``rank_by``:
+        - **Order by Attribute cursor** (default): when ``rank_by`` is a 2-tuple
+          ``(field, "asc"|"desc")``, pages advance via a ``Gt``/``Lt`` filter
+          on the rank field. This is the TP-recommended export pattern.
+        - **NotIn cursor**: for vector (``ANN``/``kNN``), BM25, and hybrid
+          ``Sum`` queries, pages advance by excluding already-seen document IDs.
+
+        Note: the id exclusion list grows by up to page_size per page for the
+        "NotIn cursor" — acceptable for typical index sizes but worth monitoring
+        for very large namespaces (>1M docs).
 
         Args:
-            filters: Optional filter specification
-            order_by: Tuple of (field, direction). Default ("id", "asc")
-            limit: Max docs to return. None = all matching docs.
+            rank_by: Ranking specification forwarded to TP. Defaults to
+                ``("id", "asc")``.
+            limit: Max documents to return. Same syntax as TP query `limit` parameter
+                (int or dict). Optional. Default returns all matching documents.
+                ``None`` returns all matching documents. If dict, `limit.total`
+                is optional, and if missing returns all matching documents.
+            **kwargs: Any other ``ns.query()`` parameters (e.g.
+                ``include_vectors``, ``consistency``).
+
+        Yields:
+            ``(ChunkDocument, Optional[float])`` tuples. Distance is ``None``
+            for attribute-ranked queries and populated for vector/BM25/hybrid
+            queries.
+
+        See: https://turbopuffer.com/docs/export and https://turbopuffer.com/docs/query#pagination
         """
-        rank_field, rank_dir = order_by
-        cursor_op = "Gt" if rank_dir == "asc" else "Lt"
-        last_value = None
+        kwargs.setdefault("rank_by", ("id", "asc"))
+
+        # Intercept limit — extract the total cap for pagination control and
+        # preserve any remaining keys (e.g. "per") to pass through to TP.
+        raw_limit = kwargs.pop("limit", None)
+        if isinstance(raw_limit, dict):
+            total_limit: Optional[int] = raw_limit.get("total")
+            extra_limit: dict = {k: v for k, v in raw_limit.items() if k != "total"}
+        else:
+            total_limit = raw_limit  # int or None
+            extra_limit = {}
+
+        rank_by = kwargs["rank_by"]
+        user_filters = kwargs.pop("filters", None)
+
+        # Choose cursor strategy based on rank_by shape.
+        # A plain 2-tuple/list (field, "asc"|"desc") → attribute Gt/Lt cursor.
+        # Everything else (3-element vector tuple, BM25, Sum hybrid) → NotIn.
+        is_order_by_attribute = (
+            isinstance(rank_by, (tuple, list))
+            and len(rank_by) == 2
+            and isinstance(rank_by[1], str)
+            and rank_by[1].lower() in ("asc", "desc")
+        )
+
+        if is_order_by_attribute:
+            rank_field, rank_dir = rank_by
+            cursor_op = "Gt" if rank_dir.lower() == "asc" else "Lt"
+
+            def get_cursor_filter(cursor):
+                return [rank_field, cursor_op, cursor] if cursor is not None else None
+
+            def update_cursor(chunk, cursor=None):
+                return getattr(chunk, rank_field, chunk.doc_id)
+
+        else:
+
+            def get_cursor_filter(cursor):
+                return ["id", "NotIn", list(cursor)] if cursor is not None else None
+
+            def update_cursor(chunk, cursor=None):
+                if cursor is None:
+                    cursor = []
+                cursor.append(chunk.doc_id)
+                return cursor
+
+        cursor = None
         yielded = 0
 
         while True:
-            # Calculate how many to fetch this page
             page_size = (
                 self._SCAN_PAGE_SIZE
-                if limit is None
-                else min(self._SCAN_PAGE_SIZE, limit - yielded)
+                if total_limit is None
+                else min(self._SCAN_PAGE_SIZE, total_limit - yielded)
             )
             if page_size <= 0:
                 break
 
-            # Build filters with cursor
-            cursor_filter = (
-                [rank_field, cursor_op, last_value] if last_value is not None else None
-            )
-            combined_filters = (
-                ["And", [filters, cursor_filter]]
-                if filters and cursor_filter
-                else filters or cursor_filter
-            )
+            page_query_kwargs = {**kwargs}
+            if extra_limit:
+                page_query_kwargs["limit"] = {"total": page_size, **extra_limit}
+            else:
+                page_query_kwargs["top_k"] = page_size
 
-            kwargs = {
-                "rank_by": order_by,
-                "top_k": page_size,
-            }
-            if combined_filters:
-                kwargs["filters"] = combined_filters
+            if (cursor is not None) and (user_filters is not None):
+                page_filters = ["And", [user_filters, get_cursor_filter(cursor)]]
+            else:
+                page_filters = user_filters or get_cursor_filter(cursor)
+            if page_filters is not None:
+                page_query_kwargs["filters"] = page_filters
 
-            results = self.query(**kwargs)
-
+            results = self.query(**page_query_kwargs)
             if not results:
                 break
 
-            for chunk, _ in results:
-                last_value = getattr(chunk, rank_field, chunk.doc_id)
-                yield chunk
+            for chunk, dist in results:
+                cursor = update_cursor(chunk, cursor)
+                yield chunk, dist
                 yielded += 1
-                if limit is not None and yielded >= limit:
+                if total_limit is not None and yielded >= total_limit:
                     return
-
             # Stop if we got fewer results than requested (no more pages)
             if len(results) < page_size:
                 break
 
     def scan_all_ids(self) -> Iterator[str]:
         """Iterate over all document IDs in the index."""
-        for chunk in self.scan():
+        for chunk, _ in self.scan():
             yield chunk.doc_id
 
     def scan_all_documents(self) -> Iterator[ChunkDocument]:
         """Iterate over all documents in the index."""
-        yield from self.scan()
+        for chunk, _ in self.scan():
+            yield chunk
 
     def count(self, query: Optional[dict] = None) -> int:
         """Count documents in the namespace."""

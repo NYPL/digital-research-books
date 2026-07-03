@@ -5,9 +5,12 @@ import re
 import traceback
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from types import SimpleNamespace
+from typing import List
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
+import numpy as np
 import pytest
 import requests_mock
 from logger import create_log
@@ -30,6 +33,7 @@ from sqlalchemy import delete, text
 from utils.load_env import load_env
 
 from tests.fixtures.generate_test_data import generate_test_data
+from vector_indexing.core.types import ChunkDocument
 from vector_indexing.core.utils import Timer
 
 logger = create_log(__name__)
@@ -586,6 +590,122 @@ def mock_sqs_manager():
         yield mock_sqs_manager_instance
 
 
+# TODO: see if similar functionality is duplicated elsewhere in teh code/test base
+@pytest.fixture
+def mock_search_backend(mocker):
+    """
+    Factory fixture that mocks all external I/O used in search_catalog and search_book.
+    The ChunkDocuments passed to the factory are used as synthetic search results.
+
+    For search_book all chunks should be from the same edition/book (this is not enforced).
+
+    Call the returned function with a list of ChunkDocuments to initiate the patching.
+
+    The fixture stubs:
+      - hybrid_search → returns ChunkDocuments as ScoredHits
+      - map_editions_and_records → returns synthetic item_ids keyed by barcode
+      - get_frbr_data_by_edition → returns SimpleNamespace ORM-like rows
+        built from each ChunkDocument's book_metadata (first chunk per edition),
+        used by search_book/update_chat's contentSearch setup
+      - get_frbr_data_by_barcode → returns SimpleNamespace ORM-like rows
+        built from each ChunkDocument's book_metadata (first chunk per barcode),
+        used by search_catalog
+      - Embedder → returns a dummy zero vector from embed_query (via get_index_config())
+      - Backend → replaced with a no-op mock (via get_index_config())
+
+    Returns:
+        Callable that accepts a list of ChunkDocuments and activates all mocks.
+    """
+    mock_embedder = mocker.MagicMock()
+    mock_embedder.embed_query.return_value = np.zeros(768).tolist()
+    mock_backend = mocker.MagicMock()
+    mocker.patch(
+        "api.assistant.agent.get_index_config",
+        return_value={"embedder": mock_embedder, "backend": mock_backend},
+    )
+
+    def _first_chunk_doc_by(chunk_docs: List[ChunkDocument], key_fn) -> dict:
+        """Map each unique key (via key_fn) to its first matching ChunkDocument."""
+        first_by_key: dict = {}
+        for chunk_doc in chunk_docs:
+            key = key_fn(chunk_doc)
+            first_by_key.setdefault(key, chunk_doc)
+        return first_by_key
+
+    def _to_frbr_row(chunk_doc: ChunkDocument, **extra_attrs) -> SimpleNamespace:
+        """
+        Build an ORM-like row from a ChunkDocument's book_metadata.
+        format_frbr_fields() is the only place these attributes are read, so
+        a SimpleNamespace is sufficient.
+        """
+        book_metadata = chunk_doc.book_metadata
+        return SimpleNamespace(
+            Work=SimpleNamespace(
+                title=book_metadata.title,
+                authors=[{"name": author} for author in book_metadata.author],
+                subjects=[{"heading": subject} for subject in book_metadata.subject],
+            ),
+            Edition=SimpleNamespace(
+                id=book_metadata.edition_id,
+                publication_date=book_metadata.publication_date,
+                publishers=[],  # not in BookMetadata; yields "(Publishers Unavailable)"
+                languages=[{"language": lang} for lang in book_metadata.language],
+            ),
+            **extra_attrs,
+        )
+
+    def _make_frbr_lookup(rows_by_key: dict):
+        """Build a get_frbr_data_by_*(keys) side_effect that looks up rows_by_key."""
+
+        def _lookup(keys):
+            return [rows_by_key[key] for key in keys if key in rows_by_key]
+
+        return _lookup
+
+    def _setup(chunk_docs: List[ChunkDocument]) -> List[ChunkDocument]:
+        scored_hits = [(chunk_doc, 0.5) for chunk_doc in chunk_docs]
+        mocker.patch("api.assistant.agent.hybrid_search", return_value=scored_hits)
+
+        # Assign a synthetic item_id to each unique barcode.
+        # results_to_chunk_hits only reads item_id from the mapper, so the
+        # value is arbitrary as long as it is non-None.
+        unique_barcodes = list(dict.fromkeys(cd.barcode for cd in chunk_docs))
+        mapper = {
+            barcode: {"item_id": i + 1} for i, barcode in enumerate(unique_barcodes)
+        }
+        mocker.patch(
+            "api.assistant.agent.map_editions_and_records", return_value=mapper
+        )
+
+        # Used by search_book/update_chat's contentSearch setup.
+        rows_by_edition_id = {
+            edition_id: _to_frbr_row(chunk_doc)
+            for edition_id, chunk_doc in _first_chunk_doc_by(
+                chunk_docs, lambda cd: cd.book_metadata.edition_id
+            ).items()
+        }
+        mocker.patch(
+            "api.assistant.agent.get_frbr_data_by_edition",
+            side_effect=_make_frbr_lookup(rows_by_edition_id),
+        )
+
+        # Used by search_catalog.
+        rows_by_barcode = {
+            barcode: _to_frbr_row(chunk_doc, barcode=barcode)
+            for barcode, chunk_doc in _first_chunk_doc_by(
+                chunk_docs, lambda cd: cd.barcode
+            ).items()
+        }
+        mocker.patch(
+            "api.assistant.agent.get_frbr_data_by_barcode",
+            side_effect=_make_frbr_lookup(rows_by_barcode),
+        )
+
+        return chunk_docs
+
+    return _setup
+
+
 @pytest.fixture(scope="module")
 def grin_client(setup_env):
     client = GRINClient()
@@ -648,28 +768,45 @@ def expected_barcodes_statuses():
     ]
 
 
-TEST_SESSION_ID = "test"
-
-
 @pytest.fixture
 def test_session_id():
     """
-    Provides a fixed session_id="test" for update_chat() with cleanup.
+    Provides a unique session_id per test for isolation across parallel workers.
+
+    Each test is prefixed with "test_".
 
     Setup: deletes any stale data for the session_id.
     Teardown: prints the raw conversation (captured by pytest; shown on failure),
               then always deletes session data.
     """
+    import uuid
     from api.assistant.agent import delete_session_data, get_session_messages
 
-    delete_session_data(TEST_SESSION_ID)
+    session_id = f"test_{uuid.uuid4()}"
+    delete_session_data(session_id)
 
-    yield TEST_SESSION_ID
+    yield session_id
 
     # Print convo history to logs (because it will be deleted)
-    print(f"\n--- Raw agent_messages for session '{TEST_SESSION_ID}' ---")
-    messages = get_session_messages(TEST_SESSION_ID)
+    print(f"\n--- Raw agent_messages for session '{session_id}' ---")
+    messages = get_session_messages(session_id)
     print(json.dumps(messages, indent=2))
     print("--- End of conversation ---\n")
 
-    delete_session_data(TEST_SESSION_ID)
+    delete_session_data(session_id)
+
+
+# TODO: in all places where this is used simply replace this by mocking Session \
+# with an in-memory `SQLiteSession`. That way no clean up is even needed bc DB \
+# writes are never made.
+@pytest.fixture
+def test_session(test_session_id):
+    """
+    A JSONBSQLAlchemySession using `test_session_id` fixture for cleanup and isolation.
+
+    Mostly a light wrapper of `test_session_id`.
+    """
+    from api.db import get_async_engine
+    from api.assistant.session import JSONBSQLAlchemySession
+
+    return JSONBSQLAlchemySession(test_session_id, engine=get_async_engine())

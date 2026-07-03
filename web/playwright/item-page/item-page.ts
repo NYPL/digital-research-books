@@ -51,6 +51,12 @@ class ItemPage {
   readonly detailsSubjectsValue: Locator;
   readonly detailsLanguagesValue: Locator;
 
+  // Breadcrumb navigation
+  readonly homeBreadcrumbLink: Locator;
+  readonly researchBreadcrumbLink: Locator;
+  readonly digitizedResearchBooksBreadcrumbLink: Locator;
+  readonly itemBreadcrumbLink: Locator;
+
   constructor(page: Page) {
     this.page = page;
 
@@ -149,6 +155,19 @@ class ItemPage {
       .locator("..")
       .getByTestId("ds-text")
       .last();
+
+    // Breadcrumb navigation
+    const breadcrumbNav = page.getByRole("navigation", { name: "Breadcrumb" });
+    this.homeBreadcrumbLink = breadcrumbNav.getByRole("link", { name: "Home" });
+    this.researchBreadcrumbLink = breadcrumbNav.getByRole("link", {
+      name: "Research",
+      exact: true,
+    });
+    this.digitizedResearchBooksBreadcrumbLink = breadcrumbNav.getByRole(
+      "link",
+      { name: "Digitized Research Books" }
+    );
+    this.itemBreadcrumbLink = breadcrumbNav.getByRole("link").last();
   }
 
   async navigateTo() {
@@ -160,39 +179,6 @@ class ItemPage {
     await this.chatInputTextBox.fill(text);
     await new Promise((resolve) => setTimeout(resolve, 500)); // sleep for 0.5s to simulate user pause between typing and submitting
     await this.submitQueryBtn.click();
-  }
-
-  async logIn(username: string, password: string) {
-    if (!username || !password) {
-      throw new Error("Username and password must be defined");
-    }
-
-    const shouldAttemptLogin = await this.logInBtn
-      .isVisible()
-      .catch(() => false);
-    if (!shouldAttemptLogin) {
-      return;
-    }
-
-    const newTabPromise = this.page
-      .context()
-      .waitForEvent("page")
-      .catch(() => null);
-    await this.logInBtn.click();
-    const sameTabPromise = this.page
-      .getByLabel("Username")
-      .waitFor({ state: "visible" })
-      .then(() => this.page)
-      .catch(() => null);
-    const loginPage =
-      (await Promise.race([newTabPromise, sameTabPromise])) ?? this.page;
-
-    await loginPage.getByLabel("Username").fill(username);
-    await loginPage.getByLabel("Password").fill(password);
-    await Promise.all([
-      loginPage.waitForLoadState("networkidle"),
-      loginPage.getByRole("button", { name: "Login" }).click(),
-    ]);
   }
 }
 

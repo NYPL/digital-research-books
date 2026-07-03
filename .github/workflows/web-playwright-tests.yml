@@ -80,20 +80,14 @@ jobs:
           API_KEY=$(aws ssm get-parameter --name '/drb/qa/api-key' --with-decryption --query 'Parameter.Value' --output text)
           CATALOG_USERNAME=$(aws ssm get-parameter --name '/drb/qa/catalog-test-user/user' --with-decryption --query 'Parameter.Value' --output text)
           CATALOG_USER_PIN=$(aws ssm get-parameter --name '/drb/qa/catalog-test-user/pswd' --with-decryption --query 'Parameter.Value' --output text)
-          VRA_USERNAME=$(aws ssm get-parameter --name '/drb/qa/vra-test-user/user' --with-decryption --query 'Parameter.Value' --output text)
-          VRA_PASSWORD=$(aws ssm get-parameter --name '/drb/qa/vra-test-user/pswd' --with-decryption --query 'Parameter.Value' --output text)
 
           echo "::add-mask::$API_KEY"
           echo "::add-mask::$CATALOG_USERNAME"
           echo "::add-mask::$CATALOG_USER_PIN"
-          echo "::add-mask::$VRA_USERNAME"
-          echo "::add-mask::$VRA_PASSWORD"
 
           echo "API_KEY=$API_KEY" >> "$GITHUB_ENV"
           echo "CATALOG_USERNAME=$CATALOG_USERNAME" >> "$GITHUB_ENV"
           echo "CATALOG_USER_PIN=$CATALOG_USER_PIN" >> "$GITHUB_ENV"
-          echo "VRA_USERNAME=$VRA_USERNAME" >> "$GITHUB_ENV"
-          echo "VRA_PASSWORD=$VRA_PASSWORD" >> "$GITHUB_ENV"
 
       - name: Add hosts to /etc/hosts
         if: inputs.base_url == 'http://local.nypl.org:3000/'
@@ -164,8 +158,6 @@ jobs:
         env:
           BASE_URL: ${{ inputs.base_url }}
           API_URL: ${{ inputs.api_url }}
-          VRA_USERNAME: ${{ env.VRA_USERNAME }}
-          VRA_PASSWORD: ${{ env.VRA_PASSWORD }}
         run: npm run playwright:enhanced-search
 
       - name: Upload error context (if any)

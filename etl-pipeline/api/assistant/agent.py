@@ -24,8 +24,8 @@ from agents import (
     RunResult,
     function_tool,
 )
-from agents.extensions.memory import SQLAlchemySession
-from agents.items import ModelResponse
+from agents.items import ModelResponse, ToolApprovalItem
+from agents.memory import SessionABC
 from agents.models.chatcmpl_converter import Converter
 from agents.run_config import DEFAULT_MAX_TURNS
 from agents.tool_context import ToolContext
@@ -36,20 +36,21 @@ from sqlalchemy import text
 
 
 # api code
+from ..event_loop import run_coroutine
 from ..utils import remove_markdown_comments
 from ..db import (
     get_frbr_data_by_barcode,
     get_frbr_data_by_edition,
     get_readonly_session,
-    get_async_engine,
     get_engine,
 )
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
 from .types import CatalogSearchResult, ContentSearchResult
 
 # shared code
-from vector_indexing.components.embedders.google import Gemini001Embedder
-from vector_indexing.components.backends.turbopuffer import TurbopufferBackend
+from vector_indexing.components.embedders.base import Embedder
+from vector_indexing.components.backends.base import IndexBackend
+from vector_indexing.core.config import get_index_config
 from vector_indexing.core.utils import Timer
 from logger import create_log
 from utils.common import require_env, wrap
@@ -62,7 +63,6 @@ from .types import CatalogSearchResult, ContentSearchResult
 from .models.filter import Filter
 from ..newrelic_llm_events import record_llm_events
 from ..db import (
-    get_async_engine,
     get_engine,
     get_frbr_data_by_edition,
     get_readonly_session,
@@ -256,9 +256,8 @@ def apply_filter_transforms(filters: Any, apply_null_matching: bool = True) -> A
 class CatalogSearchExecutionContext:
     """Container used to inject objects into each agent run execution."""
 
-    backend: TurbopufferBackend
-    embedder: Gemini001Embedder
-    session_id: str
+    backend: IndexBackend
+    embedder: Embedder
     conversation_type: str = "catalogSearch"
     search_results: Dict = field(default_factory=dict)
 
@@ -272,9 +271,8 @@ class ContentSearchExecutionContext:
     FRBR re-clustering); otherwise it falls back to filtering on `edition_id`.
     """
 
-    backend: TurbopufferBackend
-    embedder: Gemini001Embedder
-    session_id: str
+    backend: IndexBackend
+    embedder: Embedder
     edition_id: int
     barcode: Optional[str] = None
     conversation_type: str = "contentSearch"
@@ -374,7 +372,11 @@ class LLMLoggingHooks(RunHooks):
 
 
 @timer(logger)
-def map_editions_and_records(record_ids=None, edition_ids=None):
+def map_editions_and_records(record_ids=None, edition_ids=None, barcode_ids=None):
+    assert sum(x is not None for x in (record_ids, edition_ids, barcode_ids)) == 1, (
+        "exactly one of record_ids, edition_ids, or barcode_ids must be non-None"
+    )
+
     if record_ids:
         ids = record_ids
         source_col = "record_id"
@@ -384,6 +386,10 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
         ids = edition_ids
         source_col = "edition_id"
         target_col = "record_id"
+    elif barcode_ids:
+        ids = barcode_ids
+        source_col = "barcode"
+        target_col = "item_id"
 
     logger.debug(f"Mapping {source_col}s to {target_col}s...")
 
@@ -404,7 +410,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
             JOIN editions e ON i.edition_id = e.id
             ORDER BY r.id
         """)
-    else:
+    elif source_col == "edition_id":
         query = text("""
             WITH requested(id) AS (
                 SELECT UNNEST(CAST(:ids AS INTEGER[]))
@@ -418,6 +424,21 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
             JOIN items i ON e.id = i.edition_id
             JOIN records r ON i.record_id = r.id
             ORDER BY e.id
+        """)
+    else:
+        # Map based on barcodes
+        query = text("""
+            WITH requested(barcode) AS (
+                SELECT UNNEST(CAST(:ids AS TEXT[]))
+            )
+            SELECT DISTINCT ON (gs.barcode)
+                gs.barcode,
+                i.id AS item_id
+            FROM requested
+            JOIN grin_statuses gs ON gs.barcode = requested.barcode
+            JOIN items         i  ON i.record_id = gs.record_id
+            JOIN editions      e  ON i.edition_id = e.id
+            ORDER BY gs.barcode, e.id DESC
         """)
 
     Session = get_readonly_session()
@@ -435,7 +456,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None):
 
 _MAX_TURNS_SYSTEM_PROMPT = """\
 You are a research library assistant. You have reached the maximum number of \
-allowed agent turns in the agent loop. 
+allowed agent turns in the agent loop.
 
 Here is the original system prompt:
 ```
@@ -480,11 +501,15 @@ async def _on_max_turns(data: RunErrorHandlerInput) -> RunErrorHandlerResult:
     )
 
 
+class BookNotFoundError(ValueError):
+    pass
+
+
 @timer(logger)
-async def update_chat(
+def update_chat(
     message: str,
     conversation_type: str,
-    session_id: str,
+    session: SessionABC,
     edition_id=None,
     barcode=None,
     max_turns: int = DEFAULT_MAX_TURNS,
@@ -492,9 +517,8 @@ async def update_chat(
     """
     Send a message to the conversation and get the agent's response.
 
-    Conversation history is managed server-side via SQLAlchemySession keyed on
-    session_id. The caller sends only the new user message; the SDK loads prior
-    turns from the database automatically.
+    Conversation history is accessed via and managed by `session`, only the new
+    user `message` is needed separately.
 
     The raw search results will be available in self.context.search_data
     for any post-processing or enrichment needed.
@@ -502,8 +526,7 @@ async def update_chat(
     Args:
         message: The new user message text.
         conversation_type: Either "contentSearch" or "catalogSearch" to pick the search mode.
-        session_id: Client-supplied session ID. History is persisted to and loaded
-                    from the database using this key.
+        session: Session object that manages conversation history persistence.
         edition_id: Identifies the book for content search. Either this or
             ``barcode`` must be provided when conversation_type is
             "contentSearch". If both are provided, ``barcode`` takes
@@ -521,8 +544,12 @@ async def update_chat(
     # some reused objs (backend, system prompts, async loop, etc...) (for sharing btw server \
     # request workers/threads)
 
-    backend = TurbopufferBackend(index_name=require_env("TURBOPUFFER_NAMESPACE"))
-    embedder = Gemini001Embedder()
+    session_id = session.session_id
+
+    index_name = require_env("TURBOPUFFER_NAMESPACE")
+    index_config = get_index_config(index_name)
+    backend = index_config["backend"]
+    embedder = index_config["embedder"]
 
     # NOTE: we are not using litellm bc it has a bug converting `list | None = None`
     # in agents sdk @functol_tool param type annotations into gemini API compatible
@@ -544,19 +571,7 @@ async def update_chat(
     # Search within single book
     if conversation_type == "contentSearch":
         # Fetch FRBR data for the book
-        with Timer(
-            "get_frbr_data_by_edition",
-            on_exit=lambda name, elapsed: logger.info(
-                f"{name} took {elapsed:.3f}s for 1 edition"
-            ),
-        ):
-            frbr_data = get_frbr_data_by_edition([edition_id])
-        if not frbr_data:
-            logger.error(
-                f"FRBR data missing for content search in edition {edition_id}"
-            )
-            raise ValueError(f"No edition found with id {edition_id}")
-        # Prefer barcode-based lookup when provided. Barcode is stable across
+        # Note: Prefer barcode-based lookup when provided. Barcode is stable across
         # FRBR re-clustering, whereas edition_id is not.
         if barcode is not None:
             with Timer(
@@ -568,7 +583,7 @@ async def update_chat(
                 frbr_data = get_frbr_data_by_barcode([barcode])
             if not frbr_data:
                 logger.error(
-                    f"FRBR data missing for content search by barcode {barcode}"
+                    f"FRBR data missing for content search in barcode={barcode}"
                 )
             resolved_edition_id = frbr_data[0].Edition.id if frbr_data else None
         else:
@@ -581,16 +596,21 @@ async def update_chat(
                 frbr_data = get_frbr_data_by_edition([edition_id])
             if not frbr_data:
                 logger.error(
-                    f"FRBR data missing for content search in edition {edition_id}"
+                    f"FRBR data missing for content search in edition={edition_id}"
                 )
-            resolved_edition_id = edition_id
+            resolved_edition_id = edition_id if frbr_data else None
+
+        if resolved_edition_id is None:
+            if barcode is not None:
+                raise BookNotFoundError(f"No book found with barcode {barcode}")
+            raise BookNotFoundError(f"No book found with edition id {edition_id}")
+
         frbr_fields = format_frbr_fields(frbr_data[0].Work, frbr_data[0].Edition)
 
         exec_context = ContentSearchExecutionContext(
             backend=backend,
             embedder=embedder,
             edition_id=resolved_edition_id,
-            session_id=session_id,
             barcode=barcode,
             frbr_fields=frbr_fields,
         )
@@ -602,9 +622,7 @@ async def update_chat(
 
     # Search for books in catalog
     else:  # conversation_type == "catalogSearch":
-        exec_context = CatalogSearchExecutionContext(
-            backend=backend, embedder=embedder, session_id=session_id
-        )
+        exec_context = CatalogSearchExecutionContext(backend=backend, embedder=embedder)
         system_prompt = remove_markdown_comments(
             system_prompt_template.render(conversation_type="catalogSearch")
         )
@@ -616,8 +634,6 @@ async def update_chat(
         instructions=system_prompt,
         tools=tools,
     )
-
-    session = SQLAlchemySession(session_id, engine=get_async_engine())
 
     # Add conversation metadata to New Relic transaction for grouping and filtering
     newrelic.agent.add_custom_attribute("llm.conversation_id", session_id)
@@ -634,22 +650,24 @@ async def update_chat(
 
     # Wrap agent exec loop in NR APM trace for AI monitoring dashboard compatibility
     with newrelic.agent.FunctionTrace(name="create", group="Llm/completion/OpenAI"):
-        run_result = await Runner.run(
-            starting_agent=agent,
-            input=message,
-            context=exec_context,
-            hooks=logging_hooks,
-            max_turns=max_turns,
-            error_handlers={"max_turns": _on_max_turns},
-            session=session,
-            run_config=RunConfig(
-                tracing_disabled=True,
-                model_settings=ModelSettings(
-                    temperature=0.0,
-                    reasoning=Reasoning(effort="none"),
-                    include_usage=True,
+        run_result = run_coroutine(
+            Runner.run(
+                starting_agent=agent,
+                input=message,
+                context=exec_context,
+                hooks=logging_hooks,
+                max_turns=max_turns,
+                error_handlers={"max_turns": _on_max_turns},
+                session=session,
+                run_config=RunConfig(
+                    tracing_disabled=True,
+                    model_settings=ModelSettings(
+                        temperature=0.0,
+                        reasoning=Reasoning(effort="none"),
+                        include_usage=True,
+                    ),
                 ),
-            ),
+            )
         )
 
     record_llm_events(
@@ -670,15 +688,94 @@ async def update_chat(
 
 # TODO: replace with run_coroutine(Session.get_items())
 def get_session_messages(session_id):
-    """Read message data for session ID as ND-JSON"""
+    """Read message data for session ID as a list of dicts."""
+    # TODO: replace with Session.get_items()
     engine = get_engine()
     with engine.connect() as conn:
         rows = conn.execute(
             text("SELECT * FROM agent_messages WHERE session_id = :sid ORDER BY id"),
             {"sid": session_id},
         ).fetchall()
-    messages = [json.loads(row.message_data) for row in rows]
-    return messages
+    return [row.message_data for row in rows]
+
+
+def get_max_message_id() -> int:
+    """Return the current max id in agent_messages, or 0 if the table is empty."""
+    engine = get_engine()
+    with engine.connect() as conn:
+        row = conn.execute(
+            text("SELECT COALESCE(MAX(id), 0) AS max_turn_id FROM agent_messages")
+        ).fetchone()
+    return row.max_turn_id
+
+
+def get_session_messages_after(session_id: str, max_id: int) -> list[dict]:
+    """
+    Return assistant messages written to agent_messages for `session_id` after `max_id`.
+
+    Filters to role='assistant' and type='message' so tool-call rows are excluded.
+    Each returned dict contains a 'db_id' key plus the message content fields.
+    """
+    engine = get_engine()
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                """
+                SELECT id, message_data
+                FROM agent_messages
+                WHERE session_id = :sid
+                  AND id > :max_id
+                  AND message_data->>'role' = 'assistant'
+                  AND message_data->>'type' = 'message'
+                """
+            ),
+            {"sid": session_id, "max_id": max_id},
+        ).fetchall()
+    return [{"db_id": row.id, **row.message_data} for row in rows]
+
+
+def get_new_items_with_ids(
+    run_result: RunResult,
+    session_message_items: list[dict],
+) -> list[dict]:
+    """
+    Return all new items from run_result. Items matching an entry in
+    session_message_items receive a 'db_id' key; others are returned as-is.
+
+    Uses a pop-on-first-match pool so duplicate content is handled correctly:
+    If there are multiple identically valued items in session_message_items the
+    db_id of the first match in .new_items is used. And session_message_items
+    are consumed at most once.
+    """
+    pool = [
+        (item["db_id"], {k: v for k, v in item.items() if k != "db_id"})
+        for item in session_message_items
+    ]
+
+    result = []
+    for item in run_result.new_items:
+        # calling .to_input_item() on ToolApprovalItem raises (agents/items.py).
+        # And they are not persisted agents/run_internal/session_persistence.py, line 243.
+        if isinstance(item, ToolApprovalItem):
+            continue
+        item_dict = item.to_input_item()
+        matched_db_id = None
+        for i, (db_id, msg_data) in enumerate(pool):
+            if item_dict == msg_data:
+                matched_db_id = db_id
+                pool.pop(i)
+                break
+        if matched_db_id is not None:
+            result.append({"db_id": matched_db_id, **item_dict})
+        else:
+            result.append(item_dict)
+            if (item_dict.get("role") == "assistant") and (
+                item_dict.get("type") == "message"
+            ):
+                logger.warning(
+                    f"This assistant message did not get a db_id: {item_dict}"
+                )
+    return result
 
 
 def delete_session_data(session_id: str) -> None:
@@ -712,7 +809,7 @@ def mean_chunk_score(chunk_hits):
 def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
     """
     Yield chunk_hit's from search index search results, adding item_id to each
-    chunk_hit by mapping chunk record_id to item_id in DB.
+    chunk_hit by mapping chunk barcode to item_id in DB.
 
     Args:
         results: List of (ChunkDocument, score) tuples
@@ -721,32 +818,30 @@ def results_to_chunk_hits(results: list[ScoredHit]) -> Iterator[dict[str, Any]]:
     # NOTE: future: the item_id will be directly indexed in the chunk hit \
     # making this function unnecessary, ScoredHit can be used instead.
 
-    missing_item_ids = []
+    missing_barcodes = []
     try:
-        # map record_id->item_id to add to chunk metadata
-        # book_id = record_id
-        record_ids = set(cd.book_id for cd, _ in results)
-        mapper = map_editions_and_records(record_ids=record_ids)
+        # Map barcode -> item_id
+        barcodes = set(cd.barcode for cd, _ in results)
+        mapper = map_editions_and_records(barcode_ids=barcodes)
 
         # Results from hybrid_search are (ChunkDocument, rrf_score) tuples
         for chunk_doc, rrf_score in results:
             chunk_hit = chunk_doc.to_dict()
             chunk_hit["score"] = rrf_score if rrf_score is not None else 0.0
-            # book_id was incorrectly indexed as a str
-            item_id = mapper.get(int(chunk_hit["book_id"]), {}).get("item_id")
+            item_id = mapper.get(chunk_hit["barcode"], {}).get("item_id")
             if item_id is None:
-                missing_item_ids.append(chunk_hit["book_id"])
+                missing_barcodes.append(chunk_hit["barcode"])
                 continue
             chunk_hit["item_id"] = item_id
             yield chunk_hit
     finally:
-        if missing_item_ids:
+        if missing_barcodes:
             logger.error(
-                f"These {len(set(missing_item_ids))} record_ids do not map to an item_id: {set(missing_item_ids)}"
+                f"These {len(set(missing_barcodes))} barcodes do not map to an item_id: {set(missing_barcodes)}"
             )
 
 
-# TODO: make score type metadata of the chunk index search method
+# TODO: make score type metadata/attr of the chunk index search method (e.g. RankFuser or TPBackend)
 CHUNK_SCORE_TYPE: Literal["higher-is-better", "lower-is-better"] = "higher-is-better"
 
 if CHUNK_SCORE_TYPE == "higher-is-better":
@@ -903,21 +998,28 @@ def search_catalog(
         # determine results ordering (because direct results are grouped by \
         # edition outside of ES  in VRA)
 
+        # Format editions for LLM (markdown)
+        # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
+        # than saving JSON/API response separately but edition data json may \
+        # include irrelevant metadata)
+        search_result_str = format_search_results(edition_data)
+
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
             "tool_name": ctx.tool_name,
             "edition_data": edition_data,  # ordered search result
             "search_params": json.loads(ctx.tool_arguments),
         }
+        # TODO: store search result chunk + edition ids in DB for structured retreival
 
-        # Format editions for LLM (markdown)
-        # ALT : convert edition data to json and send (full) JSON to LLM (simpler \
-        # than saving JSON/API response separately but edition data json may \
-        # include irrelevant metadata)
-        return format_search_results(edition_data, as_str=True)
+        return search_result_str
 
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
+
+        # Double make sure no search is recorded if there is an error
+        ctx.context.search_results.pop(ctx.tool_call_id, None)
+
         raise e
 
 
@@ -982,27 +1084,31 @@ def search_book(
 
         chunk_hits = list(results_to_chunk_hits(results))
 
+        search_result = ContentSearchResult(
+            edition_id=ctx.context.edition_id,
+            chunk_hits=chunk_hits,
+            frbr_fields=ctx.context.frbr_fields,
+        )
+
+        # Format results for LLM
+        search_result_str = format_search_results([search_result])
+
         # Store search results for later reference
         ctx.context.search_results[ctx.tool_call_id] = {
             "tool_name": ctx.tool_name,
-            "edition_data": [
-                ContentSearchResult(
-                    edition_id=ctx.context.edition_id,
-                    chunk_hits=chunk_hits,
-                    frbr_fields=ctx.context.frbr_fields,
-                )
-            ],
+            "edition_data": [search_result],
             "search_params": json.loads(ctx.tool_arguments),
         }
+        # TODO: store search result chunk + edition ids in DB for structured retreival
 
-        # Format results for LLM
-        return format_search_results(
-            ctx.context.search_results[ctx.tool_call_id]["edition_data"],
-            as_str=True,
-        )
+        return search_result_str
 
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
+
+        # Double make sure no search is recorded if there is an error
+        ctx.context.search_results.pop(ctx.tool_call_id, None)
+
         raise e
 
 
@@ -1117,11 +1223,9 @@ def display_book(lines, frbr_fields, chunk_hits, edition_id, barcode=None):
 
 
 # MAYBE: remove book level info from search response for contentSearch to save tokens.
-def format_search_results(
-    edition_data, search_tool_call_id=None, query=None, as_str=False
-):
+def format_search_results(edition_data, search_tool_call_id=None, query=None) -> str:
     """
-    Print or return a formatted str containing an ordered list of editions and their
+    Return a formatted str containing an ordered list of editions and their
     associated text excerpts. For each edition, metadata (title, authors, subjects,
     publication date) and chunk text excerpts with page numbers are displayed.
     Editions are ordered by the input list.
@@ -1130,7 +1234,6 @@ def format_search_results(
         edition_data: List of BaseEditionResult (CatalogSearchResult or ContentSearchResult)
         search_tool_call_id: Optional tool call ID to include in output header
         query: The search query string
-        as_str: If True, return as string; otherwise print
     """
     if not edition_data:
         return "There are no results for your query."
@@ -1159,11 +1262,7 @@ def format_search_results(
 
     lines.append("\n</search_results>")
 
-    msg = "\n".join(lines)
-    if as_str:
-        return msg
-    else:
-        print(msg)
+    return "\n".join(lines)
 
 
 # UNUSED

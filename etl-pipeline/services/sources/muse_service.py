@@ -14,7 +14,7 @@ from model import Record, Source
 from logger import create_log
 from utils.retry_request import retry_request
 
-from .source_service import SourceService
+from .source_service import SourceService, SourceNotAvailableError
 
 logger = create_log(__name__)
 
@@ -95,7 +95,7 @@ class MUSEService(SourceService):
             marc_response = requests.get(MARC_URL, timeout=30)
             marc_response.raise_for_status()
         except Exception as e:
-            raise Exception(
+            raise SourceNotAvailableError(
                 f"Failed to fetch Project MUSE MARC file from '{MARC_URL}'"
             ) from e
 
@@ -106,7 +106,7 @@ class MUSEService(SourceService):
             muse_metadata_response = requests.get(MARC_CSV_URL, stream=True, timeout=30)
             muse_metadata_response.raise_for_status()
         except Exception as e:
-            raise Exception("Unable to load Project MUSE metadata")
+            raise SourceNotAvailableError("Unable to load Project MUSE metadata") from e
 
         record_updates = {}
 
