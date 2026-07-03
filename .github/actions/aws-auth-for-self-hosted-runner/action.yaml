@@ -1,0 +1,29 @@
+name: 'AWS Auth for Self-Hosted Runner'
+description: 'Authenticate to AWS from a self-hosted runner by assuming the primary NYPL account role, then chaining into the nypl-digital-dev cross-account role. Needed so the workflow can reach hosts only available on the NYPL private AWS sub-net.'
+
+inputs:
+  aws-region:
+    description: 'AWS region'
+    required: false
+    default: 'us-east-1'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Get AWS credentials for IAM role in primary NYPL account
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::491147561046:role/GithubActionsRunnerRole
+        aws-region: ${{ inputs.aws-region }}
+        role-session-name: GHAPrimarySession-${{ github.run_id }}
+        audience: sts.amazonaws.com
+
+    - name: Get AWS credentials for IAM role in nypl-digital-dev account
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::946183545209:role/GHACrossAccountRole
+        aws-region: ${{ inputs.aws-region }}
+        role-session-name: GHASecondarySession-${{ github.run_id }}
+        role-chaining: true
+        role-duration-seconds: 1800 # 30 mins
+        audience: sts.amazonaws.com
