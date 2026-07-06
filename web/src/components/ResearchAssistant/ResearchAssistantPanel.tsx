@@ -5,6 +5,7 @@ import {
   Heading,
   Menu,
   Text,
+  useNYPLBreakpoints,
 } from "@nypl/design-system-react-components";
 import React, { useEffect, useRef } from "react";
 import { getPanelLayout } from "~/src/constants/researchAssistant";
@@ -38,6 +39,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
     showChat,
     toggleChat,
   } = useResearchAssistant();
+  const { isLargerThanMedium } = useNYPLBreakpoints();
 
   const { paddingX } = getPanelLayout();
 
@@ -63,6 +65,14 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
     if (messages.length === 0) return;
 
     clearHistory(page, true);
+    if (!isLargerThanMedium) {
+      const resultsTop = document.getElementById("mainContent");
+      if (resultsTop) {
+        resultsTop.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
     announce("Chat cleared.");
   };
 
@@ -186,6 +196,12 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
                 sx={{
                   ".chakra-menu__menu-button": {
                     color: "ui.white",
+                    border: "none !important",
+                    boxShadow: "none",
+                  },
+                  ".chakra-menu__menu-button:hover, .chakra-menu__menu-button:focus, .chakra-menu__menu-button:active": {
+                    border: "none !important",
+                    boxShadow: "none",
                   },
                   ".chakra-menu__menu-button > span > svg, .chakra-menu__menu-button > span > svg path": {
                     fill: "ui.white",

@@ -1,5 +1,11 @@
-import { Box, Flex, Text } from "@nypl/design-system-react-components";
+import {
+  Box,
+  Flex,
+  Text,
+  useNYPLBreakpoints,
+} from "@nypl/design-system-react-components";
 import { memo } from "react";
+import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import {
   ChatResults,
   MessageItem,
@@ -25,6 +31,8 @@ interface MessageBubbleProps {
 
 const MessageBubble = memo(
   ({ message, index, isLoading, messageResults }: MessageBubbleProps) => {
+    const { isLargerThanMedium } = useNYPLBreakpoints();
+    const { showChat, toggleChat } = useResearchAssistant();
     const isUser = message.role === MessageRole.User;
     const isAssistant = message.role === MessageRole.Assistant;
     const bubbleClasses = isUser
@@ -33,6 +41,9 @@ const MessageBubble = memo(
 
     const handleEditionClick = (editionId: string) => {
       scrollToEdition(editionId);
+      if (!isLargerThanMedium && showChat) {
+        toggleChat();
+      }
     };
 
     return (
