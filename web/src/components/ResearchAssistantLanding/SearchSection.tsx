@@ -24,7 +24,6 @@ const SearchSection: React.FC<SearchSectionProps> = ({ textInputRef }) => {
 
   const onSubmit = (query: string) => {
     sessionStorage.setItem("researchAssistantInitialMessage", query);
-    sessionStorage.setItem("queryFromLandingPage", "true");
     router.push("/research-assistant");
   };
 
