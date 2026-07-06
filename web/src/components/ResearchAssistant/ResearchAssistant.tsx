@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import {
+  DEFAULT_MOBILE_PANEL_HEIGHT,
   HEADER_HEIGHT,
   MARGIN_BLEED,
   PADDING_COUNTER,
@@ -20,8 +21,6 @@ import CatalogResultsSkeleton from "./CatalogResults/CatalogResultsSkeleton";
 import ResearchAssistantPanel from "./ResearchAssistantPanel";
 import ResultsBanner from "./ResultsBanner";
 
-const MIN_RESIZABLE_PANEL_HEIGHT = 512;
-
 const ResearchAssistant: React.FC = () => {
   const {
     messages,
@@ -33,11 +32,13 @@ const ResearchAssistant: React.FC = () => {
     toggleChat,
     isLoading,
   } = useResearchAssistant();
-  const [mobilePanelHeight, setMobilePanelHeight] = useState(512);
+  const [mobilePanelHeight, setMobilePanelHeight] = useState(
+    DEFAULT_MOBILE_PANEL_HEIGHT
+  );
   const resizeStateRef = useRef({
     isResizing: false,
     startY: 0,
-    startHeight: 512,
+    startHeight: DEFAULT_MOBILE_PANEL_HEIGHT,
     shouldHide: false,
   });
   const rafIdRef = useRef<number | null>(null);
@@ -55,7 +56,7 @@ const ResearchAssistant: React.FC = () => {
     (height: number) => {
       const maxPanelHeight = getMaxPanelHeight();
       return Math.min(
-        Math.max(height, MIN_RESIZABLE_PANEL_HEIGHT),
+        Math.max(height, DEFAULT_MOBILE_PANEL_HEIGHT),
         maxPanelHeight
       );
     },
@@ -106,7 +107,7 @@ const ResearchAssistant: React.FC = () => {
       const deltaY = resizeStateRef.current.startY - event.clientY;
       const rawHeight = resizeStateRef.current.startHeight + deltaY;
 
-      if (rawHeight < MIN_RESIZABLE_PANEL_HEIGHT - 30) {
+      if (rawHeight < DEFAULT_MOBILE_PANEL_HEIGHT - 30) {
         resizeStateRef.current.shouldHide = true;
       } else {
         resizeStateRef.current.shouldHide = false;
@@ -148,7 +149,7 @@ const ResearchAssistant: React.FC = () => {
   }, [getMaxPanelHeight]);
 
   const handleDecreaseToMin = useCallback(() => {
-    setMobilePanelHeight(MIN_RESIZABLE_PANEL_HEIGHT);
+    setMobilePanelHeight(DEFAULT_MOBILE_PANEL_HEIGHT);
   }, []);
 
   useEffect(() => {
@@ -319,7 +320,7 @@ const ResearchAssistant: React.FC = () => {
               onExpandToFull={handleExpandToFull}
               onDecreaseToMin={handleDecreaseToMin}
               panelHeight={mobilePanelHeight}
-              minPanelHeight={MIN_RESIZABLE_PANEL_HEIGHT}
+              minPanelHeight={DEFAULT_MOBILE_PANEL_HEIGHT}
               maxPanelHeight={getMaxPanelHeight()}
             />
           </Flex>

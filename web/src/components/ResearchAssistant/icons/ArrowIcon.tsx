@@ -9,7 +9,6 @@ type ResponsiveArrowDirection = {
   md?: ArrowDirection;
   lg?: ArrowDirection;
   xl?: ArrowDirection;
-  "2xl"?: ArrowDirection;
 };
 
 const DIRECTION_TO_ROTATION: Record<ArrowDirection, IconRotations> = {
@@ -28,20 +27,20 @@ const ArrowIcon: React.FC<ArrowIconProps> = ({
   direction = "right",
   color = "ui.white",
 }) => {
-  const { isLargerThanMedium, isLargerThanLarge, isLargerThanXLarge } = useNYPLBreakpoints();
+  const { isLargerThanSmall, isLargerThanMedium, isLargerThanLarge, isLargerThanXLarge } = useNYPLBreakpoints();
   const responsiveDirection =
     typeof direction === "string" ? { base: direction } : direction;
   
   let resolvedDirection = responsiveDirection.base;
   
-  if (isLargerThanXLarge && responsiveDirection["2xl"]) {
-    resolvedDirection = responsiveDirection["2xl"];
-  } else if (isLargerThanLarge && responsiveDirection.xl) {
+  if (isLargerThanXLarge && responsiveDirection.xl) {
     resolvedDirection = responsiveDirection.xl;
   } else if (isLargerThanLarge && responsiveDirection.lg) {
     resolvedDirection = responsiveDirection.lg;
   } else if (isLargerThanMedium && responsiveDirection.md) {
     resolvedDirection = responsiveDirection.md;
+  } else if (isLargerThanSmall && responsiveDirection.sm) {
+    resolvedDirection = responsiveDirection.sm;
   }
 
   return (

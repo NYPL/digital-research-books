@@ -134,6 +134,8 @@ const PADDING_COUNTER_COMPACT = {
   md: `calc(calc(${OUTER_MARGIN_CALC} * 2) + ${CONTENT_PADDING_VALUE.md})`,
 };
 
+export const DEFAULT_MOBILE_PANEL_HEIGHT = 512;
+
 export function getPanelLayout() {
   return {
     marginX: MARGIN_COMPACT,
