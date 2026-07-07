@@ -63,7 +63,6 @@ const ResearchAssistantViewer: React.FC<{
           injectablesFixed={injectables}
           height="70vh"
           toggleFullScreen={toggleFullScreen}
-          getContent={getContent}
         />
       )}
     </Box>
