@@ -10,7 +10,9 @@ describe("MessageBubble", () => {
       content: "This is a user message.",
       role: MessageRole.User,
     };
-    renderWithResearchAssistant(<MessageBubble index={0} message={userMessage} />);
+    renderWithResearchAssistant(
+      <MessageBubble index={0} message={userMessage} />
+    );
 
     const messageElement = screen.getByText("This is a user message.");
     expect(messageElement).toBeInTheDocument();
@@ -72,7 +74,9 @@ describe("MessageBubble", () => {
       ],
       role: MessageRole.Assistant,
     };
-    renderWithResearchAssistant(<MessageBubble index={0} message={initialMessage} />);
+    renderWithResearchAssistant(
+      <MessageBubble index={0} message={initialMessage} />
+    );
 
     expect(
       screen.queryByRole("button", { name: /thumbs up/i })
