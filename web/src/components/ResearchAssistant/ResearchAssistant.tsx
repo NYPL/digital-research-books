@@ -30,6 +30,7 @@ const ResearchAssistant: React.FC = () => {
   const {
     mobilePanelHeight,
     handleResizeStart,
+    handleResizeKeyDown,
     handleExpandToFull,
     handleDecreaseToMin,
     getMaxPanelHeight,
@@ -156,6 +157,7 @@ const ResearchAssistant: React.FC = () => {
           </Flex>
         </Flex>
         <Flex
+          id="research-assistant-chat-panel"
           gridColumn={{ base: "1 / -1", md: "3 / span 2" }}
           flexDirection="column"
           bgColor="section.research.primary"
@@ -190,6 +192,7 @@ const ResearchAssistant: React.FC = () => {
           >
             <ResearchAssistantPanel
               onResizeStart={handleResizeStart}
+              onResizeKeyDown={handleResizeKeyDown}
               onExpandToFull={handleExpandToFull}
               onDecreaseToMin={handleDecreaseToMin}
               panelHeight={mobilePanelHeight}

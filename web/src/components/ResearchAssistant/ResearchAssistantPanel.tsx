@@ -21,6 +21,7 @@ import ResearchAssistantWindow from "./ResearchAssistantWindow";
 
 type ResearchAssistantPanelProps = {
   onResizeStart?: (event: React.PointerEvent<HTMLDivElement>) => void;
+  onResizeKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   onExpandToFull?: () => void;
   onDecreaseToMin?: () => void;
   panelHeight?: number;
@@ -30,8 +31,12 @@ type ResearchAssistantPanelProps = {
 
 const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
   onResizeStart,
+  onResizeKeyDown,
   onExpandToFull,
   onDecreaseToMin,
+  panelHeight,
+  minPanelHeight,
+  maxPanelHeight,
 }) => {
   const {
     clearHistory,
@@ -104,9 +109,15 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
             height="18px"
             zIndex="10000"
             onPointerDown={onResizeStart}
+            onKeyDown={onResizeKeyDown}
+            tabIndex={0}
             role="separator"
             aria-orientation="horizontal"
             aria-label="Resize enhanced search panel"
+            aria-controls="research-assistant-chat-panel"
+            aria-valuemin={minPanelHeight}
+            aria-valuemax={maxPanelHeight}
+            aria-valuenow={panelHeight}
             sx={{ touchAction: "none", cursor: "ns-resize" }}
           >
             <Box

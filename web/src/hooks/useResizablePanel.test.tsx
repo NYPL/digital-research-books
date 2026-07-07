@@ -12,7 +12,11 @@ const HookHarness: React.FC<HookHarnessProps> = ({
   showChat = true,
   onHidePanel = () => {},
 }) => {
-  const { mobilePanelHeight, handleResizeStart } = useResizablePanel({
+  const {
+    mobilePanelHeight,
+    handleResizeStart,
+    handleResizeKeyDown,
+  } = useResizablePanel({
     showChat,
     onHidePanel,
   });
@@ -20,7 +24,21 @@ const HookHarness: React.FC<HookHarnessProps> = ({
   return (
     <>
       <div data-testid="height">{mobilePanelHeight}</div>
-      <div data-testid="resize-handle" onPointerDown={handleResizeStart} />
+      <button
+        type="button"
+        data-testid="resize-handle"
+        onPointerDown={(event) =>
+          handleResizeStart(
+            (event as unknown) as React.PointerEvent<HTMLDivElement>
+          )
+        }
+        onKeyDown={(event) =>
+          handleResizeKeyDown(
+            (event as unknown) as React.KeyboardEvent<HTMLDivElement>
+          )
+        }
+        aria-label="Resize enhanced search panel"
+      />
     </>
   );
 };
@@ -152,5 +170,29 @@ describe("useResizablePanel", () => {
     });
 
     expect(onHidePanel).toHaveBeenCalledTimes(1);
+  });
+
+  it("resizes with ArrowUp and ArrowDown keyboard input", () => {
+    Object.defineProperty(window, "innerHeight", {
+      value: 1200,
+      configurable: true,
+      writable: true,
+    });
+
+    render(<HookHarness />);
+
+    const handle = screen.getByTestId("resize-handle");
+
+    act(() => {
+      fireEvent.keyDown(handle, { key: "ArrowUp" });
+    });
+
+    expect(getHeight()).toBe(DEFAULT_MOBILE_PANEL_HEIGHT + 32);
+
+    act(() => {
+      fireEvent.keyDown(handle, { key: "ArrowDown" });
+    });
+
+    expect(getHeight()).toBe(DEFAULT_MOBILE_PANEL_HEIGHT);
   });
 });

@@ -6,6 +6,8 @@ type UseResizablePanelOptions = {
   onHidePanel: () => void;
 };
 
+const KEYBOARD_RESIZE_STEP = 32;
+
 export function useResizablePanel({
   showChat,
   onHidePanel,
@@ -123,6 +125,34 @@ export function useResizablePanel({
     setMobilePanelHeight(DEFAULT_MOBILE_PANEL_HEIGHT);
   }, []);
 
+  const handleResizeKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (!showChat) return;
+
+      const step = event.shiftKey
+        ? KEYBOARD_RESIZE_STEP * 2
+        : KEYBOARD_RESIZE_STEP;
+
+      switch (event.key) {
+        case "ArrowUp":
+          event.preventDefault();
+          setMobilePanelHeight((currentHeight) =>
+            clampPanelHeight(currentHeight + step)
+          );
+          break;
+        case "ArrowDown":
+          event.preventDefault();
+          setMobilePanelHeight((currentHeight) =>
+            clampPanelHeight(currentHeight - step)
+          );
+          break;
+        default:
+          break;
+      }
+    },
+    [clampPanelHeight, showChat]
+  );
+
   useEffect(() => {
     if (showChat) {
       setMobilePanelHeight(512);
@@ -159,6 +189,7 @@ export function useResizablePanel({
   return {
     mobilePanelHeight,
     handleResizeStart,
+    handleResizeKeyDown,
     handleExpandToFull,
     handleDecreaseToMin,
     getMaxPanelHeight,
