@@ -36,21 +36,6 @@ const ResearchAssistantViewer: React.FC<{
   const manifestApiUrl = `${origin}/api/manifest/${itemId}?pageId=${pageId}`;
 
   const toggleFullScreen = () => setIsFullViewport((v) => !v);
-  const getContent = React.useCallback(async (href: string) => {
-    const response = await fetch(href, {
-      mode: "cors",
-      // TODO: Once signed cookies are implemented, uncomment the following line:
-      // credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch content from ${href}: ${response.statusText}`
-      );
-    }
-
-    return new Uint8Array(await response.arrayBuffer());
-  }, []);
 
   if (!itemId || !pageId || !manifestApiUrl) {
     return (
