@@ -46,7 +46,6 @@ def grin_status(db_manager, downloadable_barcode):
     db_manager.commit_changes()
 
 
-@pytest.mark.xfail
 def test_grin_download(s3_manager, grin_status):
     bucket = os.environ["PRIVATE_FILE_BUCKET"]
     grin_download_service = GRINDownloadService(bucket=bucket)
