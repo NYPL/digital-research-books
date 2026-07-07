@@ -1,5 +1,5 @@
 import { screen } from "@testing-library/react";
-import { render } from "~/src/__tests__/testUtils/render";
+import { renderWithResearchAssistant } from "~/src/__tests__/testUtils/render";
 import { Item, ItemType, MessageRole } from "~/src/types/ResearchAssistant";
 import MessageBubble from "../MessageBubble";
 
@@ -10,7 +10,7 @@ describe("MessageBubble", () => {
       content: "This is a user message.",
       role: MessageRole.User,
     };
-    render(<MessageBubble index={0} message={userMessage} />);
+    renderWithResearchAssistant(<MessageBubble index={0} message={userMessage} />);
 
     const messageElement = screen.getByText("This is a user message.");
     expect(messageElement).toBeInTheDocument();
@@ -28,7 +28,9 @@ describe("MessageBubble", () => {
       ],
       role: MessageRole.Assistant,
     };
-    render(<MessageBubble index={0} message={assistantMessage} />);
+    renderWithResearchAssistant(
+      <MessageBubble index={0} message={assistantMessage} />
+    );
 
     expect(
       screen.getByText("This is an assistant response.")
@@ -42,7 +44,9 @@ describe("MessageBubble", () => {
       content: [{ annotations: [], text: "Response", type: "output_text" }],
       role: MessageRole.Assistant,
     };
-    render(<MessageBubble index={0} message={assistantMessage} />);
+    renderWithResearchAssistant(
+      <MessageBubble index={0} message={assistantMessage} />
+    );
 
     expect(screen.getByText(/AI-generated/i)).toBeInTheDocument();
   });
@@ -53,7 +57,9 @@ describe("MessageBubble", () => {
       content: [{ annotations: [], text: "Response", type: "output_text" }],
       role: MessageRole.Assistant,
     };
-    render(<MessageBubble index={1} message={assistantMessage} />);
+    renderWithResearchAssistant(
+      <MessageBubble index={1} message={assistantMessage} />
+    );
 
     expect(screen.getAllByTestId("ds-button")).toHaveLength(2);
   });
@@ -66,7 +72,7 @@ describe("MessageBubble", () => {
       ],
       role: MessageRole.Assistant,
     };
-    render(<MessageBubble index={0} message={initialMessage} />);
+    renderWithResearchAssistant(<MessageBubble index={0} message={initialMessage} />);
 
     expect(
       screen.queryByRole("button", { name: /thumbs up/i })
@@ -84,7 +90,9 @@ describe("MessageBubble", () => {
       ],
       role: MessageRole.Assistant,
     };
-    render(<MessageBubble index={1} message={assistantMessage} />);
+    renderWithResearchAssistant(
+      <MessageBubble index={1} message={assistantMessage} />
+    );
 
     expect(screen.getByTestId("assistant-message-bubble")).toBeInTheDocument();
   });
@@ -95,7 +103,9 @@ describe("MessageBubble", () => {
       content: "Test <script>alert('xss')</script> & symbols",
       role: MessageRole.User,
     };
-    render(<MessageBubble index={0} message={specialMessage} />);
+    renderWithResearchAssistant(
+      <MessageBubble index={0} message={specialMessage} />
+    );
 
     expect(screen.getByText(/Test.*symbols/)).toBeInTheDocument();
   });
