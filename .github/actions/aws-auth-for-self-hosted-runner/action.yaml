@@ -1,6 +1,10 @@
 name: 'AWS Auth for Self-Hosted Runner'
 description: 'Authenticate to AWS from a self-hosted runner by assuming the primary NYPL account role, then chaining into the nypl-digital-dev cross-account role. Needed so the workflow can reach hosts only available on the NYPL private AWS sub-net.'
 
+# NOTE: the calling workflow/job must declare `permissions: id-token: write` — composite
+# actions cannot grant this themselves. See:
+# https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws#adding-permissions-settings
+
 inputs:
   aws-region:
     description: 'AWS region'
