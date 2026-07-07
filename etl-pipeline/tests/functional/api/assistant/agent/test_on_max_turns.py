@@ -1,14 +1,17 @@
-import pytest
+from agents.memory import SQLiteSession
 from api.assistant.agent import update_chat
 
 
 class TestOnMaxTurns:
-    @pytest.mark.asyncio
-    async def test_update_chat_max_turns_graceful_response(self, mocker):
+    def test_update_chat_max_turns_graceful_response(self, mocker):
         """
-        Functional test: update_chat with max_turns=2, real Gemini LLM, mocked search backend.
-        always raise error in search tool → LLM retries → max_turns exhausted →
-        _on_max_turns fires → graceful str response returned.
+        Test graceful response when max turns are exceeded.
+
+        We ensure max_turn are exceeded by setting max_turns=2 on the agent run,
+        mocking the search to raise an error requesting retry and using
+        a real LLM, expecting it to react by repeatedly calling the search tool.
+        Expected flow: always raise error in search tool → LLM retries →
+        max_turns exhausted → _on_max_turns handler fires → graceful str response returned.
 
         Verifies:
         1. No MaxTurnsExceeded is raised.
@@ -30,10 +33,13 @@ class TestOnMaxTurns:
             side_effect=RuntimeError("Search unavailable, please retry."),
         )
 
-        run_result = await update_chat(
+        # Mock SQLAlchemySession with in-memory sqlite session
+        session = SQLiteSession("test")
+
+        run_result = update_chat(
             message="find me books about climate change",
             conversation_type="catalogSearch",
-            session_id="test",
+            session=session,
             max_turns=2,
         )
 

@@ -35,6 +35,7 @@ from rapidfuzz import fuzz
 import rapidfuzz
 
 # api code
+from ..event_loop import run_coroutine
 from ..utils import APIUtils, remove_markdown_comments, shorten
 from .types import Snippet, BaseEditionResult
 from .agent import format_search_results
@@ -599,7 +600,7 @@ class EditionSnippetLoop:
 
 
 @timer(logger)
-async def get_relevant_snippets_llm(
+def get_relevant_snippets_llm(
     run_result: RunResult,
     fallback_naive: bool = True,
 ) -> Optional[List[EditionSnippetLoop]]:
@@ -661,7 +662,7 @@ async def get_relevant_snippets_llm(
     for entry in edition_data:
         # Format search result chunk text
         # NOTE: slowish. in some cases constructing a 54,813 token str from 100 chunks.
-        edition_chunk_text = format_search_results([entry], as_str=True)
+        edition_chunk_text = format_search_results([entry])
 
         snippet_agent_prompt = remove_markdown_comments(
             prompt_template.render(
@@ -684,21 +685,29 @@ async def get_relevant_snippets_llm(
 
     # Run edition snippet selection in parallel
 
-    semaphore = asyncio.Semaphore(_SNIPPET_AGENT_MAX_CONCURRENT)
+    async def _run_all():
+        # Semaphore/gather must be constructed while the target loop is actually
+        # running (i.e. inside this coroutine), not in the calling sync context —
+        # otherwise they bind to the wrong (or no) event loop.
+        semaphore = asyncio.Semaphore(_SNIPPET_AGENT_MAX_CONCURRENT)
 
-    async def _gated(coro):
-        """max concurrency wrapper"""
-        async with semaphore:
-            return await coro
+        async def _gated(coro):
+            """max concurrency wrapper"""
+            async with semaphore:
+                return await coro
+
+        # TODO: refactor to use sync OpenAIClient, make loop.run() sync, and \
+        # use ThreadPoolExecutor since we are not (yet) using a async asgi app.
+        return await asyncio.gather(
+            *(_gated(l.run()) for l in loops), return_exceptions=True
+        )
 
     logger.info(
         f"get_relevant_snippets: running snippet agent for {len(loops)} edition(s) concurrently"
         f" (max {_SNIPPET_AGENT_MAX_CONCURRENT} at a time)."
     )
     # MAYBE: handle tokens per minute rate limit errors explicitly with exponential backoff?
-    results = await asyncio.gather(
-        *(_gated(l.run()) for l in loops), return_exceptions=True
-    )
+    results = run_coroutine(_run_all())
 
     # Log results + Apply fallback snippets
     n_errored = 0  # raised an exception
@@ -749,11 +758,11 @@ async def get_relevant_snippets_llm(
     return loops
 
 
-async def get_relevant_snippets(
+def get_relevant_snippets(
     run_result: RunResult,
     approach: Literal["llm", "naive"] = "naive",
     **kwargs,
 ):
     if approach == "llm":
-        return await get_relevant_snippets_llm(run_result, **kwargs)
+        return get_relevant_snippets_llm(run_result, **kwargs)
     return get_relevant_snippets_naive(run_result)

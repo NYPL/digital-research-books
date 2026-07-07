@@ -5,8 +5,8 @@ Usage (in a REPL or scratch script after running update_chat + get_relevant_snip
 
     from scratch.relevant_snippets.debug_snippets import display_snippet_comparison
 
-    run_result = asyncio.run(update_chat(conversation, conversation_type, edition_id=edition_id))
-    await get_relevant_snippets(run_result)
+    run_result = update_chat(conversation, conversation_type, edition_id=edition_id)
+    get_relevant_snippets(run_result)
     display_snippet_comparison(run_result)
 
 The naive snippet section uses _apply_naive_snippets (the same logic as
