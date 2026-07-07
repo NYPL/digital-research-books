@@ -76,6 +76,10 @@ export function useResizablePanel({
 
       if (rawHeight < DEFAULT_MOBILE_PANEL_HEIGHT - 30) {
         resizeStateRef.current.shouldHide = true;
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
+        }
       } else {
         resizeStateRef.current.shouldHide = false;
         if (rafIdRef.current !== null) {
