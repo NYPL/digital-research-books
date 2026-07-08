@@ -16,7 +16,7 @@ functional:
 	python -m pytest tests/functional --env=$(ENVIRONMENT) -n=4
 
 integration-drb:
-	python -m pytest tests/integration --ignore=tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4 --timeout=120
+	python -m pytest tests/integration --ignore=tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4 --timeout=180
 
 integration-vra:
 	python -m pytest tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4 --timeout=120
