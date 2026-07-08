@@ -190,6 +190,10 @@ class TestAgentResponses:
         not related directly to the user query.
         """
 
+        # TODO: consider using full session data fixture in
+        # tests/fixtures/session_messages/ rather than tool call output only
+        # fixture. The full session fixtures are more flexible for different
+        # test types
         miyazaki_fixture = (
             Path(__file__).parents[1]
             / "fixtures"

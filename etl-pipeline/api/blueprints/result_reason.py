@@ -240,6 +240,9 @@ def result_reason(session_id):
             messages = messages[:function_call_idx]
 
             explanation, is_ai_generated = get_result_reason(messages, edition_result)
+            logger.info(
+                f"Result reason generated. Hardcoded fallback used?: {is_ai_generated}"
+            )
 
             response_data = {
                 "explanation": explanation,

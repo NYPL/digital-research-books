@@ -911,6 +911,13 @@ def search_catalog(
         logger.info(f"Retrieved {len(results)} chunk hits from hybrid search")
 
         if not len(results):
+            # Record that this search executed (with no results), so the caller
+            # can distinguish "search executed, no results" from "no search executed"
+            ctx.context.search_results[ctx.tool_call_id] = {
+                "tool_name": ctx.tool_name,
+                "edition_data": [],
+                "search_params": json.loads(ctx.tool_arguments),
+            }
             return "No results found for your query."
 
         # MAYBE: turn the below into 2 functions: group_by_edition_and_sort() and enrich_edition_hits() (with limit to top 10 in between)
@@ -1073,19 +1080,18 @@ def search_book(
         query_vector = ctx.context.embedder.embed_query(ranking_query)
 
         # Execute hybrid search (vector + BM25) with RRF fusion
-        results = hybrid_search(
+        scored_hits = hybrid_search(
             backend=ctx.context.backend,
             query_vector=query_vector,
             ranking_query=ranking_query,
             top_k=10,
             filters=combined_filters,
         )
-        logger.info(f"Retrieved {len(results)} chunk hits from hybrid search for book")
+        logger.info(
+            f"Retrieved {len(scored_hits)} chunk hits from hybrid search for book"
+        )
 
-        if not len(results):
-            return "No results found for your query in this book."
-
-        chunk_hits = list(results_to_chunk_hits(results))
+        chunk_hits = list(results_to_chunk_hits(scored_hits))
 
         search_result = ContentSearchResult(
             edition_id=ctx.context.edition_id,
@@ -1094,9 +1100,15 @@ def search_book(
         )
 
         # Format results for LLM
-        search_result_str = format_search_results([search_result])
+        tool_output_str = (
+            "No results found for your query in this book."
+            if not len(scored_hits)
+            else format_search_results([search_result])
+        )
 
-        # Store search results for later reference
+        # Store search results for later reference. Always record the (single)
+        # edition being searched, even with 0 chunk hits, so the caller can
+        # distinguish "search executed, no results" from "no search executed"
         ctx.context.search_results[ctx.tool_call_id] = {
             "tool_name": ctx.tool_name,
             "edition_data": [search_result],
@@ -1104,7 +1116,7 @@ def search_book(
         }
         # TODO: store search result chunk + edition ids in DB for structured retreival
 
-        return search_result_str
+        return tool_output_str
 
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")

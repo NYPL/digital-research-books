@@ -155,8 +155,9 @@ def prepare_search_response(search_results) -> Optional[SearchResponse]:
             f"Returning {len(editions)} editions in catalog search response"
         )  # Q: redundant to tool call logging
 
-    # TODO: standardize output structure in both chat types. Its ok if there
-    # is some redundant metadata in the contentSearch editions object.
+    # TODO: standardize output structure in both chat types. Return editions
+    # (always len 1 list) with a snippets property. Its ok this represents some
+    # redundant metadata in the contentSearch editions or response objects.
     else:  # result_type == "contentSearch"
         snippets = editions[0]["snippets"]
         formatted_search_result = {
@@ -269,14 +270,13 @@ def chat(session_id):
                 run_result.context_wrapper.context.search_results
             )
 
-            # TODO: centralize result_type, tool_call_id, result (as results or books), under search_result (which is optionally None)
             response_data = {
                 "messages": messages,
-                "result_type": search_response.result_type if search_response else None,
-                "result": search_response.formatted_search_result
-                if search_response
-                else None,
-                "tool_call_id": search_response.tool_call_id
+                "search_result": {
+                    "result_type": search_response.result_type,
+                    "results": search_response.formatted_search_result,
+                    "tool_call_id": search_response.tool_call_id,
+                }
                 if search_response
                 else None,
                 "session_id": session_id,

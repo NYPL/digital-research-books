@@ -45,14 +45,19 @@ def test_result_reason_happy_path(vra_test_user, test_session_id):
     assert_response_status(chat_url, chat_response, 200)
     chat_data = chat_response.json()["data"]
 
-    call_id = chat_data["tool_call_id"]
+    search_result = chat_data["search_result"]
+    assert search_result is not None, (
+        f"No search_result found in /chat response: {chat_data}"
+    )
+
+    call_id = search_result["tool_call_id"]
     assert call_id is not None, (
         f"No search tool call found in /chat response: {chat_data}"
     )
 
-    editions = chat_data["result"]["editions"]
+    editions = search_result["results"]["editions"]
     assert editions, (
-        f"No editions found in /chat response result: {chat_data['result']}"
+        f"No editions found in /chat response search_result: {search_result}"
     )
     barcode = editions[0]["barcode"]
     assert barcode is not None, (
