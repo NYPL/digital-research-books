@@ -36,6 +36,7 @@ from pathlib import Path
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from managers.db import DBManager
 from model.postgres.edition import Edition
+from model.postgres.grin_status import GRINStatus
 from model.postgres.item import Item, ITEM_LINKS, ITEM_RIGHTS
 from model.postgres.link import Link
 from model.postgres.record import Record
@@ -145,6 +146,18 @@ def seed(seed_data: dict, db_manager) -> dict[str, int]:
         r for r in seed_data.get("records", []) if r.get("id") in record_ids_needed
     ]
     counts["records"] = _upsert(session, Record.__table__, record_rows, ["id"])
+
+    # Upsert GRIN statuses for the selected records (barcode -> item_id
+    # resolution in map_editions_and_records() depends on these rows existing).
+    grin_status_rows = [
+        gs
+        for gs in seed_data.get("grin_statuses", [])
+        if gs.get("record_id") in record_ids_needed
+    ]
+    counts["grin_statuses"] = _upsert(
+        session, GRINStatus.__table__, grin_status_rows, ["barcode"]
+    )
+
     counts["items"] = _upsert(session, Item.__table__, item_rows, ["id"])
 
     # Upsert links referenced by the selected items

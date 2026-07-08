@@ -4068,6 +4068,266 @@
       "date_modified": "2026-01-22 21:19:47.327634"
     }
   ],
+  "grin_statuses": [
+    {
+      "barcode": "33433111532358",
+      "record_id": 62521060,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075947469",
+      "record_id": 62727266,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075947451",
+      "record_id": 62727267,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075947444",
+      "record_id": 62727268,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075947436",
+      "record_id": 62727269,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075947428",
+      "record_id": 62727270,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075947410",
+      "record_id": 62727271,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075947402",
+      "record_id": 62727272,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075947394",
+      "record_id": 62727273,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075947386",
+      "record_id": 62727274,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075946875",
+      "record_id": 62727325,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075946768",
+      "record_id": 62727335,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075946743",
+      "record_id": 62727337,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075946735",
+      "record_id": 62727338,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433075946727",
+      "record_id": 62727339,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433116213889",
+      "record_id": 62354123,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433081653994",
+      "record_id": 62397330,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433066637046",
+      "record_id": 62455449,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433023187929",
+      "record_id": 62475858,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433097627768",
+      "record_id": 62583428,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806294",
+      "record_id": 62601657,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806260",
+      "record_id": 62601660,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806252",
+      "record_id": 62601661,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806229",
+      "record_id": 62601664,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806211",
+      "record_id": 62601665,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806187",
+      "record_id": 62601668,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806146",
+      "record_id": 62601670,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806104",
+      "record_id": 62601672,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806096",
+      "record_id": 62601673,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806062",
+      "record_id": 62601675,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806054",
+      "record_id": 62601676,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806021",
+      "record_id": 62601677,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090806013",
+      "record_id": 62601678,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090805981",
+      "record_id": 62601681,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090805940",
+      "record_id": 62601684,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090805932",
+      "record_id": 62601685,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433090805866",
+      "record_id": 62601691,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433074805064",
+      "record_id": 62764151,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433070297159",
+      "record_id": 62783929,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433067361265",
+      "record_id": 62814956,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433062532746",
+      "record_id": 62847961,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433008500690",
+      "record_id": 62945307,
+      "failed_download": 0,
+      "state": "downloaded"
+    },
+    {
+      "barcode": "33433006358752",
+      "record_id": 62970117,
+      "failed_download": 0,
+      "state": "downloaded"
+    }
+  ],
   "items": [
     {
       "id": 23891844,
