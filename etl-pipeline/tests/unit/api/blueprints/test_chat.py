@@ -6,7 +6,11 @@ from unittest.mock import AsyncMock, MagicMock
 
 from api.assistant.agent import SCORE_SORT_DIRECTION
 from api.assistant.types import CatalogSearchResult, ContentSearchResult, Snippet
-from api.blueprints.chat import chat_blueprint, prepare_search_response
+from api.blueprints.chat import (
+    ChatResponseData,
+    chat_blueprint,
+    prepare_search_response,
+)
 
 
 def make_snippet(text, chunk_score):
@@ -242,6 +246,25 @@ def test_chat_passes_message_str_as_runner_input(chat_test_client):
     call_kwargs = mock_runner_run.call_args.kwargs
     assert call_kwargs["input"] == message
     assert isinstance(call_kwargs["input"], str)
+
+
+def test_chat_response_shape_no_search(chat_test_client):
+    """Validate response_data against ChatResponseData when no search tool
+    was called.
+    """
+    client, _ = chat_test_client
+
+    response = client.post(
+        "/chat",
+        json={"message": "hello", "conversationType": "catalogSearch"},
+        headers={"X-API-Key": "test-api-key"},
+    )
+
+    data = response.get_json()["data"]
+    assert set(data.keys()) == {"messages", "search_result", "session_id"}
+    assert data["search_result"] is None
+
+    ChatResponseData.model_validate(data)
 
 
 def test_content_search_unknown_edition_returns_404(chat_test_client, mocker):

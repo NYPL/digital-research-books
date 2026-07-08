@@ -1,10 +1,11 @@
 # builtins
 from dataclasses import asdict
-from typing import Any, Dict, Literal, NamedTuple, Optional, TypedDict
+from typing import Any, Dict, Literal, NamedTuple, Optional, TypedDict, Union
 
 # non-built-ins
 from flask import Blueprint, request
 import newrelic.agent
+from pydantic import BaseModel, ConfigDict
 
 # shared code
 from logger import create_log, LogContextVars, get_app_logger
@@ -39,6 +40,8 @@ logger = create_log(__name__)
 
 chat_blueprint = Blueprint("chat", __name__)
 
+# --- types for prepare_search_response() ---
+
 
 class SearchResponse(NamedTuple):
     result_type: str
@@ -57,8 +60,70 @@ class SearchToolResult(TypedDict):
     search_params: dict[str, Any]
 
 
+# ---------------------------------------------
+
 SearchResults = dict[str, SearchToolResult]
 """Keyed by tool_call_id."""
+
+
+# --- types for /chat http response ---
+
+
+class SnippetOut(BaseModel):
+    """Mirrors api.assistant.types.Snippet, as serialized by asdict()."""
+
+    text: str
+    item_id: Optional[int]
+    chunk_score: Optional[float]
+    start_page: Optional[int] = None
+    end_page: Optional[int] = None
+
+
+class ContentSearchResults(BaseModel):
+    """formatted_search_result shape for result_type == "contentSearch"."""
+
+    snippets: list[SnippetOut]
+    search_params: dict[str, Any]
+
+
+class CatalogEdition(BaseModel):
+    """One entry in editions[]. `snippets` is known; the rest (barcode +
+    Edition/Item/Link/Rights/Work columns, flattened in by orm_to_dict()) is
+    ORM-derived and left untyped, captured via extra="allow".
+    """
+
+    model_config = ConfigDict(extra="allow")
+
+    snippets: list[SnippetOut]
+
+
+class CatalogSearchResults(BaseModel):
+    """formatted_search_result shape for result_type == "catalogSearch"."""
+
+    editions: list[CatalogEdition]
+    search_params: dict[str, Any]
+    # APIUtils.formatPagingOptions() returns {} when totalHits == 0,
+    # otherwise a fixed key set -- not worth a strict model for this sketch
+    paging: dict[str, Any]
+
+
+class SearchResultOut(BaseModel):
+    result_type: Literal["catalogSearch", "contentSearch"]
+    results: Union[ContentSearchResults, CatalogSearchResults]
+    tool_call_id: str
+
+
+class ChatResponseData(BaseModel):
+    """response_data (the "data" property of the /chat response envelope)."""
+
+    # Responses-API conversation items (dicts, each optionally carrying a
+    # 'db_id' key) -- out of scope to model here, left as dict[str, Any]
+    messages: list[dict[str, Any]]
+    search_result: Optional[SearchResultOut]
+    session_id: str
+
+
+# ---------------------------------------------
 
 
 def prepare_search_response(search_results: SearchResults) -> Optional[SearchResponse]:
