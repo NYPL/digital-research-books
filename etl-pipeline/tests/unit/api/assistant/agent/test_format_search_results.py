@@ -96,62 +96,6 @@ class TestFormatSearchResultsSchema:
         assert editions[0].findtext("barcode") is None
         assert editions[0].findtext("title") == "Moby Dick"
 
-    # TODO: unnecessary, output xml is parsed in regex functions not XML parsin
-    def test_ampersand_and_greater_than_are_recovered(self):
-        """
-        Bare '&' and '>' characters (not known-tag collisions, so left
-        unescaped by format_search_results()) are preserved as literal text
-        by the lenient HTML parser -- unlike a bare '<' that isn't part of a
-        known-tag collision (see test_less_than_truncates_remaining_text).
-        """
-        result = make_catalog_result(
-            title="Smith & Sons",
-            chunk_texts=("Profits were up (5 > 3) for Smith & Sons.",),
-        )
-        xml_str = format_search_results([result])
-
-        search_results_el = parse_and_validate(xml_str)
-
-        edition = search_results_el.find("edition")
-        assert edition.findtext("title") == "Smith & Sons"
-        chunk_text = edition.find("chunks").find("chunk").findtext("text").strip()
-        assert chunk_text == "Profits were up (5 > 3) for Smith & Sons."
-        assert "NOTE:" not in xml_str
-
-    # TODO: unnecessary, output xml is parsed in regex functions not XML parsing
-    def test_known_tag_collision_is_escaped_and_survives_recovery(self):
-        """
-        Text containing a literal open/close tag matching one of this
-        format's own known element names (e.g. "<edition>", "</chunk>") is
-        escaped by format_search_results(), so it survives the lenient HTML
-        parser as plain text instead of being interpreted as (or corrupting)
-        real structural markup.
-        """
-        result = make_catalog_result(
-            chunk_texts=(
-                "The chapter titled <edition> discusses early printings, "
-                "see also </chunk> notes.",
-            ),
-        )
-        xml_str = format_search_results([result])
-        assert "NOTE:" in xml_str
-
-        search_results_el = parse_and_validate(xml_str)
-
-        chunk_text = (
-            search_results_el.find("edition")
-            .find("chunks")
-            .find("chunk")
-            .findtext("text")
-        )
-        assert (
-            "The chapter titled <edition> discusses early printings, "
-            "see also </chunk> notes." in chunk_text
-        )
-        # Escaping this one chunk must not affect the document's real
-        # structural tag count.
-        assert len(search_results_el.findall("edition")) == 1
-
 
 class TestFormatSearchResult:
     def test_known_element_in_text_is_escaped_in_raw_output(self):
