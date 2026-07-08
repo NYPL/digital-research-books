@@ -6,6 +6,17 @@ import os
 import argparse
 import logging
 import json
+from pathlib import Path
+
+# Add project root to path if running directly
+if __name__ == "__main__":
+    from dotenv import find_dotenv
+
+    project_root = Path(
+        find_dotenv("requirements.txt", raise_error_if_not_found=True)
+    ).parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 import turbopuffer as tpuf
 
@@ -17,7 +28,9 @@ def get_client(
 ) -> tpuf.Turbopuffer:
     """Initialize turbopuffer client with API key.
 
-    Priority: api_key arg > TURBOPUFFER_API_KEY env var
+    Priority: --api-key arg > TURBOPUFFER_API_KEY env var set before invocation >
+    TURBOPUFFER_API_KEY loaded from config/.env.<env> (via --env; does not override
+    an already-set env var)
     Region: region arg > TURBOPUFFER_REGION env var > default (aws-us-east-1)
     """
     key = api_key or os.environ.get("TURBOPUFFER_API_KEY")
@@ -335,6 +348,10 @@ def main():
 Environment:
   TURBOPUFFER_API_KEY    API key (can also use --api-key)
 
+  API key resolution order: --api-key arg > TURBOPUFFER_API_KEY already set in the
+  shell environment > TURBOPUFFER_API_KEY loaded from config/.env.<env> (via --env;
+  a pre-existing env var is never overridden by the .env file)
+
 Examples:
   %(prog)s list                        # List all namespaces
   %(prog)s info vra-dev                # Get metadata for namespace
@@ -353,6 +370,11 @@ Examples:
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Enable verbose logging"
+    )
+    parser.add_argument(
+        "--env",
+        default="production",
+        help="Environment name used to load config/.env.<env> (default: production)",
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -437,6 +459,10 @@ Examples:
     p_delete.set_defaults(func=cmd_delete)
 
     args = parser.parse_args()
+
+    from utils.load_env import load_env
+
+    load_env(f"config/.env.{args.env}")
 
     # Configure logging based on verbosity
     logging.basicConfig(
