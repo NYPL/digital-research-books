@@ -38,7 +38,7 @@ import rapidfuzz
 from ..event_loop import run_coroutine
 from ..utils import APIUtils, remove_markdown_comments, shorten
 from .types import Snippet, BaseEditionResult
-from .agent import format_search_results, TOOL_ERROR_PREFIX
+from .agent import format_search_results, get_result_count, TOOL_ERROR_PREFIX
 
 # shared code
 from utils.timer import timer
@@ -393,8 +393,6 @@ def format_conversation_history(
     """
     # MAYBE: keeping only the final tool call pair is over-complicated. Just keep all tool calls.
 
-    from lxml import etree as ET
-
     # FUTURE: after upgrading agents sdk use this instead: https://openai.github.io/openai-agents-python/ref/items/#agents.items.ItemHelpers.extract_text
     def _get_msg_text(msg):
         content = msg.get("content", "")
@@ -414,13 +412,7 @@ def format_conversation_history(
         """Summarize search tool output with a count of N results returned"""
         if output.startswith(TOOL_ERROR_PREFIX):
             return TOOL_ERROR_PREFIX
-        try:
-            root = ET.fromstring(output)
-            # MAYBE: tighter criteria <edition> direct children of <search_results> according to output format
-            count = len(root.findall("edition"))
-            return f"{count} results returned"
-        except ET.XMLSyntaxError:
-            return output
+        return f"{get_result_count(output)} results returned"
 
     # Hold a reference to the last function_call_output item so we can preserve
     # its full output without summarization.

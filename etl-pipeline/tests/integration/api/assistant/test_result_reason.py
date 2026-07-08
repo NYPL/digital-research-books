@@ -1,18 +1,18 @@
+import os
+
 import requests
 from lxml import etree as ET
 
-from ..utils import assert_response_status, get_vra_auth_headers
+from ..utils import (
+    assert_response_status,
+    assert_top_level_response_fields,
+    get_vra_auth_headers,
+)
 from utils.common import require_env
+from api.session_jwt import sign_session
 
 CHAT_ENDPOINT_PATH = "/chat"
 RESULT_REASON_ENDPOINT_PATH = "/result-reason"
-
-TOP_LEVEL_FIELDS = {
-    "status": int,
-    "timestamp": str,
-    "responseType": str,
-    "data": dict,
-}
 
 # The result_reason system prompt asks for ~450 characters / 3-4 sentences.
 MAX_EXPLANATION_LENGTH = 500
@@ -42,14 +42,18 @@ def find_search_tool_call_and_barcode(messages):
 
     try:
         root = ET.fromstring(tool_output)
-        barcode_el = root.find(".//barcode")
+        barcode_el = root.find(
+            ".//barcode"
+        )  # Q: there are multiple barcodes in the output. which is this?
     except ET.XMLSyntaxError:
         return call_id, None
 
     return call_id, (barcode_el.text if barcode_el is not None else None)
 
 
-def test_result_reason_happy_path(vra_test_user):
+# NOTE: future tool calls and outputs may not be in /chat response. instead
+# look up convo history from DB with session ID.
+def test_result_reason_happy_path(vra_test_user, test_session_id):
     """
     End-to-end happy path: a real /chat catalogSearch call seeds a session
     with a search tool call_id + barcode, then /result-reason explains why
@@ -58,6 +62,10 @@ def test_result_reason_happy_path(vra_test_user):
     base_url = require_env("DRB_API_URL")
     session = requests.Session()
     session.headers.update(get_vra_auth_headers())
+
+    cookie_name = os.environ.get("SESSION_COOKIE_NAME", "vra_session")
+    session_cookie = sign_session(test_session_id)
+    session.cookies.set(cookie_name, session_cookie)
 
     chat_url = base_url + CHAT_ENDPOINT_PATH
     chat_response = session.post(
@@ -94,11 +102,7 @@ def test_result_reason_happy_path(vra_test_user):
         response_json = None
         assert response_json is not None, "Response is not valid JSON"
 
-    for field, expected_type in TOP_LEVEL_FIELDS.items():
-        assert field in response_json, f"Missing expected top-level field: {field}"
-        assert isinstance(response_json[field], expected_type), (
-            f"Expected {field} to be of type {expected_type.__name__}"
-        )
+    assert_top_level_response_fields(response_json)
 
     data = response_json["data"]
     assert isinstance(data["explanation"], str) and data["explanation"], (

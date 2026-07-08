@@ -1,7 +1,156 @@
 <search_results>
 
 <edition>
+<edition_id>16412529</edition_id>
+<barcode>33433019856107</barcode>
+<title>Arts & decoration</title>
+<authors>(Authors Unavailable)</authors>
+<publisher>Adam Bunge</publisher>
+<date>1910-01-01</date>
+<subjects>Decoration and ornament -- Periodicals, Art -- Periodicals, Architecture -- Periodicals -- Details, Interior decoration -- Periodicals</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>30012829</item_id>
+<page>502</page>
+<text>
+François-Xavier, Montreal
+Write for "Fashions in Fragrance,"
+our colorful little book of Parisian
+toilette specialties. Complimentary
+on request.
+ARTS & DECORATION
+Art Among the Artists
+(Continued from page 56)
+Spanish sentimentality. Matisse
+was the center of attention with
+an enormous still life, painted
+with his inimitable sensibility and
+conscious mastery of joyous color.
+Matisse, more than anyone else
+of this select gathering, seems to
+have a jolly time while painting.
+Other notable painters exhibited,
+among the Europeans, were
+Braque, Lautrec, Segonzac, Metz-
+inger, Gauguin, the sculptors
+Manolo and Duchamp-Villon, and
+the much imitated Derain.
+The Americans made a much
+better showing than the English
+who, save for Augustus John and
+his sister, Gwen John, were a
+dull, stodgy lot. Americans,
+such as Jules Pascin and Charles
+Sheeler, were not overcome by the
+great French names, though, it
+must be added, judging by the
+tactless trace of MM. Derain and
+the Spanish prophet Picasso, some
+of their brother artists were too
+obviously impressed. However,
+John Marin's water color music
+pure americain: Maurice
+Prendergast's tapestries were un-
+mistakably distinctive, as were
+Max Weber's lovely, lovely
+colors: and Walt Kuhn's land-
+scape was a lustily synthesized
+composition of COWS and grass
+and sunlight.
+Quite
+different aesthetic
+world, with the almost belligerent
+exception of Andrew Dasburg,
+was
+a
+a
+guest, was exposed at the
+seventh annual show of the New
+Society of Artists at the Ander-
+son Galleries. It was, on the
+whole, a world modern, realistic
+and romantic. Nothing unex-
+pected, save perhaps a sturdy
+green and red and glazed white
+still life by Henry McFee, is en-
+countered. In a museum sense,
+Eugene Speicher's "Polly Mary"
+is the most finished painting of the
+exhibit.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>16934332</edition_id>
+<barcode>33433088319508</barcode>
+<title>Revue de l'Anjou</title>
+<authors>Groton Farmers' and Mechanics' Club, Sweden. Postsparbanken</authors>
+<publisher>[Irish National Newspaper and Publishing Co., Ltd.]</publisher>
+<date>1866-01-01</date>
+<subjects>Natural history -- Periodicals, English literature -- Periodicals -- Irish authors, Ireland -- Biography, Ireland -- Periodicals -- History</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>32544255</item_id>
+<page>212</page>
+<text>
+We advise her to keep
+strictly to feminine attire, her jacket, tie, and collar
+being in very bad taste, and most unbecoming to her.
+"Teenie" and "Bessy" are much alike in character
+and constitution, but the former has a little the ad-
+vantage of the latter in personal appearance. They
+are excellent girls in heart, honesty, affection, and
+industry. If their hair were differently made up, the
+improvement would be observable. The book could
+be ordered through any bookseller.
+"Mona B" has fine eyes, very full of intellectual
+light, and of the blissful brightness that wells up from
+a naturally happy heart; she is a very good little girl,
+and would prove a pleasing companion for life.
+"The Masher."-A bit conceited, but experience
+will have an improving effect upon him; unlike some
+'men, he will learn as he goes along. "His Sweet-
+heart."-Droll, cute, apparently well-built, cool in
+judgment, and not very enthusiastic about anybody.
+"Slip,"-Sharp, resentful, jealous, timid, pains-
+taking, amiable in her best moods, has strong feelings,
+and enjoys social pleasures.
+"
+"Gipsy Queen."-A wise little girl, sprightly and
+shrewd, pleasing in features and expression, and firm
+in her purposes.
+"Mischief" and "Pebo" are rather
+like each other, but we prefer Mischief's" face and
+arch eyes. Both are sturdy, jolly, and gay. Pebo
+should discard the masher collar; it does not suit her
+face, which is rougher and more masculine than the
+other.
+"Frank."-Wary, dull, and downcast sometimes;
+is plausible in speech and manner. "Nellie" has
+probably more ability, and better judgment; she is
+collected, thoughtful, courageous, agreeable, and
+eomely in form. No envelope enclosed.
+"Ned" is generally serious, and inclined to pick a
+quarrel when irritated; he is usually pleasant, and
+has a manly disposition. "Barney" loves pleasure,
+music, ease, and good living; he has tongue, and likes
+chaffing, but he is seldom a fool.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
 <edition_id>15549590</edition_id>
+<barcode>33433105357739</barcode>
 <title>The nation</title>
 <authors>Nation (N.Y.), N.Y. : 1865) </authors>
 <publisher>J.H. Richards,</publisher>
@@ -61,103 +210,81 @@ any case the Editor reserves the right to abridge communications.
 </edition>
 
 <edition>
-<edition_id>15303537</edition_id>
-<title>Dictionary catalog of the Rare Book Division</title>
-<authors>New York Public Library. Rare Book Division</authors>
-<publisher>G. K. Hall</publisher>
-<date>1971-01-01</date>
-<subjects>Bibliographies, Catalog, Livres rares Catalogues, Catalogs, catalogs (documents), New York (State) New York, New York Public Library. Rare Book Division Catalogs, Rare books -- Catalogs, Rare books New York (State) New York Bibliography Catalogs, Catalogues, Livres rares New York (État) New York Bibliographie Catalogues, Bibliography, New York Public Library. Rare Book Division, Rare books, Broadsides -- Bibliography</subjects>
+<edition_id>16865373</edition_id>
+<barcode>33433081861837</barcode>
+<title>Index catalogue of the library of the surgeon-general's office, United States Army (-United States Army, Army Medical Library; -National Library of Medicine). authors and subjects</title>
+<authors>Library of the Surgeon-General's Office (U.S.)</authors>
+<publisher>U.S. G.P.O.</publisher>
+<date>1869-01-01</date>
+<subjects>Medicine -- Bibliography -- Early works to 1800, Medicine -- Bibliography, Medical libraries -- Catalogs -- United States</subjects>
 <language>(Languages Unavailable)</language>
 <chunks>
 
 <chunk>
-<item_id>24128500</item_id>
-<page>641</page>
+<item_id>32201149</item_id>
+<page>1070</page>
 <text>
-Rochester, Re-
-printed for G. P. Humphrey, 1893)
-196 (i. e. 192) p. incl, front., pl. 21 x 12.
-Pages 184-192 incorrectly numbered 188-196.
-(Continued on next card)
-front.) 4°.
-"This edition of The gallantries of Queen Christina, here reprinted from the 12mo
-edition of 1697, is strictly limited to 450 copies. The illustrations hand-coloured, are by
-Alexina Ogilvie. This copy is no. 146."
-M. Y. P. L.
-(Continued)
-KVD
-... The HISTORY of Jacob Newman, the shipwrecked
-Irish boy. New York, Published by the American tract
-society, 150 Nassau-street [183-1] 36 р. illus.
-At head of title: No. 6. On cover: Series IV. No. VI.
-15cm.
-In original illustrated green paper coven, with publisher's advertisemenn,
-Also has continuous paging: p. [181]-216,
-Includes 4 hymm, p. 33-36.
-L. American tract society.
-RESERVE
-July 18, 1928
-NN RX 1.66 c OC (OS)I
-PC, I SLA RI (RM1, LC1s, Xis)
-The history of Jamaica.
-Franckenstein, Christian Gottfried,, 1661-1717: The history of
-the intrigues & gallantries of Christina, queen of Sweden
-(Continued)
-Dedication of the original translation of 1697 signed by the translator, Phil. Hol-
-Colophon: At the Cayme Press, Kensington, 1927.
-lingworth.
-363621A. 1. Christina, queen of
-worth, Philip, translator. 3. Ogilvie,
-N. Y. P. L.
-Sweden, 1626-1689. 2. Holling-
-July 18, 1928
-Alexina, illustrator. 4. Title.
-The history of the island of Van
-Diemen's Land.
-Melville, Henry, 1803-1873.
+141 pp.
+8°. Lyon, 1902, No. 173.
+Garabelli (Arturo) [1871-1922].
+E. (J.) Obituary. Bol. d. Cons. nac. de hig., Montevideo,
+1922, xvii, 379.
+Garach (Pierre-Marie-Ludovic) [1887- ).
+*Manifestations oculaires des fractures indi-
+rectes de la base du crâne; leur valeur séméio-
+logique. 122 pp. 8°. Paris, 1914, No. 330.
+Garages.
+BURRELL (G. A.) & GAUGER (A. W.) Vitia-
+tion of garage air by automobile exhaust gases.
+8°. Washington, 1919.
+Dept. of Interior. Bureau of Mines.
+Jones (G. W.) & Katz (S. H.) Ventilation of garages. J.
+Am. Soc. Heat. & Ventil. Engin., N. Y., 1923, xxix, 423-
+428.-Obert (C. W.) Ventilation of garages. Tr. Am. Soc.
+Heat. & Ventil. Engin., New York, 1916, xxii, 499-506.
+Garand (Alphonse) [1860-1907].
+Duchamp. (Biography.] Loire méd., St.-Etienne, 1907,
+xxvi, 429-432.
+Garand (Emile) [1883- 1. *Contribution à
+l'étude des symptomes et du traitement de la
+grossesse extra-utérine. 113 pp. 8°. Mont-
+pellier, 1909, No. 17.
+Garapelle (Eduardo). Analisi delle orino. x,
+286 pp., 11 pl. 12°. Palermo, A. Reber, 1903.
+Garasse (Toussaint-Jules-Joseph-Félix) [1885-
+]. *De la grossesse et de l'accouchement
+après l'hystéropexie. 79 pp. 8°.
 </text>
 </chunk>
 
 <chunk>
-<item_id>24128500</item_id>
-<page>122</page>
+<item_id>32201149</item_id>
+<page>962</page>
 <text>
-Godefroy: Laboureur, 1, 338.
-No. 64 of 115. copies printed.
-In verse.
-Illustrations: 1 engraving by Laboureur.
-In original covers.
-Gülich, Ludwig von. Erb-Huldigung... 1705, (Card 2)
-Nid. Oest. Landschafft Syndicum Ludwig von Gülich... Wienn,
-Gedruckt bey Johann Jacob Kürner (1705) 1 p.l., 46 p. plates.
-45cm. (f°.)
-Vinet: Bibliographie...des beaux-arts, 675. 1.ipperheide: Katalog der...Kostüm-
-bibliothek, 2624.
-Illustrations: 12 large etchings (including 6 double and 1 folded). The frontispiece
-is by J. A. Plefíel and Christian Engelbrecht after M. Steinl. The other etchings
-(procession, church ceremonies and banquets) are by Píeffel and Engelbrecht after
-J. C. Hackhofer.
-Gienes y Horcasitas, Juan Francisco, conde de
-Revilla Gigedo.
-See
-Revilla Gigedo, Juan Francisco Gtienes y Hor-
-casitas, conde de, 16827-1766.
-1. Title.
-C
-KESERVE
-NN
-(Continued)
-MN 6.54 OC PCS AH E
-G
-KD
-1745
-Gueldene Aepffel in silbern Schalen oder: Schöne und nutzliche
-Worte und Warheiten zur Gottseligkeit. Enthalten in sieben
-Haupt-Theilen, die in diesem Buch zusamen gestellet sind; nem-
-lich, in: (1) Michael Sattlers Send-Briefen u. Acten; (2) Thoma
-von Imbroichs Bekantniss und Briefen; (3) Susanna von Holtz
-Testament und Brief; (4) Matthia Cervas und Conrad Rochs Send-
-Briefen; (welche alle aus den Gelångnussen geschrieben.)
+On the after-
+treatment of fractures of cervical vertebræ by mechano-
+therapeutics. Practitioner, Lond., 1922, cix, 177-183.-
+Davis (G. G.) Fractures of transverse processes of the lum-
+bar vertebræ. Surg., Gynec. & Obst., Chicago, 1921, xxxiii,
+272-277. [Discussion], 314.-Dervieux & Piédelièvre. Frac-
+ture de la colonne vertébrale cervicale par extension forofe.
+Ann. de méd. lég., Par., 1923, iii, 475.-Descamps. Fracture
+de la colonne vertébrale. Clinique, Brux., 1913, xxvii, 100-
+102.-Détré (G.) Fractures méconnues de la colonne verté-
+brale chez les soldats enfouis; leur diagnostic radiologique.
+J. de radiol. et d'électrol., Par., 1916-17, ii, 603-609.-Drueck
+(C. J.) Malformations, fractures and dislocations of the coc-
+сух. Am. Med., Burlington, Vt., 1924, n. s., xxx, 295-298,-
+Duchamp. Un cas de fracture de l'apophyse transverse de
+la 5ª lombaire. Loire méd., St. Etienne, 1924, xxxviii, 547.-
+Durand (M.) Les fractures latentes de la colonne verté-
+brale. Lyon méd., 1924, cxxxiii, 397-401.-Elsberg (C. A.)
+Some surgical features of injuries of the spine, with special
+reference to spinal fracture. Ann. Surg., Phila., 1913, Ivini,
+296-303. -. Exploratory laminectomy for fracture dislo-
+cation of the spine. Internat. Clin., Phila., 1919, 29. s., ii,
+73-75, 1 pl.-Engel (H.) Zur Diagnostik der Wirbelbrüche
+Med.
 </text>
 </chunk>
 
@@ -165,126 +292,637 @@ Briefen; (welche alle aus den Gelångnussen geschrieben.)
 </edition>
 
 <edition>
-<edition_id>15251022</edition_id>
-<title>Books added : five-year cumulation of the Book bulletin of the Chicago Public Library</title>
-<authors>Chicago Public Library</authors>
-<publisher>The Library, The Chicago public library,</publisher>
-<date>1916-01-01</date>
-<subjects>Catalogues systématiques (Classification décimale de Dewey), Periodicals, Classified catalogs (Dewey decimal) -- Periodicals, Classified catalogs (Dewey decimal)</subjects>
-<language>English</language>
+<edition_id>16449994</edition_id>
+<barcode>33433016643805</barcode>
+<title>Cumulative list of organizations described in section 170 (c) of the Internal Revenue Code of 1986</title>
+<authors>(Authors Unavailable)</authors>
+<publisher>Dept. of the Treasury, Internal Revenue Service</publisher>
+<date>1988-01-01</date>
+<subjects>Income tax deductions for charitable contributions -- Directories, Charitable uses, trusts, and foundations -- Directories -- United States</subjects>
+<language>(Languages Unavailable)</language>
 <chunks>
 
 <chunk>
-<item_id>23863694</item_id>
-<page>522</page>
+<item_id>30374556</item_id>
+<page>96</page>
 <text>
-Alexina Mackay Ruthquist; Mrs.
-Bowen Thompson; Dr. Mary McGeorge; Miss Mary
-Louisa Whately.
-Pomeroy, S. G. Little-known sisters of
-well-known men. 1912.
-C 19891
-Contents: Introduction; Some brothers and their
-sisters; Mary Sidney (the Countess of Pembroke);
-Mary Ann Lamb; Dorothy Wordsworth; Elizabeth
-Whittier; Sarianna Browning; Hannah Macaulay
-(Lady Trevelyan); Sarah Disraeli; Sophia Thoreau;
-Eliza W. S. Parkman.
-Portland. Oregon. Chamber of Commerce
-Bulletin, pub. "Men of Oregon"; a gallery
-of likenesses of representative men, together
-with brief sketches of their lives. 1911.
-Powell, E. A. Gentlemen
-rovers.
-C 19894
-1913.
-C 19896
-Contents: For rent: an army on elephants;
-When we fought Napoleon; When we captured an
-African kingdom; The last fight of the "General
-Armstrong"; The pirate who turned patriot; The
-man who dared to cross the ranges; The flag of
-the bear; The king of the filibusters; Cities cap-
-tured by contract.
-Press reference library (Southwest ed.);
-being the portraits and biographies of
-progressive men of the Southwest. 1912.
-*R 577
-Press reference library (Western ed.). Nota-
-bles of the West; being the portraits and
-biographies of the progressive men
-of
-the West who have helped in the devel-
-opment and history making of this won-
-derful country. 1913.
-*R 576
-Reed, G. I., ed. Bench and bar of Michigan;
-a volume of history and biography. 1897.
-*R 2713
--and Glover, E. S., ed. Century cyclo-
-pedia of history and biography; Pennsyl-
-vania. 2v. 1906.
-*R 2717
-Reed, M. Happy women. Dolly Madison,
-Dorothy Wordsworth, Queen Louise,
-Caroline Herschel, Elizabeth Browning,
-Charlotte Cushman, Lucretia Mott, Flor-
-ence Nightingale, Sister Dora, Jenny
-Lind, Louisa Alcott, Queen Victoria,
-1913.
+(4)
+Marc Ettes, Marcus, Ia. (6)
+Marc Foundation for the Developmentally Disabled,
+Bloomington, II.
+Marc Foundation Inc., Mesa, Az.
+Marc Group Home Inc., Portland, Ct.
+Marc Group Homes Inc., Mobile, Al.
+Marc Hass and Helen Hotze Hass Foundation,
+New York, Ν. Υ. (4)
+Marc Housing Inc., Memphis, Tn.
+Marc Lane Ministries Incorporated, Cleveland, Tn.
+Marc Leshay Charitable Fund, Framingham, Ma.
+Marc of Virginia Inc., Until 9312, South Hill, Va.
+Marc Resources III Inc., Macon, Ga.
+Marc Resources IV Inc., Until 9306, Macon, Ga.
+Marc Retardate Trust Inc., Waltham, Ma.
+The Marc Sandlin Memorial Scholarship Fund Inc.,
+Veronal, Ky. (4)
+Marc Senior Citizen Center Inc., Ringwood, Ok.
+Marc Wilde Ballet, Kentfield, Ca.
+Marc Wolinsky and Barry C. Skovgaard Foundation,
+New York, Ν. Υ. (4)
+Marc Workshop Inc. 1005 Jordan St., Martinsville, Va.
+Marc Wrigley Higholt Memorial Foundation,
+Costa Mesa, Ca. (4)
+Marca Industries Incorporated, Marion, Oh.
+The Marcel Duchamp Memorial Players, Chicago, Il.
+Marcelina Cemetery Association, Floresville, Tx. (6)
+Marceline Area Nutrition Program Inc.,
+Marceline, Mo.
+Marceline Coordinated Welfare Council,
+Marceline, Mo.
+Marcella Kelling Foundation, San Andreas, Ca.
+Marcelle Foundation, South Bethlehem, N. Y. (4)
+Marcellon Cemetery Assn, Pardeeville, Wi. (6)
+Marcellus Area Assistance Program Inc.,
+Marcellus, Mi.
+Marcellus Chorale Inc., Until 9406, Marcellus, N. Y.
+Marcellus Community Foundation Inc., Marcellus, Mi.
+Marcellus L. Joslyn Medical Library Foundation,
+San Luis Obispo, Ca. (4)
+Marcellus Parent Nursery School, Marcellus, N. Y.
+Dr Marius & Vinnie Marcellus Premedical Lewis &
+Clark Fund, Portland, Or.
+March for Life Education and Defense Fund,
+Washington, D. C.
+March Inc. of Manchester c/o Robert F. Gorman,
+Manchester, Ct.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>16545122</edition_id>
+<barcode>33433015143567</barcode>
+<title>Catalogue des brevets d'invention</title>
+<authors>(Authors Unavailable)</authors>
+<publisher>None</publisher>
+<date>1843-01-01</date>
+<subjects>Patents -- Periodicals -- France</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>30844683</item_id>
+<page>408-409</page>
+<text>
+Instrument d'optique, 353.
+231.
+Dory. Pieu (battage de), 219.
+Dory et Badin. Roue en fer, 309,
+Dos Santos-Malhado. Générateur, 86.
+Doually. Lavage, 369.
+Dubos. Électricité, 327.
+Dubuis. Ombrelle, 106.
+Dubuisson. Bouton, 245.
+1
+Dubus. Fécule, 265.
+Duchateau. Béton, 176.
+:
+Duchamp. Tissage, 8, 18.
+Duchemin jeune et Bernard. Gant, 73,
+Douay. Presse, 121.
+“税​。
+Doucet et Vatard. Bouton, 326.
+142.
+
+-397
+-
+Duchêne. Tournure, 297.
+Duchesne. Photographie, 219.
+Duchesne et Sanges (de). Frein, 310.
+Ducolombié. Fleur artificielle, 214.
+Ducorne et autres. Compleur, 171.
+Ducournau jeune. Cassage, 286.
+Ducreux. Blanchissage, 286.
+Ducros. Voiture, 31.
+Ducrot. Rasoir, 367,
+Ducrot père et fils. Tarare, 268.
+Ducrotoy. Semelle, 356.
+Ducroux. Moteur, 137.
+Dudan-Renaud. Pompe, 343.
+Dudebout et autres. Tissu, 26.
+Dufau. Signal, 352, 356, 368.
+Dufay. Engrais, 119.
+Duffet. Tissage (velours), 137.
+Dufilhol. Mouvement, 180.
+Duflos. Fuseau, 210.
+Dufort et Compère. Fermeture de gants,
+242.
+Dufour. Peignage, 117.
+Dufour (veuve). Bijouterie, 328, 368.
+Dufournel.
 </text>
 </chunk>
 
 <chunk>
-<item_id>23863694</item_id>
-<page>521-522</page>
+<item_id>30844683</item_id>
+<page>30</page>
 <text>
-1911.
-C 19875
-Patmore, K. A. The seven Edwards of
-England. 1911.
-C 19876
-Payne, W. M. Leading American essayists.
-1910.
-C 10436
-Contents: Biographical note (p. vii-viii); Intro-
-duction; Washington Irving; Ralph Waldo Emer-
-son; Henry David Thoreau; George William Curtis.
+30594. B. de 15 ans, 27 janvier;
+DELARUE, pharmacien, rue Char-
+rue, Dijon (Côte-d'Or). Procédé
+destiné à obtenir des tissus, cartons,
+papiers, bois ou lames de métaux
+imperméables à l'eau, à l'air, aux
+huiles, etc. (14).
+30595. B. de 15 ans, 10 janvier;
+DEPASSIO, rue du Griffon, 12,
+Lyon (Rhône). Système de pliage
+pour la fabrique des étoffes de soie
+(4).
+30596. B. de 15 ans, 4 février;
+DUMONT, représenté par Dumont,
+Anzin (Nord). Système de four à
+puddler (8). Brevet belge.
+30597. B. de 15 ans, 27 janvier;
+DUCHAMP, rue du Commerce, 17,
+Lyon (Rhône). Système d'enlaçage
+de carton ou papier pour la jac-
+quart (4).
+30598. B. de 15 ans, 29 janvier;
+DUSSAQ, rue Ausone, 20, Bor-
+deaux (Gironde). Application de
+l'horlogerie (12).
+30599. B. de 15 ans, 28 janvier;
+DUSSAIGNE, arquebusier, Saintes
+(Charente-Inférieure). Fusil Dus-
+saigne (11).
+30600. B. de 15 ans, 26 janvier;
+ELLENA, Grande Rue, 70, Mar-
+seille (Bouches-du-Rhône). Forme
+de berceau dit berceau type (4).
+30601. B. de 15 ans, 28 janvier;
+GRANAL, rue Napoléon, 9, Bé-
+ziers (Hérault). Système de soufflet
+dit vergnes Granal, destiné au sou-
+frage des vignes (1).
+30602.
+</text>
+</chunk>
 
-438
-CHICAGO PUBLIC LIBRARY
-Pearson, N. Society sketches in the
-eighteenth century. 1911.
-I 10142
-Contents: The scowrers and the Mohocks; The
-virtuosi; A great proconsul (Governor Pitt); The
-wits; An eccentric beauty (the Duchess of Queens-
-berry); A lady wit (Lady Townshend); A male
-bluestocking (Soame Jenyns); The serious side of
-a worldly man (Horace Walpole); The lighter side
-of a serious woman (Hannah More); The maca-
-ronis; Gentlemen of the road.
-Pickett, L. C. (Mrs. G. E. Pickett.) Liter-
-ary hearthstones of Dixie. 1912. C 19880
-Contents: "The poet of the night," Edgar Allan
-Poe; "The Sunrise poet," Sidney Lanier; "The
-poet of the pines," Paul Hamilton Hayne; "The
-flame-born poet," Henry Timrod; "Father Abbot,"
-William Gilmore Simms; "Uncle Remus," Joel
-Chandler Harris; "The poet of the flag," Francis
-Scott Key; "The poet-priest," Father Ryan; "Bacon
-and greens," Dr. George William Bagby; "Woman
-and poet," Margaret Junkin Preston; "The 'mother'
-of 'St. Elmo," Augusta Evans Wilson.
-Pitman, Mrs. E. R. Missionary heroines in
-eastern lands: Woman's work in mis-
-sion fields. 1895.
-C 19884
-Contents: Mrs. Alexina Mackay Ruthquist; Mrs.
-Bowen Thompson; Dr. Mary McGeorge; Miss Mary
-Louisa Whately.
-Pomeroy, S. G. Little-known sisters of
-well-known men. 1912.
+<chunk>
+<item_id>30844683</item_id>
+<page>20-21</page>
+<text>
+Pa-
+tente américaine.
+30464. B. de 15 ans, 16 janvier;
+DAVID et comp., Limoux (Aude,.
+Machine à estampiller (17).
+30465. B. de 15 ans, 16 janvier;
+DUCHAMP, rue du Commerce, 17,
+
+9
+-
+Lyon (Rhône). Mécanique à tisser MEILLARD et LECOMPTE dit Ro-
+remplaçant la jacquart (4).
+30466. B. de 15 ans, 10 janvier;
+DUVAL, mécanicien, rue de la
+Veillère, 9, Amiens (Somme). Ma-
+chine à napper et tondre toute espèce
+de tissus (4).
+30467. B. de 15 ans, 15 janvier;
+FAVRILLE, fabricant, Comines
+(Nord). Métier à tisser les orléans
+et autres étoffes unies et croisées (4).
+30468. B. de 15 ans, 12 janvier;
+GARANT, représenté par Le Blanc,
+Paris, rue Ste.-Appoline, 2. Sys-
+tème de transmission de mouvement
+(3).
+30469. B. de 15 ans, 13 janvier;
+GUINIER, rue des Petits-Pères, 22,
+Marseille (Bouches-du-Rhône).
+Treuil à vapeur (3).
+30470. B. de 15 ans, 13 janvier;
+HERVÉ, ébéniste, Valence (Drô-
+me). Système de cadres-marbres
+appliqués sur bois (17).
+30471. B. de 15 ans, 12 janvier;
+KAUFMANN, Paris, rue Montholon,
+24. Procédé odonto-plastique (12).
+30472. B. de 15 ans, 10 janvier;
+LANGLET, ciseleur en cuivre,
+Ramburelles (Somme). Système de
+montre solaire (12).
+30473. B. de 15 ans, 10 janvier;
+LEBLANC, Paris, rue Tronchet,
+29. Système de construction de che-
+min de fer (3).
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15502521</edition_id>
+<barcode>33433081665725</barcode>
+<title>Niles' weekly register</title>
+<authors>(Authors Unavailable)</authors>
+<publisher>s.n</publisher>
+<date>1849-01-01</date>
+<subjects>Netherlands -- Periodicals -- Genealogy, Literature -- Periodicals, Periodicals -- Netherlands</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>24946500</item_id>
+<page>394</page>
+<text>
+LYNCHING AMONG THE INDIANS. Extract of a letter
+to the editor of the St. Louis Bulletin, dated Fort Union,
+mouth of Yellow Stone river, June 26, 1836.
+"I have only time to add a brief account of one of the
+most tragic scenes that this land of lawless violence ever
+produced.
+"We were startled about 2 o'clock in the morning by
+a report of guns in a small fort occupied by half-breeds
+from Selkirk's colony. On inquiring the cause, we were
+told that a half-breed family by the name of Duchamp,
+had murdered another half-breed, (Jack Ram), and that
+the French voyaguers, headed by the half-breeds, were
+determined to exterminate the whole of the Duchamp
+family. Daylight soon after dawned, and we beheld the
+little fort surrounded by the French and half-breeds,
+who kept up a continual fire on the Duchamps, who had
+taken refuge in one of the block houses after vainly im-
+ploring that their lives might be spared-and, finding
+that there was no mercy for them, they seemed to be-
+come desperate and reckless of consequences, and re-
+solved to sell their lives as dear as possible. The con-
+flict was long and desperate-both parties seemed to
+thirst for revenge. A Frenchman soon succeeded in set-
+ting fire to the fort, and the wind being high, the flames
+spread with fearful rapidity. The Duchamps defended
+themselves with a gallantry worthy of a better fate; their
+yells of defiance might be heard rising high above the
+fierce roaring of the flames; and even whilst surrounded
+by such appalling horrors, they possessed a calmness and
+deliberation that was but too evident from their deadly
+aim. The scene was now awful and sublime. The block
+house was completely enveloped in smoke and flame,
+and yet the inmates, salamander like, seemed to be in
+their native element, and to defy the power of their vin-
+dictive enemies. The dark form might be seen flitting
+through the fire; and gazing eagerly around to catch the
+slightest glimpse of a foe, on whom his gun might be
+brought to bear.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24946500</item_id>
+<page>394</page>
+<text>
+The dark form might be seen flitting
+through the fire; and gazing eagerly around to catch the
+slightest glimpse of a foe, on whom his gun might be
+brought to bear. Let the smoke and flames by which
+they were surrounded serve as a curtain to hide the hor-
+rid catastrophe.
+"There were eight killed, and several wounded. The
+Duchamps were completely exterminated, with the ex-
+ception of a few small children."
+CULTURE OF COTTON IN INDIA. We have received
+a file of Calcutta papers to the beginning of March. An
+extract from the Bombay Courier of Feb. 15th, states
+that the quantity of cotton land under cultivation in Su-
+rat district, which was last year 43,912 begahs, is this
+year 53,799; being an increase of about 25 per cent. In
+Dharwar and Candeish districts the inercase is at least
+20 per cent. From the other districts the information
+was such as to justify the belief that throughout the pre-
+sidency the average increase of cotton land under culti-
+vation this year, is 25 per cent. greater than in 1835.-
+As regards productiveness, all accounts agree in repre-
+senting the present crop as greatly above an average one,
+if not indeed unprecedentedly good. Estimating the im-
+provement, in this respect, at 20 per cent. there will be
+a general increase of 45 per cent. upon the year. Now
+the exports of cotton for the last six years from Bombay
+to Great Britain and China, have been as follows:
+1830 bales
+1835
+"In this idea, Dr. Palazzini had, without his know-
+ledge, been anticipated. So long since as 1782, D. De
+Mathias, a Sicilian army surgeon, was induced by acci-
+dent to try the remedy on a dog, which he was told had
+been attacked by the disease, and he succeeded; but the
+subject was not pursued farther. In 1791, Dr. Gilibert 1831
+published the cases of two hydrophobiacs so treated, in 1832
+whom the disease was suspended for a few hours, but 1853
+who eventually died in convulsions. Dr.
+</text>
+</chunk>
+
+<chunk>
+<item_id>24946500</item_id>
+<page>394-395</page>
+<text>
+Dr. Viricel also 1834
+caused a boy to be bitten by a viper, for hydrophobia,
+who nevertheless died. Dr. Des Granges tried the same
+experiment on a dog, which met with the same fate. Dr.
+Valentine relates, that signor Gauche, maire de la prior-
+ite, had proposed the viperising animals, as a sort of
+protection against hydrophobia; his experience having
+taught him that dogs who have been bitten by vipers,
+never afterwards became hydrophobiac. To our notion,
+the weight of evidence, such as it is set forth by Dr. P.
+is altogether against the attempt; and were we reduced
+to the dreadful necessity of judging for ourselves in this
+case, we should prefer looking to some remedy, less car-
+bone notatus, and less repulsive than that which he thus
+recommends."
+Great Britain.
+39,113
+63,576
+23,978
+88,155
+82,079
+103,598
+China.
+Total.
+142,272
+181,385
+136,198
+199,774
+125,115
+219,093
+128,414
+214,566
+118,473
+200,552
+51,739
+155,337
+The average yearly export, therefore, including last
+year, in which the crop totally failed in many districts,
+is bales, 195,118; 45 per cent. which will make the prc-
+duction of the present year 283,021 bales.
+-
+[Journal of Commerce.
+CONSUMPTION. In an able article on this subject in
+the last number of the Knickerbocker, by Dr. Brigham,
+of Connecticut, it is estimated that there are at least fif-
+ty thousand deaths in this country from consumption eve-
+ry year! This is astounding intelligence. If the dis-
+*The number of the Duchamp family that were killed is no
+ascertained.
+
+NILES' REGISTER-AUG. 6, 1836-ITEMS.
+381
+ease which causes such appalling mortality, were small
+pox, cholera, or the plague, what consternation would be
+produced by its effects!
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>16811932</edition_id>
+<barcode>33433001002215</barcode>
+<title>Encyclopédie des gens du monde, répertoire universel des sciences, des lettres et des arts; avec des notices sur les principales familles historiques et sur les personnages célèbres, morts et vivans</title>
+<authors>(Authors Unavailable)</authors>
+<publisher>Librairie de Treuttel et Würtz</publisher>
+<date>1833-01-01</date>
+<subjects>Encyclopedias and dictionaries, French, Biography -- Dictionaries</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>32039460</item_id>
+<page>144-145</page>
+<text>
+C'en était fait de sa liberté une se-
+conde fois s'il n'eût eu confiance dans
+le pouvoir de son art; mais il s'avisa de
+chanter. Cette irrésistible mélodie émut
+le commandant du poste; ses satellites
+s'approchèrent du nouvel Orphée, par-
+tagèrent l'attendrissement de leur chef,
+et, non contents de relâcher leur proie,
+reconduisirent le chanteur en triomphe.
+L'état de la France étant devenu peu
+favorable aux arts, le célèbre violoniste
+Rode conçut le projet de passer en An-
+gleterre et détermina Garat à l'y accom-
+pagner. Ils partirent ensemble; mais
+les vents, obstinément contraires, ayant | Bayard et celle d'Henri IV à Gabrielle,
+Garat fut attaché au Conservatoire de
+Musique (vor.), dès l'origine de cette
+institution, comme professeur de la classe
+destinée au perfectionnement du chant.
+Là il commença à former cette suite de
+disciples qui ont si glorieusement recom-
+mandé son école, Roland, Nourrit, Des-
+péramons, Dérivis, Ponchard, Levas-
+seur, etc., Mmes Barbier-Walbonne, Bran-
+chu, Duret, Boulanger, Rigaud, etc. Men-
+tionnons particulièrement Mlle Duchamp,
+son élève de prédilection, qu'il épousa.
+Malgré tant de services rendus à l'art, ce
+maître incomparable se vit privé de son
+traitement pendant quatorze mois par
+l'ordre de Napoléon. La romance de
+
+GAR
+GAR
+(119)
+où l'on avait cru remarquer quelques al- | vers la fin de sa vie, dans un état voisin de
+lusions et quelques regrets, avaient dé-
+plu, et l'empereur se vengea ainsi du mu-
+sicien. Mais Garat fut réintégré dans ses
+fonctions en 1814.
+</text>
+</chunk>
+
+<chunk>
+<item_id>32039460</item_id>
+<page>145</page>
+<text>
+Mais Garat fut réintégré dans ses
+fonctions en 1814. En 1817, le ministre
+de la Maison du Roi le chargea de par-
+courir le midi de la France, pour y re-
+cruter des sujets propres aux différents
+emplois du chant.
+Quoique Garat ne fût pas beau, les
+femmes se passionnèrent pour un homme
+dont la voix leur procurait de si vives
+émotions; il avait d'ailleurs un bel œil,
+et sa physionomie était très expressive.
+On raffola de ses manières, de son cos-
+tume, de son langage, d'où il affectait de
+bannir les r, s'appelant lui-même sérieu-
+sement M. Ga-at. A une époque où le be-
+soin de plaisir tenait de la fureur, il de-
+vint l'idole et l'oracle de la mode; le
+moindre colifichet de toilette était à la
+Garat. L'âge ne corrigea point les tra-
+vers du fashionable: il conserva jusqu'à
+la fin ses prétentions et l'étrangeté de sa
+tournure; il voulait par-dessus tout être
+remarqué. Empressons - nous d'ajouter
+qu'il redevenait le plus simple des hom-
+mes dès qu'il était dans un cercle d'ar-
+tistes et d'amateurs, c'est-à-dire quand
+il ne se croyait plus en spectacle. Celui
+qui n'accordait qu'aux prières redoublées
+du public la faveur d'une romance ou
+d'une ronde, chantait pendant des heures
+entières, dans l'intimité. Il faut avoir été
+témoin des assauts de talent qui s'enga-
+geaient quelquefois entre lui et le général
+Clouet, autre chanteur de verve, cham-
+pion de Hændel comme Garat l'était de
+Gluck; il faut avoir entendu les duos qu'il
+exécutait avec Mlle Duchamp, pour avoir
+une idée de toute sa puissance lyrique.
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>16778526</edition_id>
+<barcode>33433004238816</barcode>
+<title>Morskoĭ sbornik</title>
+<authors>(Authors Unavailable)</authors>
+<publisher>Krasnaja zvezda,, V Morskoĭ tip.,, Voen. izd-vo</publisher>
+<date>1848-01-01</date>
+<subjects>Russia (Federation), Soviet Union, Périodiques, Periodicals, Kamchatka Peninsula (Russia), Rossiĭsko-amerikanskai︠a︡ kompanii︠a︡, Naval art and science, Naval art and science -- Periodicals -- Soviet Union, Russia, Naval art and science -- Periodicals -- Russia, Periodical, North America, Art et science navals, Mécanique navale, Travel, Marine engineering, Kamtchatka (Russie : Presqu'île), Marine engineering -- Periodicals</subjects>
+<language>Russian</language>
+<chunks>
+
+<chunk>
+<item_id>31914062</item_id>
+<page>169-170</page>
+<text>
+Съ 29 Іюня 1840 года взята изо-
+брѣтателемъ добавочная привилегія.
+Фауэлю (Fowel), пятилѣтняя, съ 27 Декабря 1838 года, на приготовленіе
+новаго топлива, названнаго изобрѣтателемъ coke-chandelle или съ блестящимъ
+пламенемъ. (Publication industrielle des machines etc., par Armengaud ainė. Anné 9).
+(*) Граммъ = 22,516 доли,
+
+58
+(Ноябрь
+ЧАСТЬ
+полученные бруски высушиваются въ печи или только на сол-
+нушкѣ. Отъ времени они твердѣютъ и дольше горятъ (*).
+7) Дюшану (Duchamp), пятилѣтняя, съ 17 Августа 1840
+года, на фабрикацію новаго топлива, съ выгодою замѣняю-
+щаго каменноугольные и торфяные бруски и полѣнья.
+Топливо это составляется изъ рубленой овсяной соломы,
+глинозема и сажи, въ смѣси съ какимъ нибудь ароматиче-
+скимъ веществомъ (**).
+</text>
+</chunk>
+
+</chunks>
+</edition>
+
+<edition>
+<edition_id>15853683</edition_id>
+<barcode>33433069347510</barcode>
+<title>Paris, oder, Das Buch der Hundert und Ein</title>
+<authors>(Authors Unavailable)</authors>
+<publisher>F. Riegel</publisher>
+<date>1832-01-01</date>
+<subjects>Paris (France) -- Description and travel</subjects>
+<language>(Languages Unavailable)</language>
+<chunks>
+
+<chunk>
+<item_id>25990641</item_id>
+<page>137-138</page>
+<text>
+Zwanzig Jahre gehen sie vorüber, ohne zu be-
+merken, daß ich gelbe Stiefeln trage!" Die Undankba-
+ren! war mir stets ein erhabener Ausdruck; es liegt in
+demselben ein Schmerz, ein Mißgeschick der Koketterie,
+welches die Erinnerungen der Zeit, wo Garat die Mode
+angab, sehr begreiflich machen. - Unser armer Freund
+tröstete sich nicht über dieß Verrechnen des Ruhmes; er
+schmollte, und verließ uns, indem er mit Bitterkeit wie-
+derholte: „die Undankbaren!" - Ich hatte durch einen
+Vertrauten Garat's erfahren, daß er seit einigen Jahren
+der Mlle. Duchamp *) nicht mehr die Rücksichten und
+Aufmerksamkeit schenkte, welche diese Frau mit gutem Recht
+von ihm fordern konnte, die aus Liebe zur Musik ihre Ju-
+gend einem Greise geopfert hatte; ich machte ihm darüber
+lebhafte Vorwürfe. Garat vertheidigte sich nicht über die
+Anklage, und sagte, nachdem er einige Worte ohne Zusam-
+menhang gestottert hatte, mit einer Art Wuth: „Die
+Unglückliche, sie ist taub; ich kann nicht mehr mit ihr
+fingen."
+Doch zum Saale des Feydeau zurück. Nach Garat
+kam Darcourt, ein alter Schauspieler, der Maler und er-
+ster Komiker des Königs von Preußen gewesen war, und
+der, von vielen Thatsachen redend, mit Lafayette sagen
+konnte: „Das habe ich vom großen Friedrich selbst."
+1
+*) Garat nannte sie gewöhnlich Madame Contr' alto.
+
+114
+Darcourt sagte aus, daß der Philosoph von Sans-
+Souci, wenn er mit Jemanden sprach, demselben in der
+Regel die Knöpfe seines Kleides, indem er sie zwischen den
+Fingern drehte, einen nach dem anderen abriß. Der Kös
+nig von Preußen schenkte seinem ersten Komiker eine Samm-
+lung seiner Poesien in Zwei Theilen.
+</text>
+</chunk>
+
+<chunk>
+<item_id>25990641</item_id>
+<page>134-135</page>
+<text>
+O! die gute und freie Heiterkeit! die unterhaltenden
+Gespräche!.... Hoffmann präsidirte diesem kleinen Vers
+ein von Freunden; Hoffmann, unterrichtet, originell, tref-
+fend, scherzend, mit schalkhafter Anmuth über Alles re-
+dend, mit seiner Voltairischen Satyre Alles, was er auf
+seinem Wege Lächerliches fand, verfolgend, das Paradore
+suchend, der liebenswürdigste Erzähler und gewandter viel-
+leicht noch als Mehul. Theater, Reisen, Politik, Magne-
+tismus, Geschichte, Musik, Medicin, alles kannte er, alles
+gab ihm Stoff zu gründlichen und scherzenden Erörterun-
+gen. Jeden Abend hörten ihn zwanzig Personen suspen-
+sis auribus, wie Properz sehr fein sagt. Und dennoch stot-
+terte er, aber sein Stottern war ein Reiz mehr; er wußte
+es zu nutzen, und oft erzeugte er durch diesen Fehler Ef-
+fecte, die angenommene Gutmüthigkeit, mit der er sie ver-
+anlaßte, komisch erscheinen ließ.
+Neben Hoffmann glänzte Garat, ein großer Anekdoten-
+erzähler des alten Hoses und der Revolution, der mit der
+kindlichen Albernheit einer sechszigjährigen Kokette die Würde
+eines Künstlers und den Geist eines Gaskoniers von guter
+Gesellschaft vereinte. Seine blinzelnden Augen, seine wind-
+schiese Nase, sein bis zum Herzen geöffneter Mund, seine
+gesuchte Aussprache, sein Hintenübersehen des Hutes, sein
+kurzes englisches Kleid, seine sammtenen Beinkleider und
+feine Kamaschen, die er, wie die schöne Stimme der Ma-
+1
+
+111
+demoiselle Duchamp und das Andenken seiner Erfolge in
+den Concerten der Marie-Antoinette, liebte, gaben Garat
+das Ansehen eines sonderbaren Menschen.
 </text>
 </chunk>
 

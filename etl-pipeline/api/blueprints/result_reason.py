@@ -2,7 +2,6 @@ import json
 
 import newrelic.agent
 from flask import Blueprint, request
-from lxml import etree as ET
 from openai import OpenAI
 
 from logger import create_log, LogContextVars, get_app_logger
@@ -15,6 +14,7 @@ from ..utils import APIUtils
 from ..assistant.agent import (
     DEFAULT_LLM,
     TOOL_ERROR_PREFIX,
+    find_result_by_barcode,
     get_session_messages,
 )
 from ..assistant.snippets import format_conversation_history
@@ -64,6 +64,35 @@ Use plain text and italics for emphasis. No other markdown, syntax, or HTML is p
 * Do NOT use structural Markdown headers (#, ##, ###) within the body of your response.
 * Do NOT use links, code blocks, or inline code backticks.
 """
+
+
+def get_tool_call_by_id(messages, call_id):
+    """
+
+    Args:
+        messages: list of responses api items containing the conversation history.
+        call_id: Desired function call_id
+
+    Returns: (args, output, idx) for the function call, where idx is the index
+    of the function call args item.
+
+    None is returned for all if function call does not exist in conversation history.
+    """
+    # Find the raw function_call and function_call_output items for call_id.
+    # Traverse in order so we know the truncation index after the call's arguments.
+    function_call_args = None
+    function_call_output = None
+    function_call_idx = None
+
+    for i, msg in enumerate(messages):
+        msg_type = msg.get("type")
+        if msg_type == "function_call" and msg.get("call_id") == call_id:
+            function_call_args = msg
+            function_call_idx = i + 1
+        elif msg_type == "function_call_output" and msg.get("call_id") == call_id:
+            function_call_output = msg.get("output", "")
+            break
+    return function_call_args, function_call_output, function_call_idx
 
 
 @result_reason_blueprint.route("/result-reason", methods=["POST"])
@@ -116,25 +145,12 @@ def result_reason(session_id):
                     {"message": f"session '{session_id}' not found"},
                 )
 
-            # Find the raw function_call and function_call_output items for call_id.
-            # Traverse in order so we know the truncation index after the call's arguments.
-            function_call_item = None
-            tool_call_output = None
-            truncate_idx = None
+            function_call_args, function_call_output, function_call_idx = (
+                get_tool_call_by_id(messages, call_id)
+            )
 
-            for i, msg in enumerate(messages):
-                msg_type = msg.get("type")
-                if msg_type == "function_call" and msg.get("call_id") == call_id:
-                    function_call_item = msg
-                    truncate_idx = i + 1
-                elif (
-                    msg_type == "function_call_output" and msg.get("call_id") == call_id
-                ):
-                    tool_call_output = msg.get("output", "")
-                    break
-
-            # --- 404 guard 2: call_id not in session, or its output is a tool error ---
-            if function_call_item is None or tool_call_output is None:
+            # --- 404 guard 2: tool call_id not in session ---
+            if function_call_args is None or function_call_output is None:
                 logger.warning(
                     f"get_result_reason: call_id '{call_id}' not found in session '{session_id}'"
                 )
@@ -144,7 +160,8 @@ def result_reason(session_id):
                     {"message": f"call_id '{call_id}' not found in session"},
                 )
 
-            if tool_call_output.startswith(TOOL_ERROR_PREFIX):
+            # --- 404 guard 3: tool call output is a tool error ---
+            if function_call_output.startswith(TOOL_ERROR_PREFIX):
                 logger.warning(
                     f"get_result_reason: tool output for call_id '{call_id}' is an error"
                 )
@@ -154,19 +171,10 @@ def result_reason(session_id):
                     {"message": f"tool output for call_id '{call_id}' is an error"},
                 )
 
-            # --- 404 guard 3: barcode not present in the tool call output XML ---
-            try:
-                root = ET.fromstring(tool_call_output)
-                editions_in_output = root.findall("edition")
-            except ET.XMLSyntaxError:
-                editions_in_output = []
+            # --- 404 guard 4: barcode not present in the tool call output ---
+            edition_result = find_result_by_barcode(function_call_output, barcode)
 
-            edition_result_el = next(
-                (el for el in editions_in_output if el.findtext("barcode") == barcode),
-                None,
-            )
-
-            if edition_result_el is None:
+            if edition_result is None:
                 logger.warning(
                     f"get_result_reason: barcode '{barcode}' not found in tool output for call_id '{call_id}'"
                 )
@@ -178,14 +186,9 @@ def result_reason(session_id):
                     },
                 )
 
-            # All 404 checks passed — now build query description and item result.
-
             # Truncate conversation history to end at (and including) this tool call's
             # arguments, excluding the tool call output.
-            messages = messages[:truncate_idx]
-
-            # Extract the full <edition> result for this barcode from the search results
-            edition_result = ET.tostring(edition_result_el, encoding="unicode").strip()
+            messages = messages[:function_call_idx]
 
             conversation_history = format_conversation_history(messages)
 

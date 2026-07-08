@@ -166,17 +166,6 @@ class TestResultReasonView:
             in (response.get_json()["data"]["message"])
         )
 
-    def test_malformed_tool_output_xml_returns_404(self, client, mocker):
-        mocker.patch(
-            "api.blueprints.result_reason.get_session_messages",
-            return_value=make_session_messages(tool_output="not xml at all <<<"),
-        )
-
-        response = self.post_result_reason(client)
-
-        assert response.status_code == 404
-        assert "not found" in response.get_json()["data"]["message"]
-
     # --- LLM fallback paths (200, is_ai_generated=False) ---
 
     def test_llm_returns_none_uses_fallback(self, client, mocker):
@@ -184,8 +173,9 @@ class TestResultReasonView:
             "api.blueprints.result_reason.get_session_messages",
             return_value=make_session_messages(),
         )
-        mocker.patch(
-            "api.blueprints.result_reason.require_env", return_value="fake-key"
+        mocker.patch.dict(
+            os.environ,
+            {"GOOGLE_API_KEY": "fake-key"},  # pragma: allowlist secret
         )
         mock_client = mocker.MagicMock()
         mock_client.chat.completions.create.return_value.choices = [
@@ -205,8 +195,9 @@ class TestResultReasonView:
             "api.blueprints.result_reason.get_session_messages",
             return_value=make_session_messages(),
         )
-        mocker.patch(
-            "api.blueprints.result_reason.require_env", return_value="fake-key"
+        mocker.patch.dict(
+            os.environ,
+            {"GOOGLE_API_KEY": "fake-key"},  # pragma: allowlist secret
         )
         mock_client = mocker.MagicMock()
         mock_client.chat.completions.create.side_effect = RuntimeError(
@@ -226,8 +217,9 @@ class TestResultReasonView:
             "api.blueprints.result_reason.get_session_messages",
             return_value=make_session_messages(),
         )
-        mocker.patch(
-            "api.blueprints.result_reason.require_env", return_value="fake-key"
+        mocker.patch.dict(
+            os.environ,
+            {"GOOGLE_API_KEY": "fake-key"},  # pragma: allowlist secret
         )
         mock_client = mocker.MagicMock()
         mock_client.chat.completions.create.return_value.choices = [

@@ -1,18 +1,15 @@
-import json
 import os
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from agents import Agent, RunConfig, Runner, function_tool
 from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
-from agents.tool_context import ToolContext
 from api.assistant.agent import (
     _MAX_TURNS_SYSTEM_PROMPT,
     _on_max_turns,
-    CatalogSearchExecutionContext,
-    ContentSearchExecutionContext,
     search_book,
     search_catalog,
+    TOOL_ERROR_PREFIX,
     update_chat,
 )
 from openai import AsyncOpenAI
@@ -24,6 +21,8 @@ from openai.types.chat.chat_completion_message_tool_call import (
 )
 
 from tests.factories import make_chunk_doc
+
+from .conftest import make_search_book_tool_context, make_search_catalog_tool_context
 
 
 def mock_update_chat_env(mocker):
@@ -84,10 +83,11 @@ class TestSearchToolInvocation:
     ):
         mock_search_backend([chunk_doc])
 
-        context = ContentSearchExecutionContext(
-            backend=mocker.MagicMock(),
-            embedder=mocker.MagicMock(),
+        tool_call_id = "call-book-1"
+        ctx = make_search_book_tool_context(
+            tool_call_id=tool_call_id,
             edition_id=42,
+            ranking_query="merchants",
             frbr_fields={
                 "title": "The Missouri Merchant",
                 "author_names": "Jane Doe",
@@ -97,20 +97,12 @@ class TestSearchToolInvocation:
                 "language_list": "English",
             },
         )
-        tool_call_id = "call-book-1"
-        tool_arguments = json.dumps({"ranking_query": "merchants"})
-        ctx = ToolContext(
-            context=context,
-            tool_name="search_book",
-            tool_call_id=tool_call_id,
-            tool_arguments=tool_arguments,
-        )
 
-        result = await search_book.on_invoke_tool(ctx, tool_arguments)
+        result = await search_book.on_invoke_tool(ctx, ctx.tool_arguments)
 
         assert "error" not in result.lower()
         assert chunk_doc.text in result
-        assert tool_call_id in context.search_results
+        assert tool_call_id in ctx.context.search_results
 
     @pytest.mark.asyncio
     async def test_search_catalog_on_invoke_tool_returns_results(
@@ -118,24 +110,51 @@ class TestSearchToolInvocation:
     ):
         mock_search_backend([chunk_doc])
 
-        context = CatalogSearchExecutionContext(
-            backend=mocker.MagicMock(),
-            embedder=mocker.MagicMock(),
-        )
         tool_call_id = "call-catalog-1"
-        tool_arguments = json.dumps({"ranking_query": "merchants"})
-        ctx = ToolContext(
-            context=context,
-            tool_name="search_catalog",
-            tool_call_id=tool_call_id,
-            tool_arguments=tool_arguments,
+        ctx = make_search_catalog_tool_context(
+            tool_call_id=tool_call_id, ranking_query="merchants"
         )
 
-        result = await search_catalog.on_invoke_tool(ctx, tool_arguments)
+        result = await search_catalog.on_invoke_tool(ctx, ctx.tool_arguments)
 
         assert "error" not in result.lower()
         assert chunk_doc.text in result
-        assert tool_call_id in context.search_results
+        assert tool_call_id in ctx.context.search_results
+
+
+class TestSearchToolErrorHandling:
+    """
+    Verifies that search_catalog and search_book surface tool execution errors
+    with the agents SDK's default tool-error prefix (TOOL_ERROR_PREFIX), rather
+    than raising or returning some other shape.
+
+    This matters because several pieces of code detect tool errors
+    by checking `tool_call_output.startswith(TOOL_ERROR_PREFIX)` — if the SDK's
+    error format ever changes, that guard silently stops working.
+    """
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "tool, make_context",
+        [
+            (search_catalog, make_search_catalog_tool_context),
+            (search_book, make_search_book_tool_context),
+        ],
+        ids=["search_catalog", "search_book"],
+    )
+    async def test_tool_error_returns_tool_error_prefix(
+        self, mocker, tool, make_context
+    ):
+        mock_hybrid_search = mocker.patch(
+            "api.assistant.agent.hybrid_search",
+            side_effect=RuntimeError("backend unreachable"),
+        )
+        ctx = make_context()
+
+        result = await tool.on_invoke_tool(ctx, ctx.tool_arguments)
+
+        assert result.startswith(TOOL_ERROR_PREFIX)
+        mock_hybrid_search.assert_called_once()
 
 
 class TestOnMaxTurns:

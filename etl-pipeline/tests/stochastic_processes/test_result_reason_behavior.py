@@ -1,5 +1,5 @@
 """
-Stochastic process tests for the /result-reason endpoint's explanation text.
+LLM behavioral tests for /result-reason endpoint's explanation text.
 
 Each test seeds a real session via a real update_chat() catalog search call
 (same convention as test_agent_behavior.py / test_agent_responses.py), then
@@ -19,13 +19,13 @@ from agents.items import ToolCallItem, ToolCallOutputItem
 from api.assistant.agent import search_catalog, update_chat
 from api.blueprints.result_reason import result_reason_blueprint
 
-from .conftest import stub_function_tool
+from tests.factories import stub_function_tool
 from tests.stochastic_processes.test_agent_behavior import assert_no_markdown_structure
 from tests.stochastic_processes.test_agent_responses import llm_judge
 
 pytestmark = [
     pytest.mark.asyncio,
-    pytest.mark.xfail(reason="behavior unstable", strict=False),
+    pytest.mark.xfail(reason="behavior unstable", strict=False, raises=AssertionError),
 ]
 
 # NOTE: none of the fixture files under tests/fixtures/search_catalog_results/
@@ -134,10 +134,10 @@ def cached_catalog_query_result():
     """
     cache = {}
 
-    async def _run(query, test_session_id):
+    def _run(query, test_session):
         if query not in cache:
-            cache[query] = await update_chat(
-                query, conversation_type="catalogSearch", session_id=test_session_id
+            cache[query] = update_chat(
+                query, conversation_type="catalogSearch", session=test_session
             )
         return cache[query]
 
@@ -145,11 +145,13 @@ def cached_catalog_query_result():
 
 
 async def test_result_reason_has_no_markdown_structure(
-    cached_catalog_query_result, result_reason_client, mocker, test_session_id
+    cached_catalog_query_result,
+    result_reason_client,
+    mocker,
+    test_session,
+    test_session_id,
 ):
-    run_result = await cached_catalog_query_result(
-        "fall of the Roman Empire", test_session_id
-    )
+    run_result = cached_catalog_query_result("fall of the Roman Empire", test_session)
 
     data = await get_result_reason_explanation(
         run_result, None, result_reason_client, mocker, test_session_id
@@ -159,7 +161,7 @@ async def test_result_reason_has_no_markdown_structure(
 
 
 async def test_irrelevant_result_reason_acknowledges_mismatch(
-    result_reason_client, mocker, test_session_id
+    result_reason_client, mocker, test_session, test_session_id
 ):
     """
     result_reason's own system prompt explicitly instructs it to tell the
@@ -168,10 +170,10 @@ async def test_irrelevant_result_reason_acknowledges_mismatch(
     the underlying search result is clearly unrelated to the query.
     """
     with stub_function_tool(search_catalog, IRRELEVANT_RESULT_STUB):
-        run_result = await update_chat(
+        run_result = update_chat(
             "Hayao Miyazaki",
             conversation_type="catalogSearch",
-            session_id=test_session_id,
+            session=test_session,
         )
 
     data = await get_result_reason_explanation(

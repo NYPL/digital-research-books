@@ -1,11 +1,13 @@
 import json
 import os
+import re
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Tuple, Union
 from typing_extensions import TypedDict
+from xml.sax.saxutils import escape as xml_escape
 
 
 import newrelic.agent
@@ -30,6 +32,7 @@ from agents.models.chatcmpl_converter import Converter
 from agents.run_config import DEFAULT_MAX_TURNS
 from agents.tool_context import ToolContext
 from jinja2 import Template
+from lxml import etree
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 from sqlalchemy import text
@@ -45,7 +48,7 @@ from ..db import (
     get_engine,
 )
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
-from .types import CatalogSearchResult, ContentSearchResult
+from .types import BaseEditionResult, CatalogSearchResult, ContentSearchResult
 
 # shared code
 from vector_indexing.components.embedders.base import Embedder
@@ -1168,24 +1171,109 @@ def format_frbr_fields(orm_work, orm_edition):
     }
 
 
-def display_book(lines, frbr_fields, chunk_hits, edition_id, barcode=None):
+SEARCH_RESULTS_XSD = """\
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="search_results">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="query" type="xs:string" minOccurs="0"/>
+        <xs:element name="search_tool_call_id" type="xs:string" minOccurs="0"/>
+        <xs:element name="edition" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="edition_id" type="xs:integer"/>
+              <xs:element name="barcode" type="xs:string" minOccurs="0"/>
+              <xs:element name="title" type="xs:string"/>
+              <xs:element name="authors" type="xs:string"/>
+              <xs:element name="publisher" type="xs:string"/>
+              <xs:element name="date" type="xs:string"/>
+              <xs:element name="subjects" type="xs:string"/>
+              <xs:element name="language" type="xs:string"/>
+              <xs:element name="chunks">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="chunk" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="item_id" type="xs:integer"/>
+                          <xs:element name="page" type="xs:string"/>
+                          <xs:element name="text" type="xs:string"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+"""
+
+_SEARCH_RESULTS_XSD_TREE = etree.fromstring(SEARCH_RESULTS_XSD.encode("utf-8"))
+SEARCH_RESULTS_SCHEMA = etree.XMLSchema(_SEARCH_RESULTS_XSD_TREE)
+
+_SEARCH_RESULT_SCHEMA_ELEMENT_NAMES = _SEARCH_RESULTS_XSD_TREE.xpath(
+    "//xs:element/@name", namespaces={"xs": "http://www.w3.org/2001/XMLSchema"}
+)
+
+
+def _escape_if_collides_with_known_tags(value: Any) -> Tuple[str, bool]:
+    """
+    Return (value, was_escaped). If value contains a literal open or close
+    tag matching one of _KNOWN_ELEMENT_NAMES (e.g. "</chunk>"), the whole
+    value is XML-escaped so it can't be mistaken for real structural markup.
+    Otherwise value is returned unchanged (as a str).
+    """
+    value = str(value)
+    collides = any(
+        f"<{name}>" in value or f"</{name}>" in value
+        for name in _SEARCH_RESULT_SCHEMA_ELEMENT_NAMES
+    )
+    return (xml_escape(value), True) if collides else (value, False)
+
+
+# NOTE: Tag names emit as structural delimiters. Inserted values are not
+# XML-escaped in general but if a value happens to literally contain one of the
+# schema elements tags (e.g. a book excerpt containing the string "</chunk>"),
+# that specific value is escaped so it can't be mistaken for real structural
+# markup by get_result_count()/ find_result_by_barcode() (or any other consumer
+# looking for these tags).
+
+
+def format_book(lines, frbr_fields, chunk_hits, edition_id, barcode=None):
     """
     Create lines of str for an XML display of book and chunk search results.
     Chunk display order controlled by input data order.
+
+    Returns (lines, escaped_any) where escaped_any is True if any inserted
+    value required escaping via _escape_if_collides_with_known_tags().
     """
+    escaped_any = False
+
+    def emit(tag, value):
+        nonlocal escaped_any
+        value, escaped = _escape_if_collides_with_known_tags(value)
+        escaped_any = escaped_any or escaped
+        lines.append(f"<{tag}>{value}</{tag}>")
+
     lines.append("\n<edition>")
     # Display book level metadata
 
     # MAYBE: edition index not id?
-    lines.append(f"<edition_id>{edition_id}</edition_id>")
+    emit("edition_id", edition_id)
     if barcode is not None:
-        lines.append(f"<barcode>{barcode}</barcode>")
-    lines.append(f"<title>{frbr_fields['title']}</title>")
-    lines.append(f"<authors>{frbr_fields['author_names']}</authors>")
-    lines.append(f"<publisher>{frbr_fields['publisher_names']}</publisher>")
-    lines.append(f"<date>{frbr_fields['pub_date']}</date>")
-    lines.append(f"<subjects>{frbr_fields['subject_list']}</subjects>")
-    lines.append(f"<language>{frbr_fields['language_list']}</language>")
+        emit("barcode", barcode)
+    emit("title", frbr_fields["title"])
+    emit("authors", frbr_fields["author_names"])
+    emit("publisher", frbr_fields["publisher_names"])
+    emit("date", frbr_fields["pub_date"])
+    emit("subjects", frbr_fields["subject_list"])
+    emit("language", frbr_fields["language_list"])
     # MAYBE: add agg_score
     # MAYBE: print the number of chunks per edition somehow
 
@@ -1209,21 +1297,64 @@ def display_book(lines, frbr_fields, chunk_hits, edition_id, barcode=None):
         lines.append("\n<chunk>")
         # MAYBE: add chunk index? to tag?
         # MAYBE: chunk score?
-        lines.append(
-            f"<item_id>{chunk_hit['item_id']}</item_id>"
+        emit(
+            "item_id", chunk_hit["item_id"]
         )  # an edition might include chunks from multiple items
-        lines.append(f"<page>{page_display}</page>")
+        emit("page", page_display)
+        text, text_escaped = _escape_if_collides_with_known_tags(text)
+        escaped_any = escaped_any or text_escaped
         lines.append(f"<text>\n{text}\n</text>")
         lines.append("</chunk>")
 
     lines.append("\n</chunks>")
     lines.append("</edition>")
 
-    return lines
+    return lines, escaped_any
 
 
-# MAYBE: remove book level info from search response for contentSearch to save tokens.
-def format_search_results(edition_data, search_tool_call_id=None, query=None) -> str:
+# NOTE: Using regex for search tool output xml tag parsing allows unescaped XML
+# special characters to be preserved in chunk text without relying on subtle,
+# complex lxml recover=True parsing behavior.
+
+# NOTE: Regex parsing of the search results schema is safe because
+# format_search_results() escapes any literal occurrence of a search result
+# schema element name within formatted text so an un-escaped element tag,
+# like "<edition>", can only be real structural markup, never book content. Also
+# the structure of the \format_search_results() xml is guaranteed by tests
+# against the schema defined above.
+
+# ALT: use xml parsing with `etree.fromstring(xml_str, parser=etree.HTMLParser(recover=True))`
+# which preserved element text that contains unescaped xml special characters
+# (in almost all cases).
+
+
+def get_result_count(formatted_output: str) -> int:
+    """
+    Count the <edition> results in format_search_results() output.
+    """
+    return len(re.findall(r"<edition>", formatted_output))
+
+
+def find_result_by_barcode(formatted_output: str, barcode: str) -> Optional[str]:
+    """
+    Return the full <edition>...</edition> block containing the given
+    barcode, or None if not found.
+    """
+    barcode_tag = f"<barcode>{barcode}</barcode>"
+    for match in re.finditer(r"<edition>.*?</edition>", formatted_output, re.DOTALL):
+        block = match.group(0)
+        if barcode_tag in block:
+            return block
+    return None
+
+
+# TODO: make XML escape note permanent (not conditional) and there for greatly
+# simplify format_book()/emit(), nonlocal and locally defined function no longer needed.
+def format_search_results(
+    edition_data: list[BaseEditionResult],
+    search_tool_call_id: str | None = None,
+    query: str | None = None,
+) -> str:
     """
     Return a formatted str containing an ordered list of editions and their
     associated text excerpts. For each edition, metadata (title, authors, subjects,
@@ -1234,6 +1365,12 @@ def format_search_results(edition_data, search_tool_call_id=None, query=None) ->
         edition_data: List of BaseEditionResult (CatalogSearchResult or ContentSearchResult)
         search_tool_call_id: Optional tool call ID to include in output header
         query: The search query string
+
+    NOTE: This output is not formally XML-escaped/encoded. the goal is clear
+    delimiting and reliable downstream extraction (get_result_count(),
+    find_result_by_barcode()) while keeping unmodified book text maximally visible
+    to the LLM. The only escaping applied is the narrow case of a value that
+    would otherwise be mistaken for one of the search result schema's own tags.
     """
     if not edition_data:
         return "There are no results for your query."
@@ -1241,8 +1378,12 @@ def format_search_results(edition_data, search_tool_call_id=None, query=None) ->
     lines = []
     lines.append("<search_results>")
 
+    escaped_any = False
+
     if query is not None:
-        lines.append(f"<query>{wrap(query)}</query>")
+        wrapped_query, query_escaped = _escape_if_collides_with_known_tags(wrap(query))
+        escaped_any = escaped_any or query_escaped
+        lines.append(f"<query>{wrapped_query}</query>")
 
     if search_tool_call_id is not None:
         lines.append(
@@ -1256,11 +1397,19 @@ def format_search_results(edition_data, search_tool_call_id=None, query=None) ->
             else entry.frbr_fields
         )
         barcode = entry.barcode if isinstance(entry, CatalogSearchResult) else None
-        lines = display_book(
+        lines, book_escaped = format_book(
             lines, frbr_fields, entry.chunk_hits, entry.edition_id, barcode=barcode
         )
+        escaped_any = escaped_any or book_escaped
 
     lines.append("\n</search_results>")
+
+    if escaped_any:
+        lines.append(
+            "\nNOTE: some element names appearing within book text or metadata "
+            'were XML-escaped for clear parsing (e.g. "</chunk>" becomes '
+            '"&lt;/chunk&gt;").'
+        )
 
     return "\n".join(lines)
 
