@@ -1,11 +1,12 @@
 import { Box, Flex } from "@nypl/design-system-react-components";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
   HEADER_HEIGHT,
   MARGIN_BLEED,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { isCatalogResults } from "~/src/util/ResearchAssistantUtils";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
@@ -25,12 +26,15 @@ const ResearchAssistant: React.FC = () => {
     isLoading,
   } = useResearchAssistant();
 
+  const isLandingPageQuery = useRef(false);
+
   useEffect(() => {
     if (!messages || messages.length === 0) {
       const initialMessage = sessionStorage.getItem(
         "researchAssistantInitialMessage"
       );
       if (initialMessage) {
+        isLandingPageQuery.current = true;
         sendMessage(initialMessage);
         sessionStorage.removeItem("researchAssistantInitialMessage");
       }
@@ -57,6 +61,21 @@ const ResearchAssistant: React.FC = () => {
 
     return null;
   }, [messages.length, results]);
+
+  useEffect(() => {
+    if (isLandingPageQuery.current && !isLoading && latestResults) {
+      let resultsCount = 0;
+      if (isCatalogResults(latestResults)) {
+        resultsCount = latestResults.paging?.totalRecords || 0;
+      }
+      trackEvent({
+        event: "view_query_results",
+        query_type: "landing_page",
+        results_count: resultsCount,
+      });
+      isLandingPageQuery.current = false;
+    }
+  }, [isLoading, latestResults]);
 
   return (
     <>
