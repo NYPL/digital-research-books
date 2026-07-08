@@ -6,7 +6,7 @@ import pytest
 
 from agents.items import ToolCallItem
 from api.assistant.agent import update_chat
-from tests.stochastic_processes.test_agent_responses import llm_judge
+from tests.stochastic_processes.llm_judge import llm_judge
 
 pytestmark = [
     pytest.mark.asyncio,
@@ -131,7 +131,7 @@ async def test_translation_protocol(cached_catalog_query_result, test_session):
     )
 
     verdict = await llm_judge(
-        run_result,
+        run_result.to_input_list(),
         question=(
             "When the assistant quotes from a non-English text, does it provide "
             "the original non-English text first, followed immediately by its "

@@ -6,77 +6,18 @@ These tests verify the content and style of agent responses using a mix of:
   - Structural assertions for deterministic properties (tool call presence)
 """
 
-import json
 from pathlib import Path
-from typing import Literal
 
 import pytest
-from openai import AsyncOpenAI
-from pydantic import BaseModel
 
 from agents.items import ToolCallItem
 
 from api.assistant.agent import update_chat
-from utils.common import require_env
 
 from api.assistant.agent import search_catalog
 
 from tests.factories import make_chunk_doc, stub_function_tool
-
-
-# ---------------------------------------------------------------------------
-# LLM-as-judge
-# ---------------------------------------------------------------------------
-
-
-class JudgeVerdict(BaseModel):
-    reason: str
-    answer: Literal["YES", "NO"]
-
-
-async def llm_judge(run_result, question: str) -> JudgeVerdict:
-    """
-    Run an LLM-as-judge evaluation over the full conversation history.
-
-    The judge receives the serialized conversation (run_result.to_input_list())
-    embedded in the system prompt, then answers a YES/NO question about it.
-    `default=str` handles non-serializable items in the history (e.g. datetime).
-    """
-    client = AsyncOpenAI(
-        api_key=require_env("GOOGLE_API_KEY"),
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-    )
-    conversation_json = json.dumps(run_result.to_input_list(), indent=2, default=str)
-
-    response = await client.chat.completions.parse(
-        model="gemini-3.1-pro-preview",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are an impartial evaluator judging an AI assistant's "
-                    "conversation. You are given the full conversation history below, "
-                    "including tool call inputs and outputs. Answer the evaluation "
-                    "question with YES or NO and explain your reasoning.\n\n"
-                    f"CONVERSATION:\n{conversation_json}"
-                ),
-            },
-            {
-                "role": "user",
-                "content": f"EVALUATION QUESTION: {question}",
-            },
-        ],
-        response_format=JudgeVerdict,
-        temperature=0,
-    )
-    parsed = response.choices[0].message.parsed
-    assert parsed is not None, "LLM judge returned a null response (possible refusal)"
-
-    print("QUESTION:", question)
-    print("AGENT FINAL RESPONSE:", run_result.final_output)
-    print("VERDICT:", parsed.answer)
-    print("REASON:", parsed.reason)
-    return parsed
+from tests.stochastic_processes.llm_judge import llm_judge
 
 
 # ---------------------------------------------------------------------------
@@ -181,7 +122,7 @@ class TestAgentResponses:
         )
 
         verdict = await llm_judge(
-            run_result,
+            run_result.to_input_list(),
             question=UNGROUNDED_INFORMATION_QUESTION,
         )
 
@@ -231,7 +172,7 @@ class TestAgentResponses:
             )
 
         verdict = await llm_judge(
-            run_result,
+            run_result.to_input_list(),
             question=UNGROUNDED_INFORMATION_QUESTION,
         )
 
@@ -264,7 +205,7 @@ class TestAgentResponses:
             )
 
         verdict = await llm_judge(
-            run_result,
+            run_result.to_input_list(),
             question="""\
 Does the assistant response clearly acknowledge that the search
 results do not include information directly related to the user query?
