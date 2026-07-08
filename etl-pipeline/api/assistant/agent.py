@@ -450,7 +450,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None, barcode_ids=None
         df = pd.DataFrame(result.fetchall(), columns=result.keys())
 
     logger.debug(
-        f"Successfully mapped {len(df)} {source_col}s to {df[target_col].unique().size} {target_col}s"
+        f"Mapped {len(df)}/{len(ids)} {source_col}s to {df[target_col].unique().size} {target_col}s"
     )
 
     # Create dict mapping: source id -> {target id -> value, ...}
