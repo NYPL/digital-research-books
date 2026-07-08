@@ -11,7 +11,7 @@ from api.assistant.agent import (
 from api.assistant.types import CatalogSearchResult
 
 
-def make_catalog_result(
+def make_catalog_search_result(
     edition_id=1,
     barcode="00000000000001",
     title="A Tale of Two Cities",

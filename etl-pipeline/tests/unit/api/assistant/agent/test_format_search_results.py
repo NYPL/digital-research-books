@@ -4,7 +4,7 @@ import pytest
 from api.assistant.agent import SEARCH_RESULTS_SCHEMA, format_search_results
 from api.assistant.types import ContentSearchResult
 
-from .conftest import make_catalog_result
+from .conftest import make_catalog_search_result
 
 
 def parse_and_validate(xml_str: str):
@@ -34,7 +34,7 @@ class TestFormatSearchResultsSchema:
     """
 
     def test_catalog_result_matches_schema(self):
-        result = make_catalog_result()
+        result = make_catalog_search_result()
         xml_str = format_search_results([result])
 
         search_results_el = parse_and_validate(xml_str)
@@ -51,10 +51,10 @@ class TestFormatSearchResultsSchema:
         assert chunks[0].findtext("text").strip() == "It was the best of times."
 
     def test_multiple_editions_and_chunks_matches_schema(self):
-        result_1 = make_catalog_result(
+        result_1 = make_catalog_search_result(
             edition_id=1, barcode="1" * 14, chunk_texts=("chunk one", "chunk two")
         )
-        result_2 = make_catalog_result(
+        result_2 = make_catalog_search_result(
             edition_id=2, barcode="2" * 14, title="Other Book"
         )
         xml_str = format_search_results([result_1, result_2])
@@ -103,7 +103,7 @@ class TestFormatSearchResult:
         Test that chunk text containing a literal known-element tag is XML-escaped
         in place, rather than left as-is.
         """
-        result = make_catalog_result(
+        result = make_catalog_search_result(
             chunk_texts=("A chapter ends with </chunk> right here.",),
         )
         xml_str = format_search_results([result])

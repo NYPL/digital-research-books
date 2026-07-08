@@ -33,6 +33,7 @@ def test_result_reason_happy_path(vra_test_user, test_session_id):
     session_cookie = sign_session(test_session_id)
     session.cookies.set(cookie_name, session_cookie)
 
+    # Make /chat request
     chat_url = base_url + CHAT_ENDPOINT_PATH
     chat_response = session.post(
         chat_url,
@@ -45,6 +46,7 @@ def test_result_reason_happy_path(vra_test_user, test_session_id):
     assert_response_status(chat_url, chat_response, 200)
     chat_data = chat_response.json()["data"]
 
+    # Extract data from /chat needed to call /result-reason
     search_result = chat_data["search_result"]
     assert search_result is not None, (
         f"No search_result found in /chat response: {chat_data}"
@@ -64,6 +66,7 @@ def test_result_reason_happy_path(vra_test_user, test_session_id):
         f"No barcode found on first edition in /chat response: {editions[0]}"
     )
 
+    # Make /result-reason request
     result_reason_url = base_url + RESULT_REASON_ENDPOINT_PATH
     result_reason_response = session.post(
         result_reason_url,
@@ -71,6 +74,7 @@ def test_result_reason_happy_path(vra_test_user, test_session_id):
         timeout=90,
     )
 
+    # Core test assertions
     assert_response_status(result_reason_url, result_reason_response, 200)
 
     try:

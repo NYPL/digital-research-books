@@ -1,6 +1,6 @@
 """
-Unit tests for get_result_count() and find_result_by_barcode()
-(api/assistant/agent.py, defined next to format_search_results()).
+Unit tests for functions that parse the output of format_search_results()
+(e.g. get_result_count() and find_result_by_barcode())
 """
 
 from api.assistant.agent import (
@@ -9,7 +9,7 @@ from api.assistant.agent import (
     get_result_count,
 )
 
-from .conftest import make_catalog_result
+from .conftest import make_catalog_search_result
 
 
 class TestGetResultCount:
@@ -18,7 +18,8 @@ class TestGetResultCount:
 
     def test_counts_multiple_editions(self):
         results = [
-            make_catalog_result(edition_id=i, barcode=str(i) * 14) for i in range(1, 4)
+            make_catalog_search_result(edition_id=i, barcode=str(i) * 14)
+            for i in range(1, 4)
         ]
         xml_str = format_search_results(results)
 
@@ -31,8 +32,8 @@ class TestGetResultCount:
         real structural edition count.
         """
         results = [
-            make_catalog_result(edition_id=1, barcode="1" * 14),
-            make_catalog_result(
+            make_catalog_search_result(edition_id=1, barcode="1" * 14),
+            make_catalog_search_result(
                 edition_id=2,
                 barcode="2" * 14,
                 chunk_texts=("See also the <edition> discussed on page 12.",),
@@ -51,8 +52,12 @@ class TestFindResultByBarcode:
         searching for the second edition's barcode must return only that
         edition's block, not both editions concatenated.
         """
-        result_1 = make_catalog_result(edition_id=1, barcode="1" * 14, title="Book One")
-        result_2 = make_catalog_result(edition_id=2, barcode="2" * 14, title="Book Two")
+        result_1 = make_catalog_search_result(
+            edition_id=1, barcode="1" * 14, title="Book One"
+        )
+        result_2 = make_catalog_search_result(
+            edition_id=2, barcode="2" * 14, title="Book Two"
+        )
         xml_str = format_search_results([result_1, result_2])
 
         block = find_result_by_barcode(xml_str, "2" * 14)
@@ -65,8 +70,12 @@ class TestFindResultByBarcode:
         assert "Book One" not in block
 
     def test_finds_correct_edition_when_target_is_first(self):
-        result_1 = make_catalog_result(edition_id=1, barcode="1" * 14, title="Book One")
-        result_2 = make_catalog_result(edition_id=2, barcode="2" * 14, title="Book Two")
+        result_1 = make_catalog_search_result(
+            edition_id=1, barcode="1" * 14, title="Book One"
+        )
+        result_2 = make_catalog_search_result(
+            edition_id=2, barcode="2" * 14, title="Book Two"
+        )
         xml_str = format_search_results([result_1, result_2])
 
         block = find_result_by_barcode(xml_str, "1" * 14)
@@ -77,7 +86,7 @@ class TestFindResultByBarcode:
         assert "<edition_id>2</edition_id>" not in block
 
     def test_returns_none_when_barcode_not_found(self):
-        result = make_catalog_result(barcode="1" * 14)
+        result = make_catalog_search_result(barcode="1" * 14)
         xml_str = format_search_results([result])
 
         assert find_result_by_barcode(xml_str, "9" * 14) is None
@@ -93,7 +102,7 @@ class TestFindResultByBarcode:
         pair is escaped by format_search_results(), so searching for that
         fake barcode must not match it.
         """
-        result = make_catalog_result(
+        result = make_catalog_search_result(
             edition_id=1,
             barcode="1" * 14,
             chunk_texts=(

@@ -1,12 +1,5 @@
 """
 LLM behavioral tests for the /result-reason explanation-generation function.
-
-Each test loads pre-recorded conversation history from a fixture file under
-tests/fixtures/session_messages/ (raw agent_messages rows captured from a
-real /chat session) and reproduces the /result-reason view's own logic --
-get_tool_call_by_id() + find_result_by_barcode() -- to build the
-(messages, edition_result) inputs to get_result_reason(). No live /chat
-call is made; only the result-reason LLM call itself is exercised.
 """
 
 import json

@@ -1,6 +1,6 @@
 # builtins
 from dataclasses import asdict
-from typing import Dict, NamedTuple, Optional
+from typing import Any, Dict, Literal, NamedTuple, Optional, TypedDict
 
 # non-built-ins
 from flask import Blueprint, request
@@ -32,6 +32,7 @@ from ..assistant.agent import (
     get_new_items_with_ids,
 )
 from ..assistant.snippets import get_relevant_snippets
+from ..assistant.types import BaseEditionResult
 
 
 logger = create_log(__name__)
@@ -45,7 +46,22 @@ class SearchResponse(NamedTuple):
     tool_call_id: str
 
 
-def prepare_search_response(search_results) -> Optional[SearchResponse]:
+class SearchToolResult(TypedDict):
+    """Value stored per tool_call_id in
+    RunResult.context_wrapper.context.search_results (see search_book /
+    search_catalog in ../assistant/agent.py).
+    """
+
+    tool_name: Literal["search_book", "search_catalog"]
+    edition_data: list[BaseEditionResult]
+    search_params: dict[str, Any]
+
+
+SearchResults = dict[str, SearchToolResult]
+"""Keyed by tool_call_id."""
+
+
+def prepare_search_response(search_results: SearchResults) -> Optional[SearchResponse]:
     """
     Extract final search result, prepare structure for expected chat/ response,
     and convert to serializable types.

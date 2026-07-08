@@ -1360,8 +1360,6 @@ def find_result_by_barcode(formatted_output: str, barcode: str) -> Optional[str]
     return None
 
 
-# TODO: make XML escape note permanent (not conditional) and there for greatly
-# simplify format_book()/emit(), nonlocal and locally defined function no longer needed.
 def format_search_results(
     edition_data: list[BaseEditionResult],
     search_tool_call_id: str | None = None,
@@ -1378,9 +1376,9 @@ def format_search_results(
         search_tool_call_id: Optional tool call ID to include in output header
         query: The search query string
 
-    NOTE: This output is not formally XML-escaped/encoded. the goal is clear
-    delimiting and reliable downstream extraction (get_result_count(),
-    find_result_by_barcode()) while keeping unmodified book text maximally visible
+    NOTE: This output is not formally XML-escaped/encoded. XML tags are used for
+    section delimiters and downstream extraction (get_result_count(),
+    find_result_by_barcode()) while keeping unmodified book text visible
     to the LLM. The only escaping applied is the narrow case of a value that
     would otherwise be mistaken for one of the search result schema's own tags.
     """
@@ -1416,6 +1414,8 @@ def format_search_results(
 
     lines.append("\n</search_results>")
 
+    # TODO: make XML escape note permanent (not conditional) and therefore greatly
+    # simplify format_book()/emit(): nonlocal and locally defined emit() function no longer needed.
     if escaped_any:
         lines.append(
             "\nNOTE: some element names appearing within book text or metadata "

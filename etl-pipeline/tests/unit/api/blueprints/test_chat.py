@@ -40,7 +40,44 @@ def make_search_results(tool_name, edition_data, search_params=None):
 
 class TestPrepareSearchResponse:
     def test_returns_none_when_no_results(self):
+        """Tests no search executed for contentSearch and CatalogSearch"""
         assert prepare_search_response({}) is None
+
+    def test_content_search_zero_results(self):
+        """Test the "search executed, zero results" contentSearch case.
+
+        A single edition with zero snippets in contentSearch (as search_book records
+        when the search executed but returns nothing) produces an object with an
+        empty snippets list, not None — None is reserved for "no search was executed".
+        """
+        edition = make_edition_result([])
+        search_results = make_search_results("search_book", [edition])
+
+        search_response = prepare_search_response(search_results)
+
+        assert search_response.result_type == "contentSearch"
+        formatted = search_response.formatted_search_result
+        assert formatted == {"snippets": [], "search_params": {}}
+
+    def test_catalog_search_zero_results(self, mocker):
+        """Test the "search executed, zero results" catalogSearch case.
+
+        search_catalog records edition_data=[] when the search executed but
+        found zero chunk hits (the catalogSearch analog to
+        test_content_search_zero_results) — same empty-list shape also occurs if
+        hit barcodes lack matching DB metadata.
+        """
+        mocker.patch(
+            "api.blueprints.chat.APIUtils.formatPagingOptions", return_value={"page": 1}
+        )
+
+        search_results = make_search_results("search_catalog", [])
+
+        search_response = prepare_search_response(search_results)
+
+        assert search_response.result_type == "catalogSearch"
+        formatted = search_response.formatted_search_result
+        assert formatted["editions"] == []
 
     def test_content_search_output_structure(self):
         edition = make_edition_result([make_snippet("a", 0.5)])
