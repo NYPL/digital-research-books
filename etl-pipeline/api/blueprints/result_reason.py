@@ -49,8 +49,8 @@ explain. The result includes some book metadata and the text chunks in the book 
 that best matched the search query:
 {edition_result}
 
-Write 3-4 sentences (~450 characters) explaining the connection between \
-this book and the user's search.\
+Write 3-4 sentences or ~400 characters (whichever is less) explaining the \
+connection between this book and the user's search.
 
 Closest match results are always returned even if there are no truly relevant \
 matches in our search catalog. If the book is truly not relevant to the user's \
