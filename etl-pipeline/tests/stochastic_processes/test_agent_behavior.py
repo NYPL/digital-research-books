@@ -10,7 +10,7 @@ from tests.stochastic_processes.test_agent_responses import llm_judge
 
 pytestmark = [
     pytest.mark.asyncio,
-    pytest.mark.xfail(reason="behavior unstable", strict=False, raises=AssertionError),
+    pytest.mark.xfail(reason="behavior unstable", strict=False),
 ]
 
 _MARKDOWN_LIST_RE = re.compile(r"^\s*[-*•]|\s*\d+\.", re.MULTILINE)

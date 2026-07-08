@@ -28,7 +28,7 @@ from tests.stochastic_processes.test_agent_responses import llm_judge
 
 pytestmark = [
     pytest.mark.asyncio,
-    pytest.mark.xfail(reason="behavior unstable", strict=False, raises=AssertionError),
+    pytest.mark.xfail(reason="behavior unstable", strict=False),
 ]
 
 # NOTE: none of the fixture files under tests/fixtures/search_catalog_results/

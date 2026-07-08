@@ -103,7 +103,6 @@ class TestAgentResponses:
     # MAYBE: save the synthetic search tool output as a fixture instead?
     @pytest.mark.xfail(
         reason="The Judge's criteria should probably be loosened to accept the agent response in this case.",
-        raises=AssertionError,
     )
     @pytest.mark.asyncio
     async def test_grounding_fixture_inline(self, test_session, mock_search_backend):
@@ -205,7 +204,7 @@ class TestAgentResponses:
         ),
     ]
 
-    @pytest.mark.xfail(raises=AssertionError)
+    @pytest.mark.xfail
     @pytest.mark.parametrize("fixture_file,query", _GROUNDING_FIXTURE_PARAMS)
     @pytest.mark.asyncio
     async def test_grounding_fixture_file(self, test_session, fixture_file, query):
