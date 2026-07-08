@@ -39,22 +39,22 @@ def make_search_results(tool_name, edition_data, search_params=None):
 
 
 class TestPrepareSearchResponse:
-    def test_returns_none_none_when_no_results(self):
-        result_type, result = prepare_search_response({})
-        assert result_type is None
-        assert result is None
+    def test_returns_none_when_no_results(self):
+        assert prepare_search_response({}) is None
 
     def test_content_search_output_structure(self):
         edition = make_edition_result([make_snippet("a", 0.5)])
         search_results = make_search_results("search_book", [edition])
 
-        result_type, formatted = prepare_search_response(search_results)
+        search_response = prepare_search_response(search_results)
 
-        assert result_type == "contentSearch"
+        assert search_response.result_type == "contentSearch"
+        formatted = search_response.formatted_search_result
         assert set(formatted.keys()) == {"snippets", "search_params"}
         assert "editions" not in formatted
         assert "paging" not in formatted
         assert isinstance(formatted["snippets"], list)
+        assert search_response.tool_call_id == "tool_call_id_123"
 
     def test_catalog_search_output_structure(self, mocker):
         mocker.patch(
@@ -67,12 +67,29 @@ class TestPrepareSearchResponse:
         edition = make_edition_result([make_snippet("a", 0.5)], type="catalog")
         search_results = make_search_results("search_catalog", [edition])
 
-        result_type, formatted = prepare_search_response(search_results)
+        search_response = prepare_search_response(search_results)
 
-        assert result_type == "catalogSearch"
+        assert search_response.result_type == "catalogSearch"
+        formatted = search_response.formatted_search_result
         assert set(formatted.keys()) == {"editions", "search_params", "paging"}
         assert isinstance(formatted["editions"], list)
         assert "snippets" in formatted["editions"][0]
+        assert search_response.tool_call_id == "tool_call_id_123"
+
+    def test_catalog_search_includes_barcode(self, mocker):
+        mocker.patch("api.blueprints.chat.orm_to_dict", return_value={})
+        mocker.patch(
+            "api.blueprints.chat.APIUtils.formatPagingOptions", return_value={}
+        )
+
+        edition = make_edition_result([make_snippet("a", 0.5)], type="catalog")
+        edition.barcode = "33433012345678"
+        search_results = make_search_results("search_catalog", [edition])
+
+        search_response = prepare_search_response(search_results)
+
+        editions = search_response.formatted_search_result["editions"]
+        assert editions[0]["barcode"] == "33433012345678"
 
     def test_content_search_snippets_sorted(self):
         snippets = [
@@ -83,7 +100,7 @@ class TestPrepareSearchResponse:
         edition = make_edition_result(snippets)
         search_results = make_search_results("search_book", [edition])
 
-        _, formatted = prepare_search_response(search_results)
+        formatted = prepare_search_response(search_results).formatted_search_result
 
         output_scores = [s["chunk_score"] for s in formatted["snippets"]]
         expected_scores = sorted(
@@ -105,7 +122,7 @@ class TestPrepareSearchResponse:
         edition = make_edition_result(snippets, type="catalog")
         search_results = make_search_results("search_catalog", [edition])
 
-        _, formatted = prepare_search_response(search_results)
+        formatted = prepare_search_response(search_results).formatted_search_result
 
         output_scores = [s["chunk_score"] for s in formatted["editions"][0]["snippets"]]
         expected_scores = sorted(

@@ -1,7 +1,6 @@
 import os
 
 import requests
-from lxml import etree as ET
 
 from ..utils import (
     assert_response_status,
@@ -16,39 +15,6 @@ RESULT_REASON_ENDPOINT_PATH = "/result-reason"
 
 # The result_reason system prompt asks for ~450 characters / 3-4 sentences.
 MAX_EXPLANATION_LENGTH = 500
-
-
-def find_search_tool_call_and_barcode(messages):
-    """
-    Given the `messages` list returned by /chat, find the last search tool
-    call's (call_id, output) pair and the first barcode present in its XML
-    output. Returns (call_id, barcode); either may be None if not found.
-    """
-    call_id = None
-    tool_output = None
-    for msg in messages:
-        if msg.get("type") == "function_call" and msg.get("name") in (
-            "search_catalog",
-            "search_book",
-        ):
-            call_id = msg.get("call_id")
-        elif (
-            msg.get("type") == "function_call_output" and msg.get("call_id") == call_id
-        ):
-            tool_output = msg.get("output", "")
-
-    if call_id is None or not tool_output:
-        return call_id, None
-
-    try:
-        root = ET.fromstring(tool_output)
-        barcode_el = root.find(
-            ".//barcode"
-        )  # Q: there are multiple barcodes in the output. which is this?
-    except ET.XMLSyntaxError:
-        return call_id, None
-
-    return call_id, (barcode_el.text if barcode_el is not None else None)
 
 
 # NOTE: future tool calls and outputs may not be in /chat response. instead
@@ -79,12 +45,18 @@ def test_result_reason_happy_path(vra_test_user, test_session_id):
     assert_response_status(chat_url, chat_response, 200)
     chat_data = chat_response.json()["data"]
 
-    call_id, barcode = find_search_tool_call_and_barcode(chat_data["messages"])
+    call_id = chat_data["tool_call_id"]
     assert call_id is not None, (
-        f"No search tool call found in /chat response messages: {chat_data['messages']}"
+        f"No search tool call found in /chat response: {chat_data}"
     )
+
+    editions = chat_data["result"]["editions"]
+    assert editions, (
+        f"No editions found in /chat response result: {chat_data['result']}"
+    )
+    barcode = editions[0]["barcode"]
     assert barcode is not None, (
-        f"No barcode found in search tool output for call_id '{call_id}'"
+        f"No barcode found on first edition in /chat response: {editions[0]}"
     )
 
     result_reason_url = base_url + RESULT_REASON_ENDPOINT_PATH

@@ -1,23 +1,26 @@
 """
-LLM behavioral tests for /result-reason endpoint's explanation text.
+LLM behavioral tests for the /result-reason explanation-generation function.
 
 Each test seeds a real session via a real update_chat() catalog search call
 (same convention as test_agent_behavior.py / test_agent_responses.py), then
-exercises the real result_reason Flask view through a test client -- so the
-real DB-backed session lookup and real LLM call are used end-to-end, with
-only auth bypassed (same pattern as tests/unit/api/blueprints/test_chat.py).
+calls get_result_reason() directly with the real session messages and
+edition result -- so the real LLM call is exercised end-to-end. Call_id /
+barcode validation and the view's 404 guards are out of scope here; this
+file focuses solely on explanation content.
 """
 
-import os
-
 import pytest
-from flask import Flask
 from lxml import etree as ET
 
 from agents.items import ToolCallItem, ToolCallOutputItem
 
-from api.assistant.agent import search_catalog, update_chat
-from api.blueprints.result_reason import result_reason_blueprint
+from api.assistant.agent import (
+    find_result_by_barcode,
+    get_session_messages,
+    search_catalog,
+    update_chat,
+)
+from api.blueprints.result_reason import get_result_reason, get_tool_call_by_id
 
 from tests.factories import stub_function_tool
 from tests.stochastic_processes.test_agent_behavior import assert_no_markdown_structure
@@ -87,42 +90,33 @@ def find_call_id_and_barcode(run_result):
     return call_id, (barcode_el.text if barcode_el is not None else None)
 
 
-@pytest.fixture
-def result_reason_client(mocker):
-    mocker.patch("newrelic.agent.add_custom_attribute")
-    mocker.patch.dict(
-        os.environ,
-        {"VRA_API_KEY": "test-key"},  # pragma: allowlist secret
-    )
+def call_get_result_reason(run_result, barcode, test_session_id):
+    """Seed via run_result (already produced by update_chat), then reproduce
+    the /result-reason view's message-truncation and edition-lookup logic
+    and call get_result_reason() directly.
 
-    app = Flask("test")
-    app.config["TESTING"] = True
-    app.register_blueprint(result_reason_blueprint)
-    client = app.test_client()
-    client.set_cookie("vra_session", "test-token")
-    return client
-
-
-async def get_result_reason_explanation(
-    run_result, barcode, result_reason_client, mocker, test_session_id
-):
-    """Seed via run_result (already produced by update_chat), then call the
-    real /result-reason view and return the parsed response `data`."""
+    Returns: (explanation, is_ai_generated)
+    """
     call_id, found_barcode = find_call_id_and_barcode(run_result)
     barcode = barcode or found_barcode
     assert call_id is not None and barcode is not None, (
         f"No search tool call/barcode found in run_result.new_items: {run_result.new_items}"
     )
 
-    mocker.patch("api.decorators.verify_session", return_value=test_session_id)
-
-    response = result_reason_client.post(
-        "/result-reason",
-        json={"call_id": call_id, "barcode": barcode},
-        headers={"X-API-Key": "test-key"},
+    messages = get_session_messages(test_session_id)
+    _, function_call_output, function_call_idx = get_tool_call_by_id(messages, call_id)
+    assert function_call_output is not None, (
+        f"call_id '{call_id}' not found in session messages"
     )
-    assert response.status_code == 200, response.get_json()
-    return response.get_json()["data"]
+
+    edition_result = find_result_by_barcode(function_call_output, barcode)
+    assert edition_result is not None, (
+        f"barcode '{barcode}' not found in tool output for call_id '{call_id}'"
+    )
+
+    messages = messages[:function_call_idx]
+
+    return get_result_reason(messages, edition_result)
 
 
 @pytest.fixture(scope="module")
@@ -146,22 +140,18 @@ def cached_catalog_query_result():
 
 async def test_result_reason_has_no_markdown_structure(
     cached_catalog_query_result,
-    result_reason_client,
-    mocker,
     test_session,
     test_session_id,
 ):
     run_result = cached_catalog_query_result("fall of the Roman Empire", test_session)
 
-    data = await get_result_reason_explanation(
-        run_result, None, result_reason_client, mocker, test_session_id
-    )
+    explanation, _ = call_get_result_reason(run_result, None, test_session_id)
 
-    assert_no_markdown_structure(data["explanation"])
+    assert_no_markdown_structure(explanation)
 
 
 async def test_irrelevant_result_reason_acknowledges_mismatch(
-    result_reason_client, mocker, test_session, test_session_id
+    test_session, test_session_id
 ):
     """
     result_reason's own system prompt explicitly instructs it to tell the
@@ -176,12 +166,8 @@ async def test_irrelevant_result_reason_acknowledges_mismatch(
             session=test_session,
         )
 
-    data = await get_result_reason_explanation(
-        run_result,
-        "33433012345678",
-        result_reason_client,
-        mocker,
-        test_session_id,
+    explanation, _ = call_get_result_reason(
+        run_result, "33433012345678", test_session_id
     )
 
     verdict = await llm_judge(
@@ -193,7 +179,7 @@ appeared as a search result for the query "Hayao Miyazaki":
 Title: Index to records of the United States Strategic Bombing Survey
 
 Its explanation was:
-{data["explanation"]}
+{explanation}
 
 Does this explanation clearly acknowledge that the book is not truly \
 relevant to the query and offer it only as a closest match, with a brief \
@@ -202,6 +188,6 @@ the book as if it were a genuinely relevant result.""",
     )
     assert verdict.answer == "YES", (
         f"result_reason explanation did not acknowledge irrelevance.\n"
-        f"Explanation: {data['explanation']}\n"
+        f"Explanation: {explanation}\n"
         f"Judge reason: {verdict.reason}"
     )
