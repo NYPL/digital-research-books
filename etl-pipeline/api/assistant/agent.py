@@ -1324,55 +1324,6 @@ def format_book(lines, frbr_fields, chunk_hits, edition_id, barcode=None):
     return lines, escaped_any
 
 
-# NOTE: Using regex for search tool output xml tag parsing allows unescaped XML
-# special characters to be preserved in chunk text without relying on subtle,
-# complex lxml recover=True parsing behavior.
-
-# NOTE: Regex parsing of the search results schema is safe because
-# format_search_results() escapes any literal occurrence of a search result
-# schema element name within formatted text so an un-escaped element tag,
-# like "<edition>", can only be real structural markup, never book content. Also
-# the structure of the \format_search_results() xml is guaranteed by tests
-# against the schema defined above.
-
-# ALT: use xml parsing with `etree.fromstring(xml_str, parser=etree.HTMLParser(recover=True))`
-# which preserved element text that contains unescaped xml special characters
-# (in almost all cases).
-
-
-def get_result_count(formatted_output: str) -> int:
-    """
-    Count the <edition> results in format_search_results() output.
-    """
-    return len(re.findall(r"<edition>", formatted_output))
-
-
-def find_result_by_barcode(formatted_output: str, barcode: str) -> Optional[str]:
-    """
-    Return the full <edition>...</edition> block containing the given
-    barcode, or None if not found.
-    """
-    barcode_tag = f"<barcode>{barcode}</barcode>"
-    for match in re.finditer(r"<edition>.*?</edition>", formatted_output, re.DOTALL):
-        block = match.group(0)
-        if barcode_tag in block:
-            return block
-    return None
-
-
-def find_result_by_edition_id(formatted_output: str, edition_id: int) -> Optional[str]:
-    """
-    Return the full <edition>...</edition> block containing the given
-    edition_id, or None if not found.
-    """
-    edition_id_tag = f"<edition_id>{edition_id}</edition_id>"
-    for match in re.finditer(r"<edition>.*?</edition>", formatted_output, re.DOTALL):
-        block = match.group(0)
-        if edition_id_tag in block:
-            return block
-    return None
-
-
 def format_search_results(
     edition_data: list[BaseEditionResult],
     search_tool_call_id: str | None = None,
@@ -1437,6 +1388,55 @@ def format_search_results(
         )
 
     return "\n".join(lines)
+
+
+# NOTE: Using regex for search tool output xml tag parsing allows unescaped XML
+# special characters to be preserved in chunk text without relying on subtle,
+# complex lxml recover=True parsing behavior.
+
+# NOTE: Regex parsing of the search results schema is safe because
+# format_search_results() escapes any literal occurrence of a search result
+# schema element name within formatted text so an un-escaped element tag,
+# like "<edition>", can only be real structural markup, never book content. Also
+# the structure of the \format_search_results() xml is guaranteed by tests
+# against the schema defined above.
+
+# ALT: use xml parsing with `etree.fromstring(xml_str, parser=etree.HTMLParser(recover=True))`
+# which preserved element text that contains unescaped xml special characters
+# (in almost all cases).
+
+
+def get_result_count(formatted_output: str) -> int:
+    """
+    Count the <edition> results in format_search_results() output.
+    """
+    return len(re.findall(r"<edition>", formatted_output))
+
+
+def find_result_by_barcode(formatted_output: str, barcode: str) -> Optional[str]:
+    """
+    Return the full <edition>...</edition> block containing the given
+    barcode, or None if not found.
+    """
+    barcode_tag = f"<barcode>{barcode}</barcode>"
+    for match in re.finditer(r"<edition>.*?</edition>", formatted_output, re.DOTALL):
+        block = match.group(0)
+        if barcode_tag in block:
+            return block
+    return None
+
+
+def find_result_by_edition_id(formatted_output: str, edition_id: int) -> Optional[str]:
+    """
+    Return the full <edition>...</edition> block containing the given
+    edition_id, or None if not found.
+    """
+    edition_id_tag = f"<edition_id>{edition_id}</edition_id>"
+    for match in re.finditer(r"<edition>.*?</edition>", formatted_output, re.DOTALL):
+        block = match.group(0)
+        if edition_id_tag in block:
+            return block
+    return None
 
 
 # UNUSED
