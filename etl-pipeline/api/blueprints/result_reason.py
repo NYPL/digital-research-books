@@ -95,6 +95,7 @@ def get_tool_call_by_id(messages, call_id):
     return function_call_args, function_call_output, function_call_idx
 
 
+@timer(logger)
 def get_result_reason(messages, edition_result):
     """Make LLM call to generate "why am I seeing this result?" explanation.
 
