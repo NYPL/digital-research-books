@@ -1237,9 +1237,9 @@ _SEARCH_RESULT_SCHEMA_ELEMENT_NAMES = _SEARCH_RESULTS_XSD_TREE.xpath(
 def _escape_if_collides_with_known_tags(value: Any) -> Tuple[str, bool]:
     """
     Return (value, was_escaped). If value contains a literal open or close
-    tag matching one of _KNOWN_ELEMENT_NAMES (e.g. "</chunk>"), the whole
-    value is XML-escaped so it can't be mistaken for real structural markup.
-    Otherwise value is returned unchanged (as a str).
+    tag matching one of _SEARCH_RESULT_SCHEMA_ELEMENT_NAMES (e.g. "</chunk>"),
+    the whole value is XML-escaped so it can't be mistaken for real structural
+    markup. Otherwise value is returned unchanged (as a str).
     """
     value = str(value)
     collides = any(

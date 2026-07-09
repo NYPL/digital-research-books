@@ -24,11 +24,9 @@ logger = create_log(__name__)
 
 result_reason_blueprint = Blueprint("result_reason", __name__)
 
-FALLBACK_RESULT_REASON = (
-    "This result appears in your search based on its relevance to your query. "
-    "The catalog's search algorithm identified this item as a potential match for your research. "
-    "It may share themes, subjects, or content related to your inquiry."
-)
+FALLBACK_RESULT_REASON = """You're seeing this result because this book covers \
+topics relevant to your request. The following sections were identified \
+as matching your query."""
 
 RESULT_REASON_SYSTEM_PROMPT_TEMPLATE = """\
 You are a research assistant at a library helping users understand why specific \
