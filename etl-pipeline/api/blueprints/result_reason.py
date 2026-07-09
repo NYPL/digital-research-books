@@ -241,7 +241,7 @@ def result_reason(session_id):
 
             explanation, is_ai_generated = get_result_reason(messages, edition_result)
             logger.info(
-                f"Result reason generated. Hardcoded fallback used?: {is_ai_generated}"
+                f"Result reason generated. Hardcoded fallback used?: {not is_ai_generated}"
             )
 
             response_data = {
