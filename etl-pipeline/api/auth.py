@@ -1,10 +1,14 @@
 from functools import wraps
-from flask import request, jsonify
+from flask import request
 
 from logger import create_log
 from utils.common import require_env
 
+from .utils import APIUtils
+
 logger = create_log(__name__)
+
+RESPONSE_TYPE = "auth"
 
 
 def require_api_key(func):
@@ -15,11 +19,15 @@ def require_api_key(func):
 
         if key is None:
             logger.warning("API key missing from request headers")
-            return jsonify({"error": "Unauthorized"}), 401
+            return APIUtils.formatResponseObject(
+                401, RESPONSE_TYPE, {"message": "Unauthorized"}
+            )
 
         if key != expected_key:
             logger.warning("Invalid API key provided")
-            return jsonify({"error": "Unauthorized"}), 401
+            return APIUtils.formatResponseObject(
+                401, RESPONSE_TYPE, {"message": "Unauthorized"}
+            )
 
         return func(*args, **kwargs)
 
