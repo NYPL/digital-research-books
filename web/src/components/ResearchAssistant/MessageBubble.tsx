@@ -1,17 +1,10 @@
-import {
-  Box,
-  Flex,
-  Text,
-  useNYPLBreakpoints,
-} from "@nypl/design-system-react-components";
+import { Box, Flex, Text } from "@nypl/design-system-react-components";
 import { memo } from "react";
-import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import {
   ChatResults,
   MessageItem,
   MessageRole,
 } from "~/src/types/ResearchAssistant";
-import { scrollToEdition } from "~/src/util/EditionLinkParser";
 import { renderMarkdownContent } from "~/src/util/MarkdownParser";
 import { isContentSearchResults } from "~/src/util/ResearchAssistantUtils";
 import styles from "../../../styles/components/MessageBubble.module.scss";
@@ -27,24 +20,22 @@ interface MessageBubbleProps {
   index: number;
   isLoading?: boolean;
   messageResults?: ChatResults | null;
+  onEditionClick: (editionId: string) => void;
 }
 
 const MessageBubble = memo(
-  ({ message, index, isLoading, messageResults }: MessageBubbleProps) => {
-    const { isLargerThanMedium } = useNYPLBreakpoints();
-    const { showChat, toggleChat } = useResearchAssistant();
+  ({
+    message,
+    index,
+    isLoading,
+    messageResults,
+    onEditionClick,
+  }: MessageBubbleProps) => {
     const isUser = message.role === MessageRole.User;
     const isAssistant = message.role === MessageRole.Assistant;
     const bubbleClasses = isUser
       ? `${styles.messageBubble} ${styles.userBubble}`
       : `${styles.messageBubble} ${styles.assistantBubble}`;
-
-    const handleEditionClick = (editionId: string) => {
-      scrollToEdition(editionId);
-      if (!isLargerThanMedium && showChat) {
-        toggleChat();
-      }
-    };
 
     return (
       <Box
@@ -77,10 +68,7 @@ const MessageBubble = memo(
                     <HiddenAria ariaLive="off" ariaAtomic={false}>
                       <Text as="h3">Enhanced Search says:</Text>
                     </HiddenAria>
-                    {renderMarkdownContent(
-                      contentItem.text,
-                      handleEditionClick
-                    )}
+                    {renderMarkdownContent(contentItem.text, onEditionClick)}
                   </Box>
                   {!isLoading &&
                     (index === 0 ? (

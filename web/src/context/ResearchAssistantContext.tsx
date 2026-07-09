@@ -1,5 +1,11 @@
 import { useRouter } from "next/router";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   ChatResultsMap,
   ConversationType,
@@ -304,7 +310,7 @@ export const ResearchAssistantProvider: React.FC<{
     }
   }, [activeSearchTimeMs, hasSurveyBeenHandled, isSurveyVisible]);
 
-  const toggleChat = () => setShowChat((prev) => !prev);
+  const toggleChat = useCallback(() => setShowChat((prev) => !prev), []);
 
   const value: ResearchAssistantContextType = {
     messages,

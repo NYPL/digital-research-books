@@ -15,6 +15,7 @@ export function useResizablePanel({
   const [mobilePanelHeight, setMobilePanelHeight] = useState(
     DEFAULT_MOBILE_PANEL_HEIGHT
   );
+  const currentHeightRef = useRef(DEFAULT_MOBILE_PANEL_HEIGHT);
   const resizeStateRef = useRef({
     isResizing: false,
     startY: 0,
@@ -27,6 +28,22 @@ export function useResizablePanel({
   useEffect(() => {
     onHidePanelRef.current = onHidePanel;
   }, [onHidePanel]);
+
+  const applyPanelHeightCssVar = useCallback((height: number) => {
+    if (typeof document === "undefined") return;
+    document
+      .getElementById("mainContent")
+      ?.style.setProperty("--mobile-panel-height", `${height}px`);
+  }, []);
+
+  const setPanelHeight = useCallback(
+    (height: number) => {
+      currentHeightRef.current = height;
+      applyPanelHeightCssVar(height);
+      setMobilePanelHeight(height);
+    },
+    [applyPanelHeightCssVar]
+  );
 
   const getMaxPanelHeight = useCallback(() => {
     if (typeof window === "undefined") return 900;
@@ -51,10 +68,15 @@ export function useResizablePanel({
       const viewportHeight = window.innerHeight;
       const defaultHeight = Math.round(viewportHeight * 0.8);
       setMobilePanelHeight((previousHeight) => {
-        if (previousHeight === 640) {
-          return clampPanelHeight(defaultHeight);
+        let nextHeight = previousHeight;
+        if (previousHeight === DEFAULT_MOBILE_PANEL_HEIGHT) {
+          nextHeight = clampPanelHeight(defaultHeight);
+        } else {
+          nextHeight = clampPanelHeight(previousHeight);
         }
-        return clampPanelHeight(previousHeight);
+        currentHeightRef.current = nextHeight;
+        applyPanelHeightCssVar(nextHeight);
+        return nextHeight;
       });
     };
 
@@ -64,7 +86,7 @@ export function useResizablePanel({
     return () => {
       window.removeEventListener("resize", initializeHeight);
     };
-  }, [clampPanelHeight]);
+  }, [applyPanelHeightCssVar, clampPanelHeight]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -88,7 +110,9 @@ export function useResizablePanel({
           cancelAnimationFrame(rafIdRef.current);
         }
         rafIdRef.current = requestAnimationFrame(() => {
-          setMobilePanelHeight(clampPanelHeight(rawHeight));
+          const nextHeight = clampPanelHeight(rawHeight);
+          currentHeightRef.current = nextHeight;
+          applyPanelHeightCssVar(nextHeight);
           rafIdRef.current = null;
         });
       }
@@ -101,6 +125,8 @@ export function useResizablePanel({
       }
       if (resizeStateRef.current.shouldHide) {
         onHidePanelRef.current();
+      } else {
+        setMobilePanelHeight(currentHeightRef.current);
       }
       resizeStateRef.current.isResizing = false;
       resizeStateRef.current.shouldHide = false;
@@ -115,15 +141,15 @@ export function useResizablePanel({
       window.removeEventListener("pointerup", stopResizing);
       window.removeEventListener("pointercancel", stopResizing);
     };
-  }, [clampPanelHeight]);
+  }, [applyPanelHeightCssVar, clampPanelHeight]);
 
   const handleExpandToFull = useCallback(() => {
-    setMobilePanelHeight(getMaxPanelHeight());
-  }, [getMaxPanelHeight]);
+    setPanelHeight(getMaxPanelHeight());
+  }, [getMaxPanelHeight, setPanelHeight]);
 
   const handleDecreaseToMin = useCallback(() => {
-    setMobilePanelHeight(DEFAULT_MOBILE_PANEL_HEIGHT);
-  }, []);
+    setPanelHeight(DEFAULT_MOBILE_PANEL_HEIGHT);
+  }, [setPanelHeight]);
 
   const handleResizeKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -136,31 +162,37 @@ export function useResizablePanel({
       switch (event.key) {
         case "ArrowUp":
           event.preventDefault();
-          setMobilePanelHeight((currentHeight) =>
-            clampPanelHeight(currentHeight + step)
-          );
+          setMobilePanelHeight((currentHeight) => {
+            const nextHeight = clampPanelHeight(currentHeight + step);
+            currentHeightRef.current = nextHeight;
+            applyPanelHeightCssVar(nextHeight);
+            return nextHeight;
+          });
           break;
         case "ArrowDown":
           event.preventDefault();
-          setMobilePanelHeight((currentHeight) =>
-            clampPanelHeight(currentHeight - step)
-          );
+          setMobilePanelHeight((currentHeight) => {
+            const nextHeight = clampPanelHeight(currentHeight - step);
+            currentHeightRef.current = nextHeight;
+            applyPanelHeightCssVar(nextHeight);
+            return nextHeight;
+          });
           break;
         default:
           break;
       }
     },
-    [clampPanelHeight, showChat]
+    [applyPanelHeightCssVar, clampPanelHeight, showChat]
   );
 
   useEffect(() => {
     if (showChat) {
-      setMobilePanelHeight(512);
+      setPanelHeight(DEFAULT_MOBILE_PANEL_HEIGHT);
     } else {
       resizeStateRef.current.isResizing = false;
-      setMobilePanelHeight(512);
+      setPanelHeight(DEFAULT_MOBILE_PANEL_HEIGHT);
     }
-  }, [showChat]);
+  }, [setPanelHeight, showChat]);
 
   useEffect(() => {
     return () => {
@@ -179,11 +211,11 @@ export function useResizablePanel({
       resizeStateRef.current = {
         isResizing: true,
         startY: event.clientY,
-        startHeight: mobilePanelHeight,
+        startHeight: currentHeightRef.current,
         shouldHide: false,
       };
     },
-    [mobilePanelHeight, showChat]
+    [showChat]
   );
 
   return {

@@ -11,7 +11,11 @@ describe("MessageBubble", () => {
       role: MessageRole.User,
     };
     renderWithResearchAssistant(
-      <MessageBubble index={0} message={userMessage} />
+      <MessageBubble
+        index={0}
+        message={userMessage}
+        onEditionClick={() => {}}
+      />
     );
 
     const messageElement = screen.getByText("This is a user message.");
@@ -31,7 +35,11 @@ describe("MessageBubble", () => {
       role: MessageRole.Assistant,
     };
     renderWithResearchAssistant(
-      <MessageBubble index={0} message={assistantMessage} />
+      <MessageBubble
+        index={0}
+        message={assistantMessage}
+        onEditionClick={() => {}}
+      />
     );
 
     expect(
@@ -47,7 +55,11 @@ describe("MessageBubble", () => {
       role: MessageRole.Assistant,
     };
     renderWithResearchAssistant(
-      <MessageBubble index={0} message={assistantMessage} />
+      <MessageBubble
+        index={0}
+        message={assistantMessage}
+        onEditionClick={() => {}}
+      />
     );
 
     expect(screen.getByText(/AI-generated/i)).toBeInTheDocument();
@@ -60,7 +72,11 @@ describe("MessageBubble", () => {
       role: MessageRole.Assistant,
     };
     renderWithResearchAssistant(
-      <MessageBubble index={1} message={assistantMessage} />
+      <MessageBubble
+        index={1}
+        message={assistantMessage}
+        onEditionClick={() => {}}
+      />
     );
 
     expect(screen.getAllByTestId("ds-button")).toHaveLength(2);
@@ -75,7 +91,11 @@ describe("MessageBubble", () => {
       role: MessageRole.Assistant,
     };
     renderWithResearchAssistant(
-      <MessageBubble index={0} message={initialMessage} />
+      <MessageBubble
+        index={0}
+        message={initialMessage}
+        onEditionClick={() => {}}
+      />
     );
 
     expect(
@@ -95,7 +115,11 @@ describe("MessageBubble", () => {
       role: MessageRole.Assistant,
     };
     renderWithResearchAssistant(
-      <MessageBubble index={1} message={assistantMessage} />
+      <MessageBubble
+        index={1}
+        message={assistantMessage}
+        onEditionClick={() => {}}
+      />
     );
 
     expect(screen.getByTestId("assistant-message-bubble")).toBeInTheDocument();
@@ -108,7 +132,11 @@ describe("MessageBubble", () => {
       role: MessageRole.User,
     };
     renderWithResearchAssistant(
-      <MessageBubble index={0} message={specialMessage} />
+      <MessageBubble
+        index={0}
+        message={specialMessage}
+        onEditionClick={() => {}}
+      />
     );
 
     expect(screen.getByText(/Test.*symbols/)).toBeInTheDocument();

@@ -61,8 +61,12 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
       isFirstRender.current = false;
       return;
     }
-    if (!showChat) {
-      showChatButtonRef.current?.focus();
+    if (showChat) {
+      hideChatButtonRef.current?.focus();
+    } else {
+      if (!showChat) {
+        showChatButtonRef.current?.focus();
+      }
     }
   }, [showChat]);
 
@@ -128,7 +132,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
               sx={{ opacity: 0.65 }}
             />
           </Box>
-          <ResearchAssistantHeader>
+          <ResearchAssistantHeader showChat={showChat}>
             <Heading
               level="h2"
               size="heading7"
@@ -257,7 +261,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
           </Box>
         </>
       ) : (
-        <ResearchAssistantHeader>
+        <ResearchAssistantHeader showChat={showChat}>
           <Box display={{ base: "block", md: "none" }}>
             <Heading
               level="h2"

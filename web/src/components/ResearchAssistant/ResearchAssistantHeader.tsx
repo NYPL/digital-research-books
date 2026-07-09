@@ -4,8 +4,14 @@ import {
   HEADER_HEIGHT,
 } from "~/src/constants/researchAssistant";
 
-const ResearchAssistantHeader: React.FC<{ children: React.ReactNode }> = ({
+type ResearchAssistantHeaderProps = {
+  children: React.ReactNode;
+  showChat: boolean;
+};
+
+const ResearchAssistantHeader: React.FC<ResearchAssistantHeaderProps> = ({
   children,
+  showChat,
 }) => {
   const { marginX, marginRight, paddingX, paddingRight } = getPanelLayout();
   return (
@@ -18,8 +24,14 @@ const ResearchAssistantHeader: React.FC<{ children: React.ReactNode }> = ({
       borderRadius={{ base: "8px 8px 0 0", md: "0" }}
       marginLeft={marginX}
       marginRight={marginRight}
-      paddingLeft={paddingX}
-      paddingRight={paddingRight}
+      paddingLeft={{
+        base: paddingX.base,
+        md: showChat ? paddingX.md : "s",
+      }}
+      paddingRight={{
+        base: paddingRight.base,
+        md: showChat ? paddingRight.md : "0",
+      }}
       position="sticky"
       paddingY="s"
       top="0"

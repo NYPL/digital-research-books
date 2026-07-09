@@ -81,6 +81,9 @@ const ResearchAssistant: React.FC = () => {
         minHeight="auto"
         id="mainContent"
         role="main"
+        sx={{
+          "--mobile-panel-height": `${mobilePanelHeight}px`,
+        }}
       >
         <Flex
           gridColumn={{ base: "1 / -1", md: "1 / span 2" }}
@@ -90,7 +93,7 @@ const ResearchAssistant: React.FC = () => {
           alignItems="flex-end"
           bgColor="ui.bg.default"
           paddingBottom={{
-            base: showChat ? `${mobilePanelHeight}px` : "auto",
+            base: showChat ? "var(--mobile-panel-height)" : "auto",
             md: "0",
           }}
         >
@@ -162,11 +165,11 @@ const ResearchAssistant: React.FC = () => {
           flexDirection="column"
           bgColor="section.research.primary"
           height={{
-            base: showChat ? `${mobilePanelHeight}px` : "auto",
+            base: showChat ? "var(--mobile-panel-height)" : "auto",
             md: "100vh",
           }}
           maxHeight={{
-            base: showChat ? `${mobilePanelHeight}px` : "auto",
+            base: showChat ? "var(--mobile-panel-height)" : "auto",
             md: "none",
           }}
           position={{ base: "fixed", md: "sticky" }}
