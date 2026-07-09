@@ -98,6 +98,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
       role="region"
       aria-labelledby="vra-panel-heading"
       sx={{ position: "relative" }}
+      backgroundColor="section.research.primary"
     >
       {showChat ? (
         <>

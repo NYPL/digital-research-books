@@ -1,7 +1,9 @@
 import { Box } from "@nypl/design-system-react-components";
+import { useRouter } from "next/router";
 import {
   getPanelLayout,
   HEADER_HEIGHT,
+  ITEM_PAGE_PADDING_RIGHT,
 } from "~/src/constants/researchAssistant";
 
 type ResearchAssistantHeaderProps = {
@@ -13,6 +15,8 @@ const ResearchAssistantHeader: React.FC<ResearchAssistantHeaderProps> = ({
   children,
   showChat,
 }) => {
+  const router = useRouter();
+  const isItemPage = router.pathname.startsWith("/item/");
   const { marginX, marginRight, paddingX, paddingRight } = getPanelLayout();
   return (
     <Box
@@ -28,9 +32,14 @@ const ResearchAssistantHeader: React.FC<ResearchAssistantHeaderProps> = ({
         base: paddingX.base,
         md: showChat ? paddingX.md : "s",
       }}
+      // itemPage conditional is here for now, this will be removed with item page responsive PR
       paddingRight={{
         base: paddingRight.base,
-        md: showChat ? paddingRight.md : "0",
+        md: showChat
+          ? isItemPage
+            ? ITEM_PAGE_PADDING_RIGHT
+            : paddingRight.md
+          : "0",
       }}
       position="sticky"
       paddingY="s"

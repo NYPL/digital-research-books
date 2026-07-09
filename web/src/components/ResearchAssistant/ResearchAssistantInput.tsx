@@ -5,8 +5,12 @@ import {
   TextInput,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
+import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
-import { getPanelLayout } from "~/src/constants/researchAssistant";
+import {
+  getPanelLayout,
+  ITEM_PAGE_PADDING_RIGHT,
+} from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
 
@@ -21,6 +25,13 @@ const ResearchAssistantInput: React.FC<{ onExpandToFull?: () => void }> = ({
   const isDisabled = isLoading;
 
   const { marginX, paddingX, paddingRight, marginRight } = getPanelLayout();
+
+  const router = useRouter();
+  const isItemPage = router.pathname.startsWith("/item/");
+  // itemPage conditional is here for now, this will be removed with item page responsive PR
+  const panelPaddingRight = isItemPage
+    ? { base: paddingRight.base, md: ITEM_PAGE_PADDING_RIGHT }
+    : paddingRight;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +98,7 @@ const ResearchAssistantInput: React.FC<{ onExpandToFull?: () => void }> = ({
       marginLeft={marginX}
       marginRight={marginRight}
       paddingLeft={paddingX}
-      paddingRight={paddingRight}
+      paddingRight={panelPaddingRight}
       paddingY="s"
       // @ts-expect-error: Override gap value type
       gap="xs"

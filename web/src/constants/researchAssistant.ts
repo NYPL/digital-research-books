@@ -136,6 +136,10 @@ const PADDING_COUNTER_COMPACT = {
 
 export const DEFAULT_MOBILE_PANEL_HEIGHT = 512;
 
+// itemPage variable is here for now, this will be removed with item page responsive PR
+export const ITEM_PAGE_PADDING_RIGHT =
+  "calc(calc((100vw - 1280px) / 2) + 1rem)";
+
 export function getPanelLayout() {
   return {
     marginX: MARGIN_COMPACT,

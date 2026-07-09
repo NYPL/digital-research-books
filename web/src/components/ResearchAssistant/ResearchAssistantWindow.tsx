@@ -9,6 +9,7 @@ import {
   CATALOG_INITIAL_MESSAGE,
   CONTENT_INITIAL_MESSAGE,
   getPanelLayout,
+  ITEM_PAGE_PADDING_RIGHT,
   LOADING_MESSAGE,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
@@ -63,7 +64,8 @@ const ResearchAssistantWindow: React.FC = () => {
 
   const router = useRouter();
 
-  const conversationType = router.pathname.startsWith("/item/")
+  const isItemPage = router.pathname.startsWith("/item/");
+  const conversationType = isItemPage
     ? ConversationType.Content
     : ConversationType.Catalog;
 
@@ -71,6 +73,11 @@ const ResearchAssistantWindow: React.FC = () => {
     conversationType === ConversationType.Content
       ? CONTENT_INITIAL_MESSAGE
       : CATALOG_INITIAL_MESSAGE;
+
+  // itemPage conditional is here for now, this will be removed with item page responsive PR
+  const panelPaddingRight = isItemPage
+    ? { base: paddingRight.base, md: ITEM_PAGE_PADDING_RIGHT }
+    : paddingRight;
 
   useEffect(() => {
     const prev = prevMessageCountRef.current;
@@ -114,7 +121,7 @@ const ResearchAssistantWindow: React.FC = () => {
         marginLeft={marginX}
         marginRight={marginRight}
         paddingLeft={paddingX}
-        paddingRight={paddingRight}
+        paddingRight={panelPaddingRight}
         role="log"
         aria-live="off"
         aria-label="Chat messages"
