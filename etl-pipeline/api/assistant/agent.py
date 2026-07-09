@@ -1360,6 +1360,19 @@ def find_result_by_barcode(formatted_output: str, barcode: str) -> Optional[str]
     return None
 
 
+def find_result_by_edition_id(formatted_output: str, edition_id: int) -> Optional[str]:
+    """
+    Return the full <edition>...</edition> block containing the given
+    edition_id, or None if not found.
+    """
+    edition_id_tag = f"<edition_id>{edition_id}</edition_id>"
+    for match in re.finditer(r"<edition>.*?</edition>", formatted_output, re.DOTALL):
+        block = match.group(0)
+        if edition_id_tag in block:
+            return block
+    return None
+
+
 def format_search_results(
     edition_data: list[BaseEditionResult],
     search_tool_call_id: str | None = None,

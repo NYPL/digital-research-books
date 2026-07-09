@@ -14,7 +14,7 @@ from ..utils import APIUtils
 from ..assistant.agent import (
     DEFAULT_LLM,
     TOOL_ERROR_PREFIX,
-    find_result_by_barcode,
+    find_result_by_edition_id,
     get_session_messages,
 )
 from ..assistant.snippets import format_conversation_history
@@ -152,13 +152,13 @@ def result_reason(session_id):
     response_type = "result_reason"
 
     call_id = request.json.get("call_id")
-    barcode = request.json.get("barcode")
+    edition_id = request.json.get("edition_id")
 
     log_context = {"session_id": session_id}
     if call_id is not None:
         log_context["call_id"] = call_id
-    if barcode is not None:
-        log_context["barcode"] = barcode
+    if edition_id is not None:
+        log_context["edition_id"] = edition_id
 
     # TODO: maybe consolidate into a function used here and in /chat
     for k, v in log_context.items():
@@ -176,9 +176,9 @@ def result_reason(session_id):
                     400, response_type, {"message": "call_id is required"}
                 )
 
-            if not barcode:
+            if not edition_id:
                 return APIUtils.formatResponseObject(
-                    400, response_type, {"message": "barcode is required"}
+                    400, response_type, {"message": "edition_id is required"}
                 )
 
             messages = get_session_messages(session_id)
@@ -220,18 +220,18 @@ def result_reason(session_id):
                     {"message": f"tool output for call_id '{call_id}' is an error"},
                 )
 
-            # --- 404 guard 4: barcode not present in the tool call output ---
-            edition_result = find_result_by_barcode(function_call_output, barcode)
+            # --- 404 guard 4: edition_id not present in the tool call output ---
+            edition_result = find_result_by_edition_id(function_call_output, edition_id)
 
             if edition_result is None:
                 logger.warning(
-                    f"get_result_reason: barcode '{barcode}' not found in tool output for call_id '{call_id}'"
+                    f"get_result_reason: edition_id '{edition_id}' not found in tool output for call_id '{call_id}'"
                 )
                 return APIUtils.formatResponseObject(
                     404,
                     response_type,
                     {
-                        "message": f"barcode '{barcode}' not found in results for call_id '{call_id}'"
+                        "message": f"edition_id '{edition_id}' not found in results for call_id '{call_id}'"
                     },
                 )
 
