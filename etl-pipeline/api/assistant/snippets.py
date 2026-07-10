@@ -381,14 +381,14 @@ def format_conversation_history(
 ) -> str:  # list[TResponseOutputItem]
     """Format conversation history from a list of OpenAI Responses API items.
 
-    - All final tool call outputs except the final one are summarized as "N results returned"
-      by counting <edition> elements in the returned XML, or an error message if error.
-    - Within each agent turn (a run of consecutive tool call/output pairs between
-      message items), only the final complete pair is kept.
-    - The last tool call output in the entire messages list is summarized like the
-      rest, unless preserve_last_output is True, in which case its full content is
-      preserved as-is.
-    - Items types other than "mesagage", "function_call", and "function_call_output"
+    - Within a run of consecutive tool call/output items, only final tool
+      call is included in the formatted return value, along with its matching tool
+      call output, if available.
+    - All tool call outputs in the formatted return value are summarized as
+      "N results returned" by counting <edition> elements in the returned XML,
+      or an error message if error, unless preserve_last_output is True, in
+      which case the final tool call output's full content is included as-is.
+    - Item types other than "message", "function_call", and "function_call_output"
       are skipped.
     """
     # MAYBE: keeping only the final tool call pair is over-complicated. Just keep all tool calls.
@@ -423,52 +423,58 @@ def format_conversation_history(
             break
 
     parts = []
-    # Buffer of (function_call_item, function_call_output_item | None) pairs
-    # accumulated between message items. Flushed on each message item, keeping
-    # only the last complete pair.
-    tool_buffer: list[tuple[dict, Optional[dict]]] = []
-    call_id_to_idx: dict[str, int] = {}
+    # Pending function_calls and function_call_outputs for the current agent
+    # turn, keyed by call_id so an output is matched to its own call even if
+    # multiple calls are outstanding at once (e.g. parallel tool calls) and
+    # arrive out of order. Only the most recently *called* call_id (tracked by
+    # last_call_id) is emitted on flush.
+    pending_calls: dict[str, dict] = {}
+    pending_outputs: dict[str, dict] = {}
+    last_call_id: Optional[str] = None
 
     def flush_tool_buffer():
-        for call_item, output_item in reversed(tool_buffer):
-            if output_item is not None:
-                tool_name = call_item.get("name", "tool")
-                raw_output = output_item.get("output", "")
-                if output_item is last_output_item and preserve_last_output:
-                    output_text = raw_output
-                else:
-                    output_text = _compact_tool_output(raw_output)
-                parts.append(f"[Tool: {tool_name}]\n{output_text}")
-                break
-        tool_buffer.clear()
-        call_id_to_idx.clear()
+        nonlocal last_call_id
+        if last_call_id is None:
+            return
+        call_item = pending_calls[last_call_id]
+        output_item = pending_outputs.get(last_call_id)
+        tool_name = call_item.get("name", "tool")
+        arguments = call_item.get("arguments", "")
+        parts.append(f"Tool call [{tool_name}]: {arguments}")
+        if output_item is not None:
+            raw_output = output_item.get("output", "")
+            if output_item is last_output_item and preserve_last_output:
+                output_text = raw_output
+            else:
+                output_text = _compact_tool_output(raw_output)
+            parts.append(f"[Tool Output: {tool_name}]\n{output_text}")
+        pending_calls.clear()
+        pending_outputs.clear()
+        last_call_id = None
 
     for msg in items:
         msg_type = msg.get("type")
         role = msg.get("role", "")
 
         if msg_type == "function_call":
-            idx = len(tool_buffer)
-            tool_buffer.append((msg, None))
             call_id = msg.get("call_id")
-            if call_id:
-                call_id_to_idx[call_id] = idx
+            pending_calls[call_id] = msg
+            last_call_id = call_id
 
         elif msg_type == "function_call_output":
             call_id = msg.get("call_id")
-            if call_id in call_id_to_idx:
-                idx = call_id_to_idx[call_id]
-                call_item, _ = tool_buffer[idx]
-                tool_buffer[idx] = (call_item, msg)
+            if call_id in pending_calls:
+                pending_outputs[call_id] = msg
             else:
-                # Orphaned output with no matching function_call
-                tool_buffer.append(({"name": "unknown", "call_id": call_id}, msg))
+                # Orphaned output with no matching pending function_call
+                pending_calls[call_id] = {"name": "unknown", "call_id": call_id}
+                pending_outputs[call_id] = msg
+                last_call_id = call_id
 
         elif msg_type == "message" or (
             msg_type is None and role in ("user", "assistant")
         ):
-            if tool_buffer:
-                flush_tool_buffer()
+            flush_tool_buffer()
             text = _get_msg_text(msg).strip()
             if text and role in ("user", "assistant"):
                 label = "User" if role == "user" else "Assistant"
@@ -476,8 +482,7 @@ def format_conversation_history(
 
         # reasoning items and other types are skipped
 
-    if tool_buffer:
-        flush_tool_buffer()
+    flush_tool_buffer()
 
     return "\n\n".join(parts)
 
