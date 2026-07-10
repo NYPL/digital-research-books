@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from api.assistant.agent import find_result_by_barcode
+from api.assistant.agent import find_result_by_edition_id
 from api.blueprints.result_reason import get_result_reason, get_tool_call_by_id
 
 from tests.stochastic_processes.test_agent_behavior import assert_no_markdown_structure
@@ -31,7 +31,7 @@ def load_session_messages(session_id):
         return [json.loads(line) for line in f if line.strip()]
 
 
-def call_get_result_reason(messages, call_id, barcode):
+def call_get_result_reason(messages, call_id, edition_id):
     """Reproduce the /result-reason view's message-truncation and
     edition-lookup logic against recorded session messages, then call
     get_result_reason() directly.
@@ -43,9 +43,9 @@ def call_get_result_reason(messages, call_id, barcode):
         f"call_id '{call_id}' not found in session messages"
     )
 
-    edition_result = find_result_by_barcode(function_call_output, barcode)
+    edition_result = find_result_by_edition_id(function_call_output, edition_id)
     assert edition_result is not None, (
-        f"barcode '{barcode}' not found in tool output for call_id '{call_id}'"
+        f"edition_id '{edition_id}' not found in tool output for call_id '{call_id}'"
     )
 
     truncated_messages = messages[:function_call_idx]
@@ -57,7 +57,7 @@ async def test_result_reason_has_no_markdown_structure():
     messages = load_session_messages(ROMAN_EMPIRE_SESSION_ID)
 
     explanation, _ = call_get_result_reason(
-        messages, call_id="hwz2505h", barcode="33433081565123"
+        messages, call_id="hwz2505h", edition_id=15546379
     )
 
     assert_no_markdown_structure(explanation)
@@ -76,7 +76,7 @@ async def test_irrelevant_result_reason_acknowledges_mismatch():
     messages = load_session_messages(MIYAZAKI_SESSION_ID)
 
     explanation, _ = call_get_result_reason(
-        messages, call_id="azacg3fb", barcode="33433072847209"
+        messages, call_id="azacg3fb", edition_id=15287442
     )
 
     verdict = await llm_judge(

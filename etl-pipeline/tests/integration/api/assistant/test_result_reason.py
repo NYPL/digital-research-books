@@ -17,12 +17,10 @@ RESULT_REASON_ENDPOINT_PATH = "/result-reason"
 MAX_EXPLANATION_LENGTH = 500
 
 
-# NOTE: future tool calls and outputs may not be in /chat response. instead
-# look up convo history from DB with session ID.
 def test_result_reason_happy_path(vra_test_user, test_session_id):
     """
     End-to-end happy path: a real /chat catalogSearch call seeds a session
-    with a search tool call_id + barcode, then /result-reason explains why
+    with a search tool call_id + edition_id, then /result-reason explains why
     that book appeared, using a real (non-mocked) LLM call.
     """
     base_url = require_env("DRB_API_URL")
@@ -46,7 +44,7 @@ def test_result_reason_happy_path(vra_test_user, test_session_id):
     assert_response_status(chat_url, chat_response, 200)
     chat_data = chat_response.json()["data"]
 
-    # Extract data from /chat needed to call /result-reason
+    # Extract /result-reason request param data from first result returned by /chat
     search_result = chat_data["search_result"]
     assert search_result is not None, (
         f"No search_result found in /chat response: {chat_data}"
@@ -61,16 +59,16 @@ def test_result_reason_happy_path(vra_test_user, test_session_id):
     assert editions, (
         f"No editions found in /chat response search_result: {search_result}"
     )
-    barcode = editions[0]["barcode"]
-    assert barcode is not None, (
-        f"No barcode found on first edition in /chat response: {editions[0]}"
+    edition_id = editions[0]["id"]  # first result returned by /chat
+    assert edition_id is not None, (
+        f"No edition id found on first edition in /chat response: {editions[0]}"
     )
 
     # Make /result-reason request
     result_reason_url = base_url + RESULT_REASON_ENDPOINT_PATH
     result_reason_response = session.post(
         result_reason_url,
-        json={"call_id": call_id, "barcode": barcode},
+        json={"call_id": call_id, "edition_id": edition_id},
         timeout=90,
     )
 

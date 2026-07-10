@@ -72,13 +72,13 @@ class TestResultReasonView:
         )
         mocker.patch("api.decorators.verify_session", return_value="test-session")
 
-    def post_result_reason(self, client, call_id="call_1", barcode="00000000000001"):
+    def post_result_reason(self, client, call_id="call_1", edition_id=1):
         client.set_cookie("vra_session", "test-token")
         payload = {}
         if call_id is not None:
             payload["call_id"] = call_id
-        if barcode is not None:
-            payload["barcode"] = barcode
+        if edition_id is not None:
+            payload["edition_id"] = edition_id
         return client.post(
             "/result-reason",
             json=payload,
@@ -93,11 +93,11 @@ class TestResultReasonView:
         assert response.status_code == 400
         assert response.get_json()["data"]["message"] == "call_id is required"
 
-    def test_missing_barcode_returns_400(self, client):
-        response = self.post_result_reason(client, barcode=None)
+    def test_missing_edition_id_returns_400(self, client):
+        response = self.post_result_reason(client, edition_id=None)
 
         assert response.status_code == 400
-        assert response.get_json()["data"]["message"] == "barcode is required"
+        assert response.get_json()["data"]["message"] == "edition_id is required"
 
     # --- 404s ---
 
@@ -152,19 +152,16 @@ class TestResultReasonView:
         assert response.status_code == 404
         assert "is an error" in response.get_json()["data"]["message"]
 
-    def test_barcode_not_in_tool_output_returns_404(self, client, mocker):
+    def test_edition_id_not_in_tool_output_returns_404(self, client, mocker):
         mocker.patch(
             "api.blueprints.result_reason.get_session_messages",
             return_value=make_session_messages(),
         )
 
-        response = self.post_result_reason(client, barcode="99999999999999")
+        response = self.post_result_reason(client, edition_id=999)
 
         assert response.status_code == 404
-        assert (
-            "barcode '99999999999999' not found"
-            in (response.get_json()["data"]["message"])
-        )
+        assert "edition_id '999' not found" in (response.get_json()["data"]["message"])
 
     # --- LLM fallback paths (200, is_ai_generated=False) ---
 
