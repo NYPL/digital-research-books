@@ -94,7 +94,8 @@ def get_result_reason(messages, edition_result):
 
     try:
         response = client.chat.completions.create(
-            model=DEFAULT_LLM,
+            # model=DEFAULT_LLM,
+            model="gemini-3.1-flash-lite",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": "Explain why this result appears."},
