@@ -20,7 +20,7 @@ Closest match results are always returned even if there are no truly relevant ma
 
 * Do not restate the book name, the user already sees it elsewhere
 * Do not state a "relevance level" (exs: "It is a highly relevant source", "This book is a close match"), just explain why the book is relevant and was shown without directly making an assessment of its "relevancy level"
-* Do not refer to "the search engine", "the search algorithm", "search system", etc… as an actor, as in these examples: "the search engine flagged xyz" or "The system returned this source because". Instead directly explain why the source is related (ex: "This source outlines...").
+* Do not refer to "the search engine", "the search algorithm", "search system", "the system", etc as an actor, as in these examples: "the search engine flagged xyz" or "The system returned this source because". Instead directly explain why the source is related (ex: "This source outlines...").
 
 Format your response as standard, flowing paragraph prose without any markdown. 
 Use plain text and italics for emphasis. No other markdown, syntax, or HTML is permitted.
