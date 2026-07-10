@@ -71,51 +71,51 @@ const CatalogResults: React.FC<{
   return (
     <Flex flexDir="column" bgColor="ui.bg.default" gap="s">
       <Text
+        position={{ base: "static", md: "sticky" }}
         bgColor="ui.bg.default"
         borderBottom="1px solid"
         borderColor="ui.border.default"
         fontSize="desktop.heading.heading7"
         fontWeight="bold"
         lineHeight="125%"
-        marginX="-2rem"
-        paddingX="l"
         paddingY="s"
-        position="sticky"
         top="0"
         zIndex="999"
         marginLeft={MARGIN_BLEED}
+        height={{ base: "fit-content", md: HEADER_HEIGHT }}
         paddingLeft={PADDING_COUNTER}
-        height={HEADER_HEIGHT}
       >
         {resultsPagingText}
       </Text>
-      <ResultsBanner />
-      {Object.keys(results).length > 0 && (
-        <>
-          <ResultsList works={results.editions} />
-          <Pagination
-            pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
-            initialPage={resultsPaging.currentPage}
-            // onPageChange={(e) => onPageChange(e)}
-            __css={{
-              paddingTop: "m",
-              "a, li > a[aria-current='page']": {
-                color: "var(--nypl-colors-section-research-secondary)",
-                borderColor: "var(--nypl-colors-section-research-secondary)",
-                svg: {
-                  fill: "var(--nypl-colors-section-research-secondary)",
+      <Flex paddingX={{ base: "s", md: "m" }} flexDir="column" gap="s">
+        <ResultsBanner />
+        {Object.keys(results).length > 0 && (
+          <>
+            <ResultsList works={results.editions} />
+            <Pagination
+              pageCount={resultsPaging.lastPage ? resultsPaging.lastPage : 1}
+              initialPage={resultsPaging.currentPage}
+              // onPageChange={(e) => onPageChange(e)}
+              __css={{
+                paddingTop: "m",
+                "a, li > a[aria-current='page']": {
+                  color: "var(--nypl-colors-section-research-secondary)",
+                  borderColor: "var(--nypl-colors-section-research-secondary)",
+                  svg: {
+                    fill: "var(--nypl-colors-section-research-secondary)",
+                  },
                 },
-              },
-              "a[aria-disabled='true']": {
-                color: "var(--nypl-colors-ui-disabled-primary)",
-                svg: {
-                  fill: "var(--nypl-colors-ui-disabled-primary)",
+                "a[aria-disabled='true']": {
+                  color: "var(--nypl-colors-ui-disabled-primary)",
+                  svg: {
+                    fill: "var(--nypl-colors-ui-disabled-primary)",
+                  },
                 },
-              },
-            }}
-          />
-        </>
-      )}
+              }}
+            />
+          </>
+        )}
+      </Flex>
     </Flex>
   );
 };

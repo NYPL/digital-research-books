@@ -66,6 +66,14 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   });
 
   useEffect(() => {
+    if (router.pathname === "/research-assistant") {
+      document.body.classList.add("research-assistant-page");
+    } else {
+      document.body.classList.remove("research-assistant-page");
+    }
+  }, [router.pathname]);
+
+  useEffect(() => {
     chatAnnouncer.mount();
 
     return () => chatAnnouncer.unmount();

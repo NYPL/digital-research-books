@@ -1,14 +1,23 @@
 import { Box } from "@nypl/design-system-react-components";
+import { useRouter } from "next/router";
 import {
   getPanelLayout,
   HEADER_HEIGHT,
-  PADDING_COUNTER,
+  ITEM_PAGE_PADDING_RIGHT,
 } from "~/src/constants/researchAssistant";
 
-const ResearchAssistantHeader: React.FC<{ children: React.ReactNode }> = ({
+type ResearchAssistantHeaderProps = {
+  children: React.ReactNode;
+  showChat: boolean;
+};
+
+const ResearchAssistantHeader: React.FC<ResearchAssistantHeaderProps> = ({
   children,
+  showChat,
 }) => {
-  const { marginX, marginRight } = getPanelLayout();
+  const router = useRouter();
+  const isItemPage = router.pathname.startsWith("/item/");
+  const { marginX, marginRight, paddingX, paddingRight } = getPanelLayout();
   return (
     <Box
       bgColor="section.research.primary"
@@ -16,10 +25,22 @@ const ResearchAssistantHeader: React.FC<{ children: React.ReactNode }> = ({
       justifyContent="space-between"
       alignItems="center"
       borderBottom="1px white solid"
+      borderRadius={{ base: "8px 8px 0 0", md: "0" }}
       marginLeft={marginX}
       marginRight={marginRight}
-      paddingLeft="s"
-      paddingRight={`calc(${PADDING_COUNTER} * 2)`}
+      paddingLeft={{
+        base: paddingX.base,
+        md: showChat ? paddingX.md : "s",
+      }}
+      // itemPage conditional is here for now, this will be removed with item page responsive PR
+      paddingRight={{
+        base: paddingRight.base,
+        md: showChat
+          ? isItemPage
+            ? ITEM_PAGE_PADDING_RIGHT
+            : paddingRight.md
+          : "0",
+      }}
       position="sticky"
       paddingY="s"
       top="0"

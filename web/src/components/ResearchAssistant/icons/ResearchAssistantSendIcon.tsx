@@ -14,6 +14,7 @@ const ResearchAssistantSendIcon: React.FC<ResearchAssistantSendIconProps> = ({
       color={isDisabled ? "transparent" : "#9DDEE3"}
       size="large"
       id="research-assistant-send-icon"
+      style={{ display: "block" }}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

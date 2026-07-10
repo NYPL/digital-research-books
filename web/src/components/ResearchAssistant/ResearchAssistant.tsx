@@ -1,11 +1,14 @@
 import { Box, Flex } from "@nypl/design-system-react-components";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
+  DEFAULT_MOBILE_PANEL_HEIGHT,
   HEADER_HEIGHT,
   MARGIN_BLEED,
   PADDING_COUNTER,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
+import { useResizablePanel } from "~/src/hooks/useResizablePanel";
+import { trackEvent } from "~/src/lib/gtag/Analytics";
 import { isCatalogResults } from "~/src/util/ResearchAssistantUtils";
 import BackToResultsButton from "../BackToResultsButton/BackToResultsButton";
 import EmptySearchPrompt from "../EmptySearchPrompt/EmptySearchPrompt";
@@ -22,8 +25,22 @@ const ResearchAssistant: React.FC = () => {
     historyStack,
     goToPreviousState,
     showChat,
+    toggleChat,
     isLoading,
   } = useResearchAssistant();
+  const {
+    mobilePanelHeight,
+    handleResizeStart,
+    handleResizeKeyDown,
+    handleExpandToFull,
+    handleDecreaseToMin,
+    getMaxPanelHeight,
+  } = useResizablePanel({
+    showChat,
+    onHidePanel: toggleChat,
+  });
+
+  const isLandingPageQuery = useRef(false);
 
   useEffect(() => {
     if (!messages || messages.length === 0) {
@@ -31,6 +48,7 @@ const ResearchAssistant: React.FC = () => {
         "researchAssistantInitialMessage"
       );
       if (initialMessage) {
+        isLandingPageQuery.current = true;
         sendMessage(initialMessage);
         sessionStorage.removeItem("researchAssistantInitialMessage");
       }
@@ -38,8 +56,8 @@ const ResearchAssistant: React.FC = () => {
   }, [messages, sendMessage]);
 
   const gridTemplateColumns = showChat
-    ? "1fr 640px 640px 1fr"
-    : "1fr 1152px 128px 1fr";
+    ? { base: "1fr", md: "1fr minmax(0, 640px) minmax(0, 640px) 1fr" }
+    : { base: "1fr", md: "1fr minmax(0, 1152px) minmax(0, 128px) 1fr" };
 
   const latestResults = useMemo(() => {
     if (!results) return null;
@@ -58,25 +76,49 @@ const ResearchAssistant: React.FC = () => {
     return null;
   }, [messages.length, results]);
 
+  useEffect(() => {
+    if (isLandingPageQuery.current && !isLoading && latestResults) {
+      let resultsCount = 0;
+      if (isCatalogResults(latestResults)) {
+        resultsCount = latestResults.paging?.totalRecords || 0;
+      }
+      trackEvent({
+        event: "view_query_results",
+        query_type: "landing_page",
+        results_count: resultsCount,
+      });
+      isLandingPageQuery.current = false;
+    }
+  }, [isLoading, latestResults]);
+
   return (
     <>
       <Box
         display="grid"
         gridTemplateColumns={gridTemplateColumns}
         width="100%"
+        minHeight="auto"
         id="mainContent"
         role="main"
+        sx={{
+          "--mobile-panel-height": `${mobilePanelHeight}px`,
+        }}
       >
         <Flex
-          gridColumn="1 / span 2"
+          gridColumn={{ base: "1 / -1", md: "1 / span 2" }}
           flexDirection="column"
           minWidth="0"
           justifyContent="flex-end"
           alignItems="flex-end"
           bgColor="ui.bg.default"
+          paddingBottom={{
+            base: showChat ? "var(--mobile-panel-height)" : "auto",
+            md: "0",
+          }}
         >
           <Flex
-            width={showChat ? "640px" : "1152px"}
+            width={{ base: "100%", md: "100%" }}
+            maxWidth={{ md: showChat ? "640px" : "1152px" }}
             flexDirection="column"
             height="100%"
             justifyContent="flex-end"
@@ -107,7 +149,7 @@ const ResearchAssistant: React.FC = () => {
                   paddingLeft={PADDING_COUNTER}
                 />
               )}
-              <Box paddingLeft="s" paddingRight="l" paddingBottom="l" flex="1">
+              <Box paddingBottom="l" flex="1">
                 {isLoading ? (
                   <CatalogResultsSkeleton />
                 ) : latestResults && Object.keys(latestResults).length > 0 ? (
@@ -117,7 +159,11 @@ const ResearchAssistant: React.FC = () => {
                     )}
                   </>
                 ) : (
-                  <Box width="100%" marginTop="s">
+                  <Box
+                    width="100%"
+                    marginTop="s"
+                    paddingX={{ base: "s", md: "l" }}
+                  >
                     <ResultsBanner />
                     <EmptySearchPrompt
                       message={
@@ -133,25 +179,48 @@ const ResearchAssistant: React.FC = () => {
           </Flex>
         </Flex>
         <Flex
-          gridColumn="3 / span 2"
+          id="research-assistant-chat-panel"
+          gridColumn={{ base: "1 / -1", md: "3 / span 2" }}
           flexDirection="column"
           bgColor="section.research.primary"
-          maxHeight="100vh"
-          position="sticky"
-          top="0"
+          height={{
+            base: showChat ? "var(--mobile-panel-height)" : "auto",
+            md: "100vh",
+          }}
+          maxHeight={{
+            base: showChat ? "var(--mobile-panel-height)" : "auto",
+            md: "none",
+          }}
+          position={{ base: "fixed", md: "sticky" }}
+          top={{ base: "auto", md: "0" }}
+          bottom={{ base: "0", md: "auto" }}
+          left={{ base: "0", md: "auto" }}
+          right={{ base: "0", md: "auto" }}
           zIndex="1000"
           minWidth="0"
+          minHeight="0"
+          width={{ base: "100%", md: "auto" }}
           justifyContent="flex-start"
           alignItems="flex-start"
+          borderRadius={{ base: "8px 8px 0 0", md: "0" }}
         >
           <Flex
-            width="640px"
+            width="100%"
             flexDirection="column"
             height="100%"
+            minHeight="0"
             justifyContent="flex-start"
             alignItems="flex-start"
           >
-            <ResearchAssistantPanel />
+            <ResearchAssistantPanel
+              onResizeStart={handleResizeStart}
+              onResizeKeyDown={handleResizeKeyDown}
+              onExpandToFull={handleExpandToFull}
+              onDecreaseToMin={handleDecreaseToMin}
+              panelHeight={mobilePanelHeight}
+              minPanelHeight={DEFAULT_MOBILE_PANEL_HEIGHT}
+              maxPanelHeight={getMaxPanelHeight()}
+            />
           </Flex>
         </Flex>
       </Box>
