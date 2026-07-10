@@ -67,17 +67,11 @@ export function useResizablePanel({
     const initializeHeight = () => {
       const viewportHeight = window.innerHeight;
       const defaultHeight = Math.round(viewportHeight * 0.8);
-      setMobilePanelHeight((previousHeight) => {
-        let nextHeight = previousHeight;
-        if (previousHeight === DEFAULT_MOBILE_PANEL_HEIGHT) {
-          nextHeight = clampPanelHeight(defaultHeight);
-        } else {
-          nextHeight = clampPanelHeight(previousHeight);
-        }
-        currentHeightRef.current = nextHeight;
-        applyPanelHeightCssVar(nextHeight);
-        return nextHeight;
-      });
+      const baseHeight =
+        currentHeightRef.current === DEFAULT_MOBILE_PANEL_HEIGHT
+          ? defaultHeight
+          : currentHeightRef.current;
+      setPanelHeight(clampPanelHeight(baseHeight));
     };
 
     initializeHeight();
@@ -86,7 +80,7 @@ export function useResizablePanel({
     return () => {
       window.removeEventListener("resize", initializeHeight);
     };
-  }, [applyPanelHeightCssVar, clampPanelHeight]);
+  }, [clampPanelHeight, setPanelHeight]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -162,27 +156,17 @@ export function useResizablePanel({
       switch (event.key) {
         case "ArrowUp":
           event.preventDefault();
-          setMobilePanelHeight((currentHeight) => {
-            const nextHeight = clampPanelHeight(currentHeight + step);
-            currentHeightRef.current = nextHeight;
-            applyPanelHeightCssVar(nextHeight);
-            return nextHeight;
-          });
+          setPanelHeight(clampPanelHeight(currentHeightRef.current + step));
           break;
         case "ArrowDown":
           event.preventDefault();
-          setMobilePanelHeight((currentHeight) => {
-            const nextHeight = clampPanelHeight(currentHeight - step);
-            currentHeightRef.current = nextHeight;
-            applyPanelHeightCssVar(nextHeight);
-            return nextHeight;
-          });
+          setPanelHeight(clampPanelHeight(currentHeightRef.current - step));
           break;
         default:
           break;
       }
     },
-    [applyPanelHeightCssVar, clampPanelHeight, showChat]
+    [clampPanelHeight, setPanelHeight, showChat]
   );
 
   useEffect(() => {

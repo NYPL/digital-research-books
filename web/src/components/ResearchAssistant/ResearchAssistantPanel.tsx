@@ -64,9 +64,7 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
     if (showChat) {
       hideChatButtonRef.current?.focus();
     } else {
-      if (!showChat) {
-        showChatButtonRef.current?.focus();
-      }
+      showChatButtonRef.current?.focus();
     }
   }, [showChat]);
 
@@ -215,9 +213,14 @@ const ResearchAssistantPanel: React.FC<ResearchAssistantPanelProps> = ({
                     border: "none !important",
                     boxShadow: "none",
                   },
-                  ".chakra-menu__menu-button:hover, .chakra-menu__menu-button:focus, .chakra-menu__menu-button:active": {
-                    border: "none !important",
-                    boxShadow: "none",
+                  ".chakra-menu__menu-button:hover": {
+                    color: "ui.white",
+                    path: {
+                      stroke: "ui.white",
+                    },
+                  },
+                  ".chakra-menu__menu-button:not([disabled]):focus": {
+                    outlineColor: "ui.white",
                   },
                   ".chakra-menu__menu-button > span > svg, .chakra-menu__menu-button > span > svg path": {
                     fill: "ui.white",
