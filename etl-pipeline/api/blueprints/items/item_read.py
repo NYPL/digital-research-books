@@ -12,7 +12,6 @@ from . import items_blueprint
 import file_conversion.pdfs.mets_parser as mets_parser
 from managers import DBManager, S3Manager
 from model import Item, Record
-from processes.grin.unpack import GRINUnpackService
 from utils.common import get_temp_dir
 # TODO: since the unpack functions are used in multiple places they should be \
 # moved to a shared code location.
@@ -53,6 +52,10 @@ def item_read(item_id, page_id):
 
     with get_temp_dir(in_memory=True) as tmpdir:
         if not ocr_key or not image_key:
+            # Deferred to avoid a circular import: processes/__init__.py imports
+            # APIProcess which leads to an import of this module.
+            from processes.grin.unpack import GRINUnpackService
+
             unpack_service = GRINUnpackService(bucket)
             unpacked_files = unpack_service.unpack_barcode_package(barcode)
             ocr_key, image_key = _find_files_from_dict(unpacked_files, page_id)
