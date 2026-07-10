@@ -690,6 +690,7 @@ def update_chat(
 
 
 # TODO: replace with run_coroutine(Session.get_items())
+@timer(logger)
 def get_session_messages(session_id):
     """Read message data for session ID as a list of dicts."""
     # TODO: replace with Session.get_items()
@@ -702,6 +703,7 @@ def get_session_messages(session_id):
     return [row.message_data for row in rows]
 
 
+@timer(logger)
 def get_max_message_id() -> int:
     """Return the current max id in agent_messages, or 0 if the table is empty."""
     engine = get_engine()
@@ -712,6 +714,7 @@ def get_max_message_id() -> int:
     return row.max_turn_id
 
 
+@timer(logger)
 def get_session_messages_after(session_id: str, max_id: int) -> list[dict]:
     """
     Return assistant messages written to agent_messages for `session_id` after `max_id`.
