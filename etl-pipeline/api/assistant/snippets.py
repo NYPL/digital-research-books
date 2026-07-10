@@ -570,7 +570,7 @@ class EditionSnippetLoop:
         self.model_name = model_name
         self.messages = messages
         self.entry = entry
-        self.model_config: dict = {"temperature": 0.0, "reasoning_effort": "none"}
+        self.model_config: dict = {"temperature": 0.0, "reasoning_effort": "minimal"}
         self.last_response = None
         self.n_turns: int = 0
         self.max_turns_exceeded: bool = False
@@ -723,6 +723,8 @@ def get_relevant_snippets_llm(
         return []
 
     # Shared model config
+    # run_result.last_agent.model is only a Model object (rather than a string) \
+    # if that is how the Runner was invoked.
     client: AsyncOpenAI = run_result.last_agent.model._client
     model_name: str = run_result.last_agent.model.model
     # model_name = "gemini-3.1-flash-lite-preview"

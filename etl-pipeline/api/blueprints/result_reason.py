@@ -100,7 +100,7 @@ def get_result_reason(messages, edition_result):
                 {"role": "user", "content": "Explain why this result appears."},
             ],
             temperature=0,
-            reasoning_effort=None,
+            reasoning_effort="minimal",
         )
         explanation = response.choices[0].message.content
         if explanation is None:
