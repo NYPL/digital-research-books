@@ -132,7 +132,7 @@ class TestAgentResponses:
 
     # TODO: parameterize the 2 grounding tests (bc they are identical besides \
     # the way the source the mocked search result)
-    _GROUNDING_FIXTURE_PARAMS = [
+    _GROUNDING_TEST_PARAMS = [
         pytest.param(
             "what-is-the-delco-accent-search_catalog-result-2026-04-14.txt",
             "what is the delco accent",
@@ -146,7 +146,7 @@ class TestAgentResponses:
     ]
 
     @pytest.mark.xfail
-    @pytest.mark.parametrize("fixture_file,query", _GROUNDING_FIXTURE_PARAMS)
+    @pytest.mark.parametrize("fixture_file,query", _GROUNDING_TEST_PARAMS)
     @pytest.mark.asyncio
     async def test_grounding_fixture_file(self, test_session, fixture_file, query):
         """

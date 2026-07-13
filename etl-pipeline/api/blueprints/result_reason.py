@@ -66,55 +66,76 @@ def get_tool_call_by_id(messages, call_id):
     return function_call_args, function_call_output, function_call_idx
 
 
-@timer(logger)
-def get_result_reason(messages, edition_result):
-    """Make LLM call to generate "why am I seeing this result?" explanation.
+class ResultReasonAgent:
+    """Produces a search result explanation.
 
-    Args:
-        messages: conversation history truncated to end at (and including) the
-        tool call's arguments, excluding the tool call output.
-        edition_result: the specific edition result whose presence must be explained.
-
-    Returns: (explanation, is_ai_generated)
+    Attributes:
+        completions_messages: System, user, and assistant messages that make
+        up the task and response. The assistant message response is only
+        present if is_ai_generated is True from the run() return value.
+        Empty until run() is called.
     """
-    # MAYBE: should the testable boundary around LLM generation be even more
-    # generic and just take the input items/messages?
-    conversation_history = format_conversation_history(messages)
 
-    # MAYBE: find all the places I make an LLM call and make a centralized wrapper call_google_llm(model=, messages=, **kwargs<passed to completion.create()>)
-    client = OpenAI(
-        api_key=require_env("GOOGLE_API_KEY"),
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-    )
+    def __init__(self, messages, edition_result) -> None:
+        """
+        Args:
+            messages: conversation history truncated to end at (and including) the
+            tool call's arguments, excluding the tool call output.
+            edition_result: the specific edition result whose presence must be explained.
+        """
+        self.messages = messages
+        self.edition_result = edition_result
+        self.completions_messages = []
 
-    system_prompt = RESULT_REASON_SYSTEM_PROMPT_TEMPLATE.render(
-        conversation_history=conversation_history,
-        edition_result=edition_result,
-    )
+    @timer(logger)
+    def run(self) -> tuple[str, bool]:
+        """Make LLM call to generate "why am I seeing this result?" explanation.
 
-    try:
-        response = client.chat.completions.create(
-            # model=DEFAULT_LLM,
-            model="gemini-3.1-flash-lite",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": "Explain why this result appears."},
-            ],
-            temperature=0,
-            reasoning_effort="minimal",
+        Returns: (explanation, is_ai_generated)
+        """
+        # MAYBE: should the testable boundary around LLM generation be even more
+        # generic and just take the input items/messages?
+        conversation_history = format_conversation_history(self.messages)
+
+        # MAYBE: find all the places I make an LLM call and make a centralized wrapper call_google_llm(model=, messages=, **kwargs<passed to completion.create()>)
+        client = OpenAI(
+            api_key=require_env("GOOGLE_API_KEY"),
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
         )
-        explanation = response.choices[0].message.content
-        if explanation is None:
-            logger.warning(
-                "get_result_reason: LLM returned None content, using fallback"
+
+        system_prompt = RESULT_REASON_SYSTEM_PROMPT_TEMPLATE.render(
+            conversation_history=conversation_history,
+            edition_result=self.edition_result,
+        )
+
+        self.completions_messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": "Explain why this result appears."},
+        ]
+
+        try:
+            response = client.chat.completions.create(
+                # model=DEFAULT_LLM,
+                model="gemini-3.1-flash-lite",
+                messages=self.completions_messages,
+                temperature=0,
+                reasoning_effort="minimal",
+            )
+            explanation = response.choices[0].message.content
+            if explanation is None:
+                logger.warning(
+                    "get_result_reason: LLM returned None content, using fallback"
+                )
+                return FALLBACK_RESULT_REASON, False
+            self.completions_messages.append(
+                {"role": "assistant", "content": explanation}
+            )
+            return explanation, True
+        except Exception:
+            logger.exception(
+                "get_result_reason: failed to generate explanation, using fallback"
             )
             return FALLBACK_RESULT_REASON, False
-        return explanation, True
-    except Exception:
-        logger.exception(
-            "get_result_reason: failed to generate explanation, using fallback"
-        )
-        return FALLBACK_RESULT_REASON, False
 
 
 @result_reason_blueprint.route("/result-reason", methods=["POST"])
@@ -212,7 +233,9 @@ def result_reason(session_id):
             # arguments, excluding the tool call output.
             messages = messages[:function_call_idx]
 
-            explanation, is_ai_generated = get_result_reason(messages, edition_result)
+            explanation, is_ai_generated = ResultReasonAgent(
+                messages, edition_result
+            ).run()
             logger.info(
                 f"Result reason generated. Hardcoded fallback used?: {not is_ai_generated}"
             )

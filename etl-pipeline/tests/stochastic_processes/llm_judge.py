@@ -36,6 +36,7 @@ def extract_final_output(messages: list[TResponseInputItem]) -> str:
     )
 
 
+# TODO: remove async
 async def llm_judge(messages: list[TResponseInputItem], question: str) -> JudgeVerdict:
     """
     Run an LLM-as-judge evaluation over the full conversation history.

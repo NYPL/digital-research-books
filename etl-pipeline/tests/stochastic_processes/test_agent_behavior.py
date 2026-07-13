@@ -8,6 +8,7 @@ from agents.items import ToolCallItem
 from api.assistant.agent import update_chat
 from tests.stochastic_processes.llm_judge import llm_judge
 
+# TODO: scope these tighter as we make behavior more stable
 pytestmark = [
     pytest.mark.asyncio,
     pytest.mark.xfail(reason="behavior unstable", strict=False),

@@ -1408,6 +1408,10 @@ def format_search_results(
 # which preserved element text that contains unescaped xml special characters
 # (in almost all cases).
 
+# TODO: define a generic parse search tool output into an EditionResult obj \
+# (with chunk text un-element-escaped?) where each element is accessible. Then \
+# use that parser to test search tool output structure instead of the XML schema
+
 
 def get_result_count(formatted_output: str) -> int:
     """
