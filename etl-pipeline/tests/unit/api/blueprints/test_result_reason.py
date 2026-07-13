@@ -165,7 +165,7 @@ class TestResultReasonView:
 
     # --- LLM fallback paths (200, is_ai_generated=False) ---
 
-    # TODO: the below few tests can be converted to unit tests of get_result_reason() rather than the whole view
+    # TODO: the below few tests can be converted to unit tests of ResultReasonAgent.run() rather than the whole view
 
     def test_llm_returns_none_uses_fallback(self, client, mocker):
         mocker.patch(

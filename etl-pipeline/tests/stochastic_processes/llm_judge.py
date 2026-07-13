@@ -26,14 +26,20 @@ def extract_final_output(messages: list[TResponseInputItem]) -> str:
     """
     assert messages, "messages is empty, no final output to extract"
     final_item = messages[-1]
-    assert (
-        final_item.get("type") == "message" and final_item.get("role") == "assistant"
-    ), f"Expected final item to be an assistant message, got: {final_item}"
-    return "".join(
-        part["text"]
-        for part in final_item["content"]
-        if part.get("type") == "output_text"
-    )
+    if final_item.get("type") == "message" and final_item.get("role") == "assistant":
+        return "".join(
+            part["text"]
+            for part in final_item["content"]
+            if part.get("type") == "output_text"
+        )
+    elif final_item.get("role") == "assistant" and isinstance(
+        final_item.get("content"), str
+    ):
+        return final_item["content"]
+    else:
+        raise AssertionError(
+            f"Expected final item to be an assistant message from either Response API or Completions API, got: {final_item}"
+        )
 
 
 # TODO: remove async

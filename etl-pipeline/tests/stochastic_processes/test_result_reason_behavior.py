@@ -53,12 +53,12 @@ def load_session_messages(session_id):
         return [json.loads(line) for line in f if line.strip()]
 
 
-def call_get_result_reason(messages, call_id, edition_id):
+def run_result_reason_agent(messages, call_id, edition_id):
     """Reproduce the /result-reason view's message-truncation and
-    edition-lookup logic against recorded session messages, then call
-    get_result_reason() directly.
+    edition-lookup logic against recorded session messages, then run a
+    ResultReasonAgent directly.
 
-    Returns: (explanation, is_ai_generated)
+    Returns: (explanation, completions_messages)
     """
     _, function_call_output, function_call_idx = get_tool_call_by_id(messages, call_id)
     assert function_call_output is not None, (
@@ -82,7 +82,7 @@ def call_get_result_reason(messages, call_id, edition_id):
 async def test_result_reason_has_no_markdown_structure():
     messages = load_session_messages(ROMAN_EMPIRE_SAMPLE_RESULT.session_id)
 
-    explanation, _ = call_get_result_reason(
+    explanation, _ = run_result_reason_agent(
         messages,
         call_id=ROMAN_EMPIRE_SAMPLE_RESULT.call_id,
         edition_id=ROMAN_EMPIRE_SAMPLE_RESULT.edition_id,
@@ -99,7 +99,7 @@ async def test_result_reason_does_not_restate_book_name():
     """
     messages = load_session_messages(ROMAN_EMPIRE_SAMPLE_RESULT.session_id)
 
-    explanation, _ = call_get_result_reason(
+    explanation, _ = run_result_reason_agent(
         messages,
         call_id=ROMAN_EMPIRE_SAMPLE_RESULT.call_id,
         edition_id=ROMAN_EMPIRE_SAMPLE_RESULT.edition_id,
@@ -121,7 +121,7 @@ async def test_result_reason_does_not_state_relevance_level():
     """
     messages = load_session_messages(ROMAN_EMPIRE_SAMPLE_RESULT.session_id)
 
-    explanation, completions_messages = call_get_result_reason(
+    explanation, completions_messages = run_result_reason_agent(
         messages,
         call_id=ROMAN_EMPIRE_SAMPLE_RESULT.call_id,
         edition_id=ROMAN_EMPIRE_SAMPLE_RESULT.edition_id,
@@ -130,12 +130,10 @@ async def test_result_reason_does_not_state_relevance_level():
     verdict = await llm_judge(
         completions_messages,
         question="""\
-Does the assistant's explanation characterize the book's *relevance level* anywhere \
+Does the assistant's explanation directly characterize the book's *degree of relevance* anywhere \
 (e.g. calling it "a highly relevant source", "a close match", "directly \
-relevant", "tangentially related", etc.), rather than only explaining the \
-substantive connection between the book and the query? Answer YES if it \
-makes any such relevance-level assessment, NO if it only explains the \
-connection without labeling how relevant the book is.""",
+relevant", "tangentially related", etc.)? Answer YES if it \
+makes any such relevance-level assessment, NO if it does not.""",
     )
     assert verdict.answer == "NO", (
         f"result_reason explanation stated a relevance level.\n"
@@ -153,7 +151,7 @@ async def test_result_reason_does_not_refer_to_search_system_as_actor():
     """
     messages = load_session_messages(ROMAN_EMPIRE_SAMPLE_RESULT.session_id)
 
-    explanation, _ = call_get_result_reason(
+    explanation, _ = run_result_reason_agent(
         messages,
         call_id=ROMAN_EMPIRE_SAMPLE_RESULT.call_id,
         edition_id=ROMAN_EMPIRE_SAMPLE_RESULT.edition_id,
@@ -185,25 +183,17 @@ async def test_irrelevant_result_reason_acknowledges_mismatch():
     """
     messages = load_session_messages(MIYAZAKI_SAMPLE_RESULT.session_id)
 
-    explanation, _ = call_get_result_reason(
+    explanation, completions_messages = run_result_reason_agent(
         messages,
         call_id=MIYAZAKI_SAMPLE_RESULT.call_id,
         edition_id=MIYAZAKI_SAMPLE_RESULT.edition_id,
     )
 
     verdict = await llm_judge(
-        messages,
-        question=f"""\
-A separate assistant call was asked to explain why the following book \
-appeared as a search result for the query "Hayao Miyazaki":
-
-Title: {MIYAZAKI_SAMPLE_RESULT.title}
-
-Its explanation was:
-{explanation}
-
-Does this explanation clearly acknowledge that the book is not truly \
-relevant to the query and offer it only as a closest match, with a brief \
+        completions_messages,
+        question="""\
+Does the assistant explanation clearly acknowledge that the book is not truly \
+relevant to the query and offer a brief \
 hypothesis for why it was returned? Answer YES if so, NO if it discusses \
 the book as if it were a genuinely relevant result.""",
     )
