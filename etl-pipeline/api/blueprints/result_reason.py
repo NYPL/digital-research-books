@@ -175,6 +175,10 @@ def result_reason(session_id):
                     400, response_type, {"message": "edition_id is required"}
                 )
 
+            # TODO: wrap the extraction of inputs for system_prompt into a func \
+            # that returns either all system prompt params or the formatted \
+            # system prompt + a error reason code/no error code. This make unit \
+            # tests on these paths easier.
             messages = get_session_messages(session_id)
 
             # --- 404 guard 1: session has no messages ---
