@@ -22,6 +22,11 @@ import turbopuffer as tpuf
 
 logger = logging.getLogger(__name__)
 
+# Output conventions:
+#   print()        — primary output: data rows, action confirmations, and results always shown to the user
+#   logger.info()  — contextual headers that annotate data output (e.g. "Found 3 namespaces:"); suppressed without --verbose
+#   logger.error() — errors; always shown, written to stderr
+
 
 def get_client(
     api_key: str | None = None, region: str = "aws-us-east-1"
@@ -162,14 +167,50 @@ def cmd_delete(args):
         # NOTE: maybe we should remove force, i.e. always ask for confirmation
         confirm = input(f"Delete namespace '{args.namespace}' ({count:,} rows)? [y/N] ")
         if confirm.lower() != "y":
-            logger.info("Aborted.")
+            print("Aborted.")
             return
 
     try:
         ns.delete_all()
-        logger.info(f"Deleted namespace '{args.namespace}'")
+        print(f"Deleted namespace '{args.namespace}'")
     except Exception as e:
         logger.error(f"Failed to delete namespace '{args.namespace}': {e}")
+        sys.exit(1)
+
+
+def cmd_copy(args):
+    """Copy a namespace to another namespace within the same region.
+
+    The destination namespace must be empty or not yet exist.
+    """
+    import datetime
+
+    client = get_client(args.api_key)
+
+    dest = args.dest
+    if not dest:
+        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        dest = f"{args.src}-backup-{timestamp}"
+
+    if not args.force:
+        try:
+            metadata = client.namespace(args.src).metadata()
+            count = metadata.approx_row_count
+        except Exception:
+            count = "unknown"
+        confirm = input(
+            f"Copy namespace '{args.src}' -> '{dest}' ({count:,} rows)? [y/N] "
+        )
+        if confirm.lower() != "y":
+            print("Aborted.")
+            return
+
+    try:
+        dest_ns = client.namespace(dest)
+        dest_ns.write(copy_from_namespace=args.src)
+        print(f"Copied namespace '{args.src}' -> '{dest}'")
+    except Exception as e:
+        logger.error(f"Failed to copy namespace '{args.src}' -> '{dest}': {e}")
         sys.exit(1)
 
 
@@ -360,6 +401,8 @@ Examples:
   %(prog)s sample vra-dev --limit 5    # Sample 5 documents
   %(prog)s query vra-dev '{"rank_by": ["id", "asc"], "top_k": 5}'
   %(prog)s query vra-dev --file query.json
+  %(prog)s copy vra-dev vra-dev-copy    # Copy namespace to vra-dev-copy
+  %(prog)s copy vra-dev                # Copy to vra-dev-backup-<datetime>
   %(prog)s recall vra-dev              # Test ANN recall quality
   %(prog)s warm vra-dev                # Warm cache for low-latency queries
   %(prog)s delete vra-dev --force      # Delete namespace (no confirmation)
@@ -431,6 +474,19 @@ Examples:
     )
     p_query.add_argument("--json", action="store_true", help="Output as JSON")
     p_query.set_defaults(func=cmd_query)
+
+    # copy
+    p_copy = subparsers.add_parser(
+        "copy", help="Copy a namespace within the same region"
+    )
+    p_copy.add_argument("src", help="Source namespace name")
+    p_copy.add_argument(
+        "dest",
+        nargs="?",
+        help="Destination namespace name (default: <src>-backup-<datetime>)",
+    )
+    p_copy.add_argument("--force", "-f", action="store_true", help="Skip confirmation")
+    p_copy.set_defaults(func=cmd_copy)
 
     # recall
     p_recall = subparsers.add_parser("recall", help="Test ANN recall quality")
