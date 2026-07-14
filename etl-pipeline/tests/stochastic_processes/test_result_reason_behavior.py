@@ -14,12 +14,6 @@ from api.blueprints.result_reason import ResultReasonAgent, get_tool_call_by_id
 from tests.stochastic_processes.test_agent_behavior import assert_no_markdown_structure
 from tests.stochastic_processes.llm_judge import llm_judge
 
-# TODO: scope these tighter as we make behavior more stable
-pytestmark = [
-    pytest.mark.asyncio,
-    pytest.mark.xfail(reason="behavior unstable", strict=False),
-]
-
 
 @dataclass(frozen=True)
 class SampleResult:
@@ -79,7 +73,7 @@ def run_result_reason_agent(messages, call_id, edition_id):
     return explanation, completions_messages
 
 
-async def test_result_reason_has_no_markdown_structure():
+def test_result_reason_has_no_markdown_structure():
     messages = load_session_messages(ROMAN_EMPIRE_SAMPLE_RESULT.session_id)
 
     explanation, _ = run_result_reason_agent(
@@ -91,7 +85,7 @@ async def test_result_reason_has_no_markdown_structure():
     assert_no_markdown_structure(explanation)
 
 
-async def test_result_reason_does_not_restate_book_name():
+def test_result_reason_does_not_restate_book_name():
     """
     result_reason's system prompt instructs it not to restate the book's
     name since the user already sees it elsewhere. Verify the exact title
@@ -111,6 +105,8 @@ async def test_result_reason_does_not_restate_book_name():
     )
 
 
+@pytest.mark.asyncio
+@pytest.mark.xfail(reason="behavior unstable", strict=False)
 async def test_result_reason_does_not_state_relevance_level():
     """
     result_reason's system prompt instructs it to explain why a book is
@@ -142,7 +138,7 @@ makes any such relevance-level assessment, NO if it does not.""",
     )
 
 
-async def test_result_reason_does_not_refer_to_search_system_as_actor():
+def test_result_reason_does_not_refer_to_search_system_as_actor():
     """
     result_reason's system prompt instructs it not to refer to "the search
     engine", "the search algorithm", "the system", etc. as an actor (e.g.
@@ -171,6 +167,7 @@ async def test_result_reason_does_not_refer_to_search_system_as_actor():
     )
 
 
+@pytest.mark.asyncio
 async def test_irrelevant_result_reason_acknowledges_mismatch():
     """
     result_reason's own system prompt explicitly instructs it to tell the
