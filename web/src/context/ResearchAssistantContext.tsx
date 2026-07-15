@@ -164,11 +164,37 @@ export const ResearchAssistantProvider: React.FC<{
         : rawData;
       setSessionId(data.sessionId);
 
+      const resultsWithCallId = (() => {
+        if (!data.toolCallId || !data.results) return data.results;
+
+        if (Array.isArray(data.results)) {
+          return data.results.map((result) => ({
+            ...result,
+            call_id: data.toolCallId,
+          }));
+        }
+
+        if (
+          typeof data.results === "object" &&
+          Array.isArray((data.results as any).editions)
+        ) {
+          return {
+            ...data.results,
+            editions: (data.results as any).editions.map((edition: any) => ({
+              ...edition,
+              call_id: data.toolCallId,
+            })),
+          };
+        }
+
+        return data.results;
+      })();
+
       const newMessagesLength = messages.length + data.messages.length;
       setMessages((prevMessages) => [...prevMessages, ...data.messages]);
       const newResults = {
         ...viewState.results,
-        [newMessagesLength]: data.results,
+        [newMessagesLength]: resultsWithCallId,
       };
       setViewState((prev) => ({
         ...prev,

@@ -5,6 +5,7 @@ import {
   Box,
   Flex,
   Heading,
+  SkeletonLoader,
   Text,
 } from "@nypl/design-system-react-components";
 import React from "react";
@@ -18,11 +19,13 @@ import {
   RESULT_EDITION_TEST_ID,
   RESULT_TITLE_TEST_ID,
 } from "~/src/constants/testIds";
+import { FeedbackContext } from "~/src/context/FeedbackContext";
 import { useResultPageContext } from "~/src/context/ResultPageContext";
 import { Agent, WorkEdition } from "~/src/types/DataModel";
 import { CatalogEdition } from "~/src/types/ResearchAssistant";
 import { ApiWork } from "~/src/types/WorkQuery";
 import EditionCardUtils from "~/src/util/EditionCardUtils";
+import { renderMarkdownContent } from "~/src/util/MarkdownParser";
 import { truncateStringOnWhitespace } from "~/src/util/Util";
 import AiGeneratedText from "../AiGeneratedText/AiGeneratedText";
 import AuthorsList from "../AuthorsList/AuthorsList";
@@ -59,8 +62,65 @@ export const ResultCard: React.FC<ResultCardProps> = ({
   work,
   isFeaturedEdition,
 }) => {
+  const feedbackContext = React.useContext(FeedbackContext);
   const { page } = useResultPageContext();
   const isEnhancedSearch = page !== "drb" && page !== "keyword";
+  const snippetsLength = (edition as any)?.snippets?.length ?? 0;
+  const hasResultReasonAccordion = page === "vra" && snippetsLength > 0;
+  const editionId = (edition as any)?.edition_id ?? (edition as any)?.id;
+  const resultReasonCallId =
+    (edition as any)?.call_id ??
+    (edition as any)?.callId ??
+    (edition as any)?.result_reason_call_id;
+
+  const accordionRef = React.useRef<HTMLButtonElement | null>(null);
+  const [resultReasonText, setResultReasonText] = React.useState<string | null>(
+    null
+  );
+  const [isResultReasonLoading, setIsResultReasonLoading] = React.useState(
+    false
+  );
+  const [hasResultReasonError, setHasResultReasonError] = React.useState(false);
+  const isResultReasonLoadingRef = React.useRef(isResultReasonLoading);
+  const resultReasonTextRef = React.useRef(resultReasonText);
+
+  React.useEffect(() => {
+    isResultReasonLoadingRef.current = isResultReasonLoading;
+  }, [isResultReasonLoading]);
+
+  React.useEffect(() => {
+    resultReasonTextRef.current = resultReasonText;
+  }, [resultReasonText]);
+
+  const openFeedbackBox = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    feedbackContext?.onOpen();
+  };
+
+  const renderResultReasonError = () => {
+    if (!hasResultReasonError) return null;
+
+    return (
+      <Text>
+        Content could not be generated at this time. Try again later or{" "}
+        <Link
+          to="#"
+          role="button"
+          hasVisitedState={false}
+          onClick={openFeedbackBox}
+          onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
+            if (e.key === " " || e.key === "Spacebar") {
+              openFeedbackBox(e);
+            }
+          }}
+        >
+          contact us
+        </Link>{" "}
+        for assistance
+      </Text>
+    );
+  };
   const previewItem = EditionCardUtils.getPreviewItem(
     (edition as any)?.items,
     isEnhancedSearch
@@ -75,6 +135,64 @@ export const ResultCard: React.FC<ResultCardProps> = ({
     return editionDisplay;
   };
 
+  const fetchResultsReason = async (callId: string, editionId: number) => {
+    const response = await fetch("/api/result-reason", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ call_id: callId, edition_id: editionId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Error");
+    }
+
+    return response.json();
+  };
+
+  React.useEffect(() => {
+    if (!hasResultReasonAccordion) return;
+
+    const accordionNode = accordionRef.current;
+    if (!accordionNode) return;
+
+    const onAccordionClick = async () => {
+      const isOpening = accordionNode.getAttribute("aria-expanded") !== "true";
+      const parsedEditionId = Number(editionId);
+      const canFetchReason =
+        isOpening &&
+        !isResultReasonLoadingRef.current &&
+        !resultReasonTextRef.current &&
+        Boolean(resultReasonCallId) &&
+        editionId !== undefined &&
+        !Number.isNaN(parsedEditionId);
+
+      if (!canFetchReason) return;
+
+      try {
+        setIsResultReasonLoading(true);
+        setHasResultReasonError(false);
+
+        const result = await fetchResultsReason(
+          resultReasonCallId,
+          parsedEditionId
+        );
+        setResultReasonText(result?.explanation ?? null);
+      } catch (error) {
+        console.error("Error ", error);
+        setHasResultReasonError(true);
+      } finally {
+        setIsResultReasonLoading(false);
+      }
+    };
+
+    accordionNode.addEventListener("click", onAccordionClick);
+
+    return () => {
+      accordionNode.removeEventListener("click", onAccordionClick);
+    };
+  }, [editionId, hasResultReasonAccordion, resultReasonCallId]);
+
   const isPhysicalEdition = EditionCardUtils.isPhysicalEdition(previewItem);
   const isUniversityPress = EditionCardUtils.isUniversityPress(previewItem);
   const isPublicDomain = EditionCardUtils.isPublicDomain(previewItem);
@@ -82,12 +200,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
   const accordionSummaryData = () => {
     const accordionData: AccordionDataProps[] = [];
-    if (
-      page === "vra" &&
-      (edition as any)?.snippets &&
-      (edition as any)?.snippets.length > 0
-    ) {
+    if (hasResultReasonAccordion) {
       accordionData.push({
+        buttonInteractionRef: accordionRef,
         label: (
           <Box
             display="flex"
@@ -106,11 +221,17 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         panel: (
           <>
             <Flex flexDir="column" gap="s">
-              <Text>
-                You&apos;re seeing this result because this book covers topics
-                relevant to your request. The following sections were identified
-                as matching your query.
-              </Text>
+              {resultReasonText && renderMarkdownContent(resultReasonText)}
+              {isResultReasonLoading && (
+                <SkeletonLoader
+                  showImage={false}
+                  showHeading={false}
+                  sx={{
+                    div: { marginTop: 0 },
+                  }}
+                />
+              )}
+              {renderResultReasonError()}
               <Box
                 display="flex"
                 alignItems="center"
@@ -176,8 +297,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({
     }
     return accordionData;
   };
-
-  const editionId = (edition as any)?.edition_id ?? (edition as any)?.id;
 
   return (
     <Box

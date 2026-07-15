@@ -72,9 +72,10 @@ export default async function handler(
     const chatData = chatResult.data;
 
     return res.status(201).json({
-      results: chatData.result,
+      results: chatData.search_result?.results,
       messages: chatData.messages,
-      resultType: chatData.result_type,
+      resultType: chatData.search_result?.result_type,
+      toolCallId: chatData.search_result?.tool_call_id,
       sessionId: chatData.session_id,
     });
   } catch (error) {
