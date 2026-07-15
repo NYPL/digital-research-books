@@ -144,7 +144,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "Error");
+      throw new Error(errorData.error || "Result reasons request failed.");
     }
 
     return response.json();
@@ -179,7 +179,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         );
         setResultReasonText(result?.explanation ?? null);
       } catch (error) {
-        console.error("Error ", error);
+        console.error("Result reason fetch failed: ", error);
         setHasResultReasonError(true);
       } finally {
         setIsResultReasonLoading(false);

@@ -11,13 +11,15 @@ export default async function handler(
     const apiKey = process.env["API_KEY"];
 
     if (!apiUrl || !apiKey) {
-      return res.status(500).json({ error: "error" });
+      return res
+        .status(500)
+        .json({ error: "Result reason service not configured." });
     }
 
     const { call_id, edition_id } = req.body;
 
     if (!call_id || !edition_id) {
-      return res.status(400).json({ error: "error" });
+      return res.status(400).json({ error: "Missing call_id and edition_id." });
     }
 
     const cookieHeader = req.headers.cookie || undefined;
@@ -39,14 +41,14 @@ export default async function handler(
     const result = await response.json();
 
     if (!response.ok) {
-      return res
-        .status(response.status)
-        .json({ error: result.data?.message || "Error" });
+      return res.status(response.status).json({
+        error: result.data?.message || "Result reason request failed.",
+      });
     }
 
     return res.status(200).json(result.data);
   } catch (error) {
-    console.error("Error", error);
-    return res.status(500).json({ error: "Error" });
+    console.error("Result reason API error: ", error);
+    return res.status(500).json({ error: "Result reason error." });
   }
 }
