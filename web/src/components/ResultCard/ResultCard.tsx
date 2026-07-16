@@ -68,10 +68,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
   const snippetsLength = (edition as any)?.snippets?.length ?? 0;
   const hasResultReasonAccordion = page === "vra" && snippetsLength > 0;
   const editionId = (edition as any)?.edition_id ?? (edition as any)?.id;
-  const resultReasonCallId =
-    (edition as any)?.call_id ??
-    (edition as any)?.callId ??
-    (edition as any)?.result_reason_call_id;
+  const resultReasonCallId = (edition as any)?.call_id;
 
   const accordionRef = React.useRef<HTMLButtonElement | null>(null);
   const [resultReasonText, setResultReasonText] = React.useState<string | null>(
@@ -226,6 +223,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                 <SkeletonLoader
                   showImage={false}
                   showHeading={false}
+                  contentSize={5}
                   sx={{
                     div: { marginTop: 0 },
                   }}
