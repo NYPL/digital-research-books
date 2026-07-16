@@ -1,7 +1,15 @@
-import { Icon, type IconRotations } from "@nypl/design-system-react-components";
+import { Icon, type IconRotations, useNYPLBreakpoints } from "@nypl/design-system-react-components";
 import React from "react";
 
 export type ArrowDirection = "right" | "down" | "left" | "up";
+
+type ResponsiveArrowDirection = {
+  base: ArrowDirection;
+  sm?: ArrowDirection;
+  md?: ArrowDirection;
+  lg?: ArrowDirection;
+  xl?: ArrowDirection;
+};
 
 const DIRECTION_TO_ROTATION: Record<ArrowDirection, IconRotations> = {
   right: "rotate0",
@@ -11,7 +19,7 @@ const DIRECTION_TO_ROTATION: Record<ArrowDirection, IconRotations> = {
 };
 
 interface ArrowIconProps {
-  direction?: ArrowDirection;
+  direction?: ArrowDirection | ResponsiveArrowDirection;
   color?: string;
 }
 
@@ -19,10 +27,26 @@ const ArrowIcon: React.FC<ArrowIconProps> = ({
   direction = "right",
   color = "ui.white",
 }) => {
+  const { isLargerThanSmall, isLargerThanMedium, isLargerThanLarge, isLargerThanXLarge } = useNYPLBreakpoints();
+  const responsiveDirection =
+    typeof direction === "string" ? { base: direction } : direction;
+  
+  let resolvedDirection = responsiveDirection.base;
+  
+  if (isLargerThanXLarge && responsiveDirection.xl) {
+    resolvedDirection = responsiveDirection.xl;
+  } else if (isLargerThanLarge && responsiveDirection.lg) {
+    resolvedDirection = responsiveDirection.lg;
+  } else if (isLargerThanMedium && responsiveDirection.md) {
+    resolvedDirection = responsiveDirection.md;
+  } else if (isLargerThanSmall && responsiveDirection.sm) {
+    resolvedDirection = responsiveDirection.sm;
+  }
+
   return (
     <Icon
       size="medium"
-      iconRotation={DIRECTION_TO_ROTATION[direction]}
+      iconRotation={DIRECTION_TO_ROTATION[resolvedDirection]}
       fill={color}
     >
       <svg

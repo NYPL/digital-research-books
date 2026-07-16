@@ -1,12 +1,12 @@
-import React from "react";
 import { StatusBadge } from "@nypl/design-system-react-components";
+import React from "react";
 
 const PublicDomainBadge: React.FC = () => {
   return (
     <StatusBadge
       fontSize="desktop.caption"
       variant="positive"
-      width={{ base: "100%", md: "fit-content" }}
+      width="fit-content"
     >
       Public domain
     </StatusBadge>

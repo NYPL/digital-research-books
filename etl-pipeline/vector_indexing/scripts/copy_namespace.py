@@ -144,7 +144,7 @@ def copy_namespace(
     if dry_run:
         total_scanned = 0
         total_bytes = 0
-        for chunk in src_backend.scan(filters=filters):
+        for chunk, _ in src_backend.scan(filters=filters):
             total_scanned += 1
             total_bytes += chunk.estimated_bytes
             if total_scanned % 1000 == 0:
@@ -162,7 +162,7 @@ def copy_namespace(
 
     # Use TurbopufferBuffer for adaptive batching and retry logic
     with TurbopufferInsertBuffer(dest_backend) as buffer:
-        for chunk in src_backend.scan(filters=filters):
+        for chunk, _ in src_backend.scan(filters=filters):
             result = buffer.add(chunk)
             if result:
                 logger.info(

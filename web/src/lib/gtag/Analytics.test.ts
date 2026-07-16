@@ -10,12 +10,12 @@ describe("Google Analytics", () => {
       const dataLayer = window.dataLayer;
 
       trackEvent({
-        "event":  "file_download",
-        "click_text": "Download PDF",
-        "file_extension": "pdf",
-        "file_name": "File Name",
-        "item_title": "Item Title",
-        "item_author": "Item Author",
+        event: "file_download",
+        click_text: "Download PDF",
+        file_extension: "pdf",
+        file_name: "File Name",
+        item_title: "Item Title",
+        item_author: "Item Author",
       });
 
       const eventData = dataLayer[0];
@@ -33,6 +33,26 @@ describe("Google Analytics", () => {
       expect(fileName).toEqual("File Name");
       expect(itemTitle).toEqual("Item Title");
       expect(itemAuthor).toEqual("Item Author");
+    });
+
+    test("it should update window.dataLayer for query results events", () => {
+      const dataLayer = window.dataLayer;
+
+      trackEvent({
+        event: "query_results",
+        query_type: "title",
+        results_count: 42,
+      });
+
+      const eventData = dataLayer[0];
+      const eventValue = eventData.event;
+      const queryType = eventData.query_type;
+      const resultsCount = eventData.results_count;
+
+      expect(dataLayer).toHaveLength(1);
+      expect(eventValue).toEqual("query_results");
+      expect(queryType).toEqual("title");
+      expect(resultsCount).toEqual(42);
     });
   });
 });

@@ -6,10 +6,26 @@ import os
 import argparse
 import logging
 import json
+from pathlib import Path
+
+# Add project root to path if running directly
+if __name__ == "__main__":
+    from dotenv import find_dotenv
+
+    project_root = Path(
+        find_dotenv("requirements.txt", raise_error_if_not_found=True)
+    ).parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
 
 import turbopuffer as tpuf
 
 logger = logging.getLogger(__name__)
+
+# Output conventions:
+#   print()        — primary output: data rows, action confirmations, and results always shown to the user
+#   logger.info()  — contextual headers that annotate data output (e.g. "Found 3 namespaces:"); suppressed without --verbose
+#   logger.error() — errors; always shown, written to stderr
 
 
 def get_client(
@@ -17,7 +33,9 @@ def get_client(
 ) -> tpuf.Turbopuffer:
     """Initialize turbopuffer client with API key.
 
-    Priority: api_key arg > TURBOPUFFER_API_KEY env var
+    Priority: --api-key arg > TURBOPUFFER_API_KEY env var set before invocation >
+    TURBOPUFFER_API_KEY loaded from config/.env.<env> (via --env; does not override
+    an already-set env var)
     Region: region arg > TURBOPUFFER_REGION env var > default (aws-us-east-1)
     """
     key = api_key or os.environ.get("TURBOPUFFER_API_KEY")
@@ -149,14 +167,50 @@ def cmd_delete(args):
         # NOTE: maybe we should remove force, i.e. always ask for confirmation
         confirm = input(f"Delete namespace '{args.namespace}' ({count:,} rows)? [y/N] ")
         if confirm.lower() != "y":
-            logger.info("Aborted.")
+            print("Aborted.")
             return
 
     try:
         ns.delete_all()
-        logger.info(f"Deleted namespace '{args.namespace}'")
+        print(f"Deleted namespace '{args.namespace}'")
     except Exception as e:
         logger.error(f"Failed to delete namespace '{args.namespace}': {e}")
+        sys.exit(1)
+
+
+def cmd_copy(args):
+    """Copy a namespace to another namespace within the same region.
+
+    The destination namespace must be empty or not yet exist.
+    """
+    import datetime
+
+    client = get_client(args.api_key)
+
+    dest = args.dest
+    if not dest:
+        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        dest = f"{args.src}-backup-{timestamp}"
+
+    if not args.force:
+        try:
+            metadata = client.namespace(args.src).metadata()
+            count = metadata.approx_row_count
+        except Exception:
+            count = "unknown"
+        confirm = input(
+            f"Copy namespace '{args.src}' -> '{dest}' ({count:,} rows)? [y/N] "
+        )
+        if confirm.lower() != "y":
+            print("Aborted.")
+            return
+
+    try:
+        dest_ns = client.namespace(dest)
+        dest_ns.write(copy_from_namespace=args.src)
+        print(f"Copied namespace '{args.src}' -> '{dest}'")
+    except Exception as e:
+        logger.error(f"Failed to copy namespace '{args.src}' -> '{dest}': {e}")
         sys.exit(1)
 
 
@@ -335,6 +389,10 @@ def main():
 Environment:
   TURBOPUFFER_API_KEY    API key (can also use --api-key)
 
+  API key resolution order: --api-key arg > TURBOPUFFER_API_KEY already set in the
+  shell environment > TURBOPUFFER_API_KEY loaded from config/.env.<env> (via --env;
+  a pre-existing env var is never overridden by the .env file)
+
 Examples:
   %(prog)s list                        # List all namespaces
   %(prog)s info vra-dev                # Get metadata for namespace
@@ -343,6 +401,8 @@ Examples:
   %(prog)s sample vra-dev --limit 5    # Sample 5 documents
   %(prog)s query vra-dev '{"rank_by": ["id", "asc"], "top_k": 5}'
   %(prog)s query vra-dev --file query.json
+  %(prog)s copy vra-dev vra-dev-copy    # Copy namespace to vra-dev-copy
+  %(prog)s copy vra-dev                # Copy to vra-dev-backup-<datetime>
   %(prog)s recall vra-dev              # Test ANN recall quality
   %(prog)s warm vra-dev                # Warm cache for low-latency queries
   %(prog)s delete vra-dev --force      # Delete namespace (no confirmation)
@@ -353,6 +413,11 @@ Examples:
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Enable verbose logging"
+    )
+    parser.add_argument(
+        "--env",
+        default="production",
+        help="Environment name used to load config/.env.<env> (default: production)",
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -410,6 +475,19 @@ Examples:
     p_query.add_argument("--json", action="store_true", help="Output as JSON")
     p_query.set_defaults(func=cmd_query)
 
+    # copy
+    p_copy = subparsers.add_parser(
+        "copy", help="Copy a namespace within the same region"
+    )
+    p_copy.add_argument("src", help="Source namespace name")
+    p_copy.add_argument(
+        "dest",
+        nargs="?",
+        help="Destination namespace name (default: <src>-backup-<datetime>)",
+    )
+    p_copy.add_argument("--force", "-f", action="store_true", help="Skip confirmation")
+    p_copy.set_defaults(func=cmd_copy)
+
     # recall
     p_recall = subparsers.add_parser("recall", help="Test ANN recall quality")
     p_recall.add_argument("namespace", help="Namespace name")
@@ -437,6 +515,10 @@ Examples:
     p_delete.set_defaults(func=cmd_delete)
 
     args = parser.parse_args()
+
+    from utils.load_env import load_env
+
+    load_env(f"config/.env.{args.env}")
 
     # Configure logging based on verbosity
     logging.basicConfig(

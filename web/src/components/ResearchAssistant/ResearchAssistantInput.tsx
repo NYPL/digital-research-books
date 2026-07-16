@@ -5,23 +5,33 @@ import {
   TextInput,
   TextInputRefType,
 } from "@nypl/design-system-react-components";
+import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   getPanelLayout,
-  PADDING_COUNTER,
+  ITEM_PAGE_PADDING_RIGHT,
 } from "~/src/constants/researchAssistant";
 import { useResearchAssistant } from "~/src/context/ResearchAssistantContext";
 import ResearchAssistantSendIcon from "./icons/ResearchAssistantSendIcon";
 
-const ResearchAssistantInput: React.FC = () => {
-  const { messages, sendMessage, isLoading } = useResearchAssistant();
+const ResearchAssistantInput: React.FC<{ onExpandToFull?: () => void }> = ({
+  onExpandToFull,
+}) => {
+  const { messages, sendMessage, isLoading, showChat } = useResearchAssistant();
 
   const [isFocused, setIsFocused] = useState(false);
   const [inputText, setInputText] = useState("");
   const inputRef = useRef<TextInputRefType>(null);
   const isDisabled = isLoading;
 
-  const { marginX, paddingX, marginRight } = getPanelLayout();
+  const { marginX, paddingX, paddingRight, marginRight } = getPanelLayout();
+
+  const router = useRouter();
+  const isItemPage = router.pathname.startsWith("/item/");
+  // itemPage conditional is here for now, this will be removed with item page responsive PR
+  const panelPaddingRight = isItemPage
+    ? { base: paddingRight.base, md: ITEM_PAGE_PADDING_RIGHT }
+    : paddingRight;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +73,17 @@ const ResearchAssistantInput: React.FC = () => {
     }
   }, [isDisabled]);
 
+  const isFirstShowRef = useRef(true);
+  useEffect(() => {
+    if (isFirstShowRef.current) {
+      isFirstShowRef.current = false;
+      return;
+    }
+    if (showChat && inputRef.current && !isDisabled) {
+      inputRef.current.focus();
+    }
+  }, [showChat, isDisabled]);
+
   const placeholderValue = isDisabled
     ? "Thinking..."
     : messages.length === 0
@@ -77,7 +98,7 @@ const ResearchAssistantInput: React.FC = () => {
       marginLeft={marginX}
       marginRight={marginRight}
       paddingLeft={paddingX}
-      paddingRight={`calc(${PADDING_COUNTER} * 2)`}
+      paddingRight={panelPaddingRight}
       paddingY="s"
       // @ts-expect-error: Override gap value type
       gap="xs"
@@ -135,10 +156,15 @@ const ResearchAssistantInput: React.FC = () => {
           isDisabled={isDisabled}
           id="chat-input"
           labelText={""}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={(e) => {
+            setInputText(e.target.value);
+            if (e.target.value.length === 1) onExpandToFull?.();
+          }}
           onInput={(e) => updateTextareaHeight(e)}
           onKeyDown={(e) => handleKeyDown(e)}
-          onFocus={() => setIsFocused(true)}
+          onFocus={() => {
+            setIsFocused(true);
+          }}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholderValue}
           ref={inputRef}
@@ -169,6 +195,8 @@ const ResearchAssistantInput: React.FC = () => {
           isDisabled={isDisabled || inputText === ""}
           height="24px"
           id="send-chat-button"
+          minH="24px"
+          minW="24px"
           padding="0"
           type="submit"
           width="24px"
