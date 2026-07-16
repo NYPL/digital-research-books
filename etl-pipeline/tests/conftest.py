@@ -81,23 +81,36 @@ def setup_env(pytestconfig, request):
             "ENVIRONMENT ERROR: Integration and functional tests cannot be run on production environments."
         )
 
-    # Exit if docker compose services are not ready
-    # ALT: use a custom @pytest.mark to identify tests that require compose \
-    # services to be up
+    # Exit if required docker compose services are not healthy
+    # ALT FUTURE: use a custom @pytest.mark to identify specific tests that \
+    # require specific services to be up
     if (not only_unit_tests) and (environment == "local"):
         import subprocess
 
+        # see: docker-compose.yaml
+        REQUIRED_HEALTHY_CONTAINERS = [
+            "drb_local_db",
+            "drb_local_es",
+            "drb_local_rs",
+            "drb_local_api",
+            "drb_local_aws",
+        ]
+
         result = subprocess.run(
-            ["bash", "scripts/docker-compose-healthcheck.sh"],
+            ["docker", "ps", "--filter", "health=healthy", "--format", "{{.Names}}"],
             capture_output=True,
             text=True,
-            cwd=str(Path(__file__).parent.parent),  # etl-pipeline/
-            env={**os.environ, "POLL_INTERVAL": "1", "TIMEOUT": "2"},
         )
-        if result.returncode != 0:
-            output = (result.stdout or "") + (result.stderr or "")
+        healthy_containers = set(result.stdout.split())
+        missing = [
+            name
+            for name in REQUIRED_HEALTHY_CONTAINERS
+            if name not in healthy_containers
+        ]
+        if missing:
             pytest.exit(
-                f"DOCKER HEALTHCHECK FAILED: `docker compose up` required for non-unit tests in 'local' env.\n\n{output}"
+                "DOCKER HEALTHCHECK FAILED: `docker compose up` required for non-unit tests in 'local' env.\n\n"
+                f"Containers not healthy: {missing}"
             )
 
     print(f'Loading environment: "{environment}" during test setup')
