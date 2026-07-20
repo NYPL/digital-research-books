@@ -3,6 +3,7 @@ import {
   AccordionDataProps,
   Banner,
   Box,
+  Button,
   Flex,
   Heading,
   SkeletonLoader,
@@ -100,20 +101,10 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
     return (
       <Text>
-        Content could not be generated at this time. Try again later or{" "}
-        <Link
-          to="#"
-          role="button"
-          hasVisitedState={false}
-          onClick={openFeedbackBox}
-          onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
-            if (e.key === " " || e.key === "Spacebar") {
-              openFeedbackBox(e);
-            }
-          }}
-        >
+        Content could not be generated at this time. Try again later or
+        <Button variant="text" onClick={openFeedbackBox}>
           contact us
-        </Link>{" "}
+        </Button>
         for assistance
       </Text>
     );

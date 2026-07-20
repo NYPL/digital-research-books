@@ -7,6 +7,8 @@ import React, {
   useState,
 } from "react";
 import {
+  CatalogEdition,
+  CatalogSearchResults,
   ChatResultsMap,
   ConversationType,
   HistoryItem,
@@ -176,14 +178,16 @@ export const ResearchAssistantProvider: React.FC<{
 
         if (
           typeof data.results === "object" &&
-          Array.isArray((data.results as any).editions)
+          Array.isArray((data.results as CatalogSearchResults).editions)
         ) {
           return {
             ...data.results,
-            editions: (data.results as any).editions.map((edition: any) => ({
-              ...edition,
-              call_id: data.toolCallId,
-            })),
+            editions: (data.results as CatalogSearchResults).editions.map(
+              (edition: CatalogEdition) => ({
+                ...edition,
+                call_id: data.toolCallId,
+              })
+            ),
           };
         }
 
