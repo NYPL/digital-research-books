@@ -97,14 +97,32 @@ export const ResultCard: React.FC<ResultCardProps> = ({
   };
 
   const renderResultReasonError = () => {
-    if (!hasResultReasonError) return null;
+    // if (!hasResultReasonError) return null;
 
     return (
       <Text>
-        Content could not be generated at this time. Try again later or
-        <Button variant="text" onClick={openFeedbackBox}>
+        Content could not be generated at this time. Try again later or{" "}
+        <Button
+          variant="text"
+          onClick={openFeedbackBox}
+          sx={{
+            display: "inline !important",
+            padding: "0 !important",
+            height: "auto !important",
+            minHeight: "auto !important",
+            maxHeight: "none !important",
+            lineHeight: "inherit !important",
+            borderRadius: "0 !important",
+            "&:hover": {
+              backgroundColor: "transparent !important",
+            },
+            "&:active": {
+              backgroundColor: "transparent !important",
+            },
+          }}
+        >
           contact us
-        </Button>
+        </Button>{" "}
         for assistance
       </Text>
     );
