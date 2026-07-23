@@ -97,7 +97,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
   };
 
   const renderResultReasonError = () => {
-    // if (!hasResultReasonError) return null;
+    if (!hasResultReasonError) return null;
 
     return (
       <Text>
