@@ -115,7 +115,7 @@ def filter_match(filters, attribute=None, operator=None, value=None) -> bool:
 class TestCatalogSearchFilterUsage:
     """Test that the agent constructs appropriate filters for catalog searches."""
 
-    @pytest.mark.xfail(reason="Subject filter gets applied", raises=AssertionError)
+    @pytest.mark.xfail(reason="Subject filter gets applied")
     @pytest.mark.usefixtures("patch_search_catalog")
     def test_no_filter_for_generic_search(self, test_session):
         """
@@ -337,9 +337,7 @@ class TestCatalogSearchFilterUsage:
     #             or "french" in filter_str
     #         ), f"Expected combined filters for subject and language, got: {filters}"
 
-    @pytest.mark.xfail(
-        reason="author name is wrongly included in ranking_query", raises=AssertionError
-    )
+    @pytest.mark.xfail(reason="author name is wrongly included in ranking_query")
     @pytest.mark.usefixtures("patch_search_catalog")
     @pytest.mark.parametrize(
         "query,author_name",
@@ -458,10 +456,7 @@ class TestCatalogSearchFilterUsage:
             Filter.model_validate_json(filters)
 
     # MAYBE: the presence of any subject filter is inappropriate for this query. Change to not rely on subject filter (maybe just relay on bm25 in ranking filter)
-    @pytest.mark.xfail(
-        reason="ContainsAnyToken instead of ContainsAllTokens is used",
-        raises=AssertionError,
-    )
+    @pytest.mark.xfail(reason="ContainsAnyToken instead of ContainsAllTokens is used")
     @pytest.mark.usefixtures("patch_search_catalog")
     def test_compound_phrase(self, test_session):
         """

@@ -6,7 +6,11 @@ from unittest.mock import AsyncMock, MagicMock
 
 from api.assistant.agent import SCORE_SORT_DIRECTION
 from api.assistant.types import CatalogSearchResult, ContentSearchResult, Snippet
-from api.blueprints.chat import chat_blueprint, prepare_search_response
+from api.blueprints.chat import (
+    ChatResponseData,
+    chat_blueprint,
+    prepare_search_response,
+)
 
 
 def make_snippet(text, chunk_score):
@@ -39,22 +43,59 @@ def make_search_results(tool_name, edition_data, search_params=None):
 
 
 class TestPrepareSearchResponse:
-    def test_returns_none_none_when_no_results(self):
-        result_type, result = prepare_search_response({})
-        assert result_type is None
-        assert result is None
+    def test_returns_none_when_no_results(self):
+        """Tests no search executed for contentSearch and CatalogSearch"""
+        assert prepare_search_response({}) is None
+
+    def test_content_search_zero_results(self):
+        """Test the "search executed, zero results" contentSearch case.
+
+        A single edition with zero snippets in contentSearch (as search_book records
+        when the search executed but returns nothing) produces an object with an
+        empty snippets list, not None — None is reserved for "no search was executed".
+        """
+        edition = make_edition_result([])
+        search_results = make_search_results("search_book", [edition])
+
+        search_response = prepare_search_response(search_results)
+
+        assert search_response.result_type == "contentSearch"
+        formatted = search_response.formatted_search_result
+        assert formatted == {"snippets": [], "search_params": {}}
+
+    def test_catalog_search_zero_results(self, mocker):
+        """Test the "search executed, zero results" catalogSearch case.
+
+        search_catalog records edition_data=[] when the search executed but
+        found zero chunk hits (the catalogSearch analog to
+        test_content_search_zero_results) — same empty-list shape also occurs if
+        hit barcodes lack matching DB metadata.
+        """
+        mocker.patch(
+            "api.blueprints.chat.APIUtils.formatPagingOptions", return_value={"page": 1}
+        )
+
+        search_results = make_search_results("search_catalog", [])
+
+        search_response = prepare_search_response(search_results)
+
+        assert search_response.result_type == "catalogSearch"
+        formatted = search_response.formatted_search_result
+        assert formatted["editions"] == []
 
     def test_content_search_output_structure(self):
         edition = make_edition_result([make_snippet("a", 0.5)])
         search_results = make_search_results("search_book", [edition])
 
-        result_type, formatted = prepare_search_response(search_results)
+        search_response = prepare_search_response(search_results)
 
-        assert result_type == "contentSearch"
+        assert search_response.result_type == "contentSearch"
+        formatted = search_response.formatted_search_result
         assert set(formatted.keys()) == {"snippets", "search_params"}
         assert "editions" not in formatted
         assert "paging" not in formatted
         assert isinstance(formatted["snippets"], list)
+        assert search_response.tool_call_id == "tool_call_id_123"
 
     def test_catalog_search_output_structure(self, mocker):
         mocker.patch(
@@ -67,12 +108,29 @@ class TestPrepareSearchResponse:
         edition = make_edition_result([make_snippet("a", 0.5)], type="catalog")
         search_results = make_search_results("search_catalog", [edition])
 
-        result_type, formatted = prepare_search_response(search_results)
+        search_response = prepare_search_response(search_results)
 
-        assert result_type == "catalogSearch"
+        assert search_response.result_type == "catalogSearch"
+        formatted = search_response.formatted_search_result
         assert set(formatted.keys()) == {"editions", "search_params", "paging"}
         assert isinstance(formatted["editions"], list)
         assert "snippets" in formatted["editions"][0]
+        assert search_response.tool_call_id == "tool_call_id_123"
+
+    def test_catalog_search_includes_barcode(self, mocker):
+        mocker.patch("api.blueprints.chat.orm_to_dict", return_value={})
+        mocker.patch(
+            "api.blueprints.chat.APIUtils.formatPagingOptions", return_value={}
+        )
+
+        edition = make_edition_result([make_snippet("a", 0.5)], type="catalog")
+        edition.barcode = "33433012345678"
+        search_results = make_search_results("search_catalog", [edition])
+
+        search_response = prepare_search_response(search_results)
+
+        editions = search_response.formatted_search_result["editions"]
+        assert editions[0]["barcode"] == "33433012345678"
 
     def test_content_search_snippets_sorted(self):
         snippets = [
@@ -83,7 +141,7 @@ class TestPrepareSearchResponse:
         edition = make_edition_result(snippets)
         search_results = make_search_results("search_book", [edition])
 
-        _, formatted = prepare_search_response(search_results)
+        formatted = prepare_search_response(search_results).formatted_search_result
 
         output_scores = [s["chunk_score"] for s in formatted["snippets"]]
         expected_scores = sorted(
@@ -105,7 +163,7 @@ class TestPrepareSearchResponse:
         edition = make_edition_result(snippets, type="catalog")
         search_results = make_search_results("search_catalog", [edition])
 
-        _, formatted = prepare_search_response(search_results)
+        formatted = prepare_search_response(search_results).formatted_search_result
 
         output_scores = [s["chunk_score"] for s in formatted["editions"][0]["snippets"]]
         expected_scores = sorted(
@@ -188,6 +246,25 @@ def test_chat_passes_message_str_as_runner_input(chat_test_client):
     call_kwargs = mock_runner_run.call_args.kwargs
     assert call_kwargs["input"] == message
     assert isinstance(call_kwargs["input"], str)
+
+
+def test_chat_response_shape_no_search(chat_test_client):
+    """Validate response_data against ChatResponseData when no search tool
+    was called.
+    """
+    client, _ = chat_test_client
+
+    response = client.post(
+        "/chat",
+        json={"message": "hello", "conversationType": "catalogSearch"},
+        headers={"X-API-Key": "test-api-key"},
+    )
+
+    data = response.get_json()["data"]
+    assert set(data.keys()) == {"messages", "search_result", "session_id"}
+    assert data["search_result"] is None
+
+    ChatResponseData.model_validate(data)
 
 
 def test_content_search_unknown_edition_returns_404(chat_test_client, mocker):

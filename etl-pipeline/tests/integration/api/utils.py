@@ -2,6 +2,21 @@ from base64 import b64encode
 
 from utils.common import require_env
 
+TOP_LEVEL_RESPONSE_FIELDS = {
+    "status": int,
+    "timestamp": str,
+    "responseType": str,
+    "data": dict,
+}
+
+
+def assert_top_level_response_fields(response_json: dict):
+    for field, expected_type in TOP_LEVEL_RESPONSE_FIELDS.items():
+        assert field in response_json, f"Missing expected top-level field: {field}"
+        assert isinstance(response_json[field], expected_type), (
+            f"Expected {field} to be of type {expected_type.__name__}"
+        )
+
 
 def assert_response_status(url: str, response, expected_status_code: int):
     assert response.status_code == expected_status_code, (

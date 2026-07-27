@@ -2,8 +2,9 @@ import io
 import os
 import tarfile
 import tempfile
+import time
 import gnupg
-import shutil
+import requests
 
 from .grin_client import GRINClient
 from managers import DBManager, S3Manager
@@ -13,6 +14,8 @@ from utils.profiler import profile
 from utils.common import require_env
 
 logger = create_log(__name__)
+
+DOWNLOAD_TIMEOUT_SECS = 90
 
 
 class GRINDownloadService:
@@ -66,9 +69,16 @@ class GRINDownloadService:
 
             with response:
                 response.raise_for_status()
+                deadline = time.monotonic() + DOWNLOAD_TIMEOUT_SECS
 
                 with open(tmp_ocr_package, "wb") as ocr_package:
-                    shutil.copyfileobj(response.raw, ocr_package)
+                    for chunk in response.iter_content(chunk_size=1024 * 1024):
+                        if time.monotonic() > deadline:
+                            raise requests.exceptions.Timeout(
+                                f"Download of {barcode} exceeded "
+                                f"{DOWNLOAD_TIMEOUT_SECS}s"
+                            )
+                        ocr_package.write(chunk)
         except Exception:
             logger.exception(f"Error downloading OCR package for {barcode}")
             grin_status.failed_download += 1

@@ -1,11 +1,13 @@
 import json
 import os
+import re
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Tuple, Union
 from typing_extensions import TypedDict
+from xml.sax.saxutils import escape as xml_escape
 
 
 import newrelic.agent
@@ -30,6 +32,7 @@ from agents.models.chatcmpl_converter import Converter
 from agents.run_config import DEFAULT_MAX_TURNS
 from agents.tool_context import ToolContext
 from jinja2 import Template
+from lxml import etree
 from openai import AsyncOpenAI
 from openai.types.shared import Reasoning
 from sqlalchemy import text
@@ -45,7 +48,7 @@ from ..db import (
     get_engine,
 )
 from .search import hybrid_search, ReciprocalRankFuser, ScoredHit
-from .types import CatalogSearchResult, ContentSearchResult
+from .types import BaseEditionResult, CatalogSearchResult, ContentSearchResult
 
 # shared code
 from vector_indexing.components.embedders.base import Embedder
@@ -69,6 +72,10 @@ from ..db import (
 )
 
 logger = create_log(__name__)
+
+DEFAULT_LLM = "gemini-3.5-flash"
+
+TOOL_ERROR_PREFIX = "An error occurred while running the tool"
 
 # max number of editions to return from catalog search
 PAGE_SIZE = 10
@@ -443,7 +450,7 @@ def map_editions_and_records(record_ids=None, edition_ids=None, barcode_ids=None
         df = pd.DataFrame(result.fetchall(), columns=result.keys())
 
     logger.debug(
-        f"Successfully mapped {len(df)} {source_col}s to {df[target_col].unique().size} {target_col}s"
+        f"Mapped {len(df)}/{len(ids)} {source_col}s to {df[target_col].unique().size} {target_col}s"
     )
 
     # Create dict mapping: source id -> {target id -> value, ...}
@@ -553,7 +560,7 @@ def update_chat(
 
     # model = "litellm/gemini/gemini-3-flash-preview"
     model = OpenAIChatCompletionsModel(
-        model="gemini-3.5-flash",
+        model=DEFAULT_LLM,
         openai_client=AsyncOpenAI(
             api_key=require_env("GOOGLE_API_KEY"),
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
@@ -682,6 +689,8 @@ def update_chat(
     return run_result
 
 
+# TODO: replace with run_coroutine(Session.get_items())
+@timer(logger)
 def get_session_messages(session_id):
     """Read message data for session ID as a list of dicts."""
     # TODO: replace with Session.get_items()
@@ -694,6 +703,7 @@ def get_session_messages(session_id):
     return [row.message_data for row in rows]
 
 
+@timer(logger)
 def get_max_message_id() -> int:
     """Return the current max id in agent_messages, or 0 if the table is empty."""
     engine = get_engine()
@@ -704,6 +714,7 @@ def get_max_message_id() -> int:
     return row.max_turn_id
 
 
+@timer(logger)
 def get_session_messages_after(session_id: str, max_id: int) -> list[dict]:
     """
     Return assistant messages written to agent_messages for `session_id` after `max_id`.
@@ -903,6 +914,13 @@ def search_catalog(
         logger.info(f"Retrieved {len(results)} chunk hits from hybrid search")
 
         if not len(results):
+            # Record that this search executed (with no results), so the caller
+            # can distinguish "search executed, no results" from "no search executed"
+            ctx.context.search_results[ctx.tool_call_id] = {
+                "tool_name": ctx.tool_name,
+                "edition_data": [],
+                "search_params": json.loads(ctx.tool_arguments),
+            }
             return "No results found for your query."
 
         # MAYBE: turn the below into 2 functions: group_by_edition_and_sort() and enrich_edition_hits() (with limit to top 10 in between)
@@ -976,6 +994,7 @@ def search_catalog(
                         edition_id=row.Edition.id,
                         chunk_hits=edition_hit["chunk_hits"],
                         agg_score=edition_hit["agg_score"],
+                        barcode=edition_hit["barcode"],
                     )
                 )
         if missing_data:
@@ -1064,19 +1083,18 @@ def search_book(
         query_vector = ctx.context.embedder.embed_query(ranking_query)
 
         # Execute hybrid search (vector + BM25) with RRF fusion
-        results = hybrid_search(
+        scored_hits = hybrid_search(
             backend=ctx.context.backend,
             query_vector=query_vector,
             ranking_query=ranking_query,
             top_k=10,
             filters=combined_filters,
         )
-        logger.info(f"Retrieved {len(results)} chunk hits from hybrid search for book")
+        logger.info(
+            f"Retrieved {len(scored_hits)} chunk hits from hybrid search for book"
+        )
 
-        if not len(results):
-            return "No results found for your query in this book."
-
-        chunk_hits = list(results_to_chunk_hits(results))
+        chunk_hits = list(results_to_chunk_hits(scored_hits))
 
         search_result = ContentSearchResult(
             edition_id=ctx.context.edition_id,
@@ -1085,9 +1103,15 @@ def search_book(
         )
 
         # Format results for LLM
-        search_result_str = format_search_results([search_result])
+        tool_output_str = (
+            "No results found for your query in this book."
+            if not len(scored_hits)
+            else format_search_results([search_result])
+        )
 
-        # Store search results for later reference
+        # Store search results for later reference. Always record the (single)
+        # edition being searched, even with 0 chunk hits, so the caller can
+        # distinguish "search executed, no results" from "no search executed"
         ctx.context.search_results[ctx.tool_call_id] = {
             "tool_name": ctx.tool_name,
             "edition_data": [search_result],
@@ -1095,7 +1119,7 @@ def search_book(
         }
         # TODO: store search result chunk + edition ids in DB for structured retreival
 
-        return search_result_str
+        return tool_output_str
 
     except Exception as e:
         logger.exception(f"Error during {ctx.tool_name} tool execution.")
@@ -1162,22 +1186,109 @@ def format_frbr_fields(orm_work, orm_edition):
     }
 
 
-def display_book(lines, frbr_fields, chunk_hits, edition_id):
+SEARCH_RESULTS_XSD = """\
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="search_results">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="query" type="xs:string" minOccurs="0"/>
+        <xs:element name="search_tool_call_id" type="xs:string" minOccurs="0"/>
+        <xs:element name="edition" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="edition_id" type="xs:integer"/>
+              <xs:element name="barcode" type="xs:string" minOccurs="0"/>
+              <xs:element name="title" type="xs:string"/>
+              <xs:element name="authors" type="xs:string"/>
+              <xs:element name="publisher" type="xs:string"/>
+              <xs:element name="date" type="xs:string"/>
+              <xs:element name="subjects" type="xs:string"/>
+              <xs:element name="language" type="xs:string"/>
+              <xs:element name="chunks">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="chunk" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="item_id" type="xs:integer"/>
+                          <xs:element name="page" type="xs:string"/>
+                          <xs:element name="text" type="xs:string"/>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+"""
+
+_SEARCH_RESULTS_XSD_TREE = etree.fromstring(SEARCH_RESULTS_XSD.encode("utf-8"))
+SEARCH_RESULTS_SCHEMA = etree.XMLSchema(_SEARCH_RESULTS_XSD_TREE)
+
+_SEARCH_RESULT_SCHEMA_ELEMENT_NAMES = _SEARCH_RESULTS_XSD_TREE.xpath(
+    "//xs:element/@name", namespaces={"xs": "http://www.w3.org/2001/XMLSchema"}
+)
+
+
+def _escape_if_collides_with_known_tags(value: Any) -> Tuple[str, bool]:
+    """
+    Return (value, was_escaped). If value contains a literal open or close
+    tag matching one of _SEARCH_RESULT_SCHEMA_ELEMENT_NAMES (e.g. "</chunk>"),
+    the whole value is XML-escaped so it can't be mistaken for real structural
+    markup. Otherwise value is returned unchanged (as a str).
+    """
+    value = str(value)
+    collides = any(
+        f"<{name}>" in value or f"</{name}>" in value
+        for name in _SEARCH_RESULT_SCHEMA_ELEMENT_NAMES
+    )
+    return (xml_escape(value), True) if collides else (value, False)
+
+
+# NOTE: Tag names emit as structural delimiters. Inserted values are not
+# XML-escaped in general but if a value happens to literally contain one of the
+# schema elements tags (e.g. a book excerpt containing the string "</chunk>"),
+# that specific value is escaped so it can't be mistaken for real structural
+# markup by get_result_count()/ find_result_by_barcode() (or any other consumer
+# looking for these tags).
+
+
+def format_book(lines, frbr_fields, chunk_hits, edition_id, barcode=None):
     """
     Create lines of str for an XML display of book and chunk search results.
     Chunk display order controlled by input data order.
+
+    Returns (lines, escaped_any) where escaped_any is True if any inserted
+    value required escaping via _escape_if_collides_with_known_tags().
     """
+    escaped_any = False
+
+    def emit(tag, value):
+        nonlocal escaped_any
+        value, escaped = _escape_if_collides_with_known_tags(value)
+        escaped_any = escaped_any or escaped
+        lines.append(f"<{tag}>{value}</{tag}>")
+
     lines.append("\n<edition>")
     # Display book level metadata
 
     # MAYBE: edition index not id?
-    lines.append(f"<edition_id>{edition_id}</edition_id>")
-    lines.append(f"<title>{frbr_fields['title']}</title>")
-    lines.append(f"<authors>{frbr_fields['author_names']}</authors>")
-    lines.append(f"<publisher>{frbr_fields['publisher_names']}</publisher>")
-    lines.append(f"<date>{frbr_fields['pub_date']}</date>")
-    lines.append(f"<subjects>{frbr_fields['subject_list']}</subjects>")
-    lines.append(f"<language>{frbr_fields['language_list']}</language>")
+    emit("edition_id", edition_id)
+    if barcode is not None:
+        emit("barcode", barcode)
+    emit("title", frbr_fields["title"])
+    emit("authors", frbr_fields["author_names"])
+    emit("publisher", frbr_fields["publisher_names"])
+    emit("date", frbr_fields["pub_date"])
+    emit("subjects", frbr_fields["subject_list"])
+    emit("language", frbr_fields["language_list"])
     # MAYBE: add agg_score
     # MAYBE: print the number of chunks per edition somehow
 
@@ -1201,21 +1312,26 @@ def display_book(lines, frbr_fields, chunk_hits, edition_id):
         lines.append("\n<chunk>")
         # MAYBE: add chunk index? to tag?
         # MAYBE: chunk score?
-        lines.append(
-            f"<item_id>{chunk_hit['item_id']}</item_id>"
+        emit(
+            "item_id", chunk_hit["item_id"]
         )  # an edition might include chunks from multiple items
-        lines.append(f"<page>{page_display}</page>")
+        emit("page", page_display)
+        text, text_escaped = _escape_if_collides_with_known_tags(text)
+        escaped_any = escaped_any or text_escaped
         lines.append(f"<text>\n{text}\n</text>")
         lines.append("</chunk>")
 
     lines.append("\n</chunks>")
     lines.append("</edition>")
 
-    return lines
+    return lines, escaped_any
 
 
-# MAYBE: remove book level info from search response for contentSearch to save tokens.
-def format_search_results(edition_data, search_tool_call_id=None, query=None) -> str:
+def format_search_results(
+    edition_data: list[BaseEditionResult],
+    search_tool_call_id: str | None = None,
+    query: str | None = None,
+) -> str:
     """
     Return a formatted str containing an ordered list of editions and their
     associated text excerpts. For each edition, metadata (title, authors, subjects,
@@ -1226,6 +1342,12 @@ def format_search_results(edition_data, search_tool_call_id=None, query=None) ->
         edition_data: List of BaseEditionResult (CatalogSearchResult or ContentSearchResult)
         search_tool_call_id: Optional tool call ID to include in output header
         query: The search query string
+
+    NOTE: This output is not formally XML-escaped/encoded. XML tags are used for
+    section delimiters and downstream extraction (get_result_count(),
+    find_result_by_barcode()) while keeping unmodified book text visible
+    to the LLM. The only escaping applied is the narrow case of a value that
+    would otherwise be mistaken for one of the search result schema's own tags.
     """
     if not edition_data:
         return "There are no results for your query."
@@ -1233,8 +1355,12 @@ def format_search_results(edition_data, search_tool_call_id=None, query=None) ->
     lines = []
     lines.append("<search_results>")
 
+    escaped_any = False
+
     if query is not None:
-        lines.append(f"<query>{wrap(query)}</query>")
+        wrapped_query, query_escaped = _escape_if_collides_with_known_tags(wrap(query))
+        escaped_any = escaped_any or query_escaped
+        lines.append(f"<query>{wrapped_query}</query>")
 
     if search_tool_call_id is not None:
         lines.append(
@@ -1247,11 +1373,77 @@ def format_search_results(edition_data, search_tool_call_id=None, query=None) ->
             if isinstance(entry, CatalogSearchResult)
             else entry.frbr_fields
         )
-        lines = display_book(lines, frbr_fields, entry.chunk_hits, entry.edition_id)
+        barcode = entry.barcode if isinstance(entry, CatalogSearchResult) else None
+        lines, book_escaped = format_book(
+            lines, frbr_fields, entry.chunk_hits, entry.edition_id, barcode=barcode
+        )
+        escaped_any = escaped_any or book_escaped
 
     lines.append("\n</search_results>")
 
+    # TODO: make XML escape note permanent (not conditional) and therefore greatly
+    # simplify format_book()/emit(): nonlocal and locally defined emit() function no longer needed.
+    if escaped_any:
+        lines.append(
+            "\nNOTE: some element names appearing within book text or metadata "
+            'were XML-escaped for clear parsing (e.g. "</chunk>" becomes '
+            '"&lt;/chunk&gt;").'
+        )
+
     return "\n".join(lines)
+
+
+# NOTE: Using regex for search tool output xml tag parsing allows unescaped XML
+# special characters to be preserved in chunk text without relying on subtle,
+# complex lxml recover=True parsing behavior.
+
+# NOTE: Regex parsing of the search results schema is safe because
+# format_search_results() escapes any literal occurrence of a search result
+# schema element name within formatted text so an un-escaped element tag,
+# like "<edition>", can only be real structural markup, never book content. Also
+# the structure of the \format_search_results() xml is guaranteed by tests
+# against the schema defined above.
+
+# ALT: use xml parsing with `etree.fromstring(xml_str, parser=etree.HTMLParser(recover=True))`
+# which preserved element text that contains unescaped xml special characters
+# (in almost all cases).
+
+# TODO: define a generic parse search tool output into an EditionResult obj \
+# (with chunk text un-element-escaped?) where each element is accessible. Then \
+# use that parser to test search tool output structure instead of the XML schema
+
+
+def get_result_count(formatted_output: str) -> int:
+    """
+    Count the <edition> results in format_search_results() output.
+    """
+    return len(re.findall(r"<edition>", formatted_output))
+
+
+def find_result_by_barcode(formatted_output: str, barcode: str) -> Optional[str]:
+    """
+    Return the full <edition>...</edition> block containing the given
+    barcode, or None if not found.
+    """
+    barcode_tag = f"<barcode>{barcode}</barcode>"
+    for match in re.finditer(r"<edition>.*?</edition>", formatted_output, re.DOTALL):
+        block = match.group(0)
+        if barcode_tag in block:
+            return block
+    return None
+
+
+def find_result_by_edition_id(formatted_output: str, edition_id: int) -> Optional[str]:
+    """
+    Return the full <edition>...</edition> block containing the given
+    edition_id, or None if not found.
+    """
+    edition_id_tag = f"<edition_id>{edition_id}</edition_id>"
+    for match in re.finditer(r"<edition>.*?</edition>", formatted_output, re.DOTALL):
+        block = match.group(0)
+        if edition_id_tag in block:
+            return block
+    return None
 
 
 # UNUSED

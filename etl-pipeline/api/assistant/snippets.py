@@ -38,7 +38,7 @@ import rapidfuzz
 from ..event_loop import run_coroutine
 from ..utils import APIUtils, remove_markdown_comments, shorten
 from .types import Snippet, BaseEditionResult
-from .agent import format_search_results
+from .agent import format_search_results, get_result_count, TOOL_ERROR_PREFIX
 
 # shared code
 from utils.timer import timer
@@ -376,37 +376,114 @@ def validate_edition_snippets(
     return rejections, validated
 
 
-# TODO: insert "search executed here" where appropriate in convo history
-def _build_conversation_text(run_result: RunResult) -> str:
-    """Extract user and assistant text messages from run_result, and format as
-    a conversation chain."""
+def format_conversation_history(
+    items: list, preserve_last_output: bool = False
+) -> str:  # list[TResponseOutputItem]
+    """Format conversation history from a list of OpenAI Responses API items.
 
-    # TODO: use this instead: https://openai.github.io/openai-agents-python/ref/items/#agents.items.ItemHelpers.extract_text
-    def _get_clean_text(message):
-        """Standardize text extraction from dict serialization of type=message
-        OpenAI Responses API items
-        """
-        content = message.get("content", "")
+    - Within a run of consecutive tool call/output items, only final tool
+      call is included in the formatted return value, along with its matching tool
+      call output, if available.
+    - All tool call outputs in the formatted return value are summarized as
+      "N results returned" by counting <edition> elements in the returned XML,
+      or an error message if error, unless preserve_last_output is True, in
+      which case the final tool call output's full content is included as-is.
+    - Item types other than "message", "function_call", and "function_call_output"
+      are skipped.
+    """
+    # MAYBE: keeping only the final tool call pair is over-complicated. Just keep all tool calls.
+
+    # FUTURE: after upgrading agents sdk use this instead: https://openai.github.io/openai-agents-python/ref/items/#agents.items.ItemHelpers.extract_text
+    def _get_msg_text(msg):
+        content = msg.get("content", "")
         if isinstance(content, list):
             return "".join(
                 part.get("text", "")
                 for part in content
-                if part.get("type") == "output_text"
+                if part.get("type")
+                in (
+                    "output_text",
+                    "input_text",
+                )  # input_text (EasyInputMessageParam / ResponseInputTextParam), output_text (ResponseOutputMessageParam / ResponseOutputText)
             )
         return str(content)
 
+    def _compact_tool_output(output: str) -> str:
+        """Summarize search tool output with a count of N results returned"""
+        if output.startswith(TOOL_ERROR_PREFIX):
+            return TOOL_ERROR_PREFIX
+        return f"{get_result_count(output)} results returned"
+
+    # Hold a reference to the last function_call_output item so we can preserve
+    # its full output without summarization.
+    last_output_item = None
+    for msg in reversed(items):
+        if msg.get("type") == "function_call_output":
+            last_output_item = msg
+            break
+
     parts = []
-    for msg in run_result.to_input_list():
+    # Pending function_calls and function_call_outputs for the current agent
+    # turn, keyed by call_id so an output is matched to its own call even if
+    # multiple calls are outstanding at once (e.g. parallel tool calls) and
+    # arrive out of order. Only the most recently *called* call_id (tracked by
+    # last_call_id) is emitted on flush.
+    pending_calls: dict[str, dict] = {}
+    pending_outputs: dict[str, dict] = {}
+    last_call_id: Optional[str] = None
+
+    def flush_tool_buffer():
+        nonlocal last_call_id
+        if last_call_id is None:
+            return
+        call_item = pending_calls[last_call_id]
+        output_item = pending_outputs.get(last_call_id)
+        tool_name = call_item.get("name", "tool")
+        arguments = call_item.get("arguments", "")
+        parts.append(f"Tool call [{tool_name}]: {arguments}")
+        if output_item is not None:
+            raw_output = output_item.get("output", "")
+            if output_item is last_output_item and preserve_last_output:
+                output_text = raw_output
+            else:
+                output_text = _compact_tool_output(raw_output)
+            parts.append(f"[Tool Output: {tool_name}]\n{output_text}")
+        pending_calls.clear()
+        pending_outputs.clear()
+        last_call_id = None
+
+    for msg in items:
+        msg_type = msg.get("type")
         role = msg.get("role", "")
-        if role not in ("user", "assistant"):
-            continue
-        text = _get_clean_text(msg).strip()
-        # TODO: distinguish btw no message text output in message (message may \
-        # include only reasoning, image, tool call, etc) and message text is all \
-        # whitespace/empty str
-        if text:
-            label = "User" if role == "user" else "Assistant"
-            parts.append(f"{label}: {text}")
+
+        if msg_type == "function_call":
+            call_id = msg.get("call_id")
+            pending_calls[call_id] = msg
+            last_call_id = call_id
+
+        elif msg_type == "function_call_output":
+            call_id = msg.get("call_id")
+            if call_id in pending_calls:
+                pending_outputs[call_id] = msg
+            else:
+                # Orphaned output with no matching pending function_call
+                pending_calls[call_id] = {"name": "unknown", "call_id": call_id}
+                pending_outputs[call_id] = msg
+                last_call_id = call_id
+
+        elif msg_type == "message" or (
+            msg_type is None and role in ("user", "assistant")
+        ):
+            flush_tool_buffer()
+            text = _get_msg_text(msg).strip()
+            if text and role in ("user", "assistant"):
+                label = "User" if role == "user" else "Assistant"
+                parts.append(f"{label}: {text}")
+
+        # reasoning items and other types are skipped
+
+    flush_tool_buffer()
+
     return "\n\n".join(parts)
 
 
@@ -493,7 +570,7 @@ class EditionSnippetLoop:
         self.model_name = model_name
         self.messages = messages
         self.entry = entry
-        self.model_config: dict = {"temperature": 0.0, "reasoning_effort": "none"}
+        self.model_config: dict = {"temperature": 0.0, "reasoning_effort": "minimal"}
         self.last_response = None
         self.n_turns: int = 0
         self.max_turns_exceeded: bool = False
@@ -646,13 +723,17 @@ def get_relevant_snippets_llm(
         return []
 
     # Shared model config
+    # run_result.last_agent.model is only a Model object (rather than a string) \
+    # if that is how the Runner was invoked.
     client: AsyncOpenAI = run_result.last_agent.model._client
     model_name: str = run_result.last_agent.model.model
     # model_name = "gemini-3.1-flash-lite-preview"
     # model_name = 'gemini-2.5-flash-lite'
 
     # Shared system prompt variables
-    conversation_text = _build_conversation_text(run_result)
+    conversation_text = format_conversation_history(
+        run_result.to_input_list(), preserve_last_output=True
+    )
     prompt_template = Template(
         (PROMPTS_DIR / "snippet_agent" / "v7.jinja.md").read_text()
     )

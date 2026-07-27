@@ -106,6 +106,7 @@ export interface Snippet {
 }
 
 export interface CatalogEdition {
+  call_id?: string;
   alt_titles: string[];
   contributors: string[];
   dates: Date[];

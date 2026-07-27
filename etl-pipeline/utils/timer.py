@@ -24,7 +24,7 @@ def timer(logger):
                 finally:
                     logger.info(
                         fmt.format(
-                            name=func.__name__, elapsed=perf_counter() - start_time
+                            name=func.__qualname__, elapsed=perf_counter() - start_time
                         )
                     )
         # sync
@@ -38,7 +38,7 @@ def timer(logger):
                 finally:
                     logger.info(
                         fmt.format(
-                            name=func.__name__, elapsed=perf_counter() - start_time
+                            name=func.__qualname__, elapsed=perf_counter() - start_time
                         )
                     )
 

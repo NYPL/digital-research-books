@@ -5,7 +5,7 @@ import Link from "~/src/components/Link/Link";
 
 export const renderMarkdownContent = (
   markdownText: string,
-  onEditionClick: (editionId: string) => void
+  onEditionClick?: (editionId: string) => void
 ): React.ReactNode => {
   // Convert edition tags to markdown links: $1 = edition id, $2 = edition text
   const processedText = markdownText.replace(
@@ -60,6 +60,10 @@ export const renderMarkdownContent = (
 
         a: ({ href, children }) => {
           if (href?.startsWith("#edition-")) {
+            if (!onEditionClick) {
+              return <>{children}</>;
+            }
+
             const id = href.replace("#edition-", "");
             return (
               <Link

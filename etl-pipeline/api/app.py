@@ -10,6 +10,7 @@ from waitress import serve
 from logger import create_log
 from .blueprints import (
     chat_blueprint,
+    result_reason_blueprint,
     search,
     work,
     works,
@@ -33,6 +34,7 @@ logger = create_log(__name__)
 
 BLUEPRINTS = [
     chat_blueprint,
+    result_reason_blueprint,
     search,
     work,
     works,

@@ -6,8 +6,9 @@ import pytest
 
 from agents.items import ToolCallItem
 from api.assistant.agent import update_chat
-from tests.stochastic_processes.test_agent_responses import llm_judge
+from tests.stochastic_processes.llm_judge import llm_judge
 
+# TODO: scope these tighter as we make behavior more stable
 pytestmark = [
     pytest.mark.asyncio,
     pytest.mark.xfail(reason="behavior unstable", strict=False),
@@ -20,8 +21,8 @@ _EDITION_TAG_RE = re.compile(r'<edition id="\d+">.*?</edition>', re.DOTALL)
 _QUOTED_TEXT_RE = re.compile(r'"([^"\n]+)"')
 
 
-async def run_catalog_query(query: str, session_id: str):
-    return update_chat(query, conversation_type="catalogSearch", session_id=session_id)
+def run_catalog_query(query: str, session):
+    return update_chat(query, conversation_type="catalogSearch", session=session)
 
 
 @pytest.fixture(scope="module")
@@ -33,9 +34,9 @@ def cached_catalog_query_result():
     """
     cache = {}
 
-    async def _run(query: str, test_session_id: str):
+    def _run(query: str, test_session):
         if query not in cache:
-            cache[query] = await run_catalog_query(query, test_session_id)
+            cache[query] = run_catalog_query(query, test_session)
         return cache[query]
 
     return _run
@@ -68,28 +69,22 @@ FORMAT_SCENARIOS = [
 
 
 @pytest.mark.parametrize("query", FORMAT_SCENARIOS)
-async def test_prose_only_structure(
-    query, cached_catalog_query_result, test_session_id
-):
-    run_result = await cached_catalog_query_result(query, test_session_id)
+async def test_prose_only_structure(query, cached_catalog_query_result, test_session):
+    run_result = cached_catalog_query_result(query, test_session)
     assert_no_markdown_structure(run_result.final_output)
 
 
 async def test_catalog_results_use_edition_markup(
-    cached_catalog_query_result, test_session_id
+    cached_catalog_query_result, test_session
 ):
-    run_result = await cached_catalog_query_result(
-        "fall of the Roman Empire", test_session_id
-    )
+    run_result = cached_catalog_query_result("fall of the Roman Empire", test_session)
     assert _EDITION_TAG_RE.search(run_result.final_output)
 
 
 async def test_catalog_response_has_exactly_three_citations(
-    cached_catalog_query_result, test_session_id
+    cached_catalog_query_result, test_session
 ):
-    run_result = await cached_catalog_query_result(
-        "fall of the Roman Empire", test_session_id
-    )
+    run_result = cached_catalog_query_result("fall of the Roman Empire", test_session)
     citation_paragraphs = [
         p for p in run_result.final_output.split("\n\n") if _EDITION_TAG_RE.search(p)
     ]
@@ -119,10 +114,8 @@ async def test_catalog_response_has_exactly_three_citations(
     )
 
 
-async def test_one_paragraph_per_book(cached_catalog_query_result, test_session_id):
-    run_result = await cached_catalog_query_result(
-        "fall of the Roman Empire", test_session_id
-    )
+async def test_one_paragraph_per_book(cached_catalog_query_result, test_session):
+    run_result = cached_catalog_query_result("fall of the Roman Empire", test_session)
     paragraphs = [p for p in run_result.final_output.split("\n\n") if p.strip()]
 
     for paragraph in paragraphs:
@@ -133,13 +126,13 @@ async def test_one_paragraph_per_book(cached_catalog_query_result, test_session_
             )
 
 
-async def test_translation_protocol(cached_catalog_query_result, test_session_id):
-    run_result = await cached_catalog_query_result(
-        "Find quotes from German historical texts about Caramalca", test_session_id
+async def test_translation_protocol(cached_catalog_query_result, test_session):
+    run_result = cached_catalog_query_result(
+        "Find quotes from German historical texts about Caramalca", test_session
     )
 
     verdict = await llm_judge(
-        run_result,
+        run_result.to_input_list(),
         question=(
             "When the assistant quotes from a non-English text, does it provide "
             "the original non-English text first, followed immediately by its "

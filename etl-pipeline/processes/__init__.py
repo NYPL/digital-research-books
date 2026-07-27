@@ -1,3 +1,5 @@
+# Note: these are all imported eagerly, consider PEP 562 module-level __getattr__
+# for lazy attribute loading instead.
 from .local_development.local_development_setup import LocalDevelopmentSetupProcess
 from .api import APIProcess
 from .ingest_process import IngestProcess
