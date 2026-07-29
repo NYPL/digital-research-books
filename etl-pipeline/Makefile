@@ -21,6 +21,9 @@ integration-drb:
 integration-vra:
 	python -m pytest tests/integration/api/assistant --env=$(ENVIRONMENT) -n=4 --timeout=120
 
+stochastic-processes:
+	python -m pytest tests/stochastic_processes --env=$(ENVIRONMENT)
+
 up:
 	$(compose_command) up -d
 

@@ -23,9 +23,14 @@ permissions:
   contents: read
   id-token: write
 
+# MAYBE: since "stochastic-processes" runs only QA env setup move that into a separate workflow. 
+# I could have just added a new PR push trigger to etl-pipeline-ci.yaml that conditionally ran stoch processes only on PR push
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.target == 'stochastic-processes' && 'self-hosted' || 'ubuntu-latest' }}
+    strategy:
+      matrix:
+        target: [integration-drb, integration-vra, functional, stochastic-processes]
     env:
       IS_CI: "true"
       DOCKER_BUILDKIT: 1
@@ -34,16 +39,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::946183545209:role/GithubActionsDeployerRole
-          aws-region: us-east-1
+      - name: Configure AWS credentials (GHA runner)
+        if: matrix.target != 'stochastic-processes'
+        uses: ./.github/actions/aws-auth-for-gha-runner
+
+      - name: Configure AWS credentials (self-hosted runner)
+        if: matrix.target == 'stochastic-processes'
+        uses: ./.github/actions/aws-auth-for-self-hosted-runner
 
       - name: Mask secrets
         uses: ./.github/actions/mask-etl-pipeline-secrets
 
       - name: Install build essentials
+        if: matrix.target != 'stochastic-processes'
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-12 g++-12
@@ -77,6 +85,7 @@ jobs:
 
       - name: Build Docker images with cache
         id: build-images
+        if: matrix.target != 'stochastic-processes'
         working-directory: ./etl-pipeline
         run: |
           docker compose build --progress plain \
@@ -84,39 +93,26 @@ jobs:
 
       - name: Start services
       # services have healthchecks to insure they are healthy
+        if: matrix.target != 'stochastic-processes'
         working-directory: ./etl-pipeline
         run: |
           docker compose up -d --wait --wait-timeout 180
 
-      - name: Run integration tests (DRB)
-        env:
-          ENVIRONMENT: local
-        working-directory: ./etl-pipeline
-        run: |
-          make integration-drb
-
       - name: Seed local Postgres DB to support /chat API tests
+        if: matrix.target != 'integration-drb' && matrix.target != 'stochastic-processes'
         working-directory: ./etl-pipeline
         run: |
-          docker compose run --rm --entrypoint python devsetup main.py \
-            -p LocalDevelopmentSetupProcess \
-            -e docker-compose && \
-          docker compose run --rm --entrypoint python devsetup \
-            -m tests.integration.api.assistant.support.seed_frbr_data
+          python -m tests.integration.api.assistant.support.seed_frbr_data -e local
 
-      - name: Run integration tests (VRA)
+      - name: Run ${{ matrix.target }} tests
+        # NOTE: stochastic-processes runs on the self-hosted runner against the real \
+        # QA environment (no local docker compose stack) since it needs QA postgres/TP \
+        # index data and network access.
         env:
-          ENVIRONMENT: local
+          ENVIRONMENT: ${{ matrix.target == 'stochastic-processes' && 'qa' || 'local' }}
         working-directory: ./etl-pipeline
         run: |
-          make integration-vra
-
-      - name: Run functional tests
-        env:
-          ENVIRONMENT: local
-        working-directory: ./etl-pipeline
-        run: |
-          make functional
+          make ${{ matrix.target }}
 
       - name: Dump service logs
         if: always() && steps.build-images.outcome == 'success'

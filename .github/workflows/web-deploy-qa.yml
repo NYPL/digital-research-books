@@ -22,10 +22,7 @@ jobs:
           cache-dependency-path: "web/package-lock.json"
 
       - name: Configure AWS credentials from Test account
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::946183545209:role/GithubActionsDeployerRole
-          aws-region: us-east-1
+        uses: ./.github/actions/aws-auth-for-gha-runner
 
       - name: Login to Amazon ECR
         id: login-ecr

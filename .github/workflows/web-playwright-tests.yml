@@ -55,23 +55,10 @@ jobs:
           cache: npm
           cache-dependency-path: "web/package-lock.json"
 
-      - name: Get AWS credentials for IAM role in primary NYPL account
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS credentials
+        uses: ./.github/actions/aws-auth-for-self-hosted-runner
         with:
-          role-to-assume: arn:aws:iam::491147561046:role/GithubActionsRunnerRole
           aws-region: ${{ env.AWS_REGION }}
-          role-session-name: GHAPrimarySession-${{ github.run_id }}
-          audience: sts.amazonaws.com
-
-      - name: Get AWS credentials for IAM role in nypl-digital-dev account
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::946183545209:role/GHACrossAccountRole
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: GHASecondarySession-${{ github.run_id }}
-          role-chaining: true
-          role-duration-seconds: 1800 # 30 mins
-          audience: sts.amazonaws.com
 
       - name: Fetch API key and test user credentials from SSM
         shell: bash

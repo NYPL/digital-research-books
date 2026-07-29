@@ -1,0 +1,21 @@
+name: 'AWS Auth for GHA-Hosted Runner'
+description: 'Authenticate to AWS from a GitHub-hosted runner via OIDC by assuming the GithubActionsDeployerRole'
+
+# NOTE: the calling workflow/job must declare `permissions: id-token: write` — composite
+# actions cannot grant this themselves. See:
+# https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws#adding-permissions-settings
+
+inputs:
+  aws-region:
+    description: 'AWS region'
+    required: false
+    default: 'us-east-1'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::946183545209:role/GithubActionsDeployerRole
+        aws-region: ${{ inputs.aws-region }}
